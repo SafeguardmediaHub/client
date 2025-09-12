@@ -196,7 +196,7 @@ const Dashboard: FC<DashboardProps> = ({
             onSubmit={analyzeSubmit}
             className="flex items-center gap-0 bg-muted rounded-xl mb-6"
           >
-            <div className="flex items-center gap-3 flex-1 px-3 py-2.5">
+            <div className="flex items-center gap-3 flex-1 px-3">
               <LinkIcon className="w-5 h-5 text-muted-foreground" />
               <Input
                 aria-label="Media URL"
@@ -332,7 +332,6 @@ const Dashboard: FC<DashboardProps> = ({
                   </div>
                 ))}
               </div>
-              {/* <div className="mt-4 h-12 w-full rounded-md bg-gradient-to-r from-primary/40 to-primary/10" /> */}
             </div>
           </CardContent>
         </Card>
