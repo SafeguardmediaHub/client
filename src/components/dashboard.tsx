@@ -3,9 +3,18 @@
 import { LinkIcon, UploadIcon } from 'lucide-react';
 import type { FC } from 'react';
 import { useCallback, useId, useMemo, useRef, useState } from 'react';
+import {
+  batchProcessingData,
+  chartCategories,
+  chartData,
+  recentActivities,
+  statisticsData,
+} from '@/lib/data';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Input } from './ui/input';
+
+// Note: using native select to avoid adding new UI deps
 
 type UploadPhase =
   | 'idle'
@@ -284,12 +293,155 @@ const Dashboard: FC<DashboardProps> = ({
           </section>
         </CardContent>
       </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
+        <Card className="p-6">
+          <CardContent className="p-0 space-y-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-medium">Detection Ratio</h3>
+                <p className="text-sm text-muted-foreground">
+                  Total media files uploaded over a month:{' '}
+                  <span className="font-semibold text-foreground">842</span>
+                </p>
+              </div>
+              <select className="h-9 rounded-md border bg-background px-3 text-sm">
+                <option>1 Month</option>
+                <option>3 Months</option>
+                <option>6 Months</option>
+              </select>
+            </div>
 
-      <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-        <div className="bg-muted/50 aspect-video rounded-xl" />
-        <div className="bg-muted/50 aspect-video rounded-xl" />
-        <div className="bg-muted/50 aspect-video rounded-xl" />
+            <div className="rounded-lg border bg-accent/30 p-4">
+              <div className="grid grid-cols-3 gap-4">
+                {chartCategories.map((category) => (
+                  <div
+                    key={category.label}
+                    className="text-center text-xs text-muted-foreground"
+                  >
+                    {category.label}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 grid grid-rows-6 gap-2">
+                {chartData.map((item) => (
+                  <div key={item.value} className="flex items-center gap-2">
+                    <span className="w-10 text-right text-xs text-muted-foreground">
+                      {item.value}
+                    </span>
+                    <div className="h-px w-full bg-border" />
+                  </div>
+                ))}
+              </div>
+              {/* <div className="mt-4 h-12 w-full rounded-md bg-gradient-to-r from-primary/40 to-primary/10" /> */}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="p-6">
+          <CardContent className="p-0 space-y-6">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-medium">Statistics</h3>
+                <p className="text-sm text-muted-foreground">
+                  Total files processed across system features:{' '}
+                  <span className="font-semibold text-foreground">2,247</span>
+                </p>
+              </div>
+              <select className="h-9 rounded-md border bg-background px-3 text-sm">
+                <option>1 Month</option>
+                <option>3 Months</option>
+                <option>6 Months</option>
+              </select>
+            </div>
+            <div className="space-y-4">
+              {statisticsData.map((stat) => (
+                <div key={stat.label} className="space-y-2">
+                  <div className="text-sm font-medium">{stat.label}</div>
+                  <div className="h-3 w-full rounded-lg bg-primary/10">
+                    <div
+                      className="h-3 rounded-lg bg-primary"
+                      style={{ width: `${stat.percent}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
+        <Card className="p-6">
+          <CardContent className="p-0 space-y-4">
+            <h3 className="text-xl font-medium">Recent Activities</h3>
+            <div className="divide-y rounded-xl border">
+              {recentActivities.map((activity) => (
+                <div
+                  key={activity.title + activity.time}
+                  className="flex items-center gap-3 px-4 py-3"
+                >
+                  <img src={activity.icon} alt="" className="size-10 rounded" />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-sm font-semibold leading-none">
+                        {activity.title}
+                      </h4>
+                      {activity.status && (
+                        <span
+                          className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs"
+                          style={{
+                            background: activity.statusColor.match(
+                              /bg-\[(.*)\]/
+                            )?.[1]
+                              ? undefined
+                              : undefined,
+                          }}
+                        >
+                          <span className="inline-block size-1.5 rounded-full" />
+                          {activity.status}
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+                      <span>{activity.description}</span>
+                      <span className="h-3 w-px bg-border" />
+                      <span>{activity.time}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="p-6">
+          <CardContent className="p-0 space-y-6">
+            <div>
+              <h3 className="text-xl font-medium">Batch Files Processing</h3>
+              <p className="text-sm text-muted-foreground">
+                List of files currently being analyzed
+              </p>
+            </div>
+            <div className="space-y-4">
+              {batchProcessingData.map((item) => (
+                <div key={item.title} className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">{item.title}</span>
+                    <span className="text-muted-foreground">{item.time}</span>
+                  </div>
+                  <div className="h-3 w-full rounded-lg bg-primary/10">
+                    <div
+                      className="h-3 rounded-lg bg-primary"
+                      style={{ width: `${item.percent}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min" />
     </section>
   );
