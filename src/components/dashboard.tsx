@@ -70,14 +70,33 @@ const Dashboard: FC<DashboardProps> = ({
   }, []);
 
   const requestPresignedUrl = useCallback(async (file: File) => {
-    const fileType = encodeURIComponent(
-      file.type || 'application/octet-stream'
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/media/presigned-url`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization:
+            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGJmZjc2YTA5NDJkYjg0YWNiNTIwZjciLCJlbWFpbCI6ImZpbnp5cGhpbnp5QGdtYWlsLmNvbSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzU3NzMzNDE0LCJleHAiOjE3NTc3MzQzMTQsImF1ZCI6InNhZmVndWFyZC1tZWRpYS11c2VycyIsImlzcyI6InNhZmVndWFyZC1tZWRpYSJ9.3iM_1RQ4hjx7pbT8gDsqDTrylABxSu2j8AQhOXpvmxs',
+        },
+        body: JSON.stringify({
+          filename: file.name,
+          contentType: file.type,
+          fileSize: file.size,
+          uploadType: 'general_image',
+        }),
+      }
     );
-    const res = await fetch(`/api/media?fileType=${fileType}`, {
-      method: 'GET',
-    });
-    if (!res.ok) throw new Error('Failed to get upload URL');
-    return (await res.json()) as { uploadUrl: string; key: string };
+
+    if (!response.ok) throw new Error('Failed to get upload URL');
+
+    const result = await response.json();
+    const { data } = result;
+
+    console.log('this is the data', data);
+    const { uploadUrl } = data.upload;
+
+    return { uploadUrl, key: data.upload.key || file.name };
   }, []);
 
   const uploadWithProgress = useCallback(
@@ -293,6 +312,8 @@ const Dashboard: FC<DashboardProps> = ({
           </section>
         </CardContent>
       </Card>
+
+      {/* charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
         <Card className="p-6">
           <CardContent className="p-0 space-y-4">

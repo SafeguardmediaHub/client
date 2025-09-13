@@ -1,3 +1,4 @@
+import { BellIcon, ChevronDownIcon, SettingsIcon } from 'lucide-react';
 import { AppSidebar } from '@/components/app-sidebar';
 import Dashboard from '@/components/dashboard';
 import { SearchForm } from '@/components/search-form';
@@ -7,8 +8,6 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -16,7 +15,6 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { BellIcon, ChevronDownIcon, SettingsIcon } from 'lucide-react';
 
 export default function Page() {
   return (
@@ -45,7 +43,7 @@ export default function Page() {
 
           <SearchForm />
 
-          <div className="inline-flex items-center justify-end gap-6 relative flex-[0_0_auto]">
+          <div className="hidden sm:inline-flex items-center justify-end gap-6 relative flex-[0_0_auto]">
             <BellIcon className="relative w-5 h-5 text-[#5c5c5c]" />
 
             <SettingsIcon className="relative w-5 h-5 text-[#5c5c5c]" />
