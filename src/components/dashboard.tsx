@@ -21,6 +21,7 @@ type UploadPhase =
   | 'validating'
   | 'requesting_url'
   | 'uploading'
+  | 'confirming'
   | 'success'
   | 'error';
 
@@ -44,13 +45,15 @@ const Dashboard: FC<DashboardProps> = ({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [progress, setProgress] = useState<number>(0);
   const [uploadedKey, setUploadedKey] = useState<string | null>(null);
+  const [correlationId, setCorrelationId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const isBusy = useMemo(
     () =>
       uploadPhase === 'validating' ||
       uploadPhase === 'requesting_url' ||
-      uploadPhase === 'uploading',
+      uploadPhase === 'uploading' ||
+      uploadPhase === 'confirming',
     [uploadPhase]
   );
 
@@ -94,10 +97,39 @@ const Dashboard: FC<DashboardProps> = ({
     const { data } = result;
 
     console.log('this is the data', data);
-    const { uploadUrl } = data.upload;
+    const { uploadUrl, s3Key, correlationId } = data.upload;
 
-    return { uploadUrl, key: data.upload.key || file.name };
+    return { uploadUrl, key: s3Key, correlationId };
   }, []);
+
+  const confirmUpload = useCallback(
+    async (s3Key: string, correlationId: string) => {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/media/confirm-upload`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization:
+              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGJmZjc2YTA5NDJkYjg0YWNiNTIwZjciLCJlbWFpbCI6ImZpbnp5cGhpbnp5QGdtYWlsLmNvbSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzU3NzM1MDcyLCJleHAiOjE3NTc3MzU5NzIsImF1ZCI6InNhZmVndWFyZC1tZWRpYS11c2VycyIsImlzcyI6InNhZmVndWFyZC1tZWRpYSJ9.KO-4hZ3j57Npc_Jdnt7tCTtyHUljuefNW7ayrx2j714',
+          },
+          body: JSON.stringify({
+            s3Key,
+            correlationId,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Confirmation failed with status ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('Upload confirmed:', result);
+      return result;
+    },
+    []
+  );
 
   const uploadWithProgress = useCallback(
     async (file: File, uploadUrl: string) => {
@@ -137,6 +169,7 @@ const Dashboard: FC<DashboardProps> = ({
       if (!files || files.length === 0) return;
       setUploadError(null);
       setUploadedKey(null);
+      setCorrelationId(null);
       setProgress(0);
       const file = files[0];
       setUploadPhase('validating');
@@ -148,9 +181,14 @@ const Dashboard: FC<DashboardProps> = ({
       }
       try {
         setUploadPhase('requesting_url');
-        const { uploadUrl, key } = await requestPresignedUrl(file);
+        const { uploadUrl, key, correlationId } = await requestPresignedUrl(
+          file
+        );
+        setCorrelationId(correlationId);
         setUploadPhase('uploading');
         await uploadWithProgress(file, uploadUrl);
+        setUploadPhase('confirming');
+        await confirmUpload(key, correlationId);
         setUploadPhase('success');
         setUploadedKey(key);
         onUploadSuccess?.(key);
@@ -160,7 +198,13 @@ const Dashboard: FC<DashboardProps> = ({
         setUploadError(message);
       }
     },
-    [onUploadSuccess, requestPresignedUrl, uploadWithProgress, validateFile]
+    [
+      onUploadSuccess,
+      requestPresignedUrl,
+      uploadWithProgress,
+      validateFile,
+      confirmUpload,
+    ]
   );
 
   const onDrop = useCallback(
@@ -274,6 +318,17 @@ const Dashboard: FC<DashboardProps> = ({
                   </div>
                   <p className="text-xs text-muted-foreground mt-2 text-center">
                     Uploading... {progress}%
+                  </p>
+                </div>
+              )}
+
+              {uploadPhase === 'confirming' && (
+                <div className="w-full max-w-xl">
+                  <div className="h-2 w-full rounded bg-background/50 overflow-hidden">
+                    <div className="h-2 bg-primary transition-all animate-pulse" />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2 text-center">
+                    Confirming upload...
                   </p>
                 </div>
               )}
