@@ -79,8 +79,7 @@ const Dashboard: FC<DashboardProps> = ({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGJmZjc2YTA5NDJkYjg0YWNiNTIwZjciLCJlbWFpbCI6ImZpbnp5cGhpbnp5QGdtYWlsLmNvbSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzU3NzMzNDE0LCJleHAiOjE3NTc3MzQzMTQsImF1ZCI6InNhZmVndWFyZC1tZWRpYS11c2VycyIsImlzcyI6InNhZmVndWFyZC1tZWRpYSJ9.3iM_1RQ4hjx7pbT8gDsqDTrylABxSu2j8AQhOXpvmxs',
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_TEST_TOKEN}`,
         },
         body: JSON.stringify({
           filename: file.name,
@@ -110,8 +109,7 @@ const Dashboard: FC<DashboardProps> = ({
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization:
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGJmZjc2YTA5NDJkYjg0YWNiNTIwZjciLCJlbWFpbCI6ImZpbnp5cGhpbnp5QGdtYWlsLmNvbSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzU3NzM1MDcyLCJleHAiOjE3NTc3MzU5NzIsImF1ZCI6InNhZmVndWFyZC1tZWRpYS11c2VycyIsImlzcyI6InNhZmVndWFyZC1tZWRpYSJ9.KO-4hZ3j57Npc_Jdnt7tCTtyHUljuefNW7ayrx2j714',
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_TEST_TOKEN}`,
           },
           body: JSON.stringify({
             s3Key,
