@@ -14,8 +14,6 @@ import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Input } from './ui/input';
 
-// Note: using native select to avoid adding new UI deps
-
 type UploadPhase =
   | 'idle'
   | 'validating'

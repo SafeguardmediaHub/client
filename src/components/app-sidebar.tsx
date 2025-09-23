@@ -41,12 +41,12 @@ const data = {
   overview: [
     {
       name: 'Dashboard',
-      url: '#',
+      url: '/dashboard',
       icon: Frame,
     },
     {
       name: 'Library',
-      url: '#',
+      url: '/dashboard/library',
       icon: PieChart,
     },
   ],
@@ -112,7 +112,7 @@ const data = {
   reporting: [
     {
       name: 'Reports Generation',
-      url: '#',
+      url: '/dashboard/reporting',
       icon: Frame,
     },
     {
@@ -130,7 +130,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="#">
+              <a href="/">
                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <Command className="size-4" />
                 </div>
