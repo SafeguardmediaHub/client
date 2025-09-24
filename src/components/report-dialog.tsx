@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import {
   CheckIcon,
   FileIcon,
@@ -6,7 +7,7 @@ import {
   VideoIcon,
 } from 'lucide-react';
 import type { Transition, Variants } from 'motion/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Dialog,
   DialogClose,
@@ -17,6 +18,7 @@ import {
   DialogTrigger,
 } from '@/components/motion-primitives/dialog';
 import { useAnalysisHistory } from '@/hooks/useAnalysisHistory';
+import { useGenerateReport } from '@/hooks/useGenerateReport';
 import type { Analysis } from '@/types/analysis';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
@@ -31,29 +33,115 @@ import {
   PaginationPrevious,
 } from './ui/pagination';
 
-export function DialogCustomVariantsTransition({
-  isOpen = false,
-}: {
-  isOpen?: boolean;
-}) {
-  const [analyses] = useState<Analysis[]>([]);
+export function DialogCustomVariantsTransition() {
+  const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [mediaTypeFilter, setMediaTypeFilter] = useState('all');
   const [selectedAnalysisId, setSelectedAnalysisId] = useState<string | null>(
     null
   );
-
+  const [stage, setStage] = useState<'selection' | 'progress' | 'completed'>(
+    'selection'
+  );
   const [page, setPage] = useState(1);
+  const [error, setError] = useState<string | null>(null);
+  const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
+
+  const countdownRef = useRef<number | null>(null);
+  const autoCloseRef = useRef<number | null>(null);
+
+  const queryClient = useQueryClient();
+  const generateReport = useGenerateReport();
 
   const { data, isLoading, refetch, isFetching } = useAnalysisHistory({
     page,
     limit: 20,
+    sort: 'createdAt',
+    order: 'desc',
   });
 
-  const [stage, setStage] = useState<'selection' | 'progress' | 'completed'>(
-    'selection'
-  );
+  const analyses: Analysis[] = data?.analyses ?? [];
+
+  useEffect(() => {
+    if (open) {
+      refetch();
+    } else {
+      // dialog closed -> reset UI states
+      setStage('selection');
+      setSelectedAnalysisId(null);
+      setError(null);
+      setRemainingSeconds(null);
+      // clear timers
+      if (countdownRef.current) {
+        window.clearInterval(countdownRef.current);
+        countdownRef.current = null;
+      }
+      if (autoCloseRef.current) {
+        window.clearTimeout(autoCloseRef.current);
+        autoCloseRef.current = null;
+      }
+    }
+  }, [open, refetch]);
+
+  const parseEtaToSeconds = (eta: string | number | undefined | null) => {
+    if (!eta && eta !== 0) return null;
+    if (typeof eta === 'number') {
+      return Math.max(0, Math.floor(eta));
+    }
+    const ts = Date.parse(String(eta));
+    if (!isNaN(ts)) {
+      const secs = Math.floor((ts - Date.now()) / 1000);
+      return Math.max(0, secs);
+    }
+    const asNum = Number(eta);
+    if (!Number.isNaN(asNum)) return Math.max(0, Math.floor(asNum));
+    return null;
+  };
+
+  useEffect(() => {
+    // clear any previous countdown
+    if (countdownRef.current) {
+      window.clearInterval(countdownRef.current);
+      countdownRef.current = null;
+    }
+
+    if (remainingSeconds == null) return;
+
+    // if remainingSeconds is 0, nothing to tick
+    if (remainingSeconds <= 0) return;
+
+    countdownRef.current = window.setInterval(() => {
+      setRemainingSeconds((prev) => {
+        if (prev == null) return prev;
+        if (prev <= 1) {
+          // stop interval when hitting zero
+          if (countdownRef.current) {
+            window.clearInterval(countdownRef.current);
+            countdownRef.current = null;
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (countdownRef.current) {
+        window.clearInterval(countdownRef.current);
+        countdownRef.current = null;
+      }
+    };
+  }, [remainingSeconds]);
+
+  const formatSeconds = (s: number | null) => {
+    if (s == null) return 'Unknown';
+    const mm = Math.floor(s / 60)
+      .toString()
+      .padStart(2, '0');
+    const ss = (s % 60).toString().padStart(2, '0');
+    return `${mm}:${ss}`;
+  };
 
   const getStatusColor = (status: Analysis['status']) => {
     switch (status) {
@@ -88,43 +176,65 @@ export function DialogCustomVariantsTransition({
     return 'text-[#d50a0a]';
   };
 
-  const filteredAnalyses = (data?.analyses ?? []).filter(
-    (analysis: Analysis) => {
-      const matchesSearch =
-        analysis.fileName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        analysis.predictedClass
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase());
-      const matchesStatus =
-        statusFilter === 'all' || analysis.status === statusFilter;
-      const matchesMediaType =
-        mediaTypeFilter === 'all' || analysis.mediaType === mediaTypeFilter;
+  const filteredAnalyses = analyses.filter((analysis: Analysis) => {
+    const matchesSearch =
+      analysis.fileName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      analysis.predictedClass.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus =
+      statusFilter === 'all' || analysis.status === statusFilter;
+    const matchesMediaType =
+      mediaTypeFilter === 'all' || analysis.mediaType === mediaTypeFilter;
 
-      return matchesSearch && matchesStatus && matchesMediaType;
-    }
-  );
+    return matchesSearch && matchesStatus && matchesMediaType;
+  });
 
   const handleSelectAnalysis = (analysisId: string) => {
     setSelectedAnalysisId(analysisId);
   };
 
   const handleGenerate = () => {
+    if (!selectedAnalysisId) return;
+    setError(null);
+
     setStage('progress');
 
-    // Fake timeout to simulate backend processing
-    setTimeout(() => {
-      setStage('completed');
-    }, 2500);
+    const payload = {
+      type: 'media_analytics',
+      analysisId: selectedAnalysisId,
+      format: 'pdf',
+      priority: 'normal',
+      title: 'Deepfake Detection',
+      description: '',
+    };
+
+    generateReport.mutate(payload, {
+      onSuccess: (data) => {
+        const seconds = parseEtaToSeconds((data as any).estimatedCompletion);
+        if (seconds != null) {
+          setRemainingSeconds(seconds);
+        } else {
+          setRemainingSeconds(null);
+        }
+
+        setStage('completed');
+
+        queryClient.invalidateQueries({ queryKey: ['reports'] });
+
+        autoCloseRef.current = window.setTimeout(() => {
+          setOpen(false);
+        }, 1500);
+      },
+      onError: (err: any) => {
+        setStage('selection');
+        setError(err?.message || 'Failed to start report. Try again.');
+      },
+    });
   };
 
-  // Completed analyses available (if needed later)
-  // const completedAnalyses = filteredAnalyses.filter((a) => a.status === 'completed');
-
-  useEffect(() => {
-    if (isOpen) {
-      refetch();
-    }
-  }, [isOpen, refetch]);
+  const handleViewReport = () => {
+    setOpen(false);
+    queryClient.invalidateQueries({ queryKey: ['reports'] });
+  };
 
   const customVariants: Variants = {
     initial: {
@@ -146,7 +256,12 @@ export function DialogCustomVariantsTransition({
   };
 
   return (
-    <Dialog variants={customVariants} transition={customTransition}>
+    <Dialog
+      open={open}
+      onOpenChange={setOpen}
+      variants={customVariants}
+      transition={customTransition}
+    >
       <DialogTrigger className="bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-500 cursor-pointer">
         Generate Report
       </DialogTrigger>
@@ -344,6 +459,11 @@ export function DialogCustomVariantsTransition({
               </>
             )}{' '}
             <div className="mt-6 flex flex-col space-y-4">
+              <div className="flex items-center gap-3 justify-end">
+                {isFetching && (
+                  <span className="text-xs text-zinc-500">Refreshing…</span>
+                )}
+              </div>{' '}
               <button
                 className={`inline-flex items-center justify-center self-end rounded-lg px-4 py-2 text-sm font-medium text-zinc-50 cursor-pointer ${
                   selectedAnalysisId
@@ -351,10 +471,10 @@ export function DialogCustomVariantsTransition({
                     : 'bg-zinc-300 cursor-not-allowed'
                 }`}
                 type="submit"
-                disabled={!selectedAnalysisId}
+                disabled={!selectedAnalysisId || generateReport.isPending}
                 onClick={handleGenerate}
               >
-                Generate now
+                {generateReport.isPending ? 'Sending…' : 'Generate now'}
               </button>
             </div>
           </>
@@ -364,8 +484,9 @@ export function DialogCustomVariantsTransition({
           <div className="flex flex-col items-center justify-center py-16 space-y-4">
             <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
             <p className="text-sm text-[#5c5c5c]">
-              We’re generating your report…
+              We’re sending your report request…
             </p>
+            <p className="text-xs text-zinc-500">{error ?? ''}</p>
           </div>
         )}
 
@@ -375,8 +496,18 @@ export function DialogCustomVariantsTransition({
               <CheckIcon className="w-8 h-8 text-green-600" />
             </div>
             <p className="text-base font-medium text-zinc-900">
-              Your report is ready!
+              Request received
             </p>
+            {remainingSeconds != null ? (
+              <p className="text-sm text-zinc-600">
+                Estimated time left: {formatSeconds(remainingSeconds)}
+              </p>
+            ) : (
+              <p className="text-sm text-zinc-600">Estimated time: unknown</p>
+            )}
+            {/* <p className="text-base font-medium text-zinc-900">
+              Your report is ready!
+            </p> */}
             <div className="flex gap-3">
               <Button className="rounded-lg bg-blue-600 hover:bg-blue-500 px-4 py-2 text-sm text-white cursor-pointer">
                 View Report
