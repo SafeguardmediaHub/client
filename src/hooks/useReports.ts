@@ -9,6 +9,9 @@ type ReportsResponse = {
     total: number;
     currentPage: number;
     pageSize: number;
+    hasMore: boolean;
+    offset: number;
+    limit: number;
   };
 };
 

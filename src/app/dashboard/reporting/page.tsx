@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { DialogCustomVariantsTransition } from '@/components/report-dialog';
+import { ReportsPagination } from '@/components/report-pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -21,6 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useReports } from '@/hooks/useReports';
+
 import type { Report } from '@/types/report';
 
 const Reporting = () => {
@@ -28,14 +30,12 @@ const Reporting = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
-  const page = 1;
+  const [page, setPage] = useState(1);
 
   const { data, isLoading, isError, refetch } = useReports(page);
 
   const reports = data?.reports || [];
   const totalPages = data?.pagination?.pages || 1;
-
-  console.log(reports);
 
   const getStatusColor = (status: Report['status']) => {
     switch (status) {
@@ -126,7 +126,7 @@ const Reporting = () => {
                 </Button>
               </div>
             </div>
-            <div className="flex flex-col md:flex-row gap-4 border">
+            <div className="flex flex-col md:flex-row gap-4 items-stretch">
               <div className="flex-1">
                 <div className="relative">
                   <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#5c5c5c]" />
@@ -134,7 +134,7 @@ const Reporting = () => {
                     placeholder="Search reports by title or description..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 h-12 bg-[#f1f1f3] border-0 focus-visible:ring-0 [font-family:'Avenir_LT_Pro-Roman',Helvetica]"
+                    className="pl-10 h-9 bg-[#f1f1f3] border-0 focus-visible:ring-0 [font-family:'Avenir_LT_Pro-Roman',Helvetica]"
                   />
                 </div>
               </div>
@@ -179,7 +179,7 @@ const Reporting = () => {
       <div className="flex flex-col gap-4">
         {/* Loading State */}
         {isLoading && (
-          <>
+          <div>
             {Array.from({ length: 4 }).map(() => (
               <Card
                 key={crypto.randomUUID?.() ?? Math.random().toString(36)}
@@ -211,9 +211,8 @@ const Reporting = () => {
                 </CardContent>
               </Card>
             ))}
-          </>
+          </div>
         )}
-
         {/* Error State */}
         {!isLoading && isError && (
           <Card className="bg-white rounded-xl border border-[#d9d9d9] p-8">
@@ -237,7 +236,6 @@ const Reporting = () => {
             </CardContent>
           </Card>
         )}
-
         {!isLoading && !isError && reports.length === 0 && (
           <Card className="bg-white rounded-xl border border-[#d9d9d9] p-10 text-center">
             <CardContent className="p-0">
@@ -256,7 +254,6 @@ const Reporting = () => {
             </CardContent>
           </Card>
         )}
-
         {!isLoading &&
           !isError &&
           reports.length > 0 &&
@@ -289,7 +286,6 @@ const Reporting = () => {
               </CardContent>
             </Card>
           )}
-
         {!isLoading &&
           !isError &&
           filteredReports.length > 0 &&
@@ -382,6 +378,15 @@ const Reporting = () => {
               </CardContent>{' '}
             </Card>
           ))}
+
+        <ReportsPagination
+          total={data?.pagination?.total || 0}
+          limit={data?.pagination?.limit || 10}
+          offset={data?.pagination?.offset || 0}
+          hasMore={data?.pagination?.hasMore || false}
+          pages={totalPages}
+          onPageChange={(newPage) => setPage(newPage)}
+        />
       </div>
     </div>
   );
