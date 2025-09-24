@@ -1,17 +1,16 @@
 export interface Analysis {
-  _id: string;
+  id: string;
   fileName: string;
-  mediaType: 'image' | 'video' | 'audio';
-  modelInfo: {
-    name: string;
-  };
-  status: 'completed' | 'processing' | 'failed' | 'pending';
+  mediaType: string;
   uploadDate: string;
   predictedClass: string;
+  isDeepfake: boolean;
   confidenceScore: number;
+  riskScore: number;
   thumbnailUrl: string;
+  status: string;
+  createdAt: string;
 }
-
 export interface AnalysisSelectionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;

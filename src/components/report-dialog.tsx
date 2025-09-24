@@ -6,7 +6,7 @@ import {
   VideoIcon,
 } from 'lucide-react';
 import type { Transition, Variants } from 'motion/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogClose,
@@ -16,21 +16,40 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/motion-primitives/dialog';
-import { mockAnalyses } from '@/lib/data';
+import { useAnalysisHistory } from '@/hooks/useAnalysisHistory';
 import type { Analysis } from '@/types/analysis';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from './ui/pagination';
 
-export function DialogCustomVariantsTransition() {
+export function DialogCustomVariantsTransition({
+  isOpen = false,
+}: {
+  isOpen?: boolean;
+}) {
   const [analyses] = useState<Analysis[]>([]);
-  const [loading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [mediaTypeFilter, setMediaTypeFilter] = useState('all');
   const [selectedAnalysisId, setSelectedAnalysisId] = useState<string | null>(
     null
   );
+
+  const [page, setPage] = useState(1);
+
+  const { data, isLoading, refetch, isFetching } = useAnalysisHistory({
+    page,
+    limit: 20,
+  });
 
   const [stage, setStage] = useState<'selection' | 'progress' | 'completed'>(
     'selection'
@@ -69,17 +88,21 @@ export function DialogCustomVariantsTransition() {
     return 'text-[#d50a0a]';
   };
 
-  const filteredAnalyses = mockAnalyses.filter((analysis) => {
-    const matchesSearch =
-      analysis.fileName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      analysis.predictedClass.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      statusFilter === 'all' || analysis.status === statusFilter;
-    const matchesMediaType =
-      mediaTypeFilter === 'all' || analysis.mediaType === mediaTypeFilter;
+  const filteredAnalyses = (data?.analyses ?? []).filter(
+    (analysis: Analysis) => {
+      const matchesSearch =
+        analysis.fileName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        analysis.predictedClass
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase());
+      const matchesStatus =
+        statusFilter === 'all' || analysis.status === statusFilter;
+      const matchesMediaType =
+        mediaTypeFilter === 'all' || analysis.mediaType === mediaTypeFilter;
 
-    return matchesSearch && matchesStatus && matchesMediaType;
-  });
+      return matchesSearch && matchesStatus && matchesMediaType;
+    }
+  );
 
   const handleSelectAnalysis = (analysisId: string) => {
     setSelectedAnalysisId(analysisId);
@@ -96,6 +119,12 @@ export function DialogCustomVariantsTransition() {
 
   // Completed analyses available (if needed later)
   // const completedAnalyses = filteredAnalyses.filter((a) => a.status === 'completed');
+
+  useEffect(() => {
+    if (isOpen) {
+      refetch();
+    }
+  }, [isOpen, refetch]);
 
   const customVariants: Variants = {
     initial: {
@@ -140,15 +169,14 @@ export function DialogCustomVariantsTransition() {
 
         {stage === 'selection' && (
           <>
-            {loading ? (
+            {isLoading ? (
               <div className="flex flex-col items-center justify-center py-16 space-y-4">
                 <div className="w-8 h-8 border-4 border-[#4b2eef] border-t-transparent rounded-full animate-spin"></div>
                 <p className="text-sm text-[#5c5c5c]">Loading analyses...</p>
               </div>
             ) : (
               <>
-                {' '}
-                <div className="flex flex-col gap-4 py-4 border-y border-[#e5e5e5]">
+                <div className="flex flex-col gap-4 py-4">
                   <div className="flex-1">
                     <Input
                       placeholder="Search by filename or classification..."
@@ -181,16 +209,16 @@ export function DialogCustomVariantsTransition() {
                     >
                       {filteredAnalyses.map((analysis) => {
                         const isDisabled = analysis.status !== 'completed';
-                        const isSelected = selectedAnalysisId === analysis._id;
+                        const isSelected = selectedAnalysisId === analysis.id;
                         return (
                           <button
-                            key={analysis._id}
+                            key={analysis.id}
                             type="button"
                             role="option"
                             aria-selected={isSelected}
                             disabled={isDisabled}
                             onClick={() =>
-                              !isDisabled && handleSelectAnalysis(analysis._id)
+                              !isDisabled && handleSelectAnalysis(analysis.id)
                             }
                             className={`relative w-full rounded-xl border transition-all text-left ${
                               isSelected
@@ -263,6 +291,53 @@ export function DialogCustomVariantsTransition() {
                           </button>
                         );
                       })}
+
+                      <Pagination>
+                        <PaginationContent>
+                          <PaginationItem>
+                            <PaginationPrevious
+                              href="#"
+                              onClick={
+                                !data?.pagination.hasPrevPage || isFetching
+                                  ? undefined
+                                  : () => setPage((p) => p - 1)
+                              }
+                              aria-disabled={
+                                !data?.pagination.hasPrevPage || isFetching
+                              }
+                              className={
+                                !data?.pagination.hasPrevPage || isFetching
+                                  ? 'pointer-events-none opacity-50'
+                                  : undefined
+                              }
+                            />
+                          </PaginationItem>
+                          <PaginationItem>
+                            <PaginationLink href="#">1</PaginationLink>
+                          </PaginationItem>
+                          <PaginationItem>
+                            <PaginationEllipsis />
+                          </PaginationItem>
+                          <PaginationItem>
+                            <PaginationNext
+                              href="#"
+                              onClick={
+                                !data?.pagination.hasNextPage || isFetching
+                                  ? undefined
+                                  : () => setPage((p) => p + 1)
+                              }
+                              aria-disabled={
+                                !data?.pagination.hasNextPage || isFetching
+                              }
+                              className={
+                                !data?.pagination.hasNextPage || isFetching
+                                  ? 'pointer-events-none opacity-50'
+                                  : undefined
+                              }
+                            />
+                          </PaginationItem>
+                        </PaginationContent>
+                      </Pagination>
                     </div>
                   )}
                 </div>
