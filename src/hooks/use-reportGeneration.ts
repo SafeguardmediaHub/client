@@ -1,14 +1,9 @@
 import { useMutation } from '@tanstack/react-query';
+import axios from 'axios';
 import type { Analysis } from '../types/analysis';
 
-// Types for the report generation API
 export interface ReportGenerationRequest {
   selectedAnalyses: Analysis[];
-  reportType: 'deepfake' | 'forensics' | 'batch' | 'custom';
-  reportTitle?: string;
-  includeMetadata?: boolean;
-  includeConfidenceScores?: boolean;
-  includeTimeline?: boolean;
 }
 
 export interface ReportGenerationResponse {
@@ -19,27 +14,22 @@ export interface ReportGenerationResponse {
   generatedAt: string;
 }
 
-// Simulate API call for report generation
 const generateReport = async (
   request: ReportGenerationRequest
 ): Promise<ReportGenerationResponse> => {
-  // Simulate network delay and processing time
-  await new Promise((resolve) =>
-    setTimeout(resolve, 3000 + Math.random() * 2000)
-  );
+  const response = await axios.post('/api/reports/generate', request, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: '',
+    },
+  });
+  const { data } = response.data;
+  console.log(response.data);
 
-  // Simulate occasional failures (10% chance)
-  if (Math.random() < 0.1) {
-    throw new Error('Report generation failed. Please try again.');
-  }
-
-  // Mock successful response
   return {
     reportId: `report_${Date.now()}`,
     downloadUrl: `/api/reports/download/${Date.now()}`,
-    fileName: `${request.reportType}_report_${
-      new Date().toISOString().split('T')[0]
-    }.pdf`,
+    fileName: data.fileName,
     fileSize: `${(Math.random() * 5 + 1).toFixed(1)} MB`,
     generatedAt: new Date().toISOString(),
   };

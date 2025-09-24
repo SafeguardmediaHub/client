@@ -1,4 +1,10 @@
-import { CheckIcon, FileIcon, ImageIcon, VideoIcon } from 'lucide-react';
+import {
+  CheckIcon,
+  FileIcon,
+  ImageIcon,
+  Loader2,
+  VideoIcon,
+} from 'lucide-react';
 import type { Transition, Variants } from 'motion/react';
 import { useState } from 'react';
 import {
@@ -13,15 +19,8 @@ import {
 import { mockAnalyses } from '@/lib/data';
 import type { Analysis } from '@/types/analysis';
 import { Badge } from './ui/badge';
-// Removed Card-based list in favor of custom single-select list
+import { Button } from './ui/button';
 import { Input } from './ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './ui/select';
 
 export function DialogCustomVariantsTransition() {
   const [analyses] = useState<Analysis[]>([]);
@@ -31,6 +30,10 @@ export function DialogCustomVariantsTransition() {
   const [mediaTypeFilter, setMediaTypeFilter] = useState('all');
   const [selectedAnalysisId, setSelectedAnalysisId] = useState<string | null>(
     null
+  );
+
+  const [stage, setStage] = useState<'selection' | 'progress' | 'completed'>(
+    'selection'
   );
 
   const getStatusColor = (status: Analysis['status']) => {
@@ -82,6 +85,15 @@ export function DialogCustomVariantsTransition() {
     setSelectedAnalysisId(analysisId);
   };
 
+  const handleGenerate = () => {
+    setStage('progress');
+
+    // Fake timeout to simulate backend processing
+    setTimeout(() => {
+      setStage('completed');
+    }, 2500);
+  };
+
   // Completed analyses available (if needed later)
   // const completedAnalyses = filteredAnalyses.filter((a) => a.status === 'completed');
 
@@ -112,192 +124,196 @@ export function DialogCustomVariantsTransition() {
       <DialogContent className="w-full max-w-4xl bg-white p-6 dark:bg-zinc-900">
         <DialogHeader>
           <DialogTitle className="text-zinc-900 dark:text-white">
-            Generate new report{' '}
+            {stage === 'selection' && 'Generate new report'}
+            {stage === 'progress' && 'Report requested'}
+            {stage === 'completed' && 'Report ready'}
           </DialogTitle>
           <DialogDescription className="text-zinc-600 dark:text-zinc-400">
-            Choose the completed analyses you want to include in your report.
+            {stage === 'selection' &&
+              'Choose the completed analysis you want to include in your report.'}
+            {stage === 'progress' &&
+              'Your report is being generated. This usually takes a few seconds.'}
+            {stage === 'completed' &&
+              'Your report has been generated successfully.'}
           </DialogDescription>
         </DialogHeader>
 
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-16 space-y-4">
-            <div className="w-8 h-8 border-4 border-[#4b2eef] border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-sm text-[#5c5c5c] [font-family:'Avenir_LT_Pro-Medium',Helvetica]">
-              Loading analyses...
-            </p>
-          </div>
-        ) : (
+        {stage === 'selection' && (
           <>
-            <div className="flex flex-col gap-4 py-4 border-y border-[#e5e5e5]">
-              <div className="flex-1">
-                <Input
-                  placeholder="Search by filename or classification..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-10 bg-[#f1f1f3] border-0 focus-visible:ring-0"
-                />
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-16 space-y-4">
+                <div className="w-8 h-8 border-4 border-[#4b2eef] border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-sm text-[#5c5c5c]">Loading analyses...</p>
               </div>
-
-              {/* <div
-                className="flex md:flex-row gap-4
-"
-              >
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-full md:w-40 h-10 bg-[#f1f1f3] border-0">
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="processing">Processing</SelectItem>
-                    <SelectItem value="failed">Failed</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select
-                  value={mediaTypeFilter}
-                  onValueChange={setMediaTypeFilter}
-                >
-                  <SelectTrigger className="w-full md:w-40 h-10 bg-[#f1f1f3] border-0">
-                    <SelectValue placeholder="Media Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="image">Images</SelectItem>
-                    <SelectItem value="video">Videos</SelectItem>
-                    <SelectItem value="audio">Audio</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div> */}
-            </div>
-
-            {/* Multi-select controls removed for single-select UX */}
-
-            <div className="flex-1 overflow-auto max-h-96">
-              {filteredAnalyses.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 space-y-4">
-                  <FileIcon className="w-12 h-12 text-[#5c5c5c]" />
-                  <div className="text-center">
-                    <h3 className="text-lg font-medium text-black [font-family:'Avenir_LT_Pro-Medium',Helvetica] mb-2">
-                      No analyses found
-                    </h3>
-                    <p className="text-sm text-[#5c5c5c] [font-family:'Avenir_LT_Pro-Medium',Helvetica]">
-                      {analyses.length === 0
-                        ? 'No analyses available. Upload and process media files to generate reports.'
-                        : 'Try adjusting your search criteria or filters.'}
-                    </p>
+            ) : (
+              <>
+                {' '}
+                <div className="flex flex-col gap-4 py-4 border-y border-[#e5e5e5]">
+                  <div className="flex-1">
+                    <Input
+                      placeholder="Search by filename or classification..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="h-10 bg-[#f1f1f3] border-0 focus-visible:ring-0"
+                    />
                   </div>
                 </div>
-              ) : (
-                <div
-                  role="listbox"
-                  aria-label="Analyses"
-                  className="flex flex-col gap-3"
-                >
-                  {filteredAnalyses.map((analysis) => {
-                    const isDisabled = analysis.status !== 'completed';
-                    const isSelected = selectedAnalysisId === analysis._id;
-                    return (
-                      <button
-                        key={analysis._id}
-                        type="button"
-                        role="option"
-                        aria-selected={isSelected}
-                        disabled={isDisabled}
-                        onClick={() =>
-                          !isDisabled && handleSelectAnalysis(analysis._id)
-                        }
-                        className={`relative w-full rounded-xl border transition-all text-left ${
-                          isSelected
-                            ? 'border-blue-600  bg-white shadow-sm'
-                            : 'border-[#e6e6e6] bg-white hover:border-[#cfcfcf]'
-                        } ${
-                          isDisabled
-                            ? 'opacity-60 cursor-not-allowed'
-                            : 'cursor-pointer'
-                        } p-4 focus:outline-none `}
-                      >
-                        <div className="flex items-start gap-4">
-                          <div
-                            className={`mt-1 grid place-items-center h-9 w-9 rounded-full border ${
+                <div className="flex-1 overflow-auto max-h-96">
+                  {filteredAnalyses.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 space-y-4">
+                      <FileIcon className="w-12 h-12 text-[#5c5c5c]" />
+                      <div className="text-center">
+                        <h3 className="text-lg font-medium text-black [font-family:'Avenir_LT_Pro-Medium',Helvetica] mb-2">
+                          No analyses found
+                        </h3>
+                        <p className="text-sm text-[#5c5c5c] [font-family:'Avenir_LT_Pro-Medium',Helvetica]">
+                          {analyses.length === 0
+                            ? 'No analyses available. Upload and process media files to generate reports.'
+                            : 'Try adjusting your search criteria or filters.'}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      role="listbox"
+                      aria-label="Analyses"
+                      className="flex flex-col gap-3"
+                    >
+                      {filteredAnalyses.map((analysis) => {
+                        const isDisabled = analysis.status !== 'completed';
+                        const isSelected = selectedAnalysisId === analysis._id;
+                        return (
+                          <button
+                            key={analysis._id}
+                            type="button"
+                            role="option"
+                            aria-selected={isSelected}
+                            disabled={isDisabled}
+                            onClick={() =>
+                              !isDisabled && handleSelectAnalysis(analysis._id)
+                            }
+                            className={`relative w-full rounded-xl border transition-all text-left ${
                               isSelected
-                                ? 'border-[#4b2eef] bg-[#4b2eef]/5'
-                                : 'border-[#e6e6e6]'
-                            }`}
+                                ? 'border-blue-600  bg-white shadow-sm'
+                                : 'border-[#e6e6e6] bg-white hover:border-[#cfcfcf]'
+                            } ${
+                              isDisabled
+                                ? 'opacity-60 cursor-not-allowed'
+                                : 'cursor-pointer'
+                            } p-4 focus:outline-none `}
                           >
-                            {isSelected ? (
-                              <CheckIcon className="h-5 w-5 text-[#4b2eef]" />
-                            ) : (
-                              <div className="h-2.5 w-2.5 rounded-full bg-[#cfcfcf]" />
-                            )}
-                          </div>
+                            <div className="flex items-start gap-4">
+                              <div
+                                className={`mt-1 grid place-items-center h-9 w-9 rounded-full border ${
+                                  isSelected
+                                    ? 'border-[#4b2eef] bg-[#4b2eef]/5'
+                                    : 'border-[#e6e6e6]'
+                                }`}
+                              >
+                                {isSelected ? (
+                                  <CheckIcon className="h-5 w-5 text-[#4b2eef]" />
+                                ) : (
+                                  <div className="h-2.5 w-2.5 rounded-full bg-[#cfcfcf]" />
+                                )}
+                              </div>
 
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-4">
-                              <div className="min-w-0">
-                                <div className="flex items-center gap-2">
-                                  {getMediaTypeIcon(analysis.mediaType)}
-                                  <h4 className="truncate text-[15px] font-medium text-zinc-900 [font-family:'Avenir_LT_Pro-Medium',Helvetica]">
-                                    {analysis.fileName}
-                                  </h4>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between gap-4">
+                                  <div className="min-w-0">
+                                    <div className="flex items-center gap-2">
+                                      {getMediaTypeIcon(analysis.mediaType)}
+                                      <h4 className="truncate text-[15px] font-medium text-zinc-900 [font-family:'Avenir_LT_Pro-Medium',Helvetica]">
+                                        {analysis.fileName}
+                                      </h4>
+                                    </div>
+                                    <p className="mt-1 text-xs text-[#5c5c5c] [font-family:'Avenir_LT_Pro-Medium',Helvetica] truncate">
+                                      Predicted: {analysis.predictedClass}
+                                    </p>
+                                  </div>
+                                  <div className="flex items-center gap-2 flex-shrink-0">
+                                    <Badge
+                                      className={`px-2 py-0.5 rounded border ${getStatusColor(
+                                        analysis.status
+                                      )}`}
+                                    >
+                                      <span className="text-[10px] font-medium [font-family:'Avenir_LT_Pro-Medium',Helvetica] uppercase">
+                                        {analysis.status}
+                                      </span>
+                                    </Badge>
+                                    <span
+                                      className={`text-xs font-medium ${getConfidenceColor(
+                                        analysis.confidenceScore
+                                      )}`}
+                                    >
+                                      {analysis.confidenceScore}%
+                                    </span>
+                                  </div>
                                 </div>
-                                <p className="mt-1 text-xs text-[#5c5c5c] [font-family:'Avenir_LT_Pro-Medium',Helvetica] truncate">
-                                  Predicted: {analysis.predictedClass}
-                                </p>
-                              </div>
-                              <div className="flex items-center gap-2 flex-shrink-0">
-                                <Badge
-                                  className={`px-2 py-0.5 rounded border ${getStatusColor(
-                                    analysis.status
-                                  )}`}
-                                >
-                                  <span className="text-[10px] font-medium [font-family:'Avenir_LT_Pro-Medium',Helvetica] uppercase">
-                                    {analysis.status}
+                                <div className="mt-2 flex items-center gap-3 text-xs text-[#7a7a7a]">
+                                  <span>
+                                    {new Date(
+                                      analysis.uploadDate
+                                    ).toLocaleDateString()}
                                   </span>
-                                </Badge>
-                                <span
-                                  className={`text-xs font-medium ${getConfidenceColor(
-                                    analysis.confidenceScore
-                                  )}`}
-                                >
-                                  {analysis.confidenceScore}%
-                                </span>
+                                  <span className="h-1 w-1 rounded-full bg-[#d0d0d0]" />
+                                  <span>{analysis.mediaType}</span>
+                                </div>
                               </div>
                             </div>
-                            <div className="mt-2 flex items-center gap-3 text-xs text-[#7a7a7a]">
-                              <span>
-                                {new Date(
-                                  analysis.uploadDate
-                                ).toLocaleDateString()}
-                              </span>
-                              <span className="h-1 w-1 rounded-full bg-[#d0d0d0]" />
-                              <span>{analysis.mediaType}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-              )}
+              </>
+            )}{' '}
+            <div className="mt-6 flex flex-col space-y-4">
+              <button
+                className={`inline-flex items-center justify-center self-end rounded-lg px-4 py-2 text-sm font-medium text-zinc-50 cursor-pointer ${
+                  selectedAnalysisId
+                    ? 'bg-blue-600 hover:bg-blue-500'
+                    : 'bg-zinc-300 cursor-not-allowed'
+                }`}
+                type="submit"
+                disabled={!selectedAnalysisId}
+                onClick={handleGenerate}
+              >
+                Generate now
+              </button>
             </div>
           </>
         )}
 
-        <div className="mt-6 flex flex-col space-y-4">
-          <button
-            className={`inline-flex items-center justify-center self-end rounded-lg px-4 py-2 text-sm font-medium text-zinc-50 cursor-pointer ${
-              selectedAnalysisId
-                ? 'bg-blue-600 hover:bg-blue-500'
-                : 'bg-zinc-300 cursor-not-allowed'
-            }`}
-            type="submit"
-            disabled={!selectedAnalysisId}
-          >
-            Generate now
-          </button>
-        </div>
-        <DialogClose />
+        {stage === 'progress' && (
+          <div className="flex flex-col items-center justify-center py-16 space-y-4">
+            <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+            <p className="text-sm text-[#5c5c5c]">
+              We’re generating your report…
+            </p>
+          </div>
+        )}
+
+        {stage === 'completed' && (
+          <div className="flex flex-col items-center justify-center py-16 space-y-6">
+            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-green-100">
+              <CheckIcon className="w-8 h-8 text-green-600" />
+            </div>
+            <p className="text-base font-medium text-zinc-900">
+              Your report is ready!
+            </p>
+            <div className="flex gap-3">
+              <Button className="rounded-lg bg-blue-600 hover:bg-blue-500 px-4 py-2 text-sm text-white cursor-pointer">
+                View Report
+              </Button>
+              <DialogClose>
+                <Button className="rounded-lg bg-zinc-200 hover:bg-zinc-300 px-4 py-2 text-sm text-zinc-700 cursor-pointer">
+                  Close
+                </Button>
+              </DialogClose>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
