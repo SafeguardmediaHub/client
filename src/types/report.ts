@@ -6,9 +6,9 @@ export interface Report {
     | 'Forensics Report'
     | 'Batch Analysis'
     | 'Custom Report';
-  status: 'Completed' | 'Processing' | 'Failed' | 'Draft';
+  status: 'completed' | 'processing' | 'failed' | 'draft';
   createdBy: string;
-  createdDate: string;
-  fileSize: string;
+  createdAt: string;
+  humanFileSize: string;
   description: string;
 }
