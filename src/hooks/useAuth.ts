@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { login, register } from '@/lib/api/auth';
 
-interface User {
+export interface User {
   id: string;
   email: string;
   firstName: string;
@@ -27,8 +27,12 @@ interface Tokens {
 }
 
 export interface LoginResponse {
-  user: User;
-  tokens: Tokens;
+  success: boolean;
+  message: string;
+  data: {
+    user: User;
+    tokens: Tokens;
+  };
 }
 
 export type RegisterResponse = {
@@ -51,8 +55,8 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: ({ email, password }: { email: string; password: string }) =>
       login(email, password),
-    onSuccess: (data) => {
-      queryClient.setQueryData(['user'], data.user);
+    onSuccess: (response) => {
+      queryClient.setQueryData(['user'], response.data.user);
       toast.success('Login successful');
     },
     onError: (error: any) => {

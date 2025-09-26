@@ -1,6 +1,8 @@
-import { BellIcon, ChevronDownIcon, SettingsIcon } from 'lucide-react';
+'use client';
+
+import { BellIcon, ChevronDownIcon, SettingsIcon, User2 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 import { SearchForm } from './search-form';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,6 +13,10 @@ import { Separator } from './ui/separator';
 import { SidebarTrigger } from './ui/sidebar';
 
 const AppNavbar = () => {
+  const { user } = useAuth();
+
+  console.log('this is user from navbar', user);
+
   return (
     <header className="flex justify-between h-16 shrink-0 items-center gap-2 border-b px-4">
       <div className="flex justify-center items-center">
@@ -40,13 +46,9 @@ const AppNavbar = () => {
         <SettingsIcon className="relative w-5 h-5 text-[#5c5c5c]" />
 
         <div className="inline-flex items-center justify-end gap-2 relative flex-[0_0_auto]">
-          <Avatar className="relative w-8 h-8">
-            <AvatarImage src="/avatars.svg" alt="Jane Doe" />
-            <AvatarFallback>JD</AvatarFallback>
-          </Avatar>
-
+          <User2 className="w-5 h-5" />
           <div className="relative w-fit font-paragraph-medium-medium font-[number:var(--paragraph-medium-medium-font-weight)] text-black text-[length:var(--paragraph-medium-medium-font-size)] text-center tracking-[var(--paragraph-medium-medium-letter-spacing)] leading-[var(--paragraph-medium-medium-line-height)] whitespace-nowrap [font-style:var(--paragraph-medium-medium-font-style)]">
-            Jane Doe
+            {user?.firstName}
           </div>
 
           <ChevronDownIcon className="relative w-[18px] h-[18px] text-muted-foreground" />

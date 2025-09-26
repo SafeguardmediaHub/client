@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useLogin } from '@/hooks/useAuth';
+import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 
 export function LoginForm({
@@ -15,7 +15,7 @@ export function LoginForm({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const loginMutation = useLogin();
+  const { login } = useAuth();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +25,7 @@ export function LoginForm({
       return;
     }
 
-    loginMutation.mutate({ email, password });
+    login(email, password);
   };
 
   return (

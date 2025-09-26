@@ -7,8 +7,9 @@ export const login = async (
 ): Promise<LoginResponse> => {
   const { data } = await axios.post(
     `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/auth/login`,
-    { email, password },
+    { email, password, rememberMe: true },
     {
+      withCredentials: true,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -35,4 +36,19 @@ export const register = async (
   );
 
   return data as RegisterResponse;
+};
+
+export const logout = async () => {
+  await axios.post(
+    `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/auth/logout`,
+    {},
+    {
+      withCredentials: true,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+
+  return true;
 };

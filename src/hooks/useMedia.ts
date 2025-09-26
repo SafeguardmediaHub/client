@@ -52,8 +52,9 @@ const fetchUserMedia = async (params?: {
     `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/media`,
     {
       params,
+      withCredentials: true,
       headers: {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_TEST_TOKEN}`,
+        // Authorization: `Bearer ${process.env.NEXT_PUBLIC_TEST_TOKEN}`,
         'Content-Type': 'application/json',
       },
     }
