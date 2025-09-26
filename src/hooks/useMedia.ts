@@ -1,4 +1,5 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: <> */
+
 import {
   keepPreviousData,
   useMutation,
@@ -7,6 +8,7 @@ import {
 } from '@tanstack/react-query';
 import axios from 'axios';
 import { toast } from 'sonner';
+import api from '@/lib/api';
 
 export interface Media {
   id: string;
@@ -48,31 +50,22 @@ const fetchUserMedia = async (params?: {
   type?: string;
   status?: string;
 }): Promise<UserMediaResponse> => {
-  const { data } = await axios.get(
-    `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/media`,
-    {
-      params,
-      withCredentials: true,
-      headers: {
-        // Authorization: `Bearer ${process.env.NEXT_PUBLIC_TEST_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-    }
-  );
+  const { data } = await api.get('/api/media', {
+    params,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
 
   return data.data;
 };
 
 const deleteMedia = async (id: string): Promise<DeleteMediaResponse> => {
-  const { data } = await axios.delete(
-    `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/media/${id}`,
-    {
-      headers: {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_TEST_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-    }
-  );
+  const { data } = await api.delete(`/api/media/${id}`, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
 
   return data;
 };
@@ -84,12 +77,11 @@ const urlUpload = async ({
   url: string;
   uploadType: 'video' | 'general_image';
 }) => {
-  const { data } = await axios.post(
-    `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/media/upload-url`,
+  const { data } = await api.post(
+    `/api/media/upload-url`,
     { url, uploadType },
     {
       headers: {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_TEST_TOKEN}`,
         'Content-Type': 'application/json',
       },
     }

@@ -15,8 +15,6 @@ import { SidebarTrigger } from './ui/sidebar';
 const AppNavbar = () => {
   const { user } = useAuth();
 
-  console.log('this is user from navbar', user);
-
   return (
     <header className="flex justify-between h-16 shrink-0 items-center gap-2 border-b px-4">
       <div className="flex justify-center items-center">

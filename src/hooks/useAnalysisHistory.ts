@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import axios from 'axios';
+import api from '@/lib/api';
 
 export interface Analysis {
   id: string;
@@ -54,16 +54,10 @@ const fetchAnalysisHistory = async (params?: {
   confidenceMax?: number;
   dateRange?: string;
 }): Promise<AnalysisHistoryResponse> => {
-  const { data } = await axios.get(
-    `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/analysis`,
-    {
-      params,
-      headers: {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_TEST_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-    }
-  );
+  const { data } = await api.get('/api/analysis', {
+    params,
+    headers: { 'Content-Type': 'application/json' },
+  });
 
   return data.data;
 };

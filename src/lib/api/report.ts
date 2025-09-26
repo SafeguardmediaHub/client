@@ -1,4 +1,5 @@
 import axios from 'axios';
+import api from '../api';
 
 export async function generateReport(payload: {
   analysisId: string;
@@ -9,19 +10,12 @@ export async function generateReport(payload: {
 
 export const handleDownload = async (reportId: string, title: string) => {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/reports/${reportId}/download`,
-      {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_TEST_TOKEN}`,
-        },
-      }
-    );
-    if (!response.ok) {
-      throw new Error('Download failed');
-    }
-    const blob = await response.blob();
+    const response = await api.get(`/api/reports/${reportId}/download`, {
+      responseType: 'blob',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const blob = response.data as Blob;
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import type { Transition, Variants } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogClose,
@@ -18,7 +19,7 @@ import {
   DialogTrigger,
 } from '@/components/motion-primitives/dialog';
 import { useAnalysisHistory } from '@/hooks/useAnalysisHistory';
-import { useGenerateReport } from '@/hooks/useGenerateReport';
+import { useGenerateReport } from '@/hooks/useReports';
 import type { Analysis } from '@/types/analysis';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
@@ -209,6 +210,8 @@ export function DialogCustomVariantsTransition() {
 
     generateReport.mutate(payload, {
       onSuccess: (data) => {
+        toast.success('Report generation started. It may take a few minutes.');
+
         const seconds = parseEtaToSeconds((data as any).estimatedCompletion);
         if (seconds != null) {
           setRemainingSeconds(seconds);
@@ -227,6 +230,7 @@ export function DialogCustomVariantsTransition() {
       onError: (err: any) => {
         setStage('selection');
         setError(err?.message || 'Failed to start report. Try again.');
+        toast.error('Failed to generate report. Please try again.');
       },
     });
   };
