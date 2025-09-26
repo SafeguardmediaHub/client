@@ -1,7 +1,7 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: <> */
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { login, register } from '@/lib/api/auth';
+import { login, logout, register } from '@/lib/api/auth';
 
 export interface User {
   id: string;
@@ -62,6 +62,22 @@ export const useLogin = () => {
     onError: (error: any) => {
       console.error('Login error:', error);
       toast.error(error?.response?.data?.message || 'Login failed');
+    },
+  });
+};
+
+export const useLogout = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => logout(),
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: ['user'] });
+      toast.success('Logout successful');
+    },
+    onError: (error: any) => {
+      console.error('Logout error:', error);
+      toast.error('Logout failed');
     },
   });
 };
