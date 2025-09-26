@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useLogin } from '@/hooks/useAuth';
+import { useRegister } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { PasswordStrengthIndicator } from './passwordLengthIndicator';
 
@@ -19,13 +19,13 @@ export function SignupForm({
   const [lastName, setLastName] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
-  const loginMutation = useLogin();
+  const registerMutation = useRegister();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!email || !password) {
-      toast.error('Please enter email and password');
+    if (!email || !password || !firstName || !lastName) {
+      toast.error('Please fill in all required fields');
       return;
     }
 
@@ -34,7 +34,7 @@ export function SignupForm({
       return;
     }
 
-    loginMutation.mutate({ email, password });
+    registerMutation.mutate({ email, password, firstName, lastName });
   };
 
   return (
