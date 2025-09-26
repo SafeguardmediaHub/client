@@ -1,9 +1,12 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
   images: {
-    domains: ['images.unsplash.com', 'images.pexels.com'],
+    domains: [
+      'safeguardmedia-uploads-prod.s3.us-east-1.amazonaws.com',
+      'images.unsplash.com',
+      'images.pexels.com',
+    ],
   },
 };
 

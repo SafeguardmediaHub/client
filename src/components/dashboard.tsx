@@ -3,6 +3,8 @@
 import { LinkIcon, UploadIcon } from 'lucide-react';
 import type { FC } from 'react';
 import { useCallback, useId, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
+import { useUrlUpload } from '@/hooks/useMedia';
 import {
   batchProcessingData,
   chartCategories,
@@ -46,6 +48,23 @@ const Dashboard: FC<DashboardProps> = ({
   const [correlationId, setCorrelationId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  const urlUploadMutation = useUrlUpload();
+
+  const handleUpload = () => {
+    if (!url) {
+      toast.error('Please enter a URL to upload.');
+      return;
+    }
+
+    toast.info('Starting upload from URL...');
+
+    setUrl('');
+    urlUploadMutation.mutate({
+      url,
+      uploadType: 'general_image',
+    });
+  };
+
   const isBusy = useMemo(
     () =>
       uploadPhase === 'validating' ||
@@ -88,12 +107,15 @@ const Dashboard: FC<DashboardProps> = ({
       }
     );
 
-    if (!response.ok) throw new Error('Failed to get upload URL');
+    if (!response.ok) {
+      toast.error('Failed to get upload URL. Please try again.');
+      throw new Error('Failed to get upload URL');
+    }
 
     const result = await response.json();
     const { data } = result;
 
-    console.log('this is the data', data);
+    toast.success('Upload URL obtained. Starting upload...');
     const { uploadUrl, s3Key, correlationId } = data.upload;
 
     return { uploadUrl, key: s3Key, correlationId };
@@ -117,11 +139,13 @@ const Dashboard: FC<DashboardProps> = ({
       );
 
       if (!response.ok) {
+        toast.error('Failed to confirm upload. Please try again.');
         throw new Error(`Confirmation failed with status ${response.status}`);
       }
 
       const result = await response.json();
       console.log('Upload confirmed:', result);
+      toast.success('File uploaded and confirmed successfully!');
       return result;
     },
     []
@@ -270,8 +294,9 @@ const Dashboard: FC<DashboardProps> = ({
               type="submit"
               className="rounded-l-none cursor-pointer"
               disabled={isBusy}
+              onClick={handleUpload}
             >
-              Analyze Link
+              Upload Media
             </Button>
           </form>
 

@@ -1,19 +1,22 @@
-/** biome-ignore-all lint/performance/noImgElement: <explanation> */
+/** biome-ignore-all lint/performance/noImgElement: <> */
+
 'use client';
 
 import {
+  AlertCircleIcon,
   DownloadIcon,
   EyeIcon,
   FileIcon,
   FilterIcon,
   ImageIcon,
+  RefreshCwIcon,
   SearchIcon,
   Trash2,
   UploadIcon,
   VideoIcon,
-  XIcon,
 } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useState } from 'react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Badge } from '@/components/ui/badge';
@@ -27,8 +30,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { mediaFiles } from '@/lib/data';
-import type { MediaFile } from '@/types/media';
+import { type Media, useDeleteMedia, useGetMedia } from '@/hooks/useMedia';
+import { shortenFilename } from '@/lib/utils';
 
 const LibraryPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -37,7 +40,13 @@ const LibraryPage = () => {
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const getStatusColor = (status: MediaFile['status']) => {
+  const { data, isError, isLoading, refetch } = useGetMedia();
+
+  const media = data?.media || [];
+
+  const deleteMedia = useDeleteMedia();
+
+  const getStatusColor = (status: Media['status']) => {
     switch (status) {
       case 'analyzed':
         return 'bg-[#e1feea] border-[#049d35] text-[#049d35]';
@@ -52,44 +61,45 @@ const LibraryPage = () => {
     }
   };
 
-  const getMediaTypeIcon = (mediaType: MediaFile['mediaType']) => {
-    switch (mediaType) {
-      case 'video':
-        return <VideoIcon className="w-5 h-5 text-[#5c5c5c]" />;
-      case 'image':
-        return <ImageIcon className="w-5 h-5 text-[#5c5c5c]" />;
-      default:
-        return <FileIcon className="w-5 h-5 text-[#5c5c5c]" />;
-    }
-  };
+  // const getMediaTypeIcon = (mediaType: Media['uploadType']) => {
+  //   switch (mediaType) {
+  //     case 'video':
+  //       return <VideoIcon className="w-5 h-5 text-[#5c5c5c]" />;
+  //     case 'image':
+  //       return <ImageIcon className="w-5 h-5 text-[#5c5c5c]" />;
+  //     default:
+  //       return <FileIcon className="w-5 h-5 text-[#5c5c5c]" />;
+  //   }
+  // };
 
-  const getConfidenceColor = (score: number) => {
-    if (score >= 90) return 'text-[#049d35]';
-    if (score >= 70) return 'text-[#d5c70a]';
-    if (score >= 50) return 'text-[#ff8c00]';
-    return 'text-[#d50a0a]';
-  };
+  // const getConfidenceColor = (score: number) => {
+  //   if (score >= 90) return 'text-[#049d35]';
+  //   if (score >= 70) return 'text-[#d5c70a]';
+  //   if (score >= 50) return 'text-[#ff8c00]';
+  //   return 'text-[#d50a0a]';
+  // };
 
-  const filteredFiles = mediaFiles.filter((file) => {
+  const filteredFiles = media.filter((file) => {
     const matchesSearch =
-      file.fileName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      file.tags.some((tag) =>
-        tag.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    const matchesType = filterType === 'all' || file.mediaType === filterType;
+      file.filename.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (file.metadata.tags &&
+        file.metadata.tags.some((tag: string) =>
+          tag.toLowerCase().includes(searchQuery.toLowerCase())
+        ));
+    const matchesType = filterType === 'all' || file.uploadType === filterType;
     const matchesStatus =
       filterStatus === 'all' || file.status === filterStatus;
 
     return matchesSearch && matchesType && matchesStatus;
   });
 
-  const handleSelectFile = (fileId: string) => {
-    setSelectedFiles((prev) =>
-      prev.includes(fileId)
-        ? prev.filter((id) => id !== fileId)
-        : [...prev, fileId]
-    );
-  };
+  // const handleSelectFile = (fileId: string) => {
+  //   setSelectedFiles((prev) =>
+  //     prev.includes(fileId)
+  //       ? prev.filter((id) => id !== fileId)
+  //       : [...prev, fileId]
+  //   );
+  // };
 
   const handleSelectAll = () => {
     if (selectedFiles.length === filteredFiles.length) {
@@ -112,89 +122,16 @@ const LibraryPage = () => {
         </div>
 
         <Button
+          asChild
           className="h-10 px-6 bg-blue-600 hover:bg-blue-500 rounded-xl flex-shrink-0 cursor-pointer"
-          aria-label="Upload new media files"
         >
-          <UploadIcon className="w-4 h-4 mr-2" />
-          <span className="text-base font-medium text-white whitespace-nowrap">
-            Upload Files
-          </span>
+          <Link href="/dashboard" aria-label="Upload new media files">
+            <UploadIcon className="w-4 h-4 mr-2" />
+            <span className="text-base font-medium text-white whitespace-nowrap">
+              Upload Files
+            </span>
+          </Link>
         </Button>
-      </div>
-
-      {/* state overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="bg-white rounded-xl border border-[#d9d9d9] p-6">
-          <CardContent className="p-0">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-[#f1f1f3] rounded-lg flex items-center justify-center">
-                <FileIcon className="w-6 h-6 text-[#5c5c5c]" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-black [font-family:'Avenir_LT_Pro-Black',Helvetica]">
-                  {mediaFiles.length}
-                </div>
-                <div className="text-sm text-[#5c5c5c] [font-family:'Avenir_LT_Pro-Medium',Helvetica]">
-                  Total Files
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white rounded-xl border border-[#d9d9d9] p-6">
-          <CardContent className="p-0">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-[#e1feea] rounded-lg flex items-center justify-center">
-                <EyeIcon className="w-6 h-6 text-[#049d35]" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-black [font-family:'Avenir_LT_Pro-Black',Helvetica]">
-                  {mediaFiles.filter((f) => f.status === 'analyzed').length}
-                </div>
-                <div className="text-sm text-[#5c5c5c] [font-family:'Avenir_LT_Pro-Medium',Helvetica]">
-                  Analyzed
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white rounded-xl border border-[#d9d9d9] p-6">
-          <CardContent className="p-0">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-[#fdfbe1] rounded-lg flex items-center justify-center">
-                <div className="w-6 h-6 border-4 border-[#d5c70a] border-t-transparent rounded-full animate-spin"></div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-black [font-family:'Avenir_LT_Pro-Black',Helvetica]">
-                  {mediaFiles.filter((f) => f.status === 'processing').length}
-                </div>
-                <div className="text-sm text-[#5c5c5c] [font-family:'Avenir_LT_Pro-Medium',Helvetica]">
-                  Processing
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white rounded-xl border border-[#d9d9d9] p-6">
-          <CardContent className="p-0">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-[#fee1e1] rounded-lg flex items-center justify-center">
-                <XIcon className="w-6 h-6 text-[#d50a0a]" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-black [font-family:'Avenir_LT_Pro-Black',Helvetica]">
-                  {mediaFiles.filter((f) => f.status === 'error').length}
-                </div>
-                <div className="text-sm text-[#5c5c5c] [font-family:'Avenir_LT_Pro-Medium',Helvetica]">
-                  Errors
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* filters and controls */}
@@ -276,45 +213,98 @@ const LibraryPage = () => {
 
       {/* grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {filteredFiles.map((file) => (
-          <div
-            className="flex flex-col gap-1 border border-gray-200 rounded-md  pb-6 shadow-md"
-            key={file.id}
-          >
-            <div className="relative">
-              <AspectRatio ratio={16 / 9} className="bg-muted cursor-pointer">
-                <Image
-                  src={file.thumbnailUrl}
-                  alt="Photo by Drew Beamer"
-                  fill
-                  className="h-full w-full object-cover dark:brightness-[0.2] dark:grayscale rounded-t-md"
-                />
-              </AspectRatio>
-              <div className="absolute top-3 right-3">
-                <Badge
-                  className={`px-2 py-0.5 text-xs rounded border ${getStatusColor(
-                    file.status
-                  )} flex-shrink-0`}
-                >
-                  {file.status.charAt(0).toUpperCase() + file.status.slice(1)}
-                </Badge>
+        {isLoading &&
+          Array.from({ length: 8 }).map((_, index) => (
+            <div
+              className="flex flex-col gap-1 border border-gray-200 rounded-md pb-6 shadow-md animate-pulse"
+              key={crypto.randomUUID?.() ?? Math.random().toString(36)}
+            >
+              <div className="relative">
+                <AspectRatio ratio={16 / 9} className="bg-muted">
+                  <div className="h-full w-full bg-gray-300 rounded-t-md" />
+                </AspectRatio>
+                <div className="absolute top-3 right-3">
+                  <Badge className="px-2 py-0.5 text-xs rounded border bg-gray-300 text-gray-300 flex-shrink-0">
+                    &nbsp;
+                  </Badge>
+                </div>
               </div>
-            </div>
-            <div className="w-full flex justify-between mt-4 px-4">
-              <p>{file.fileName}</p>
-              <div className="flex gap-2 *:cursor-pointer">
-                <EyeIcon className="text-blue-500" />
-                <DownloadIcon className="" />
-                <Trash2 className="text-red-500" />
+              <div className="w-full flex justify-between mt-4 px-4">
+                <div className="h-4 w-3/4 bg-gray-300 rounded" />
+                <div className="flex gap-2">
+                  <div className="h-4 w-4 bg-gray-300 rounded" />
+                  <div className="h-4 w-4 bg-gray-300 rounded" />
+                </div>
               </div>
+              <div className="h-4 w-1/2 bg-gray-300 rounded px-4 mt-2" />
             </div>
+          ))}
 
-            <p className="text-muted-foreground px-4">2 mins ago</p>
-          </div>
-        ))}
+        {!isLoading &&
+          !isError &&
+          filteredFiles.length > 0 &&
+          filteredFiles.map((file) => (
+            <div
+              className="flex flex-col gap-1 border border-gray-200 rounded-md  pb-6 shadow-md"
+              key={file.id}
+            >
+              <div className="relative">
+                <AspectRatio ratio={16 / 9} className="bg-muted cursor-pointer">
+                  <Image
+                    src={file.publicUrl}
+                    alt="Image"
+                    fill
+                    className="h-full w-full object-cover dark:brightness-[0.2] dark:grayscale rounded-t-md"
+                  />
+                </AspectRatio>
+                <div className="absolute top-3 right-3">
+                  <Badge
+                    className={`px-2 py-0.5 text-xs rounded border ${getStatusColor(
+                      file.status
+                    )} flex-shrink-0`}
+                  >
+                    {file.status.charAt(0).toUpperCase() + file.status.slice(1)}
+                  </Badge>
+                </div>
+              </div>
+              <div className="w-full flex justify-between mt-4 px-4">
+                <p>{shortenFilename(file.filename)}</p>
+                <div className="flex gap-2 *:cursor-pointer">
+                  <EyeIcon className="text-blue-500" />
+                  <Trash2
+                    className="text-red-500"
+                    onClick={() => deleteMedia.mutate(file.id)}
+                  />
+                </div>
+              </div>
+
+              <p className="text-muted-foreground px-4">2 mins ago</p>
+            </div>
+          ))}
       </div>
 
-      {filteredFiles.length === 0 && (
+      {!isLoading && isError && (
+        <Card className="bg-white rounded-xl border border-[#d9d9d9] p-12">
+          <CardContent className="p-0 text-center">
+            <AlertCircleIcon className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-black [font-family:'Avenir_LT_Pro-Medium',Helvetica] mb-2">
+              Failed to load media files
+            </h3>
+            <p className="text-sm text-[#5c5c5c] [font-family:'Avenir_LT_Pro-Medium',Helvetica] mb-6">
+              There was an error loading your media library. Please try again.
+            </p>
+            <Button
+              onClick={() => refetch()}
+              className="h-10 px-6 bg-blue-600 hover:bg-blue-500 rounded-xl cursor-pointer"
+            >
+              <RefreshCwIcon className="w-4 h-4 mr-2" />
+              <span className="text-base font-medium text-white">Retry</span>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {!isLoading && !isError && filteredFiles.length === 0 && (
         <Card className="bg-white rounded-xl border border-[#d9d9d9] p-12">
           <CardContent className="p-0 text-center">
             <FileIcon className="w-12 h-12 text-[#5c5c5c] mx-auto mb-4" />
