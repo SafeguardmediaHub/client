@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { toast } from 'sonner';
 import { type User, useLogin, useLogout } from '@/hooks/useAuth';
 import api from '@/lib/api';
 
@@ -20,11 +19,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     api
-      .get('/api/users/me', { withCredentials: true })
+      .get('/api/users/me')
       .then((res) => setUser(res.data.data.user))
       .catch(() => setUser(null));
   }, []);
-
   const router = useRouter();
 
   const loginMutation = useLogin();
@@ -35,14 +33,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       { email, password },
       {
         onSuccess: (response) => {
-          console.log('this is user', response.data);
           setUser(response.data.user);
-          toast.success('Login successful');
-
           router.push('/dashboard');
         },
         onError: () => {
-          toast.error('Login failed');
+          // Error toast is handled by useLogin hook
         },
       }
     );
@@ -51,12 +46,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = () => {
     logoutMutation.mutate(undefined, {
       onSuccess: () => {
-        toast.success('Logout successful');
         router.push('/auth/login');
         setUser(null);
       },
       onError: () => {
-        toast.error('Logout failed');
+        // Error toast is handled by useLogout hook
       },
     });
   };

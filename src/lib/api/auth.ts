@@ -1,20 +1,15 @@
-import axios from 'axios';
 import type { LoginResponse, RegisterResponse } from '@/hooks/useAuth';
+import api from '../api';
 
 export const login = async (
   email: string,
   password: string
 ): Promise<LoginResponse> => {
-  const { data } = await axios.post(
-    `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/auth/login`,
-    { email, password, rememberMe: true },
-    {
-      withCredentials: true,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }
-  );
+  const { data } = await api.post('/api/auth/login', {
+    email,
+    password,
+    rememberMe: true,
+  });
 
   return data as LoginResponse;
 };
@@ -25,30 +20,27 @@ export const register = async (
   firstName: string,
   lastName: string
 ): Promise<RegisterResponse> => {
-  const { data } = await axios.post(
-    `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/auth/register`,
-    { email, password, firstName, lastName, agreedToTerms: true },
-    {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }
-  );
+  const { data } = await api.post('/api/auth/register', {
+    email,
+    password,
+    firstName,
+    lastName,
+    agreedToTerms: true,
+  });
 
   return data as RegisterResponse;
 };
 
 export const logout = async () => {
-  await axios.post(
-    `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/auth/logout`,
-    {},
-    {
-      withCredentials: true,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }
-  );
-
+  await api.post('/api/auth/logout', {});
   return true;
+};
+
+export const refreshToken = async () => {
+  const { data } = await api.post(
+    '/api/auth/refresh',
+    {},
+    { withCredentials: true }
+  );
+  return data;
 };
