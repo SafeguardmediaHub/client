@@ -5,6 +5,7 @@ import type { FC } from 'react';
 import { useCallback, useId, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useUrlUpload } from '@/hooks/useMedia';
+import api from '@/lib/api';
 import {
   batchProcessingData,
   chartCategories,
@@ -45,7 +46,6 @@ const Dashboard: FC<DashboardProps> = ({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [progress, setProgress] = useState<number>(0);
   const [uploadedKey, setUploadedKey] = useState<string | null>(null);
-  const [correlationId, setCorrelationId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const urlUploadMutation = useUrlUpload();
@@ -90,63 +90,45 @@ const Dashboard: FC<DashboardProps> = ({
   }, []);
 
   const requestPresignedUrl = useCallback(async (file: File) => {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/media/presigned-url`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_TEST_TOKEN}`,
-        },
-        body: JSON.stringify({
-          filename: file.name,
-          contentType: file.type,
-          fileSize: file.size,
-          uploadType: 'general_image',
-        }),
-      }
-    );
+    try {
+      const response = await api.post('/api/media/presigned-url', {
+        filename: file.name,
+        contentType: file.type,
+        fileSize: file.size,
+        uploadType: 'general_image',
+      });
 
-    if (!response.ok) {
+      const result = response.data;
+      const { data } = result;
+
+      toast.success('Upload URL obtained. Starting upload...');
+      const { uploadUrl, s3Key, correlationId } = data.upload;
+
+      return { uploadUrl, key: s3Key, correlationId };
+    } catch (error) {
+      console.error('Failed to get presigned URL:', error);
       toast.error('Failed to get upload URL. Please try again.');
       throw new Error('Failed to get upload URL');
     }
-
-    const result = await response.json();
-    const { data } = result;
-
-    toast.success('Upload URL obtained. Starting upload...');
-    const { uploadUrl, s3Key, correlationId } = data.upload;
-
-    return { uploadUrl, key: s3Key, correlationId };
   }, []);
 
   const confirmUpload = useCallback(
     async (s3Key: string, correlationId: string) => {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/media/confirm-upload`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_TEST_TOKEN}`,
-          },
-          body: JSON.stringify({
-            s3Key,
-            correlationId,
-          }),
-        }
-      );
+      try {
+        const response = await api.post('/api/media/confirm-upload', {
+          s3Key,
+          correlationId,
+        });
 
-      if (!response.ok) {
+        const result = response.data;
+        console.log('Upload confirmed:', result);
+        toast.success('File uploaded and confirmed successfully!');
+        return result;
+      } catch (error) {
+        console.error('Failed to confirm upload:', error);
         toast.error('Failed to confirm upload. Please try again.');
-        throw new Error(`Confirmation failed with status ${response.status}`);
+        throw new Error('Failed to confirm upload');
       }
-
-      const result = await response.json();
-      console.log('Upload confirmed:', result);
-      toast.success('File uploaded and confirmed successfully!');
-      return result;
     },
     []
   );
@@ -189,7 +171,6 @@ const Dashboard: FC<DashboardProps> = ({
       if (!files || files.length === 0) return;
       setUploadError(null);
       setUploadedKey(null);
-      setCorrelationId(null);
       setProgress(0);
       const file = files[0];
       setUploadPhase('validating');
@@ -204,7 +185,6 @@ const Dashboard: FC<DashboardProps> = ({
         const { uploadUrl, key, correlationId } = await requestPresignedUrl(
           file
         );
-        setCorrelationId(correlationId);
         setUploadPhase('uploading');
         await uploadWithProgress(file, uploadUrl);
         setUploadPhase('confirming');

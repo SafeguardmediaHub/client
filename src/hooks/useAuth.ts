@@ -57,6 +57,10 @@ export const useLogin = () => {
       login(email, password),
     onSuccess: (response) => {
       queryClient.setQueryData(['user'], response.data.user);
+      try {
+        if (typeof window !== 'undefined')
+          window.localStorage?.setItem('hasSession', 'true');
+      } catch {}
       toast.success('Login successful');
     },
     onError: (error: any) => {
@@ -73,6 +77,10 @@ export const useLogout = () => {
     mutationFn: async () => logout(),
     onSuccess: () => {
       queryClient.removeQueries({ queryKey: ['user'] });
+      try {
+        if (typeof window !== 'undefined')
+          window.localStorage?.removeItem('hasSession');
+      } catch {}
       toast.success('Logout successful');
     },
     onError: (error: any) => {

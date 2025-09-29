@@ -10,20 +10,37 @@ interface AuthContextType {
   login: (email: string, password: string) => void;
   logout: () => void;
   isAuthenticated: boolean;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    api
-      .get('/api/users/me')
-      .then((res) => setUser(res.data.data.user))
-      .catch(() => setUser(null));
+    const initAuth = async () => {
+      const hasSession =
+        typeof window !== 'undefined' &&
+        window.localStorage?.getItem('hasSession') === 'true';
+      if (!hasSession) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const res = await api.get('/api/users/me');
+        setUser(res.data.data.user);
+      } catch (_) {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    initAuth();
   }, []);
-  const router = useRouter();
 
   const loginMutation = useLogin();
   const logoutMutation = useLogout();
@@ -36,9 +53,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(response.data.user);
           router.push('/dashboard');
         },
-        onError: () => {
-          // Error toast is handled by useLogin hook
-        },
       }
     );
   };
@@ -46,11 +60,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = () => {
     logoutMutation.mutate(undefined, {
       onSuccess: () => {
-        router.push('/auth/login');
         setUser(null);
-      },
-      onError: () => {
-        // Error toast is handled by useLogout hook
+        router.push('/auth/login');
       },
     });
   };
@@ -58,7 +69,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = !!user;
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated }}>
+    <AuthContext.Provider
+      value={{ user, login, logout, isAuthenticated, loading }}
+    >
       {children}
     </AuthContext.Provider>
   );
