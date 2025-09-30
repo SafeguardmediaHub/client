@@ -1,6 +1,7 @@
 'use client';
 
 import { LinkIcon, UploadIcon } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import type { FC } from 'react';
 import { useCallback, useId, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -41,6 +42,7 @@ const Dashboard: FC<DashboardProps> = ({
   onAnalyzeLink,
   onUploadSuccess,
 }) => {
+  const router = useRouter();
   const [url, setUrl] = useState('');
   const [uploadPhase, setUploadPhase] = useState<UploadPhase>('idle');
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -59,10 +61,17 @@ const Dashboard: FC<DashboardProps> = ({
     toast.info('Starting upload from URL...');
 
     setUrl('');
-    urlUploadMutation.mutate({
-      url,
-      uploadType: 'general_image',
-    });
+    urlUploadMutation.mutate(
+      {
+        url,
+        uploadType: 'general_image',
+      },
+      {
+        onSuccess: () => {
+          router.push('/dashboard/library');
+        },
+      }
+    );
   };
 
   const isBusy = useMemo(
@@ -192,6 +201,7 @@ const Dashboard: FC<DashboardProps> = ({
         setUploadPhase('success');
         setUploadedKey(key);
         onUploadSuccess?.(key);
+        router.push('/dashboard/library');
       } catch (err: unknown) {
         setUploadPhase('error');
         const message = err instanceof Error ? err.message : 'Upload failed';
@@ -204,6 +214,7 @@ const Dashboard: FC<DashboardProps> = ({
       uploadWithProgress,
       validateFile,
       confirmUpload,
+      router,
     ]
   );
 
@@ -335,9 +346,7 @@ const Dashboard: FC<DashboardProps> = ({
               )}
 
               {uploadPhase === 'success' && uploadedKey && (
-                <p className="text-sm text-green-600">
-                  Uploaded successfully. Key: {uploadedKey}
-                </p>
+                <p className="text-sm text-green-600">Uploaded successfully.</p>
               )}
               {uploadPhase === 'error' && uploadError && (
                 <p className="text-sm text-red-600">{uploadError}</p>

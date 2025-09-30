@@ -1,19 +1,14 @@
 /** biome-ignore-all lint/performance/noImgElement: <> */
-
 'use client';
 
 import {
   AlertCircleIcon,
-  DownloadIcon,
-  EyeIcon,
   FileIcon,
   FilterIcon,
-  ImageIcon,
   RefreshCwIcon,
   SearchIcon,
   Trash2,
   UploadIcon,
-  VideoIcon,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -31,7 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { type Media, useDeleteMedia, useGetMedia } from '@/hooks/useMedia';
-import { shortenFilename } from '@/lib/utils';
+import { shortenFilename, timeAgo } from '@/lib/utils';
 
 const LibraryPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -142,7 +137,7 @@ const LibraryPage = () => {
               <h2 className="text-xl font-medium text-black [font-family:'Avenir_LT_Pro-Medium',Helvetica] leading-[30px]">
                 Media Files
               </h2>
-              <div className="flex items-center gap-3">
+              {/* <div className="flex items-center gap-3">
                 <Button
                   variant="outline"
                   className="h-10 px-4 border-[#d9d9d9] hover:bg-gray-50 cursor-pointer"
@@ -163,7 +158,7 @@ const LibraryPage = () => {
                     Download ({selectedFiles.length})
                   </span>
                 </Button>
-              </div>
+              </div> */}
             </div>
 
             <div className="flex flex-col md:flex-row gap-4">
@@ -186,14 +181,14 @@ const LibraryPage = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="image">Images</SelectItem>
+                  <SelectItem value="general_image">Images</SelectItem>
                   <SelectItem value="video">Videos</SelectItem>
                   <SelectItem value="audio">Audio</SelectItem>
                   <SelectItem value="document">Documents</SelectItem>
                 </SelectContent>
               </Select>
 
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
+              {/* <Select value={filterStatus} onValueChange={setFilterStatus}>
                 <SelectTrigger className="w-full md:w-48 h-12 bg-[#f1f1f3] border-0">
                   <FilterIcon className="w-4 h-4 mr-2 text-[#5c5c5c]" />
                   <SelectValue placeholder="Filter by status" />
@@ -205,7 +200,7 @@ const LibraryPage = () => {
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="error">Error</SelectItem>
                 </SelectContent>
-              </Select>
+              </Select> */}
             </div>
           </div>
         </CardContent>
@@ -270,7 +265,7 @@ const LibraryPage = () => {
               <div className="w-full flex justify-between mt-4 px-4">
                 <p>{shortenFilename(file.filename)}</p>
                 <div className="flex gap-2 *:cursor-pointer">
-                  <EyeIcon className="text-blue-500" />
+                  {/* <EyeIcon className="text-blue-500" /> */}
                   <Trash2
                     className="text-red-500"
                     onClick={() => deleteMedia.mutate(file.id)}
@@ -278,7 +273,9 @@ const LibraryPage = () => {
                 </div>
               </div>
 
-              <p className="text-muted-foreground px-4">2 mins ago</p>
+              <p className="text-muted-foreground px-4">
+                {timeAgo(file.uploadedAt)}
+              </p>
             </div>
           ))}
       </div>
