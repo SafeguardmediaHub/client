@@ -77,7 +77,7 @@ const Dashboard: FC<DashboardProps> = ({
     urlUploadMutation.mutate(
       {
         url,
-        uploadType: 'general_image',
+        // uploadType: "general_image",
       },
       {
         onSuccess: () => {

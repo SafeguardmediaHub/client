@@ -70,17 +70,12 @@ const deleteMedia = async (id: string): Promise<DeleteMediaResponse> => {
   return data;
 };
 
-const urlUpload = async ({
-  url,
-  uploadType,
-}: {
-  url: string;
-  uploadType: 'video' | 'general_image';
-}) => {
+const urlUpload = async ({ url }: { url: string }) => {
   const { data } = await api.post(
     `/api/media/upload-url`,
-    { url, uploadType },
+    { url },
     {
+      withCredentials: true,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -119,13 +114,7 @@ export const useDeleteMedia = () => {
 export function useUrlUpload() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      url,
-      uploadType,
-    }: {
-      url: string;
-      uploadType: 'general_image' | 'video';
-    }) => urlUpload({ url, uploadType }),
+    mutationFn: ({ url }: { url: string }) => urlUpload({ url }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['userMedia'] });
       toast.success('Media uploaded successfully.');
