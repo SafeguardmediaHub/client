@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: <explanation> */
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -23,9 +24,9 @@ export function shortenFilename(
   return `${name.slice(0, keepStart)}...${name.slice(-keepEnd)}.${ext}`;
 }
 
-export function timeAgo(isoString) {
-  const date = new Date(isoString);
-  const now = new Date();
+export function timeAgo(isoString: string) {
+  const date: any = new Date(isoString);
+  const now: any = new Date();
   const seconds = Math.floor((now - date) / 1000);
 
   if (seconds < 60) return `${seconds} sec${seconds !== 1 ? 's' : ''} ago`;
