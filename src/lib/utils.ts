@@ -24,7 +24,7 @@ export function shortenFilename(
   return `${name.slice(0, keepStart)}...${name.slice(-keepEnd)}.${ext}`;
 }
 
-export function timeAgo(isoString: string) {
+export function timeAgo(isoString: Date) {
   const date: any = new Date(isoString);
   const now: any = new Date();
   const seconds = Math.floor((now - date) / 1000);
