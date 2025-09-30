@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -40,6 +40,12 @@ const LibraryPage = () => {
   const media = data?.media || [];
 
   const deleteMedia = useDeleteMedia();
+
+  // Ensure fresh data after navigation into this page (e.g., after uploads)
+  useEffect(() => {
+    // Fire and forget; errors are handled by query state
+    void refetch();
+  }, [refetch]);
 
   const getStatusColor = (status: Media['status']) => {
     switch (status) {
