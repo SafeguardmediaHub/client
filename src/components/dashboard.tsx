@@ -27,6 +27,8 @@ type UploadPhase =
   | 'success'
   | 'error';
 
+type UploadType = 'general_image' | 'video' | 'audio';
+
 type DashboardProps = {
   userName?: string;
   onAnalyzeLink?: (url: string) => void;
@@ -34,8 +36,19 @@ type DashboardProps = {
 };
 
 const MAX_BYTES = 1_000_000_000; // 1GB
-const ALLOWED_MIME_PREFIXES = ['image/', 'video/'];
-const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'mp4', 'mov'];
+const ALLOWED_MIME_PREFIXES = ['image/', 'video/', 'audio/'];
+const ALLOWED_EXTENSIONS = [
+  'jpg',
+  'jpeg',
+  'png',
+  'mp4',
+  'mov',
+  'mp3',
+  'wav',
+  'm4a',
+  'aac',
+  'ogg',
+];
 
 const Dashboard: FC<DashboardProps> = ({
   userName = 'there',
@@ -93,33 +106,48 @@ const Dashboard: FC<DashboardProps> = ({
       file.type.startsWith(p)
     );
     if (!isAllowedExt && !isAllowedMime) {
-      return 'Unsupported file type. Use JPEG, PNG, MP4, or MOV.';
+      return 'Unsupported file type. Use JPEG, PNG, MP4, MOV, or common audio (MP3, WAV, M4A, AAC, OGG).';
     }
     return null;
   }, []);
 
-  const requestPresignedUrl = useCallback(async (file: File) => {
-    try {
-      const response = await api.post('/api/media/presigned-url', {
-        filename: file.name,
-        contentType: file.type,
-        fileSize: file.size,
-        uploadType: 'general_image',
-      });
-
-      const result = response.data;
-      const { data } = result;
-
-      toast.success('Upload URL obtained. Starting upload...');
-      const { uploadUrl, s3Key, correlationId } = data.upload;
-
-      return { uploadUrl, key: s3Key, correlationId };
-    } catch (error) {
-      console.error('Failed to get presigned URL:', error);
-      toast.error('Failed to get upload URL. Please try again.');
-      throw new Error('Failed to get upload URL');
-    }
+  const determineUploadType = useCallback((file: File): UploadType => {
+    if (file.type.startsWith('image/')) return 'general_image';
+    if (file.type.startsWith('video/')) return 'video';
+    if (file.type.startsWith('audio/')) return 'audio';
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+    if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext))
+      return 'general_image';
+    if (['mp4', 'mov', 'avi', 'mkv', 'webm'].includes(ext)) return 'video';
+    if (['mp3', 'wav', 'm4a', 'aac', 'ogg'].includes(ext)) return 'audio';
+    return 'general_image';
   }, []);
+
+  const requestPresignedUrl = useCallback(
+    async (file: File, uploadType: UploadType) => {
+      try {
+        const response = await api.post('/api/media/presigned-url', {
+          filename: file.name,
+          contentType: file.type,
+          fileSize: file.size,
+          uploadType,
+        });
+
+        const result = response.data;
+        const { data } = result;
+
+        toast.success('Upload URL obtained. Starting upload...');
+        const { uploadUrl, s3Key, correlationId } = data.upload;
+
+        return { uploadUrl, key: s3Key, correlationId };
+      } catch (error) {
+        console.error('Failed to get presigned URL:', error);
+        toast.error('Failed to get upload URL. Please try again.');
+        throw new Error('Failed to get upload URL');
+      }
+    },
+    []
+  );
 
   const confirmUpload = useCallback(
     async (s3Key: string, correlationId: string) => {
@@ -191,8 +219,10 @@ const Dashboard: FC<DashboardProps> = ({
       }
       try {
         setUploadPhase('requesting_url');
+        const uploadType = determineUploadType(file);
         const { uploadUrl, key, correlationId } = await requestPresignedUrl(
-          file
+          file,
+          uploadType
         );
         setUploadPhase('uploading');
         await uploadWithProgress(file, uploadUrl);
@@ -214,6 +244,7 @@ const Dashboard: FC<DashboardProps> = ({
       uploadWithProgress,
       validateFile,
       confirmUpload,
+      determineUploadType,
       router,
     ]
   );
@@ -316,7 +347,7 @@ const Dashboard: FC<DashboardProps> = ({
                   Drag and drop to upload or click to browse files
                 </p>
                 <p className="text-sm text-primary text-center">
-                  Supports JPEG, PNG, MP4, MOV (Max file size 1GB)
+                  Supports JPEG, PNG, MP4, MOV and common audio (Max 1GB)
                 </p>
               </div>
 
@@ -364,8 +395,14 @@ const Dashboard: FC<DashboardProps> = ({
                   '.png',
                   '.mp4',
                   '.mov',
+                  '.mp3',
+                  '.wav',
+                  '.m4a',
+                  '.aac',
+                  '.ogg',
                   'image/*',
                   'video/*',
+                  'audio/*',
                 ].join(',')}
                 disabled={isBusy}
               />
