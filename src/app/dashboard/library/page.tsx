@@ -270,7 +270,7 @@ const LibraryPage = () => {
       {/* grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {isLoading &&
-          Array.from({ length: 8 }).map((_, index) => (
+          Array.from({ length: 8 }).map((_) => (
             <div
               className="flex flex-col gap-1 border border-gray-200 rounded-md pb-6 shadow-md animate-pulse"
               key={crypto.randomUUID?.() ?? Math.random().toString(36)}
