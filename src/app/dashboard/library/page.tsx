@@ -11,6 +11,7 @@ import {
   FileTextIcon,
   FilterIcon,
   HardDriveIcon,
+  PlayIcon,
   RefreshCwIcon,
   SearchIcon,
   ShieldIcon,
@@ -401,14 +402,51 @@ const LibraryPage = () => {
                     ratio={16 / 9}
                     className="bg-muted rounded-lg overflow-hidden"
                   >
-                    <Image
-                      src={
-                        selectedMedia.thumbnailUrl || selectedMedia.publicUrl
-                      }
-                      alt={selectedMedia.filename}
-                      fill
-                      className="object-cover"
-                    />
+                    {selectedMedia.uploadType === 'general_image' ? (
+                      <Image
+                        src={selectedMedia.publicUrl}
+                        alt={selectedMedia.filename}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : selectedMedia.uploadType === 'video' ? (
+                      <video
+                        src={selectedMedia.publicUrl}
+                        controls
+                        className="w-full h-full object-cover"
+                        preload="metadata"
+                      >
+                        <track kind="captions" />
+                        Your browser does not support the video tag.
+                      </video>
+                    ) : selectedMedia.uploadType === 'audio' ? (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                        <div className="text-center space-y-4">
+                          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+                            <PlayIcon className="w-8 h-8 text-blue-600" />
+                          </div>
+                          <div className="space-y-2">
+                            <audio
+                              src={selectedMedia.publicUrl}
+                              controls
+                              className="w-full max-w-xs  min-w-[400px]"
+                            >
+                              <track kind="captions" />
+                              Your browser does not support the audio element.
+                            </audio>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                        <div className="text-center space-y-2">
+                          <FileIcon className="w-12 h-12 text-gray-400 mx-auto" />
+                          <p className="text-sm text-gray-600">
+                            Preview not available for this file type
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </AspectRatio>
                   <div className="absolute top-3 right-3">
                     <Badge
