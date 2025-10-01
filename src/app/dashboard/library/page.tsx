@@ -3,12 +3,20 @@
 
 import {
   AlertCircleIcon,
+  AlertTriangleIcon,
+  CalendarIcon,
+  CheckCircleIcon,
+  EyeIcon,
   FileIcon,
+  FileTextIcon,
   FilterIcon,
+  HardDriveIcon,
   RefreshCwIcon,
   SearchIcon,
+  ShieldIcon,
   Trash2,
   UploadIcon,
+  ZapIcon,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -25,15 +33,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import { type Media, useDeleteMedia, useGetMedia } from '@/hooks/useMedia';
 import { shortenFilename, timeAgo } from '@/lib/utils';
 
 const LibraryPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [selectedAnalysisType, setSelectedAnalysisType] = useState<string>('');
 
   const { data, isError, isLoading, refetch } = useGetMedia();
 
@@ -41,11 +56,79 @@ const LibraryPage = () => {
 
   const deleteMedia = useDeleteMedia();
 
+  // Analysis types available for media files
+  const analysisTypes = [
+    {
+      id: 'deepfake',
+      name: 'Deepfake Detection',
+      description: 'Detect AI-generated or manipulated content',
+      icon: ShieldIcon,
+    },
+    {
+      id: 'authenticity',
+      name: 'Authenticity Check',
+      description: 'Verify if content is original and unmodified',
+      icon: CheckCircleIcon,
+    },
+    {
+      id: 'manipulation',
+      name: 'Manipulation Detection',
+      description: 'Identify edited or altered media',
+      icon: AlertTriangleIcon,
+    },
+    {
+      id: 'face-swap',
+      name: 'Face Swap Detection',
+      description: 'Detect facial manipulation and swapping',
+      icon: ZapIcon,
+    },
+  ];
+
   // Ensure fresh data after navigation into this page (e.g., after uploads)
   useEffect(() => {
     // Fire and forget; errors are handled by query state
     void refetch();
   }, [refetch]);
+
+  const handleMediaClick = (media: Media) => {
+    setSelectedMedia(media);
+    setIsSheetOpen(true);
+    setSelectedAnalysisType('');
+  };
+
+  const handleAnalysisStart = () => {
+    if (!selectedMedia || !selectedAnalysisType) return;
+
+    // TODO: Implement analysis API call
+    console.log('Starting analysis:', {
+      mediaId: selectedMedia.id,
+      analysisType: selectedAnalysisType,
+    });
+
+    // Close sheet after starting analysis
+    setIsSheetOpen(false);
+    setSelectedMedia(null);
+    setSelectedAnalysisType('');
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Number.parseFloat((bytes / k ** i).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const getMediaTypeIcon = (uploadType: string) => {
+    switch (uploadType) {
+      case 'video':
+        return <FileTextIcon className="w-4 h-4" />;
+      case 'audio':
+        return <HardDriveIcon className="w-4 h-4" />;
+      default:
+        return <FileIcon className="w-4 h-4" />;
+    }
+  };
 
   const getStatusColor = (status: Media['status']) => {
     switch (status) {
@@ -83,15 +166,12 @@ const LibraryPage = () => {
   const filteredFiles = media.filter((file) => {
     const matchesSearch =
       file.filename.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (file.metadata.tags &&
-        file.metadata.tags.some((tag: string) =>
-          tag.toLowerCase().includes(searchQuery.toLowerCase())
-        ));
+      file.metadata?.tags?.some((tag: string) =>
+        tag.toLowerCase().includes(searchQuery.toLowerCase())
+      );
     const matchesType = filterType === 'all' || file.uploadType === filterType;
-    const matchesStatus =
-      filterStatus === 'all' || file.status === filterStatus;
 
-    return matchesSearch && matchesType && matchesStatus;
+    return matchesSearch && matchesType;
   });
 
   // const handleSelectFile = (fileId: string) => {
@@ -101,14 +181,6 @@ const LibraryPage = () => {
   //       : [...prev, fileId]
   //   );
   // };
-
-  const handleSelectAll = () => {
-    if (selectedFiles.length === filteredFiles.length) {
-      setSelectedFiles([]);
-    } else {
-      setSelectedFiles(filteredFiles.map((f) => f.id));
-    }
-  };
 
   return (
     <div className="w-full flex flex-col gap-6 p-8">
@@ -271,9 +343,12 @@ const LibraryPage = () => {
               <div className="w-full flex justify-between mt-4 px-4">
                 <p>{shortenFilename(file.filename)}</p>
                 <div className="flex gap-2 *:cursor-pointer">
-                  {/* <EyeIcon className="text-blue-500" /> */}
+                  <EyeIcon
+                    className="text-blue-500 hover:text-blue-600 transition-colors"
+                    onClick={() => handleMediaClick(file)}
+                  />
                   <Trash2
-                    className="text-red-500"
+                    className="text-red-500 hover:text-red-600 transition-colors"
                     onClick={() => deleteMedia.mutate(file.id)}
                   />
                 </div>
@@ -320,6 +395,175 @@ const LibraryPage = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Media Preview Sheet */}
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent className="w-full sm:max-w-2xl overflow-y-auto pb-8">
+          {selectedMedia && (
+            <div className="space-y-6">
+              {/* Header */}
+              <SheetHeader>
+                <SheetTitle className="text-xl font-semibold flex items-center gap-2">
+                  {getMediaTypeIcon(selectedMedia.uploadType)}
+                  {selectedMedia.filename}
+                </SheetTitle>
+                <SheetDescription>
+                  Media file details and analysis options
+                </SheetDescription>
+              </SheetHeader>
+
+              {/* Media Preview */}
+              <div className="space-y-4 px-4">
+                <div className="relative">
+                  <AspectRatio
+                    ratio={16 / 9}
+                    className="bg-muted rounded-lg overflow-hidden"
+                  >
+                    <Image
+                      src={
+                        selectedMedia.thumbnailUrl || selectedMedia.publicUrl
+                      }
+                      alt={selectedMedia.filename}
+                      fill
+                      className="object-cover"
+                    />
+                  </AspectRatio>
+                  <div className="absolute top-3 right-3">
+                    <Badge
+                      className={`px-3 py-1 text-xs rounded-full border ${getStatusColor(
+                        selectedMedia.status
+                      )} flex-shrink-0`}
+                    >
+                      {selectedMedia.status.charAt(0).toUpperCase() +
+                        selectedMedia.status.slice(1)}
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Media Information */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-sm">
+                      <FileTextIcon className="w-4 h-4 text-gray-500" />
+                      <span className="font-medium">File Name:</span>
+                      <span className="text-gray-700">
+                        {selectedMedia.filename}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <HardDriveIcon className="w-4 h-4 text-gray-500" />
+                      <span className="font-medium">File Size:</span>
+                      <span className="text-gray-700">
+                        {formatFileSize(selectedMedia.metadata?.fileSize || 0)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <CalendarIcon className="w-4 h-4 text-gray-500" />
+                      <span className="font-medium">Uploaded:</span>
+                      <span className="text-gray-700">
+                        {timeAgo(selectedMedia.uploadedAt)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="font-medium">Type:</span>
+                      <Badge variant="outline" className="text-xs">
+                        {selectedMedia.uploadType
+                          .replace('_', ' ')
+                          .toUpperCase()}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="font-medium">MIME Type:</span>
+                      <span className="text-gray-700">
+                        {selectedMedia.mimeType}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="font-medium">Visibility:</span>
+                      <Badge variant="outline" className="text-xs capitalize">
+                        {selectedMedia.visibility}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Analysis Selection */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <ShieldIcon className="w-5 h-5 text-blue-600" />
+                    <h3 className="text-lg font-semibold">Analysis Options</h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3">
+                    {analysisTypes.map((analysis) => {
+                      const IconComponent = analysis.icon;
+                      const isSelected = selectedAnalysisType === analysis.id;
+
+                      return (
+                        <button
+                          key={analysis.id}
+                          type="button"
+                          className={`w-full p-4 rounded-lg border-2 cursor-pointer transition-all text-left ${
+                            isSelected
+                              ? 'border-blue-500 bg-blue-50'
+                              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                          }`}
+                          onClick={() => setSelectedAnalysisType(analysis.id)}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div
+                              className={`p-2 rounded-lg ${
+                                isSelected
+                                  ? 'bg-blue-100 text-blue-600'
+                                  : 'bg-gray-100 text-gray-600'
+                              }`}
+                            >
+                              <IconComponent className="w-5 h-5" />
+                            </div>
+                            <div className="flex-1">
+                              <h4
+                                className={`font-medium ${
+                                  isSelected ? 'text-blue-900' : 'text-gray-900'
+                                }`}
+                              >
+                                {analysis.name}
+                              </h4>
+                              <p
+                                className={`text-sm ${
+                                  isSelected ? 'text-blue-700' : 'text-gray-600'
+                                }`}
+                              >
+                                {analysis.description}
+                              </p>
+                            </div>
+                            {isSelected && (
+                              <CheckCircleIcon className="w-5 h-5 text-blue-600" />
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Action Button */}
+                  <div className="pt-4 border-t">
+                    <Button
+                      onClick={handleAnalysisStart}
+                      disabled={!selectedAnalysisType}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      <ZapIcon className="w-4 h-4 mr-2" />
+                      Start Analysis
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
