@@ -41,7 +41,12 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { type Media, useDeleteMedia, useGetMedia } from '@/hooks/useMedia';
-import { shortenFilename, timeAgo } from '@/lib/utils';
+import {
+  formatFileSize,
+  getStatusColor,
+  shortenFilename,
+  timeAgo,
+} from '@/lib/utils';
 
 const LibraryPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -111,14 +116,6 @@ const LibraryPage = () => {
     setSelectedAnalysisType('');
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Number.parseFloat((bytes / k ** i).toFixed(2)) + ' ' + sizes[i];
-  };
-
   const getMediaTypeIcon = (uploadType: string) => {
     switch (uploadType) {
       case 'video':
@@ -127,21 +124,6 @@ const LibraryPage = () => {
         return <HardDriveIcon className="w-4 h-4" />;
       default:
         return <FileIcon className="w-4 h-4" />;
-    }
-  };
-
-  const getStatusColor = (status: Media['status']) => {
-    switch (status) {
-      case 'analyzed':
-        return 'bg-[#e1feea] border-[#049d35] text-[#049d35]';
-      case 'processing':
-        return 'bg-[#fdfbe1] border-[#d5c70a] text-[#d5c70a]';
-      case 'error':
-        return 'bg-[#fee1e1] border-[#d50a0a] text-[#d50a0a]';
-      case 'pending':
-        return 'bg-[#e1f0fe] border-[#0a7bd5] text-[#0a7bd5]';
-      default:
-        return 'bg-gray-100 border-gray-400 text-gray-600';
     }
   };
 
@@ -447,14 +429,14 @@ const LibraryPage = () => {
                       <FileTextIcon className="w-4 h-4 text-gray-500" />
                       <span className="font-medium">File Name:</span>
                       <span className="text-gray-700">
-                        {selectedMedia.filename}
+                        {shortenFilename(selectedMedia.filename)}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <HardDriveIcon className="w-4 h-4 text-gray-500" />
                       <span className="font-medium">File Size:</span>
                       <span className="text-gray-700">
-                        {formatFileSize(selectedMedia.metadata?.fileSize || 0)}
+                        {formatFileSize(Number(selectedMedia.fileSize))}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">

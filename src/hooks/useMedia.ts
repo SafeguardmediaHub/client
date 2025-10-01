@@ -13,6 +13,7 @@ import api from '@/lib/api';
 export interface Media {
   id: string;
   filename: string;
+  fileSize: string;
   mimeType: string;
   uploadType: string;
   status: string;
