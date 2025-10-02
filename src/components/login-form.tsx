@@ -1,11 +1,14 @@
 'use client';
 
+import { Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/context/AuthContext';
+import { useLogin } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
 export function LoginForm({
@@ -14,8 +17,9 @@ export function LoginForm({
 }: React.ComponentProps<'form'>) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const router = useRouter();
 
-  const { login } = useAuth();
+  const loginMutation = useLogin();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +29,14 @@ export function LoginForm({
       return;
     }
 
-    login(email, password);
+    loginMutation.mutate(
+      { email, password },
+      {
+        onSuccess: (response) => {
+          router.push('/dashboard');
+        },
+      }
+    );
   };
 
   return (
@@ -50,6 +61,7 @@ export function LoginForm({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            disabled={loginMutation.isPending}
           />
         </div>
         <div className="grid gap-3">
@@ -68,13 +80,22 @@ export function LoginForm({
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={loginMutation.isPending}
           />
         </div>
         <Button
           type="submit"
           className="w-full cursor-pointer hover:bg-blue-600"
+          disabled={loginMutation.isPending}
         >
-          Login
+          {loginMutation.isPending ? (
+            <>
+              <Loader2 className="size-4 animate-spin" />
+              Signing in...
+            </>
+          ) : (
+            'Login'
+          )}
         </Button>
         <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
           <span className="bg-background text-muted-foreground relative z-10 px-2">
