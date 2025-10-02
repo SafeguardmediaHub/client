@@ -1,7 +1,9 @@
 'use client';
 
-import { BellIcon, ChevronDownIcon, SettingsIcon, User2 } from 'lucide-react';
+import { BellIcon } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+
+import { NavDropdown } from './nav-dropdown';
 import { SearchForm } from './search-form';
 import {
   Breadcrumb,
@@ -41,15 +43,8 @@ const AppNavbar = () => {
       <div className="hidden sm:inline-flex items-center justify-end gap-6 relative flex-[0_0_auto]">
         <BellIcon className="relative w-5 h-5 text-[#5c5c5c]" />
 
-        <SettingsIcon className="relative w-5 h-5 text-[#5c5c5c]" />
-
         <div className="inline-flex items-center justify-end gap-2 relative flex-[0_0_auto]">
-          <User2 className="w-5 h-5" />
-          <div className="relative w-fit font-paragraph-medium-medium font-[number:var(--paragraph-medium-medium-font-weight)] text-black text-[length:var(--paragraph-medium-medium-font-size)] text-center tracking-[var(--paragraph-medium-medium-letter-spacing)] leading-[var(--paragraph-medium-medium-line-height)] whitespace-nowrap [font-style:var(--paragraph-medium-medium-font-style)]">
-            {user?.firstName}
-          </div>
-
-          <ChevronDownIcon className="relative w-[18px] h-[18px] text-muted-foreground" />
+          <NavDropdown name={user?.firstName} />
         </div>
       </div>
     </header>
