@@ -314,7 +314,11 @@ const LibraryPage = () => {
               key={file.id}
             >
               <div className="relative">
-                <AspectRatio ratio={16 / 9} className="bg-muted cursor-pointer">
+                <AspectRatio
+                  ratio={16 / 9}
+                  className="bg-muted cursor-pointer"
+                  onClick={() => handleMediaClick(file)}
+                >
                   {file.uploadType === 'video' ? (
                     <Image
                       src={
