@@ -1,6 +1,6 @@
 'use client';
 
-import { LinkIcon, UploadIcon } from 'lucide-react';
+import { LinkIcon, Loader2, UploadIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { FC } from 'react';
 import { useCallback, useId, useMemo, useRef, useState } from 'react';
@@ -92,8 +92,9 @@ const Dashboard: FC<DashboardProps> = ({
       uploadPhase === 'validating' ||
       uploadPhase === 'requesting_url' ||
       uploadPhase === 'uploading' ||
-      uploadPhase === 'confirming',
-    [uploadPhase]
+      uploadPhase === 'confirming' ||
+      urlUploadMutation.isPending,
+    [uploadPhase, urlUploadMutation.isPending]
   );
 
   const validateFile = useCallback((file: File) => {
@@ -318,7 +319,14 @@ const Dashboard: FC<DashboardProps> = ({
               disabled={isBusy}
               onClick={handleUpload}
             >
-              Upload Media
+              {isBusy ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                'Upload Media'
+              )}
             </Button>
           </form>
 
