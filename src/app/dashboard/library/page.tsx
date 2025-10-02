@@ -3,14 +3,15 @@
 
 import {
   AlertCircleIcon,
-  AlertTriangleIcon,
   CalendarIcon,
   CheckCircleIcon,
   EyeIcon,
   FileIcon,
   FileTextIcon,
+  FilmIcon,
   FilterIcon,
   HardDriveIcon,
+  MapPinIcon,
   PlayIcon,
   RefreshCwIcon,
   SearchIcon,
@@ -70,7 +71,6 @@ const LibraryPage = () => {
 
   const deleteMedia = useDeleteMedia();
 
-  // Analysis types available for media files
   const analysisTypes = [
     {
       id: 'deepfake',
@@ -79,22 +79,23 @@ const LibraryPage = () => {
       icon: ShieldIcon,
     },
     {
-      id: 'authenticity',
-      name: 'Authenticity Check',
-      description: 'Verify if content is original and unmodified',
-      icon: CheckCircleIcon,
+      id: 'geolocation',
+      name: 'Geolocation Verification',
+      description:
+        'Verify where the media was captured using metadata and context clues',
+      icon: MapPinIcon,
     },
     {
-      id: 'manipulation',
-      name: 'Manipulation Detection',
-      description: 'Identify edited or altered media',
-      icon: AlertTriangleIcon,
+      id: 'keyframe',
+      name: 'Keyframe Extraction',
+      description: 'Extract significant frames from video for deeper analysis',
+      icon: FilmIcon,
     },
     {
-      id: 'face-swap',
-      name: 'Face Swap Detection',
-      description: 'Detect facial manipulation and swapping',
-      icon: ZapIcon,
+      id: 'reverse-lookup',
+      name: 'Reverse Lookup',
+      description: 'Find matching or similar content across the web',
+      icon: SearchIcon,
     },
   ];
 
@@ -426,7 +427,6 @@ const LibraryPage = () => {
         <SheetContent className="w-full sm:max-w-2xl overflow-y-auto pb-8">
           {selectedMedia && (
             <div className="space-y-6">
-              {/* Header */}
               <SheetHeader>
                 <SheetTitle className="text-xl font-semibold flex items-center gap-2">
                   {getMediaTypeIcon(selectedMedia.uploadType)}
@@ -437,7 +437,6 @@ const LibraryPage = () => {
                 </SheetDescription>
               </SheetHeader>
 
-              {/* Media Preview */}
               <div className="space-y-4 px-4">
                 <div className="relative">
                   <AspectRatio

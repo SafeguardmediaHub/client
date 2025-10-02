@@ -1,6 +1,23 @@
 'use client';
 
-import { Command, Frame, Map, PieChart } from 'lucide-react';
+import {
+  BookCheck,
+  BookOpen,
+  CalendarClock,
+  Command,
+  FileBarChart,
+  FileText,
+  Film,
+  Frame,
+  LayoutDashboard,
+  MapPin,
+  Scissors,
+  Search,
+  SearchCheck,
+  Share2,
+  ShieldAlert,
+  Users,
+} from 'lucide-react';
 import type * as React from 'react';
 import {
   Sidebar,
@@ -21,104 +38,91 @@ const data = {
     email: 'm@example.com',
     avatar: '/avatars/shadcn.jpg',
   },
-  projects: [
-    {
-      name: 'Design Engineering',
-      url: '#',
-      icon: Frame,
-    },
-    {
-      name: 'Sales & Marketing',
-      url: '#',
-      icon: PieChart,
-    },
-    {
-      name: 'Travel',
-      url: '#',
-      icon: Map,
-    },
-  ],
+
   overview: [
     {
       name: 'Dashboard',
       url: '/dashboard',
-      icon: Frame,
+      icon: LayoutDashboard,
     },
     {
       name: 'Library',
       url: '/dashboard/library',
-      icon: PieChart,
+      icon: BookOpen,
     },
   ],
+
   detection: [
     {
       name: 'Deepfake Detection',
       url: '#',
-      icon: Frame,
+      icon: Frame, // still a good fit: "framing" faces/content
     },
     {
       name: 'Cheapfake Detection',
       url: '#',
-      icon: PieChart,
+      icon: Film,
     },
     {
       name: 'Visual Forensics',
       url: '#',
-      icon: Map,
+      icon: Search,
     },
     {
       name: 'Tamper Detection',
       url: '#',
-      icon: Map,
+      icon: ShieldAlert,
     },
     {
       name: 'Keyframe Extraction',
       url: '#',
-      icon: Map,
+      icon: Scissors,
     },
   ],
+
   verification: [
     {
       name: 'Reverse Lookup',
       url: '#',
-      icon: Frame,
+      icon: SearchCheck,
     },
     {
       name: 'Geolocation Verification',
       url: '#',
-      icon: PieChart,
+      icon: MapPin,
     },
     {
       name: 'Timeline Verification',
       url: '#',
-      icon: Map,
+      icon: CalendarClock,
     },
     {
       name: 'Text Extraction (OCR)',
       url: '#',
-      icon: Map,
+      icon: FileText,
     },
     {
       name: 'Fact Checking',
       url: '#',
-      icon: Map,
+      icon: BookCheck,
     },
     {
       name: 'Social Media Source Tracing',
       url: '#',
-      icon: Map,
+      icon: Share2,
     },
   ],
+
   reporting: [
     {
       name: 'Reports Generation',
       url: '/dashboard/reporting',
-      icon: Frame,
+      icon: FileBarChart,
     },
     {
       name: 'Team Collaboration',
       url: '#',
-      icon: PieChart,
+      icon: Users,
     },
   ],
 };
