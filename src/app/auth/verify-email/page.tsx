@@ -8,8 +8,9 @@ import {
   Mail,
   XCircle,
 } from 'lucide-react';
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,7 +23,7 @@ type VerificationState =
   | 'no-token'
   | 'request-email';
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [verificationState, setVerificationState] =
@@ -30,7 +31,7 @@ export default function VerifyEmailPage() {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [emailError, setEmailError] = useState<string>('');
-  const { mutate: verifyEmail, isPending } = useVerifyEmail();
+  const { mutate: verifyEmail } = useVerifyEmail();
   const { mutate: resendVerification, isPending: isResending } =
     useResendVerificationEmail();
 
@@ -51,12 +52,24 @@ export default function VerifyEmailPage() {
           router.push('/auth/login');
         }, 3000);
       },
-      onError: (error: any) => {
+      onError: (error: unknown) => {
         setVerificationState('error');
-        setErrorMessage(
-          error?.response?.data?.message ||
-            'Email verification failed. The link may be invalid or expired.'
-        );
+        let message =
+          'Email verification failed. The link may be invalid or expired.';
+        if (
+          typeof error === 'object' &&
+          error !== null &&
+          // @ts-expect-error narrow runtime shape safely
+          error.response &&
+          // @ts-expect-error narrow runtime shape safely
+          error.response.data &&
+          // @ts-expect-error narrow runtime shape safely
+          typeof error.response.data.message === 'string'
+        ) {
+          // @ts-expect-error see guards above
+          message = error.response.data.message as string;
+        }
+        setErrorMessage(message);
       },
     });
   }, [searchParams, verifyEmail, router]);
@@ -97,11 +110,22 @@ export default function VerifyEmailPage() {
           router.push('/auth/login');
         }, 3000);
       },
-      onError: (error: any) => {
-        setErrorMessage(
-          error?.response?.data?.message ||
-            'Failed to send verification email. Please try again.'
-        );
+      onError: (error: unknown) => {
+        let message = 'Failed to send verification email. Please try again.';
+        if (
+          typeof error === 'object' &&
+          error !== null &&
+          // @ts-expect-error narrow runtime shape safely
+          error.response &&
+          // @ts-expect-error narrow runtime shape safely
+          error.response.data &&
+          // @ts-expect-error narrow runtime shape safely
+          typeof error.response.data.message === 'string'
+        ) {
+          // @ts-expect-error see guards above
+          message = error.response.data.message as string;
+        }
+        setErrorMessage(message);
       },
     });
   };
@@ -351,12 +375,42 @@ export default function VerifyEmailPage() {
       </div>
 
       <div className="bg-muted relative hidden lg:block">
-        <img
+        <Image
           src="https://plus.unsplash.com/premium_photo-1680608979589-e9349ed066d5?q=80&w=764&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
           alt="Email verification"
-          className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+          fill
+          unoptimized
+          className="absolute inset-0 object-cover dark:brightness-[0.2] dark:grayscale"
+          priority
         />
       </div>
     </div>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="grid min-h-svh lg:grid-cols-2">
+          <div className="flex flex-col gap-4 p-6 md:p-10">
+            <div className="flex flex-1 items-center justify-center">
+              <div className="w-full max-w-md">
+                <div className="flex flex-col gap-6 text-center">
+                  <div className="flex justify-center">
+                    <div className="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-full">
+                      <Loader2 className="size-12 text-blue-600 dark:text-blue-400 animate-spin" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="bg-muted relative hidden lg:block" />
+        </div>
+      }
+    >
+      <VerifyEmailContent />
+    </Suspense>
   );
 }
