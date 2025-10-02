@@ -1,4 +1,9 @@
-import type { LoginResponse, RegisterResponse } from '@/hooks/useAuth';
+import type {
+  LoginResponse,
+  RegisterResponse,
+  ResendEmailVerificationResponse,
+  verifyEmailSuccessResponse,
+} from '@/hooks/useAuth';
 import api from '../api';
 
 export const login = async (
@@ -43,4 +48,30 @@ export const refreshToken = async () => {
     { withCredentials: true }
   );
   return data;
+};
+
+export const verifyEmail = async (
+  token: string
+): Promise<verifyEmailSuccessResponse> => {
+  const response = await api.post(
+    '/api/auth/verify-email',
+    {
+      token,
+    },
+    { headers: { 'Content-Type': 'application/json' } }
+  );
+
+  return response.data as verifyEmailSuccessResponse;
+};
+
+export const requestVerificationEmail = async (
+  email: string
+): Promise<ResendEmailVerificationResponse> => {
+  const response = await api.post(
+    '/api/auth/resend-verification',
+    { email },
+    { headers: { 'Content-Type': 'application/json' } }
+  );
+
+  return response.data as ResendEmailVerificationResponse;
 };

@@ -1,7 +1,14 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: <> */
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { use } from 'react';
 import { toast } from 'sonner';
-import { login, logout, register } from '@/lib/api/auth';
+import {
+  login,
+  logout,
+  register,
+  requestVerificationEmail,
+  verifyEmail,
+} from '@/lib/api/auth';
 
 export interface User {
   id: string;
@@ -47,6 +54,29 @@ export type RegisterResponse = {
     | 'banned'
     | 'pending_verfication';
   emailverfied: boolean;
+};
+
+export type verifyEmailSuccessResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    user: {
+      id: string;
+      email: string;
+      emailVerified: boolean;
+      accountStatus:
+        | 'active'
+        | 'inactive'
+        | 'suspended'
+        | 'banned'
+        | 'pending_verfication';
+    };
+  };
+};
+
+export type ResendEmailVerificationResponse = {
+  success: boolean;
+  message: string;
 };
 
 export const useLogin = () => {
@@ -112,6 +142,50 @@ export const useRegister = () => {
     onError: (error: any) => {
       console.error('Registration error:', error);
       toast.error(error?.response?.data?.message || 'Registration failed');
+    },
+  });
+};
+
+export const useVerifyEmail = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (token: string) => verifyEmail(token),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+      toast.success('Email verified successfully. You can now log in.');
+      return data;
+    },
+    onError: (error: any) => {
+      console.error('Email verification error:', error);
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        'Email verification failed. Please try again.';
+      toast.error(errorMessage);
+      throw error;
+    },
+  });
+};
+
+export const useResendVerificationEmail = () => {
+  const qeryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (email: string) => requestVerificationEmail(email),
+    onSuccess: (data) => {
+      qeryClient.invalidateQueries({ queryKey: ['user'] });
+      toast.success(data.message || 'Verification email sent successfully.');
+      return data;
+    },
+    onError: (error: any) => {
+      console.error('Resend verification email error:', error);
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        'Failed to resend verification email. Please try again.';
+      toast.error(errorMessage);
+      throw error;
     },
   });
 };
