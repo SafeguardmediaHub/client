@@ -17,6 +17,8 @@ export default function Protected({
   const router = useRouter();
   const pathname = usePathname();
 
+  console.log('Protected:', { isAuthenticated, loading, pathname });
+
   useEffect(() => {
     if (loading) return;
     if (!isAuthenticated) {
