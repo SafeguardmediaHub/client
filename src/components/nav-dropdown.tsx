@@ -1,5 +1,6 @@
 import { UserCircle2 } from 'lucide-react';
-
+import { toast } from 'sonner';
+import { useLogout } from '@/hooks/useAuth';
 import { Button } from './ui/button';
 import {
   DropdownMenu,
@@ -13,6 +14,19 @@ import {
 } from './ui/dropdown-menu';
 
 export function NavDropdown({ name }: { name?: string }) {
+  const logoutMutation = useLogout();
+
+  const handleLogout = () => {
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        window.location.href = '/auth/login';
+        toast.success('Logout successful');
+      },
+      onError: (_error) => {
+        toast.error('Logout failed. Please try again.');
+      },
+    });
+  };
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -42,7 +56,7 @@ export function NavDropdown({ name }: { name?: string }) {
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem>
+        <DropdownMenuItem variant="destructive" onSelect={handleLogout}>
           Log out
           <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
         </DropdownMenuItem>
