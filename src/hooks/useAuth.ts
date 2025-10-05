@@ -138,6 +138,8 @@ export const useRegister = () => {
     onSuccess: (data) => {
       queryClient.setQueryData(['user'], data);
       toast.success('Registration successful. Please verify your email.');
+      // navigate to login
+      window.location.href = '/auth/login';
     },
     onError: (error: any) => {
       console.error('Registration error:', error);
