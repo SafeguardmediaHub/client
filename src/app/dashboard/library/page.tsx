@@ -320,12 +320,13 @@ const LibraryPage = () => {
                   className="bg-muted cursor-pointer"
                   onClick={() => handleMediaClick(file)}
                 >
-                  {file.uploadType === 'video' ? (
+                  {file.uploadType === 'video' ||
+                  file.uploadType === 'audio' ? (
                     <Image
                       src={
                         thumbnailErrorMap[file.id]
-                          ? '/file.svg'
-                          : file.thumbnailUrl || '/file.svg'
+                          ? '/Sound-Wave.svg'
+                          : file.thumbnailUrl || '/Sound-Wave.svg'
                       }
                       alt="Thumbnail"
                       fill
@@ -342,7 +343,7 @@ const LibraryPage = () => {
                       src={
                         thumbnailErrorMap[file.id]
                           ? '/file.svg'
-                          : file.publicUrl || '/file.svg'
+                          : file.publicUrl || '/Sound-Wave.svg'
                       }
                       alt="Image"
                       fill
