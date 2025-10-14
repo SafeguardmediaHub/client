@@ -3,26 +3,18 @@
 
 import {
   AlertCircleIcon,
-  CalendarIcon,
-  CheckCircleIcon,
   EyeIcon,
   FileIcon,
-  FileTextIcon,
-  FilmIcon,
   FilterIcon,
-  HardDriveIcon,
-  MapPinIcon,
-  PlayIcon,
   RefreshCwIcon,
   SearchIcon,
-  ShieldIcon,
   Trash2,
   UploadIcon,
-  ZapIcon,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { MediaDetailsSheet } from '@/components/media';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -35,126 +27,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
 import { type Media, useDeleteMedia, useGetMedia } from '@/hooks/useMedia';
-import {
-  formatFileSize,
-  getStatusColor,
-  shortenFilename,
-  timeAgo,
-} from '@/lib/utils';
+import { getStatusColor, shortenFilename, timeAgo } from '@/lib/utils';
 
 const LibraryPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [selectedAnalysisType, setSelectedAnalysisType] = useState<string>('');
   const [thumbnailErrorMap, setThumbnailErrorMap] = useState<
     Record<string, boolean>
   >({});
-  const [previewError, setPreviewError] = useState<{
-    image: boolean;
-    video: boolean;
-    audio: boolean;
-  }>({ image: false, video: false, audio: false });
 
   const { data, isError, isLoading, refetch } = useGetMedia();
 
   const media = data?.media || [];
+  console.log('thisismedia', media);
 
   const deleteMedia = useDeleteMedia();
 
-  const analysisTypes = [
-    {
-      id: 'deepfake',
-      name: 'Deepfake Detection',
-      description: 'Detect AI-generated or manipulated content',
-      icon: ShieldIcon,
-    },
-    {
-      id: 'geolocation',
-      name: 'Geolocation Verification',
-      description:
-        'Verify where the media was captured using metadata and context clues',
-      icon: MapPinIcon,
-    },
-    {
-      id: 'keyframe',
-      name: 'Keyframe Extraction',
-      description: 'Extract significant frames from video for deeper analysis',
-      icon: FilmIcon,
-    },
-    {
-      id: 'reverse-lookup',
-      name: 'Reverse Lookup',
-      description: 'Find matching or similar content across the web',
-      icon: SearchIcon,
-    },
-  ];
-
-  // Ensure fresh data after navigation into this page (e.g., after uploads)
   useEffect(() => {
-    // Fire and forget; errors are handled by query state
     void refetch();
   }, [refetch]);
 
   const handleMediaClick = (media: Media) => {
     setSelectedMedia(media);
     setIsSheetOpen(true);
-    setSelectedAnalysisType('');
-    setPreviewError({ image: false, video: false, audio: false });
   };
-
-  const handleAnalysisStart = () => {
-    if (!selectedMedia || !selectedAnalysisType) return;
-
-    // TODO: Implement analysis API call
-    console.log('Starting analysis:', {
-      mediaId: selectedMedia.id,
-      analysisType: selectedAnalysisType,
-    });
-
-    // Close sheet after starting analysis
-    setIsSheetOpen(false);
-    setSelectedMedia(null);
-    setSelectedAnalysisType('');
-  };
-
-  const getMediaTypeIcon = (uploadType: string) => {
-    switch (uploadType) {
-      case 'video':
-        return <FileTextIcon className="w-4 h-4" />;
-      case 'audio':
-        return <HardDriveIcon className="w-4 h-4" />;
-      default:
-        return <FileIcon className="w-4 h-4" />;
-    }
-  };
-
-  // const getMediaTypeIcon = (mediaType: Media['uploadType']) => {
-  //   switch (mediaType) {
-  //     case 'video':
-  //       return <VideoIcon className="w-5 h-5 text-[#5c5c5c]" />;
-  //     case 'image':
-  //       return <ImageIcon className="w-5 h-5 text-[#5c5c5c]" />;
-  //     default:
-  //       return <FileIcon className="w-5 h-5 text-[#5c5c5c]" />;
-  //   }
-  // };
-
-  // const getConfidenceColor = (score: number) => {
-  //   if (score >= 90) return 'text-[#049d35]';
-  //   if (score >= 70) return 'text-[#d5c70a]';
-  //   if (score >= 50) return 'text-[#ff8c00]';
-  //   return 'text-[#d50a0a]';
-  // };
 
   const filteredFiles = media.filter((file) => {
     const matchesSearch =
@@ -423,255 +322,12 @@ const LibraryPage = () => {
         </Card>
       )}
 
-      {/* Media Preview Sheet */}
-      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="w-full sm:max-w-2xl overflow-y-auto pb-8">
-          {selectedMedia && (
-            <div className="space-y-6">
-              <SheetHeader>
-                <SheetTitle className="text-xl font-semibold flex items-center gap-2">
-                  {getMediaTypeIcon(selectedMedia.uploadType)}
-                  {selectedMedia.filename}
-                </SheetTitle>
-                <SheetDescription>
-                  Media file details and analysis options
-                </SheetDescription>
-              </SheetHeader>
-
-              <div className="space-y-4 px-4">
-                <div className="relative">
-                  <AspectRatio
-                    ratio={16 / 9}
-                    className="bg-muted rounded-lg overflow-hidden"
-                  >
-                    {selectedMedia.uploadType === 'general_image' ? (
-                      previewError.image ? (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                          <div className="text-center space-y-2">
-                            <FileIcon className="w-12 h-12 text-gray-400 mx-auto" />
-                            <p className="text-sm text-gray-600">
-                              Image failed to load
-                            </p>
-                          </div>
-                        </div>
-                      ) : (
-                        <Image
-                          src={selectedMedia.publicUrl || '/file.svg'}
-                          alt={selectedMedia.filename}
-                          fill
-                          className="object-cover"
-                          onError={() =>
-                            setPreviewError((p) => ({ ...p, image: true }))
-                          }
-                        />
-                      )
-                    ) : selectedMedia.uploadType === 'video' ? (
-                      previewError.video ? (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                          <div className="text-center space-y-2">
-                            <FileIcon className="w-12 h-12 text-gray-400 mx-auto" />
-                            <p className="text-sm text-gray-600">
-                              Video failed to load
-                            </p>
-                          </div>
-                        </div>
-                      ) : (
-                        <video
-                          src={selectedMedia.publicUrl}
-                          poster={selectedMedia.thumbnailUrl || '/file.svg'}
-                          controls
-                          className="w-full h-full object-cover"
-                          preload="metadata"
-                          onError={() =>
-                            setPreviewError((p) => ({ ...p, video: true }))
-                          }
-                        >
-                          <track kind="captions" />
-                          Your browser does not support the video tag.
-                        </video>
-                      )
-                    ) : selectedMedia.uploadType === 'audio' ? (
-                      previewError.audio ? (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                          <div className="text-center space-y-2">
-                            <FileIcon className="w-12 h-12 text-gray-400 mx-auto" />
-                            <p className="text-sm text-gray-600">
-                              Audio failed to load
-                            </p>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                          <div className="text-center space-y-4">
-                            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
-                              <PlayIcon className="w-8 h-8 text-blue-600" />
-                            </div>
-                            <div className="space-y-2">
-                              <audio
-                                src={selectedMedia.publicUrl}
-                                controls
-                                className="w-full max-w-xs  min-w-[400px]"
-                                onError={() =>
-                                  setPreviewError((p) => ({
-                                    ...p,
-                                    audio: true,
-                                  }))
-                                }
-                              >
-                                <track kind="captions" />
-                                Your browser does not support the audio element.
-                              </audio>
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                        <div className="text-center space-y-2">
-                          <FileIcon className="w-12 h-12 text-gray-400 mx-auto" />
-                          <p className="text-sm text-gray-600">
-                            Preview not available for this file type
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </AspectRatio>
-                  <div className="absolute top-3 right-3">
-                    <Badge
-                      className={`px-3 py-1 text-xs rounded-full border ${getStatusColor(
-                        selectedMedia.status
-                      )} flex-shrink-0`}
-                    >
-                      {selectedMedia.status.charAt(0).toUpperCase() +
-                        selectedMedia.status.slice(1)}
-                    </Badge>
-                  </div>
-                </div>
-
-                {/* Media Information */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm">
-                      <FileTextIcon className="w-4 h-4 text-gray-500" />
-                      <span className="font-medium">File Name:</span>
-                      <span className="text-gray-700">
-                        {shortenFilename(selectedMedia.filename)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <HardDriveIcon className="w-4 h-4 text-gray-500" />
-                      <span className="font-medium">File Size:</span>
-                      <span className="text-gray-700">
-                        {formatFileSize(Number(selectedMedia.fileSize))}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <CalendarIcon className="w-4 h-4 text-gray-500" />
-                      <span className="font-medium">Uploaded:</span>
-                      <span className="text-gray-700">
-                        {timeAgo(selectedMedia.uploadedAt)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="font-medium">Type:</span>
-                      <Badge variant="outline" className="text-xs">
-                        {selectedMedia.uploadType
-                          .replace('_', ' ')
-                          .toUpperCase()}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="font-medium">MIME Type:</span>
-                      <span className="text-gray-700">
-                        {selectedMedia.mimeType}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="font-medium">Visibility:</span>
-                      <Badge variant="outline" className="text-xs capitalize">
-                        {selectedMedia.visibility}
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Analysis Selection */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <ShieldIcon className="w-5 h-5 text-blue-600" />
-                    <h3 className="text-lg font-semibold">Analysis Options</h3>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-3">
-                    {analysisTypes.map((analysis) => {
-                      const IconComponent = analysis.icon;
-                      const isSelected = selectedAnalysisType === analysis.id;
-
-                      return (
-                        <button
-                          key={analysis.id}
-                          type="button"
-                          className={`w-full p-4 rounded-lg border-2 cursor-pointer transition-all text-left ${
-                            isSelected
-                              ? 'border-blue-500 bg-blue-50'
-                              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                          }`}
-                          onClick={() => setSelectedAnalysisType(analysis.id)}
-                        >
-                          <div className="flex items-start gap-3">
-                            <div
-                              className={`p-2 rounded-lg ${
-                                isSelected
-                                  ? 'bg-blue-100 text-blue-600'
-                                  : 'bg-gray-100 text-gray-600'
-                              }`}
-                            >
-                              <IconComponent className="w-5 h-5" />
-                            </div>
-                            <div className="flex-1">
-                              <h4
-                                className={`font-medium ${
-                                  isSelected ? 'text-blue-900' : 'text-gray-900'
-                                }`}
-                              >
-                                {analysis.name}
-                              </h4>
-                              <p
-                                className={`text-sm ${
-                                  isSelected ? 'text-blue-700' : 'text-gray-600'
-                                }`}
-                              >
-                                {analysis.description}
-                              </p>
-                            </div>
-                            {isSelected && (
-                              <CheckCircleIcon className="w-5 h-5 text-blue-600" />
-                            )}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Action Button */}
-                  <div className="pt-4 border-t">
-                    <Button
-                      onClick={handleAnalysisStart}
-                      disabled={!selectedAnalysisType}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                    >
-                      <ZapIcon className="w-4 h-4 mr-2" />
-                      Start Analysis
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </SheetContent>
-      </Sheet>
+      {/* Media Details Sheet */}
+      <MediaDetailsSheet
+        media={selectedMedia}
+        isOpen={isSheetOpen}
+        onOpenChange={setIsSheetOpen}
+      />
     </div>
   );
 };

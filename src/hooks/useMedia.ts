@@ -6,7 +6,6 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import axios from 'axios';
 import { toast } from 'sonner';
 import api from '@/lib/api';
 
@@ -22,7 +21,30 @@ export interface Media {
   thumbnailUrl: string;
   uploadedAt: Date;
   createdAt: Date;
-  metadata: any;
+  metadata?: any;
+  analysis?: {
+    tampered?: boolean;
+    confidence?: number;
+    notes?: string[];
+    deepfake?: {
+      detected: boolean;
+      confidence: number;
+    };
+    metadata?: {
+      stripped: boolean;
+      inconsistent: boolean;
+    };
+    compression?: {
+      artifacts: boolean;
+      quality: string;
+    };
+    analyzedAt?: string;
+    method?: string;
+    [key: string]: any;
+  };
+  user?: {
+    name: string;
+  };
 }
 
 interface Pagination {
@@ -57,6 +79,8 @@ const fetchUserMedia = async (params?: {
       'Content-Type': 'application/json',
     },
   });
+
+  console.log(data.data);
 
   return data.data;
 };
