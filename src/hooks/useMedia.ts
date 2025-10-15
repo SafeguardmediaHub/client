@@ -23,24 +23,10 @@ export interface Media {
   createdAt: Date;
   metadata?: any;
   analysis?: {
-    tampered?: boolean;
-    confidence?: number;
-    notes?: string[];
-    deepfake?: {
-      detected: boolean;
-      confidence: number;
-    };
-    metadata?: {
-      stripped: boolean;
-      inconsistent: boolean;
-    };
-    compression?: {
-      artifacts: boolean;
-      quality: string;
-    };
-    analyzedAt?: string;
-    method?: string;
-    [key: string]: any;
+    possibleTampering?: boolean;
+    strippedMetadata: boolean;
+    missingFields: string[];
+    reasons?: string[];
   };
   user?: {
     name: string;

@@ -2,7 +2,6 @@
 
 import {
   AlertTriangle,
-  CheckCircle,
   FileTextIcon,
   Info,
   ShieldCheck,
@@ -12,23 +11,10 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface AnalysisData {
-  tampered?: boolean;
-  confidence?: number;
-  notes?: string[];
-  deepfake?: {
-    detected: boolean;
-    confidence: number;
-  };
-  metadata?: {
-    stripped: boolean;
-    inconsistent: boolean;
-  };
-  compression?: {
-    artifacts: boolean;
-    quality: string;
-  };
-  analyzedAt?: string;
-  method?: string;
+  possibleTampering?: boolean;
+  strippedMetadata: boolean;
+  missingFields: string[];
+  reasons?: string[];
 }
 
 interface AnalysisViewProps {
@@ -36,6 +22,7 @@ interface AnalysisViewProps {
 }
 
 export function AnalysisView({ analysis }: AnalysisViewProps) {
+  console.log(analysis);
   if (!analysis) {
     return (
       <Card>
@@ -53,9 +40,8 @@ export function AnalysisView({ analysis }: AnalysisViewProps) {
     );
   }
 
-  const isTampered = analysis.tampered || false;
-  const confidence = analysis.confidence || 0;
-  const notes = analysis.notes || [];
+  const isTampered = analysis.possibleTampering || false;
+  const reasons = analysis.reasons || [];
 
   const getTamperingStatus = () => {
     if (isTampered) {
@@ -104,11 +90,11 @@ export function AnalysisView({ analysis }: AnalysisViewProps) {
               Tampered: {isTampered ? 'Yes' : 'No'}
             </Badge>
             <Badge variant="outline" className="text-xs">
-              Confidence: {Math.round(confidence * 100)}%
+              Metadata Stripped: {analysis.strippedMetadata ? 'Yes' : 'No'}
             </Badge>
-            {analysis.metadata?.stripped && (
+            {analysis.missingFields.length > 0 && (
               <Badge variant="outline" className="text-xs">
-                Metadata Stripped: Yes
+                Missing Fields: {analysis.missingFields.length}
               </Badge>
             )}
           </div>
@@ -117,137 +103,80 @@ export function AnalysisView({ analysis }: AnalysisViewProps) {
 
       {/* Detailed Analysis Results */}
       <div className="grid gap-4">
-        {/* Deepfake Detection */}
-        {analysis.deepfake && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base font-semibold flex items-center gap-2">
-                {analysis.deepfake.detected ? (
-                  <XCircle className="w-5 h-5 text-red-500" />
-                ) : (
-                  <CheckCircle className="w-5 h-5 text-green-500" />
-                )}
-                Deepfake Detection
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">
-                    AI-Generated Content:
-                  </span>
-                  <Badge
-                    variant={
-                      analysis.deepfake.detected ? 'destructive' : 'default'
-                    }
-                    className="text-xs"
-                  >
-                    {analysis.deepfake.detected ? 'Detected' : 'Not Detected'}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Confidence:</span>
-                  <span className="text-sm text-gray-700">
-                    {Math.round(analysis.deepfake.confidence * 100)}%
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         {/* Metadata Analysis */}
-        {analysis.metadata && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <Info className="w-5 h-5 text-blue-500" />
+              Metadata Analysis
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Metadata Stripped:</span>
+                <Badge
+                  variant={
+                    analysis.strippedMetadata ? 'destructive' : 'default'
+                  }
+                  className="text-xs"
+                >
+                  {analysis.strippedMetadata ? 'Yes' : 'No'}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Missing Fields:</span>
+                <Badge variant="outline" className="text-xs">
+                  {analysis.missingFields.length} fields
+                </Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Missing Fields Details */}
+        {analysis.missingFields.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle className="text-base font-semibold flex items-center gap-2">
-                <Info className="w-5 h-5 text-blue-500" />
-                Metadata Analysis
+                <XCircle className="w-5 h-5 text-red-500" />
+                Missing Fields
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">
-                    Metadata Stripped:
-                  </span>
-                  <Badge
-                    variant={
-                      analysis.metadata.stripped ? 'destructive' : 'default'
-                    }
-                    className="text-xs"
-                  >
-                    {analysis.metadata.stripped ? 'Yes' : 'No'}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">
-                    Inconsistent Timestamps:
-                  </span>
-                  <Badge
-                    variant={
-                      analysis.metadata.inconsistent ? 'destructive' : 'default'
-                    }
-                    className="text-xs"
-                  >
-                    {analysis.metadata.inconsistent ? 'Yes' : 'No'}
-                  </Badge>
+                <p className="text-sm text-gray-600 mb-3">
+                  The following metadata fields are missing or incomplete:
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {analysis.missingFields.map((field) => (
+                    <Badge
+                      key={field}
+                      variant="destructive"
+                      className="text-xs"
+                    >
+                      {field}
+                    </Badge>
+                  ))}
                 </div>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* Compression Analysis */}
-        {analysis.compression && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base font-semibold flex items-center gap-2">
-                <Info className="w-5 h-5 text-purple-500" />
-                Compression Analysis
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">
-                    Compression Artifacts:
-                  </span>
-                  <Badge
-                    variant={
-                      analysis.compression.artifacts ? 'destructive' : 'default'
-                    }
-                    className="text-xs"
-                  >
-                    {analysis.compression.artifacts
-                      ? 'Detected'
-                      : 'Not Detected'}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Quality:</span>
-                  <Badge variant="outline" className="text-xs">
-                    {analysis.compression.quality || 'Unknown'}
-                  </Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Analysis Notes */}
-        {notes.length > 0 && (
+        {/* Analysis Reasons */}
+        {reasons.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle className="text-base font-semibold flex items-center gap-2">
                 <FileTextIcon className="w-5 h-5 text-gray-500" />
-                Analysis Notes
+                Analysis Reasons
               </CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
-                {notes.map((note) => (
-                  <li key={note}>{note}</li>
+                {reasons.map((reason) => (
+                  <li key={reason}>{reason}</li>
                 ))}
               </ul>
             </CardContent>
@@ -275,27 +204,21 @@ export function AnalysisView({ analysis }: AnalysisViewProps) {
               </span>
             </div>
             <div>
-              <span className="font-medium">Confidence Level:</span>
+              <span className="font-medium">Metadata Integrity:</span>
               <span className="ml-2 text-gray-700">
-                {confidence > 0.8
-                  ? 'High'
-                  : confidence > 0.5
-                  ? 'Medium'
-                  : 'Low'}
+                {analysis.strippedMetadata ? 'Compromised' : 'Intact'}
               </span>
             </div>
             <div>
-              <span className="font-medium">Analysis Date:</span>
+              <span className="font-medium">Missing Fields:</span>
               <span className="ml-2 text-gray-700">
-                {analysis.analyzedAt
-                  ? new Date(analysis.analyzedAt).toLocaleDateString()
-                  : 'Unknown'}
+                {analysis.missingFields.length} fields
               </span>
             </div>
             <div>
-              <span className="font-medium">Analysis Method:</span>
+              <span className="font-medium">Analysis Reasons:</span>
               <span className="ml-2 text-gray-700">
-                {analysis.method || 'Standard Detection'}
+                {reasons.length} findings
               </span>
             </div>
           </div>

@@ -131,7 +131,7 @@ export function MediaDetailsSheet({
                   exit="exit"
                   transition={{ duration: 0.2 }}
                 >
-                  <AnalysisView analysis={media.analysis} />
+                  <AnalysisView analysis={media.metadata.analysis} />
                 </motion.div>
               </TabsContent>
             </div>
