@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import { Eye, EyeOff } from 'lucide-react';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useAuth } from '@/context/AuthContext';
-import { cn } from '@/lib/utils';
+import { Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/context/AuthContext";
+import { cn } from "@/lib/utils";
 
 export function LoginForm({
   className,
   ...props
-}: React.ComponentProps<'form'>) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+}: React.ComponentProps<"form">) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
 
@@ -22,7 +22,7 @@ export function LoginForm({
     e.preventDefault();
 
     if (!email || !password) {
-      toast.error('Please enter email and password');
+      toast.error("Please enter email and password");
       return;
     }
 
@@ -32,7 +32,7 @@ export function LoginForm({
 
   return (
     <form
-      className={cn('flex flex-col gap-6', className)}
+      className={cn("flex flex-col gap-6", className)}
       {...props}
       onSubmit={handleSubmit}
     >
@@ -67,7 +67,7 @@ export function LoginForm({
           <div className="relative">
             <Input
               id="password"
-              type={showPassword ? 'text' : 'password'}
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -114,7 +114,7 @@ export function LoginForm({
         </Button>
       </div>
       <div className="text-center text-sm">
-        Don&apos;t have an account?{' '}
+        Don&apos;t have an account?{" "}
         <a href="/auth/signup" className="underline underline-offset-4">
           Sign up
         </a>
