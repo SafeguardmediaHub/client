@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { createContext, useContext, useEffect, useState } from 'react';
-import { type User, useLogin, useLogout } from '@/hooks/useAuth';
-import api from '@/lib/api';
+import { useRouter } from "next/navigation";
+import { createContext, useContext, useEffect, useState } from "react";
+import { type User, useLogin, useLogout } from "@/hooks/useAuth";
+import api from "@/lib/api";
 
 interface AuthContextType {
   user: User | null;
@@ -23,15 +23,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const initAuth = async () => {
       const hasSession =
-        typeof window !== 'undefined' &&
-        window.localStorage?.getItem('hasSession') === 'true';
+        typeof window !== "undefined" &&
+        window.localStorage?.getItem("hasSession") === "true";
       if (!hasSession) {
         setLoading(false);
         return;
       }
 
       try {
-        const res = await api.get('/api/users/me');
+        const res = await api.get("/api/users/me");
         setUser(res.data.data.user);
       } catch (_) {
         setUser(null);
@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       {
         onSuccess: (response) => {
           setUser(response.data.user);
-          router.push('/dashboard');
+          router.push("/dashboard");
         },
       }
     );
@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     logoutMutation.mutate(undefined, {
       onSuccess: () => {
         setUser(null);
-        router.push('/auth/login');
+        router.push("/auth/login");
       },
     });
   };
@@ -79,6 +79,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 export const useAuth = () => {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used inside AuthProvider');
+  if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
   return ctx;
 };

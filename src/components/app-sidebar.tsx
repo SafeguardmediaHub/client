@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   BookCheck,
@@ -17,8 +17,8 @@ import {
   ShieldAlert,
   ShieldIcon,
   Users,
-} from 'lucide-react';
-import type * as React from 'react';
+} from "lucide-react";
+import type * as React from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -26,28 +26,28 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from '@/components/ui/sidebar';
-import { NavDetectionTools } from './nav-detection';
-import { NavOverview } from './nav-overview';
-import { NavReporting } from './nav-reporting';
-import { NavVerificationTools } from './nav-verification';
+} from "@/components/ui/sidebar";
+import { NavDetectionTools } from "./nav-detection";
+import { NavOverview } from "./nav-overview";
+import { NavReporting } from "./nav-reporting";
+import { NavVerificationTools } from "./nav-verification";
 
 const data = {
   user: {
-    name: 'shadcn',
-    email: 'm@example.com',
-    avatar: '/avatars/shadcn.jpg',
+    name: "shadcn",
+    email: "m@example.com",
+    avatar: "/avatars/shadcn.jpg",
   },
 
   overview: [
     {
-      name: 'Dashboard',
-      url: '/dashboard',
+      name: "Dashboard",
+      url: "/dashboard",
       icon: LayoutDashboard,
     },
     {
-      name: 'Library',
-      url: '/dashboard/library',
+      name: "Library",
+      url: "/dashboard/library",
       icon: BookOpen,
     },
   ],
@@ -59,69 +59,69 @@ const data = {
       icon: ShieldIcon,
     },
     {
-      name: 'Cheapfake Detection',
-      url: '#',
+      name: "Cheapfake Detection",
+      url: "#",
       icon: Film,
     },
     {
-      name: 'Visual Forensics',
-      url: '#',
+      name: "Visual Forensics",
+      url: "#",
       icon: Search,
     },
     {
-      name: 'Tamper Detection',
-      url: '#',
+      name: "Tamper Detection",
+      url: "#",
       icon: ShieldAlert,
     },
     {
-      name: 'Keyframe Extraction',
-      url: '#',
+      name: "Keyframe Extraction",
+      url: "/dashboard/keyframe",
       icon: Scissors,
     },
   ],
 
   verification: [
     {
-      name: 'Reverse Lookup',
-      url: '#',
+      name: "Reverse Lookup",
+      url: "#",
       icon: SearchCheck,
     },
     {
-      name: 'Geolocation Verification',
-      url: '#',
+      name: "Geolocation Verification",
+      url: "#",
       icon: MapPin,
     },
     {
-      name: 'Timeline Verification',
-      url: '#',
+      name: "Timeline Verification",
+      url: "#",
       icon: CalendarClock,
     },
     {
-      name: 'Text Extraction (OCR)',
-      url: '#',
+      name: "Text Extraction (OCR)",
+      url: "#",
       icon: FileText,
     },
     {
-      name: 'Fact Checking',
-      url: '#',
+      name: "Fact Checking",
+      url: "#",
       icon: BookCheck,
     },
     {
-      name: 'Social Media Source Tracing',
-      url: '#',
+      name: "Social Media Source Tracing",
+      url: "#",
       icon: Share2,
     },
   ],
 
   reporting: [
     {
-      name: 'Reports Generation',
-      url: '/dashboard/reporting',
+      name: "Reports Generation",
+      url: "/dashboard/reporting",
       icon: FileBarChart,
     },
     {
-      name: 'Team Collaboration',
-      url: '#',
+      name: "Team Collaboration",
+      url: "#",
       icon: Users,
     },
   ],
