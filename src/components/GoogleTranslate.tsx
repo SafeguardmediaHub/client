@@ -42,7 +42,7 @@ export default function GoogleTranslate() {
     <div className="fixed top-4 right-4 z-50">
       <div
         id="google_translate_element"
-        className="bg-white rounded-lg shadow-lg p-2"
+        className="bg-white rounded-sm shadow-lg p-2"
       ></div>
     </div>
   );
