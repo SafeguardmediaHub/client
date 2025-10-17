@@ -8,7 +8,6 @@ import {
   FileBarChart,
   FileText,
   Film,
-  Frame,
   LayoutDashboard,
   MapPin,
   Scissors,
@@ -16,6 +15,7 @@ import {
   SearchCheck,
   Share2,
   ShieldAlert,
+  ShieldIcon,
   Users,
 } from "lucide-react";
 import type * as React from "react";
@@ -54,9 +54,9 @@ const data = {
 
   detection: [
     {
-      name: "Deepfake Detection",
-      url: "#",
-      icon: Frame, // still a good fit: "framing" faces/content
+      name: 'Deepfake Detection',
+      url: '#',
+      icon: ShieldIcon,
     },
     {
       name: "Cheapfake Detection",
