@@ -5,8 +5,10 @@ import { UploadIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { DatePickerDemo } from '@/components/date-picker';
 import MediaSelector from '@/components/media/MediaSelector';
+import TimelineResult from '@/components/timelineResult';
 import { Button } from '@/components/ui/button';
 import { type Media, useGetMedia } from '@/hooks/useMedia';
 import { useTimeline } from '@/hooks/useTimeline';
@@ -37,20 +39,48 @@ const TimelineVerificationPage = () => {
     const selectedFile = media.find((file) => file.id === mediaFile.id);
     if (selectedFile) {
       setSelectedMedia(selectedFile);
-      setPageState('uploaded');
     }
   };
 
   const handleStartVerification = () => {
     if (!claimedDate || !selectedMedia) return;
 
-    const shortDate = format(claimedDate, 'dd-MM-yyyy');
+    const shortDate = format(claimedDate, 'yyyy-MM-dd');
 
-    timelineMutation.mutate({
-      mediaId: selectedMedia.id,
-      claimedTakenAt: shortDate,
-    });
+    timelineMutation.mutate(
+      {
+        mediaId: selectedMedia.id,
+        claimedTakenAt: shortDate,
+      },
+      {
+        onSuccess: () => {
+          setPageState('completed');
+          toast.success('Timeline verified successfully.');
+        },
+        onError: (error) => {
+          console.error('Error verifying timeline:', error);
+          toast.error('Failed to verify timeline. Please try again.');
+        },
+      }
+    );
   };
+
+  if (pageState === 'verifying') {
+    return (
+      <div className="p-8 flex flex-col items-center justify-center">
+        {/* <Spinner /> simple loading animation */}
+        <p className="text-gray-600 mt-4">
+          Verifying timeline... this may take a few seconds
+        </p>
+      </div>
+    );
+  }
+
+  if (pageState === 'completed') {
+    return (
+      <TimelineResult data={timelineMutation.data} media={selectedMedia} />
+    );
+  }
 
   return (
     <div className="w-full flex flex-col gap-6 p-8">
@@ -115,7 +145,9 @@ const TimelineVerificationPage = () => {
               onClick={handleStartVerification}
               disabled={!claimedDate}
             >
-              Start timeline verification
+              {timelineMutation.isPending
+                ? 'Verifying...'
+                : 'Start timeline verification'}
             </Button>
 
             <div className="flex gap-4">

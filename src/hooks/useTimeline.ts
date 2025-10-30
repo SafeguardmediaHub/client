@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import api from '@/lib/api';
 
-interface VerifyTimeline {
+export interface VerifyTimelineResponse {
   success: boolean;
   message: string;
   data: {
@@ -19,7 +19,7 @@ const verifyTimeline = async ({
 }: {
   mediaId: string;
   claimedTakenAt: string;
-}): Promise<VerifyTimeline> => {
+}): Promise<VerifyTimelineResponse> => {
   const response = await api.post(
     `/api/timeline/verify/${mediaId}`,
     { claimedTakenAt },
@@ -36,13 +36,5 @@ export const useTimeline = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: verifyTimeline,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['userMedia'] });
-      toast.success('Timeline verified successfully.');
-    },
-    onError: (error) => {
-      console.error('Error verifying timeline:', error);
-      toast.error('Failed to verify timeline. Please try again.');
-    },
   });
 };

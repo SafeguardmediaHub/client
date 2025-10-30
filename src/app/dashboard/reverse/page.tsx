@@ -21,7 +21,12 @@ export interface SearchResult {
   verified: boolean;
 }
 
-export type PageState = 'initial' | 'uploaded' | 'searching' | 'results';
+export type PageState =
+  | 'initial'
+  | 'uploaded'
+  | 'verifying'
+  | 'completed'
+  | 'results';
 
 const ReverseLookupPage = () => {
   const [pageState, setPageState] = useState<PageState>('initial');
