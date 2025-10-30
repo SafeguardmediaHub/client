@@ -1,5 +1,6 @@
 'use client';
 
+import { format } from 'date-fns';
 import { UploadIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -8,8 +9,8 @@ import { DatePickerDemo } from '@/components/date-picker';
 import MediaSelector from '@/components/media/MediaSelector';
 import { Button } from '@/components/ui/button';
 import { type Media, useGetMedia } from '@/hooks/useMedia';
+import { useTimeline } from '@/hooks/useTimeline';
 import { formatFileSize } from '@/lib/utils';
-
 import type { PageState, SearchResult } from '../reverse/page';
 
 const TimelineVerificationPage = () => {
@@ -17,15 +18,19 @@ const TimelineVerificationPage = () => {
   const [searchProgress, setSearchProgress] = useState(0);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
+  const [claimedDate, setClaimedDate] = useState<Date | null>(null);
 
   const { data, isLoading } = useGetMedia();
   const media = data?.media || [];
+
+  const timelineMutation = useTimeline();
 
   const handleNewSearch = () => {
     setPageState('initial');
     setSearchProgress(0);
     setSearchResults([]);
     setSelectedMedia(null);
+    setClaimedDate(null);
   };
 
   const handleMediaSelection = (mediaFile: Media) => {
@@ -36,6 +41,17 @@ const TimelineVerificationPage = () => {
     }
   };
 
+  const handleStartVerification = () => {
+    if (!claimedDate || !selectedMedia) return;
+
+    const shortDate = format(claimedDate, 'dd-MM-yyyy');
+
+    timelineMutation.mutate({
+      mediaId: selectedMedia.id,
+      claimedTakenAt: shortDate,
+    });
+  };
+
   return (
     <div className="w-full flex flex-col gap-6 p-8">
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
@@ -43,7 +59,7 @@ const TimelineVerificationPage = () => {
           <h1 className="text-2xl font-medium text-gray-900 leading-9">
             Timeline Verification
           </h1>
-          <p className="text-sm text-gray-600  leading-[21px]">
+          <p className="text-sm text-gray-600 leading-[21px]">
             Overview of your timeline verifications
           </p>
         </div>
@@ -66,9 +82,6 @@ const TimelineVerificationPage = () => {
             <h3 className="text-md">
               Select the claimed date of the media file
             </h3>
-            {/* <p className="text-sm text-gray-500">
-              Select claimed data in the date picker to proceed
-            </p> */}
           </div>
 
           <div className="flex items-center justify-between mb-8">
@@ -78,7 +91,7 @@ const TimelineVerificationPage = () => {
                 alt={selectedMedia.filename}
                 width={64}
                 height={64}
-                className=" object-cover mb-4 border border-gray-200 rounded-sm"
+                className="object-cover mb-4 border border-gray-200 rounded-sm"
               />
               <div className="flex flex-col justify-center">
                 <p className="font-semibold">{selectedMedia.filename}</p>
@@ -88,14 +101,23 @@ const TimelineVerificationPage = () => {
               </div>
             </div>
 
-            <div className="">
-              <DatePickerDemo />
+            <div>
+              <DatePickerDemo
+                value={claimedDate}
+                onChange={(date: Date | null) => setClaimedDate(date)}
+              />
             </div>
           </div>
+
           <div className="flex gap-8">
-            <Button className="flex-1 hover:cursor-pointer">
+            <Button
+              className="flex-1 hover:cursor-pointer"
+              onClick={handleStartVerification}
+              disabled={!claimedDate}
+            >
               Start timeline verification
             </Button>
+
             <div className="flex gap-4">
               <Button
                 variant="outline"

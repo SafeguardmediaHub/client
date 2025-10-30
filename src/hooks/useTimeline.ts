@@ -13,21 +13,29 @@ interface VerifyTimeline {
   };
 }
 
-const verifyTimeline = async (mediaId: string): Promise<VerifyTimeline> => {
+const verifyTimeline = async ({
+  mediaId,
+  claimedTakenAt,
+}: {
+  mediaId: string;
+  claimedTakenAt: string;
+}): Promise<VerifyTimeline> => {
   const response = await api.post(
-    '/api/timeline/verify',
-    {},
-    { params: { mediaId }, headers: { 'Content-Type': 'application/json' } }
+    `/api/timeline/verify/${mediaId}`,
+    { claimedTakenAt },
+    {
+      headers: { 'Content-Type': 'application/json' },
+    }
   );
 
   console.log('this is the response', response.data);
   return response.data;
 };
 
-export const useTimelline = () => {
+export const useTimeline = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (mediaId: string) => verifyTimeline(mediaId),
+    mutationFn: verifyTimeline,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['userMedia'] });
       toast.success('Timeline verified successfully.');
