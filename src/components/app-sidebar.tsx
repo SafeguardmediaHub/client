@@ -83,7 +83,7 @@ const data = {
   verification: [
     {
       name: 'Reverse Lookup',
-      url: '#',
+      url: '/dashboard/reverse',
       icon: SearchCheck,
     },
     {
