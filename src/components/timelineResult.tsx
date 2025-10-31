@@ -1,5 +1,8 @@
-import React from 'react';
+/** biome-ignore-all lint/performance/noImgElement: <> */
 import { ArrowLeft, Check } from 'lucide-react';
+import type { Media } from '@/hooks/useMedia';
+import { AspectRatio } from './ui/aspect-ratio';
+import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 
 interface TimelineEvent {
@@ -14,6 +17,7 @@ interface Match {
   source: string;
   sourceIcon?: string;
   thumbnail?: string;
+  confidence?: string;
 }
 
 interface VerifyTimelineResponse {
@@ -37,132 +41,220 @@ interface VerifyTimelineResponse {
 }
 
 interface ResultsPageProps {
-  data: VerifyTimelineResponse;
+  data?: VerifyTimelineResponse;
+  media: Media;
   onBack?: () => void;
+  claimedDate?: string;
 }
 
-export default function ResultsPage({ data, onBack }: ResultsPageProps) {
-  const { timeline, matches, flags, analysis, metadata } = data;
+export default function ResultsPage({
+  data,
+  media,
+  onBack,
+  claimedDate,
+}: ResultsPageProps) {
+  const timelineData = media?.timeline || data;
+  const hasRealData = media?.timeline?.status === 'completed';
+
+  const searchEngines = [
+    { name: 'Google Images', checked: true },
+    { name: 'Bing Visual Search', checked: true },
+    { name: 'TinEye', checked: true },
+    { name: 'Yandex', checked: true },
+  ];
+
+  const matches = timelineData?.matches || [];
+
+  const isLoading = !hasRealData;
 
   return (
     <div className="p-6 space-y-8">
-      {/* Header */}
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={onBack}>
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <h2 className="text-2xl font-semibold">Verification Results</h2>
-      </div>
-
-      {/* Timeline */}
-      <div>
-        <h3 className="text-lg font-medium mb-3">Timeline</h3>
-        <div className="space-y-3 border border-gray-200 rounded-xl p-4">
-          {timeline.map((event, idx) => (
-            <div
-              key={idx}
-              className="flex justify-between items-center border-b border-gray-100 pb-2 last:border-none"
-            >
-              <div>
-                <p className="font-semibold">{event.label}</p>
-                <p className="text-sm text-gray-500">
-                  {new Date(event.timestamp).toLocaleString()}
-                </p>
-              </div>
-              <span className="text-sm text-gray-600">{event.source}</span>
+        {onBack && (
+          <Button variant="ghost" size="icon" onClick={onBack}>
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+        )}
+        <div>
+          <h2 className="text-2xl font-semibold">
+            Timeline Verification Results
+          </h2>
+          {media && (
+            <div className="flex items-center gap-3 mt-1">
+              <p className="text-sm text-gray-600">
+                Analyzing: {media.filename}
+              </p>
+              {hasRealData ? (
+                <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                  ✓ Completed
+                </span>
+              ) : (
+                <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                  ⏳ Processing...
+                </span>
+              )}
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Distribution Matches */}
-      <div>
-        <h3 className="text-lg font-medium mb-3">Found Matches</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {matches.map((m, idx) => (
-            <a
-              key={idx}
-              href={m.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="border rounded-xl overflow-hidden hover:shadow-md transition"
-            >
-              <img
-                src={m.thumbnail}
-                alt={m.title}
-                className="w-full h-40 object-cover"
-              />
-              <div className="p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  {m.sourceIcon && (
-                    <img
-                      src={m.sourceIcon}
-                      alt={m.source}
-                      className="w-4 h-4 rounded"
-                    />
-                  )}
-                  <span className="text-sm font-semibold">{m.source}</span>
-                </div>
-                <p className="text-sm text-gray-700 line-clamp-2">{m.title}</p>
-              </div>
-            </a>
-          ))}
-        </div>
-      </div>
-
-      {/* Flags / Analysis */}
-      <div>
-        <h3 className="text-lg font-medium mb-3">Analysis Summary</h3>
-        <div className="space-y-2 border border-gray-200 rounded-xl p-4">
-          {flags.map((flag, idx) => (
-            <div key={idx} className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-green-600" />
-              <span className="text-sm text-gray-700">{flag}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Metadata Scores */}
-      <div>
-        <h3 className="text-lg font-medium mb-3">Metadata Integrity</h3>
-        <div className="grid grid-cols-3 gap-4">
-          <div className="bg-gray-50 rounded-xl p-4 text-center">
-            <p className="text-2xl font-bold text-blue-600">
-              {(metadata.analysis.integrityScore * 100).toFixed(0)}%
-            </p>
-            <p className="text-sm text-gray-600">Integrity</p>
-          </div>
-          <div className="bg-gray-50 rounded-xl p-4 text-center">
-            <p className="text-2xl font-bold text-green-600">
-              {(metadata.analysis.authenticityScore * 100).toFixed(0)}%
-            </p>
-            <p className="text-sm text-gray-600">Authenticity</p>
-          </div>
-          <div className="bg-gray-50 rounded-xl p-4 text-center">
-            <p className="text-2xl font-bold text-orange-600">
-              {(metadata.analysis.completenessScore * 100).toFixed(0)}%
-            </p>
-            <p className="text-sm text-gray-600">Completeness</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Search Engines Used */}
-      <div>
-        <h3 className="text-lg font-medium mb-3">Search Engines Checked</h3>
-        <div className="flex flex-wrap gap-2">
-          {['Google Images', 'Bing Visual Search', 'TinEye', 'Yandex'].map(
-            (name) => (
-              <div
-                key={name}
-                className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
-              >
-                {name}
-              </div>
-            )
           )}
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex gap-6">
+            <img
+              src={
+                isLoading
+                  ? 'https://plus.unsplash.com/premium_photo-1760995720217-54aef3fa0218?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1470'
+                  : media.thumbnailUrl
+              }
+              alt={isLoading ? 'image file' : media.filename}
+              className="w-64 h-48 object-cover rounded-lg"
+            />
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                User Claim Information
+              </h2>
+              <div className="space-y-4">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Claimed Date</span>
+                  <span className="text-gray-900 font-medium">
+                    {claimedDate
+                      ? new Date(claimedDate).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })
+                      : 'Not specified'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Media File</span>
+                  <span className="text-gray-900 font-medium">
+                    {isLoading ? '' : media.filename}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Uploaded</span>
+                  <span className="text-gray-900 font-medium">
+                    {isLoading
+                      ? ''
+                      : new Date(media.uploadedAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Status</span>
+                  <Badge variant={hasRealData ? 'default' : 'secondary'}>
+                    {hasRealData ? 'Verified' : 'Processing'}
+                  </Badge>
+                </div>
+              </div>
+              {claimedDate && (
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-sm text-blue-800">
+                    <strong>Timeline Verification:</strong> We are checking if
+                    this media appeared online before the claimed date of{' '}
+                    {new Date(claimedDate).toLocaleDateString()}.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              Search Completed
+            </h3>
+            <p className="text-gray-600 text-sm">
+              Found {matches.length} matches across 4 search engines.
+            </p>
+          </div>
+
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">
+              Search Coverage
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              {searchEngines.map((engine) => (
+                <div key={engine.name} className="flex items-center gap-2">
+                  <div className="w-5 h-5 bg-blue-600 rounded flex items-center justify-center flex-shrink-0">
+                    <Check className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <span className="text-gray-700 text-sm">{engine.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="">
+        <h2 className="text-xl font-medium mb-3">Found Matches</h2>
+        {isLoading ? (
+          <div className="border border-gray-200 rounded-xl p-8 text-center">
+            <div className="animate-pulse space-y-2">
+              <div className="w-6 h-6 bg-gray-300 rounded-full mx-auto"></div>
+              <p className="text-gray-500">Searching for matches...</p>{' '}
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {matches.map((m: Match) => (
+              <div
+                key={m.link}
+                className="flex flex-col max-w-sm bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700"
+              >
+                <a href={m.link} target="_blank">
+                  <div className="relative">
+                    <AspectRatio ratio={16 / 9} className="bg-muted rounded-lg">
+                      <img
+                        src={m.thumbnail || '/placeholder-image.png'}
+                        alt={m.title}
+                        className="h-full w-full rounded-t-md object-cover dark:brightness-[0.2] dark:grayscale"
+                      />
+                    </AspectRatio>
+                    <div className="absolute top-3 right-3">
+                      <Badge className="px-2 py-0.5 text-xs rounded border">
+                        {m.confidence ? `${Math.round(parseFloat(m.confidence) * 100)}%` : 'N/A'} match
+                      </Badge>
+                    </div>
+                  </div>
+                </a>
+                <div className="p-2">
+                  <a href={m.link} target="_blank">
+                    <h5 className="mb-2 font-bold tracking-tight text-gray-900 dark:text-white">
+                      {m.title}{' '}
+                    </h5>
+                  </a>
+
+                  <div className="flex items-center gap-2 mb-1">
+                    {m.sourceIcon && (
+                      <img
+                        src={m.sourceIcon}
+                        alt={m.source}
+                        className="w-4 h-4 rounded"
+                      />
+                    )}
+                    <span className="text-sm font-semibold">{m.source}</span>
+                  </div>
+                </div>
+
+                <div className="flex justify-center mb-4">
+                  <a href={m.link} target="_blank">
+                    <Button className="px-4 py-2 text-sm border border-gray-300 hover:text-gray-700  cursor-pointer rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                      View Source
+                    </Button>
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

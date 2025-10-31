@@ -31,7 +31,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <GoogleTranslate />
+        {/* <GoogleTranslate /> */}
         <QueryProvider>
           <AuthProvider>{children}</AuthProvider>
         </QueryProvider>
