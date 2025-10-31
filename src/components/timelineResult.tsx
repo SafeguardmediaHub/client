@@ -293,7 +293,7 @@ export default function ResultsPage({
             {displayedMatches.map((m: Match) => (
               <div
                 key={m.link}
-                className="flex flex-col max-w-sm bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700"
+                className="flex flex-col max-w-sm bg-gray-200 border border-gray-200 rounded-lg shadow-sm mb-4"
               >
                 <a href={m.link} target="_blank">
                   <div className="relative">
