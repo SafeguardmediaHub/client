@@ -1,5 +1,7 @@
 /** biome-ignore-all lint/performance/noImgElement: <> */
+
 import { ArrowLeft, Check } from 'lucide-react';
+import { useState } from 'react';
 import type { Media } from '@/hooks/useMedia';
 import { AspectRatio } from './ui/aspect-ratio';
 import { Badge } from './ui/badge';
@@ -55,6 +57,7 @@ export default function ResultsPage({
 }: ResultsPageProps) {
   const timelineData = media?.timeline || data;
   const hasRealData = media?.timeline?.status === 'completed';
+  const [visibleMatches, setVisibleMatches] = useState(8);
 
   const searchEngines = [
     { name: 'Google Images', checked: true },
@@ -64,6 +67,12 @@ export default function ResultsPage({
   ];
 
   const matches = timelineData?.matches || [];
+  const displayedMatches = matches.slice(0, visibleMatches);
+  const hasMoreMatches = matches.length > visibleMatches;
+
+  const loadMoreMatches = () => {
+    setVisibleMatches((prev) => Math.min(prev + 8, matches.length));
+  };
 
   const isLoading = !hasRealData;
 
@@ -101,7 +110,7 @@ export default function ResultsPage({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex gap-6">
-{isLoading ? (
+            {isLoading ? (
               <div className="w-64 h-48 bg-gray-200 rounded-lg animate-pulse"></div>
             ) : (
               <img
@@ -281,7 +290,7 @@ export default function ResultsPage({
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {matches.map((m: Match) => (
+            {displayedMatches.map((m: Match) => (
               <div
                 key={m.link}
                 className="flex flex-col max-w-sm bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700"
@@ -330,6 +339,18 @@ export default function ResultsPage({
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {!isLoading && hasMoreMatches && (
+          <div className="flex justify-center mt-6">
+            <Button
+              onClick={loadMoreMatches}
+              variant="outline"
+              className="px-6 py-2"
+            >
+              Load More ({matches.length - visibleMatches} remaining)
+            </Button>
           </div>
         )}
       </div>
