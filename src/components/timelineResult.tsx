@@ -101,15 +101,15 @@ export default function ResultsPage({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex gap-6">
-            <img
-              src={
-                isLoading
-                  ? 'https://plus.unsplash.com/premium_photo-1760995720217-54aef3fa0218?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1470'
-                  : media.thumbnailUrl
-              }
-              alt={isLoading ? 'image file' : media.filename}
-              className="w-64 h-48 object-cover rounded-lg"
-            />
+{isLoading ? (
+              <div className="w-64 h-48 bg-gray-200 rounded-lg animate-pulse"></div>
+            ) : (
+              <img
+                src={media.thumbnailUrl}
+                alt={media.filename}
+                className="w-64 h-48 object-cover rounded-lg"
+              />
+            )}
             <div className="flex-1">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">
                 User Claim Information
@@ -129,21 +129,27 @@ export default function ResultsPage({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Media File</span>
-                  <span className="text-gray-900 font-medium">
-                    {isLoading ? '' : media.filename}
-                  </span>
+                  {isLoading ? (
+                    <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+                  ) : (
+                    <span className="text-gray-900 font-medium">
+                      {media.filename}
+                    </span>
+                  )}
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Uploaded</span>
-                  <span className="text-gray-900 font-medium">
-                    {isLoading
-                      ? ''
-                      : new Date(media.uploadedAt).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        })}
-                  </span>
+                  {isLoading ? (
+                    <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                  ) : (
+                    <span className="text-gray-900 font-medium">
+                      {new Date(media.uploadedAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })}
+                    </span>
+                  )}
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Status</span>
@@ -154,11 +160,82 @@ export default function ResultsPage({
               </div>
               {claimedDate && (
                 <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <p className="text-sm text-blue-800">
-                    <strong>Timeline Verification:</strong> We are checking if
-                    this media appeared online before the claimed date of{' '}
-                    {new Date(claimedDate).toLocaleDateString()}.
-                  </p>
+                  {(() => {
+                    const originalDateTime =
+                      media?.timeline?.metadata?.image?.originalDateTime;
+                    // const originalDateTime = '2022-05-15T10:30:00Z'; // Example date for testing
+                    const claimedDateObj = new Date(claimedDate);
+                    const claimedDateStr = claimedDateObj.toLocaleDateString();
+
+                    if (originalDateTime) {
+                      const originalDateObj = new Date(originalDateTime);
+                      const originalDateStr =
+                        originalDateObj.toLocaleDateString();
+                      const isEarlier = originalDateObj < claimedDateObj;
+                      const isSame =
+                        originalDateObj.toDateString() ===
+                        claimedDateObj.toDateString();
+
+                      return (
+                        <div className="text-sm text-blue-800">
+                          <p className="mb-2">
+                            <strong>Metadata Analysis:</strong> The media's
+                            original creation date is{' '}
+                            <span className="font-medium">
+                              {originalDateStr}
+                            </span>
+                            , while the claimed date is{' '}
+                            <span className="font-medium">
+                              {claimedDateStr}
+                            </span>
+                            .
+                          </p>
+                          {isSame ? (
+                            <p className="text-green-700 font-medium">
+                              ✓ The metadata date matches the claimed date.
+                            </p>
+                          ) : isEarlier ? (
+                            <p className="text-amber-700 font-medium">
+                              ⚠ The media was created{' '}
+                              {Math.floor(
+                                (claimedDateObj.getTime() -
+                                  originalDateObj.getTime()) /
+                                  (1000 * 60 * 60 * 24)
+                              )}{' '}
+                              days before the claimed date.
+                            </p>
+                          ) : (
+                            <p className="text-red-700 font-medium">
+                              ✗ The claimed date precedes the media's creation
+                              date by{' '}
+                              {Math.floor(
+                                (originalDateObj.getTime() -
+                                  claimedDateObj.getTime()) /
+                                  (1000 * 60 * 60 * 24)
+                              )}{' '}
+                              days.
+                            </p>
+                          )}
+                          <p className="mt-2">
+                            Online matches are provided below for additional
+                            verification.
+                          </p>
+                        </div>
+                      );
+                    } else {
+                      return (
+                        <p className="text-sm text-blue-800">
+                          <strong>Timeline Verification:</strong> The media's
+                          original creation date is not available in the
+                          metadata for comparison against the claimed date of{' '}
+                          <span className="font-medium">{claimedDateStr}</span>.
+                          However, we have conducted a comprehensive search
+                          across multiple platforms to identify any earlier
+                          online appearances, with results provided below.
+                        </p>
+                      );
+                    }
+                  })()}
                 </div>
               )}
             </div>
@@ -218,11 +295,11 @@ export default function ResultsPage({
                         className="h-full w-full rounded-t-md object-cover dark:brightness-[0.2] dark:grayscale"
                       />
                     </AspectRatio>
-                    <div className="absolute top-3 right-3">
+                    {/* <div className="absolute top-3 right-3">
                       <Badge className="px-2 py-0.5 text-xs rounded border">
                         {m.confidence ? `${Math.round(parseFloat(m.confidence) * 100)}%` : 'N/A'} match
                       </Badge>
-                    </div>
+                    </div> */}
                   </div>
                 </a>
                 <div className="p-2">
