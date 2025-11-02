@@ -1,16 +1,26 @@
+/** biome-ignore-all lint/a11y/noStaticElementInteractions: <> */
+/** biome-ignore-all lint/a11y/useKeyWithClickEvents: <> */
 'use client';
 
 import { format } from 'date-fns';
-import { UploadIcon } from 'lucide-react';
+import {
+  CheckCircleIcon,
+  ClockIcon,
+  UploadIcon,
+  XCircleIcon,
+} from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { DatePickerDemo } from '@/components/date-picker';
 import MediaSelector from '@/components/media/MediaSelector';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { type Media, useGetMedia } from '@/hooks/useMedia';
-import { formatFileSize } from '@/lib/utils';
+import { formatFileSize, timeAgo } from '@/lib/utils';
 
 const TimelineVerificationPage = () => {
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
@@ -19,6 +29,13 @@ const TimelineVerificationPage = () => {
 
   const { data, isLoading } = useGetMedia();
   const media = data?.media || [];
+
+  // Filter media that has timeline verification data
+  const timelineVerifications = media.filter(
+    (item) =>
+      item.timeline?.status === 'completed' ||
+      item.timeline?.status === 'failed'
+  );
 
   const handleNewSearch = () => {
     setSelectedMedia(null);
@@ -36,9 +53,53 @@ const TimelineVerificationPage = () => {
     if (!claimedDate || !selectedMedia) return;
 
     const shortDate = format(claimedDate, 'yyyy-MM-dd');
-    
+
     // Navigate to results page with query parameters
-    router.push(`/dashboard/timeline/results?mediaId=${selectedMedia.id}&claimedDate=${shortDate}`);
+    router.push(
+      `/dashboard/timeline/results?mediaId=${selectedMedia.id}&claimedDate=${shortDate}`
+    );
+  };
+
+  const handleTimelineClick = (mediaItem: Media) => {
+    // Navigate to timeline results for this media
+    // If there's a claimed date in the timeline data, include it
+    const claimedDate = mediaItem.timeline?.timeline[0].timestamp;
+    const queryParams = new URLSearchParams({
+      mediaId: mediaItem.id,
+    });
+
+    if (claimedDate) {
+      queryParams.append('claimedDate', claimedDate);
+    }
+
+    console.log(
+      'Navigating to timeline results with params:',
+      queryParams.toString()
+    );
+
+    router.push(`/dashboard/timeline/results?${queryParams.toString()}`);
+  };
+
+  const getTimelineStatusIcon = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return <CheckCircleIcon className="w-4 h-4 text-green-600" />;
+      case 'failed':
+        return <XCircleIcon className="w-4 h-4 text-red-600" />;
+      default:
+        return <ClockIcon className="w-4 h-4 text-yellow-600" />;
+    }
+  };
+
+  const getTimelineStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-100 text-green-700 border-green-200';
+      case 'failed':
+        return 'bg-red-100 text-red-700 border-red-200';
+      default:
+        return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+    }
   };
 
   return (
@@ -64,7 +125,6 @@ const TimelineVerificationPage = () => {
           </Link>
         </Button>
       </div>
-
       {selectedMedia ? (
         <div className="flex flex-col p-8 border border-gray-300 rounded-sm">
           <div className="mb-4">
@@ -136,11 +196,120 @@ const TimelineVerificationPage = () => {
                 Choose a media file to verify its timeline
               </p>
             </div>
-
             <MediaSelector onSelect={handleMediaSelection} />
           </div>
         </div>
       )}
+
+      {/* Previous Timeline Verifications Section */}
+      <Card className="bg-white rounded-xl border border-gray-200 p-6">
+        <CardContent className="p-0">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-xl font-medium text-gray-900 leading-7">
+                Previous Timeline Verifications
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">
+                View your completed timeline verification analyses
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {isLoading &&
+              Array.from({ length: 4 }).map((_) => (
+                <div
+                  className="flex flex-col gap-1 border border-gray-200 rounded-md pb-6 shadow-md animate-pulse"
+                  key={crypto.randomUUID?.() ?? Math.random().toString(36)}
+                >
+                  <div className="relative">
+                    <AspectRatio ratio={16 / 9} className="bg-muted">
+                      <div className="h-full w-full bg-gray-300 rounded-t-md" />
+                    </AspectRatio>
+                    <div className="absolute top-3 right-3">
+                      <Badge className="px-2 py-0.5 text-xs rounded border bg-gray-300 text-gray-300 flex-shrink-0">
+                        &nbsp;
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="w-full flex justify-between mt-4 px-4">
+                    <div className="h-4 w-3/4 bg-gray-300 rounded" />
+                    <div className="h-4 w-4 bg-gray-300 rounded" />
+                  </div>
+                  <div className="h-4 w-1/2 bg-gray-300 rounded px-4 mt-2" />
+                </div>
+              ))}
+
+            {!isLoading &&
+              timelineVerifications.length > 0 &&
+              timelineVerifications.map((item) => (
+                <div
+                  className="flex flex-col gap-1 border border-gray-200 rounded-md pb-6 shadow-md cursor-pointer hover:shadow-lg transition-shadow"
+                  key={item.id}
+                  onClick={() => handleTimelineClick(item)}
+                >
+                  <div className="relative">
+                    <AspectRatio ratio={16 / 9} className="bg-muted">
+                      <Image
+                        src={item.thumbnailUrl || '/file.svg'}
+                        alt={item.filename}
+                        fill
+                        className="h-full w-full object-cover rounded-t-md"
+                      />
+                    </AspectRatio>
+                    <div className="absolute top-3 right-3">
+                      <Badge
+                        className={`px-2 py-0.5 text-xs rounded border flex items-center gap-1 ${getTimelineStatusColor(
+                          item.timeline?.status || 'pending'
+                        )}`}
+                      >
+                        {getTimelineStatusIcon(
+                          item.timeline?.status || 'pending'
+                        )}
+                        {item.timeline?.status === 'completed'
+                          ? 'Verified'
+                          : item.timeline?.status === 'failed'
+                          ? 'Failed'
+                          : 'Processing'}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="w-full flex justify-between items-center mt-4 px-4">
+                    <p className="font-medium text-sm truncate flex-1 mr-2">
+                      {item.filename.length > 20
+                        ? `${item.filename.substring(0, 20)}...`
+                        : item.filename}
+                    </p>
+                    <ClockIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  </div>
+                  <div className="px-4">
+                    <p className="text-xs text-gray-500">
+                      {timeAgo(item.timeline?.updatedAt || item.uploadedAt)}
+                    </p>
+                    {item.timeline?.matches && (
+                      <p className="text-xs text-blue-600 mt-1">
+                        {item.timeline.matches.length} matches found
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+            {!isLoading && timelineVerifications.length === 0 && (
+              <div className="col-span-full text-center py-12">
+                <ClockIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No Timeline Verifications Yet
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Start your first timeline verification by selecting a media
+                  file above.
+                </p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

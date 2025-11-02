@@ -44,7 +44,7 @@ interface VerifyTimelineResponse {
 
 interface ResultsPageProps {
   data?: VerifyTimelineResponse;
-  media: Media;
+  media?: Media;
   onBack?: () => void;
   claimedDate?: string;
 }

@@ -1,8 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import api from '@/lib/api';
 
-export interface VerifyTimelineResponse {
+export interface VerifyTimelineJobResponse {
   success: boolean;
   message: string;
   data: {
@@ -19,7 +18,7 @@ const verifyTimeline = async ({
 }: {
   mediaId: string;
   claimedTakenAt: string;
-}): Promise<VerifyTimelineResponse> => {
+}): Promise<VerifyTimelineJobResponse> => {
   const response = await api.post(
     `/api/timeline/verify/${mediaId}`,
     { claimedTakenAt },

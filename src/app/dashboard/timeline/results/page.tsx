@@ -4,21 +4,21 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import TimelineResult from '@/components/timelineResult';
-import { useTimeline } from '@/hooks/useTimeline';
 import { useGetMedia } from '@/hooks/useMedia';
+import { useTimeline } from '@/hooks/useTimeline';
 
 export default function TimelineResultsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(true);
-  
+
   const mediaId = searchParams.get('mediaId');
   const claimedDate = searchParams.get('claimedDate');
-  
+
   const { data: mediaData, refetch } = useGetMedia();
   const timelineMutation = useTimeline();
 
-  const selectedMedia = mediaData?.media?.find(m => m.id === mediaId);
+  const selectedMedia = mediaData?.media?.find((m) => m.id === mediaId);
   const hasTimelineData = selectedMedia?.timeline?.status === 'completed';
 
   useEffect(() => {
@@ -73,8 +73,11 @@ export default function TimelineResultsPage() {
     return (
       <div className="p-8 text-center">
         <h2 className="text-xl font-semibold mb-2">Media not found</h2>
-        <p className="text-gray-600 mb-4">The requested media file could not be found.</p>
-        <button 
+        <p className="text-gray-600 mb-4">
+          The requested media file could not be found.
+        </p>
+        <button
+          type="button"
           onClick={handleBack}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
         >
@@ -85,8 +88,8 @@ export default function TimelineResultsPage() {
   }
 
   return (
-    <TimelineResult 
-      data={timelineMutation.data} 
+    <TimelineResult
+      data={timelineMutation?.data}
       media={selectedMedia}
       onBack={handleBack}
       claimedDate={claimedDate}
