@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import api from '@/lib/api';
 
 export interface VerifyTimelineJobResponse {
@@ -32,7 +32,6 @@ const verifyTimeline = async ({
 };
 
 export const useTimeline = () => {
-  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: verifyTimeline,
   });

@@ -1,8 +1,9 @@
+/** biome-ignore-all lint/performance/noImgElement: <> */
 'use client';
 
 import { MoreVertical, Search, UploadIcon } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import MediaSelector from '@/components/media/MediaSelector';
 import { Button } from '@/components/ui/button';
@@ -21,18 +22,14 @@ export interface SearchResult {
   verified: boolean;
 }
 
-export type PageState =
-  | 'initial'
-  | 'uploaded'
-  | 'verifying'
-  | 'completed'
-  | 'results';
-
 const ReverseLookupPage = () => {
-  const [pageState, setPageState] = useState<PageState>('initial');
-  const [searchProgress, setSearchProgress] = useState(0);
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
+
+  const router = useRouter();
+
+  const { data, isLoading } = useGetMedia();
+  const media = data?.media || [];
+
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('newest');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -40,24 +37,23 @@ const ReverseLookupPage = () => {
     []
   );
 
-  const { data, isLoading } = useGetMedia();
-  const media = data?.media || [];
-
   const handleMediaSelection = (mediaFile: Media) => {
     const selectedFile = media.find((file) => file.id === mediaFile.id);
     if (selectedFile) {
       setSelectedMedia(selectedFile);
-      setPageState('uploaded');
     }
   };
 
-  // useEffect(() => {}, [media]);
-
   const handleNewSearch = () => {
-    setPageState('initial');
-    setSearchProgress(0);
-    setSearchResults([]);
     setSelectedMedia(null);
+  };
+
+  const handleStartReverseLookup = () => {
+    if (!selectedMedia) return;
+
+    if (selectedMedia) {
+      router.push(`/dashboard/reverse/results?mediaId=${selectedMedia.id}`);
+    }
   };
 
   return (
@@ -107,11 +103,9 @@ const ReverseLookupPage = () => {
           </div>
 
           <div className="flex gap-8">
-            <Image
+            <img
               src={selectedMedia.thumbnailUrl}
               alt={selectedMedia.filename}
-              width={24}
-              height={24}
               className="w-24 h-24 object-cover mb-4 border border-gray-200 rounded-md"
             />
             <div className="flex flex-col justify-center">
@@ -122,7 +116,10 @@ const ReverseLookupPage = () => {
             </div>
           </div>
           <div className="flex gap-8">
-            <Button className="flex-1 hover:cursor-pointer">
+            <Button
+              className="flex-1 hover:cursor-pointer"
+              onClick={handleStartReverseLookup}
+            >
               Start reverse search
             </Button>
             <div className="flex gap-4">

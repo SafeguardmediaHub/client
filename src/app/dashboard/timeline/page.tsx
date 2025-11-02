@@ -30,7 +30,6 @@ const TimelineVerificationPage = () => {
   const { data, isLoading } = useGetMedia();
   const media = data?.media || [];
 
-  // Filter media that has timeline verification data
   const timelineVerifications = media.filter(
     (item) =>
       item.timeline?.status === 'completed' ||
@@ -54,15 +53,12 @@ const TimelineVerificationPage = () => {
 
     const shortDate = format(claimedDate, 'yyyy-MM-dd');
 
-    // Navigate to results page with query parameters
     router.push(
       `/dashboard/timeline/results?mediaId=${selectedMedia.id}&claimedDate=${shortDate}`
     );
   };
 
   const handleTimelineClick = (mediaItem: Media) => {
-    // Navigate to timeline results for this media
-    // If there's a claimed date in the timeline data, include it
     const claimedDate = mediaItem.timeline?.timeline[0].timestamp;
     const queryParams = new URLSearchParams({
       mediaId: mediaItem.id,
@@ -71,11 +67,6 @@ const TimelineVerificationPage = () => {
     if (claimedDate) {
       queryParams.append('claimedDate', claimedDate);
     }
-
-    console.log(
-      'Navigating to timeline results with params:',
-      queryParams.toString()
-    );
 
     router.push(`/dashboard/timeline/results?${queryParams.toString()}`);
   };
@@ -125,6 +116,7 @@ const TimelineVerificationPage = () => {
           </Link>
         </Button>
       </div>
+
       {selectedMedia ? (
         <div className="flex flex-col p-8 border border-gray-300 rounded-sm">
           <div className="mb-4">
