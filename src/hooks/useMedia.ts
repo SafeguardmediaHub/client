@@ -67,8 +67,6 @@ const fetchUserMedia = async (params?: {
     },
   });
 
-  console.log(data.data);
-
   return data.data;
 };
 

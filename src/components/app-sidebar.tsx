@@ -88,7 +88,7 @@ const data = {
     },
     {
       name: 'Geolocation Verification',
-      url: '#',
+      url: '/dashboard/geolocation',
       icon: MapPin,
     },
     {

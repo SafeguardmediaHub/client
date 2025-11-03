@@ -4,6 +4,7 @@ import { formatDate } from 'date-fns';
 import { Check } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { type Media, useGetMedia } from '@/hooks/useMedia';
+import { useReverseLookup } from '@/hooks/useReverseLookup';
 
 const ReverseLookupResultPage = () => {
   const router = useRouter();
@@ -12,6 +13,7 @@ const ReverseLookupResultPage = () => {
   const mediaId = searhParams.get('mediaId');
 
   const { data: mediaData, refetch, isLoading } = useGetMedia();
+  const reverseLookupMutation = useReverseLookup();
 
   const selectedMedia = mediaData?.media?.find((m) => m.id === mediaId);
 
