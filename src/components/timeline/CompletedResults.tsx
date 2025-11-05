@@ -9,10 +9,50 @@ import {
   Share2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import type { TimelineVerificationState } from '@/hooks/useTimeline';
+
+interface TimelineEvent {
+  label: string;
+  timestamp: string;
+  source: string;
+}
+
+interface Match {
+  title: string;
+  link: string;
+  source: string;
+  thumbnail?: string;
+  sourceIcon?: string;
+}
+
+interface Analysis {
+  hasMetadata: boolean;
+  metadataConsistent: boolean;
+  earlierOnlineAppearance: boolean;
+  spoofedMetadata: boolean;
+}
+
+interface Metadata {
+  extractedAt?: string;
+  analysis: {
+    integrityScore: number;
+    authenticityScore: number;
+    completenessScore: number;
+  };
+}
+
+interface VerificationData {
+  timeline: TimelineEvent[];
+  matches: Match[];
+  flags: string[];
+  analysis: Analysis;
+  metadata: Metadata;
+}
 
 interface CompletedResultsProps {
-  verificationState: TimelineVerificationState;
+  verificationState: {
+    data?: VerificationData;
+    completedAt?: string;
+  };
   onBack?: () => void;
 }
 
@@ -87,9 +127,9 @@ export default function CompletedResults({
       <div>
         <h3 className="text-lg font-medium mb-3">Timeline</h3>
         <div className="space-y-3 border border-gray-200 rounded-xl p-4">
-          {timeline.map((event, idx) => (
+          {timeline.map((event) => (
             <div
-              key={idx}
+              key={event.label}
               className="flex justify-between items-center border-b border-gray-100 pb-2 last:border-none"
             >
               <div>
@@ -110,9 +150,9 @@ export default function CompletedResults({
           Found Matches ({matches.length})
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {matches.map((match, idx) => (
+          {matches.map((match) => (
             <a
-              key={idx}
+              key={match.link}
               href={match.link}
               target="_blank"
               rel="noopener noreferrer"
@@ -150,8 +190,8 @@ export default function CompletedResults({
       <div>
         <h3 className="text-lg font-medium mb-3">Analysis Summary</h3>
         <div className="space-y-2 border border-gray-200 rounded-xl p-4">
-          {flags.map((flag, idx) => (
-            <div key={idx} className="flex items-center gap-2">
+          {flags.map((flag) => (
+            <div key={flag} className="flex items-center gap-2">
               <Check className="w-4 h-4 text-green-600" />
               <span className="text-sm text-gray-700">{flag}</span>
             </div>

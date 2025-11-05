@@ -1,18 +1,19 @@
-"use client";
+/** biome-ignore-all lint/correctness/useExhaustiveDependencies: <> */
+'use client';
 
-import { useState, useEffect } from "react";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from 'react';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   useStartTimelineVerification,
   useTimelineVerificationStatus,
   type VerificationStatus,
   type TimelineVerificationState,
-} from "@/hooks/useTimeline";
-import ProcessingStatus from "./ProcessingStatus";
-import PartialResults from "./PartialResults";
-import CompletedResults from "./CompletedResults";
-import ErrorFallback from "./ErrorFallback";
+} from '@/hooks/useTimeline';
+import ProcessingStatus from './ProcessingStatus';
+import PartialResults from './PartialResults';
+import CompletedResults from './CompletedResults';
+import ErrorFallback from './ErrorFallback';
 
 interface TimelineProcessorProps {
   mediaId: string;
@@ -25,7 +26,8 @@ export default function TimelineProcessor({
   claimedTakenAt,
   onBack,
 }: TimelineProcessorProps) {
-  const [optimisticState, setOptimisticState] = useState<TimelineVerificationState | null>(null);
+  const [optimisticState, setOptimisticState] =
+    useState<TimelineVerificationState | null>(null);
   const [isOptimistic, setIsOptimistic] = useState(false);
 
   // Hooks for timeline verification
@@ -37,10 +39,11 @@ export default function TimelineProcessor({
   } = useTimelineVerificationStatus(mediaId);
 
   // Use optimistic state if we have it, otherwise use real server state
-  const currentState = isOptimistic && optimisticState ? optimisticState : verificationState;
+  const currentState =
+    isOptimistic && optimisticState ? optimisticState : verificationState;
 
   // Debug logging
-  console.log("Timeline state:", {
+  console.log('Timeline state:', {
     isOptimistic,
     optimisticStatus: optimisticState?.status,
     serverStatus: verificationState?.status,
@@ -53,42 +56,46 @@ export default function TimelineProcessor({
     if (!isOptimistic || !optimisticState) return;
 
     const interval = setInterval(() => {
-      setOptimisticState(prev => {
+      setOptimisticState((prev) => {
         if (!prev) return null;
-        
+
         // Simulate progress: 25% -> 50% -> 75% -> 90% -> completed
         if (prev.progress < 90) {
           const newProgress = prev.progress + 25;
           return {
             ...prev,
             progress: newProgress,
-            currentStage: prev.progress === 25 ? "Analyzing metadata..." : 
-                         prev.progress === 50 ? "Searching online sources..." : 
-                         prev.progress === 75 ? "Processing matches and calculating scores..." :
-                         "Finalizing results...",
+            currentStage:
+              prev.progress === 25
+                ? 'Analyzing metadata...'
+                : prev.progress === 50
+                ? 'Searching online sources...'
+                : prev.progress === 75
+                ? 'Processing matches and calculating scores...'
+                : 'Finalizing results...',
           };
         } else if (prev.progress === 90) {
           // After 90%, complete the verification optimistically with mock data
           return {
             ...prev,
-            status: "completed",
+            status: 'completed',
             progress: 100,
-            currentStage: "Verification complete",
+            currentStage: 'Verification complete',
             completedAt: new Date().toISOString(),
             data: {
               timeline: [
                 {
-                  label: "Claimed creation/publication date",
+                  label: 'Claimed creation/publication date',
                   timestamp: claimedTakenAt,
-                  source: "user-claim",
+                  source: 'user-claim',
                 },
                 {
-                  label: "Verification completed",
+                  label: 'Verification completed',
                   timestamp: new Date().toISOString(),
-                  source: "system",
-                }
+                  source: 'system',
+                },
               ],
-              flags: ["Analysis in progress..."],
+              flags: ['Analysis in progress...'],
               analysis: {
                 hasMetadata: true,
                 metadataConsistent: true,
@@ -116,8 +123,12 @@ export default function TimelineProcessor({
 
   // Switch from optimistic to real state when server data is ready
   useEffect(() => {
-    if (isOptimistic && verificationState && 
-        (verificationState.status === "completed" || verificationState.status === "failed")) {
+    if (
+      isOptimistic &&
+      verificationState &&
+      (verificationState.status === 'completed' ||
+        verificationState.status === 'failed')
+    ) {
       // Delay the transition slightly to let users see the 100% completion
       setTimeout(() => {
         setIsOptimistic(false);
@@ -130,9 +141,9 @@ export default function TimelineProcessor({
     try {
       // Set optimistic state immediately
       setOptimisticState({
-        status: "processing",
+        status: 'processing',
         progress: 25,
-        currentStage: "Starting verification...",
+        currentStage: 'Starting verification...',
         startedAt: new Date().toISOString(),
       });
       setIsOptimistic(true);
@@ -143,7 +154,7 @@ export default function TimelineProcessor({
         claimedTakenAt,
       });
     } catch (error) {
-      console.error("Failed to start verification:", error);
+      console.error('Failed to start verification:', error);
       // Reset optimistic state on error
       setIsOptimistic(false);
       setOptimisticState(null);
@@ -163,7 +174,7 @@ export default function TimelineProcessor({
     }
 
     // Only show start verification if status is actually idle
-    if (!currentState || currentState.status === "idle") {
+    if (!currentState || currentState.status === 'idle') {
       return (
         <div className="p-6 space-y-8">
           <div className="flex items-center gap-3">
@@ -188,8 +199,8 @@ export default function TimelineProcessor({
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 {startVerification.isPending
-                  ? "Starting..."
-                  : "Start Verification"}
+                  ? 'Starting...'
+                  : 'Start Verification'}
               </Button>
             </div>
           </div>
@@ -207,7 +218,7 @@ export default function TimelineProcessor({
     }
 
     switch (currentState.status) {
-      case "idle":
+      case 'idle':
         return (
           <div className="p-6 space-y-8">
             <div className="flex items-center gap-3">
@@ -232,48 +243,39 @@ export default function TimelineProcessor({
                   className="bg-blue-600 hover:bg-blue-700"
                 >
                   {startVerification.isPending
-                    ? "Starting..."
-                    : "Start Verification"}
+                    ? 'Starting...'
+                    : 'Start Verification'}
                 </Button>
               </div>
             </div>
           </div>
         );
 
-      case "processing":
+      case 'processing':
         return (
-          <ProcessingStatus
-            verificationState={currentState}
-            onBack={onBack}
-          />
+          <ProcessingStatus verificationState={currentState} onBack={onBack} />
         );
 
-      case "partial":
+      case 'partial':
         return (
-          <PartialResults
-            verificationState={currentState}
-            onBack={onBack}
-          />
+          <PartialResults verificationState={currentState} onBack={onBack} />
         );
 
-      case "completed":
+      case 'completed':
         return (
-          <CompletedResults
-            verificationState={currentState}
-            onBack={onBack}
-          />
+          <CompletedResults verificationState={currentState} onBack={onBack} />
         );
 
-      case "failed":
+      case 'failed':
         return (
           <ErrorFallback
-            error={new Error(currentState.error || "Verification failed")}
+            error={new Error(currentState.error || 'Verification failed')}
             onRetry={handleStartVerification}
             onBack={onBack}
           />
         );
 
-      case "cancelled":
+      case 'cancelled':
         return (
           <div className="p-6 space-y-8">
             <div className="flex items-center gap-3">
@@ -298,8 +300,8 @@ export default function TimelineProcessor({
                   className="bg-blue-600 hover:bg-blue-700"
                 >
                   {startVerification.isPending
-                    ? "Starting..."
-                    : "Restart Verification"}
+                    ? 'Starting...'
+                    : 'Restart Verification'}
                 </Button>
               </div>
             </div>

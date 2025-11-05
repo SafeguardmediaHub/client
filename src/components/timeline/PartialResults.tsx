@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
 import {
-  ArrowLeft,
-  Clock,
-  Check,
-  ExternalLink,
   AlertCircle,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { type TimelineVerificationState } from "@/hooks/useTimeline";
-import ProgressBar from "./ProgressBar";
+  ArrowLeft,
+  Check,
+  Clock,
+  ExternalLink,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import type { TimelineVerificationState } from '@/hooks/useTimeline';
+import ProgressBar from './ProgressBar';
 
 interface PartialResultsProps {
   verificationState: TimelineVerificationState;
@@ -23,7 +23,7 @@ export default function PartialResults({
   const { progress, currentStage, data, startedAt } = verificationState;
 
   const formatElapsedTime = (startTime?: string) => {
-    if (!startTime) return "";
+    if (!startTime) return '';
 
     const elapsed = Date.now() - new Date(startTime).getTime();
     const seconds = Math.floor(elapsed / 1000);
@@ -100,9 +100,9 @@ export default function PartialResults({
             <h3 className="text-lg font-medium">Timeline</h3>
           </div>
           <div className="space-y-3 border border-gray-200 rounded-xl p-4">
-            {data.timeline.map((event, idx) => (
+            {data?.timeline.map((event) => (
               <div
-                key={idx}
+                key={event.label}
                 className="flex justify-between items-center border-b border-gray-100 pb-2 last:border-none"
               >
                 <div>
@@ -141,13 +141,13 @@ export default function PartialResults({
           <div className="flex items-center gap-2 mb-3">
             <Check className="w-5 h-5 text-green-600" />
             <h3 className="text-lg font-medium">
-              Found Matches ({data.matches.length})
+              Found Matches ({data?.matches?.length})
             </h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {data.matches.slice(0, 6).map((match, idx) => (
+            {data?.matches?.slice(0, 6).map((match, idx) => (
               <a
-                key={idx}
+                key={match.link}
                 href={match.link}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -180,7 +180,7 @@ export default function PartialResults({
                 </div>
               </a>
             ))}
-            {data.matches.length > 6 && (
+            {data?.matches && data.matches.length > 6 && (
               <div className="border border-dashed border-gray-300 rounded-xl p-4 flex items-center justify-center">
                 <span className="text-sm text-gray-500">
                   +{data.matches.length - 6} more results
@@ -220,8 +220,8 @@ export default function PartialResults({
             <h3 className="text-lg font-medium">Preliminary Analysis</h3>
           </div>
           <div className="space-y-2 border border-gray-200 rounded-xl p-4">
-            {data.flags.map((flag, idx) => (
-              <div key={idx} className="flex items-center gap-2">
+            {data?.flags?.map((flag, idx) => (
+              <div key={flag} className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-green-600" />
                 <span className="text-sm text-gray-700">{flag}</span>
               </div>
@@ -259,19 +259,28 @@ export default function PartialResults({
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-gray-50 rounded-xl p-4 text-center">
               <p className="text-2xl font-bold text-blue-600">
-                {(data.metadata.analysis.integrityScore * 100).toFixed(0)}%
+                {(
+                  (data?.metadata?.analysis?.integrityScore ?? 0) * 100
+                ).toFixed(0)}
+                %
               </p>
               <p className="text-sm text-gray-600">Integrity</p>
             </div>
             <div className="bg-gray-50 rounded-xl p-4 text-center">
               <p className="text-2xl font-bold text-green-600">
-                {(data.metadata.analysis.authenticityScore * 100).toFixed(0)}%
+                {(
+                  (data?.metadata?.analysis?.authenticityScore ?? 0) * 100
+                ).toFixed(0)}
+                %
               </p>
               <p className="text-sm text-gray-600">Authenticity</p>
             </div>
             <div className="bg-gray-50 rounded-xl p-4 text-center">
               <p className="text-2xl font-bold text-orange-600">
-                {(data.metadata.analysis.completenessScore * 100).toFixed(0)}%
+                {(
+                  (data?.metadata?.analysis?.completenessScore ?? 0) * 100
+                ).toFixed(0)}
+                %
               </p>
               <p className="text-sm text-gray-600">Completeness</p>
             </div>

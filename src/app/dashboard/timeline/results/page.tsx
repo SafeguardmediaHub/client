@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/correctness/useExhaustiveDependencies: <> */
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -59,7 +60,8 @@ export default function TimelineResultsPage() {
         },
       }
     );
-  }, [mediaId, claimedDate, selectedMedia, hasTimelineData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mediaId, claimedDate]);
 
   const handleBack = () => {
     router.push('/dashboard/timeline');
@@ -89,10 +91,10 @@ export default function TimelineResultsPage() {
 
   return (
     <TimelineResult
-      data={timelineMutation?.data}
-      media={selectedMedia}
+      data={selectedMedia?.timeline}
+      media={selectedMedia || undefined}
       onBack={handleBack}
-      claimedDate={claimedDate}
+      claimedDate={claimedDate || ''}
     />
   );
 }
