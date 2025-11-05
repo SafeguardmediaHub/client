@@ -3,9 +3,15 @@
 import { MoreVertical, Search, UploadIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import MediaSelector from '@/components/media/MediaSelector';
 import { Button } from '@/components/ui/button';
+import {
+  type GeoVerificationResult,
+  useStartGeoVerification,
+  useUserGeoVerifications,
+} from '@/hooks/useGeolocation';
 import { type Media, useGetMedia } from '@/hooks/useMedia';
 import { formatFileSize } from '@/lib/utils';
 
@@ -18,12 +24,65 @@ const GeolocationVerificationPage = () => {
   const { data, isLoading } = useGetMedia();
   const media = data?.media || [];
 
+  const startGeoMutation = useStartGeoVerification();
+
+  // Fetch user's previous verifications
+  const {
+    data: verificationsData,
+    isLoading: isLoadingVerifications,
+    refetch: refetchVerifications,
+  } = useUserGeoVerifications();
+
+  const userVerifications = verificationsData?.data?.verifications || [];
+
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('newest');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [filteredVerifications, setFilteredVerifications] = useState<Media[]>(
-    []
-  );
+  const [filteredVerifications, setFilteredVerifications] = useState<
+    GeoVerificationResult['data'][]
+  >([]);
+
+  // Filter and sort verifications based on search, status, and sort order
+  useEffect(() => {
+    let filtered = [...userVerifications];
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (v) =>
+          v.mediaId.originalFilename.toLowerCase().includes(query) ||
+          v.claimedLocation.raw.toLowerCase().includes(query) ||
+          v._id.toLowerCase().includes(query)
+      );
+    }
+
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter((v) => {
+        if (statusFilter === 'verified') {
+          return v.verification.match === true;
+        } else if (statusFilter === 'pending') {
+          return (
+            v.verification.status === 'queued' ||
+            v.verification.status === 'processing'
+          );
+        } else if (statusFilter === 'failed') {
+          return v.verification.status === 'failed';
+        }
+        return true;
+      });
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return sortBy === 'newest' ? dateB - dateA : dateA - dateB;
+    });
+
+    setFilteredVerifications(filtered);
+  }, [userVerifications, searchQuery, statusFilter, sortBy]);
 
   const handleMediaSelection = (mediaFile: Media) => {
     const selectedFile = media.find((file) => file.id === mediaFile.id);
@@ -38,20 +97,82 @@ const GeolocationVerificationPage = () => {
   };
 
   const handleStartGeoVerification = () => {
-    if (!selectedMedia) return;
+    if (!selectedMedia || !locationInput.trim()) return;
 
-    console.log(selectedMedia);
-    if (selectedMedia) {
-      router.push(
-        `/dashboard/geolocation/results?mediaId=${
-          selectedMedia.id
-        }&claimedLocation=${encodeURIComponent(locationInput)}`
+    startGeoMutation.mutate(
+      { id: selectedMedia.id, claimedLocation: locationInput },
+      {
+        onSuccess: (response) => {
+          if (response.success && response.data.verificationId) {
+            // Refetch verifications to update the list
+            refetchVerifications();
+
+            // Redirect to results page with verificationId
+            router.push(
+              `/dashboard/geolocation/results?verificationId=${response.data.verificationId}`
+            );
+          }
+        },
+        onError: (error) => {
+          console.error('Error initiating verification:', error);
+          toast.error('Failed to start verification. Please try again.');
+        },
+      }
+    );
+  };
+
+  const handleViewVerification = (verificationId: string) => {
+    router.push(
+      `/dashboard/geolocation/results?verificationId=${verificationId}`
+    );
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      // hour: '2-digit',
+      // minute: '2-digit',
+    });
+  };
+
+  const getStatusBadge = (verification: GeoVerificationResult['data']) => {
+    const status = verification.verification.status;
+
+    if (status === 'completed' || status === 'partial') {
+      return verification.verification.match ? (
+        <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
+          Verified
+        </span>
+      ) : (
+        <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">
+          Mismatch
+        </span>
+      );
+    } else if (status === 'queued' || status === 'processing') {
+      return (
+        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
+          Processing
+        </span>
+      );
+    } else if (status === 'failed') {
+      return (
+        <span className="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">
+          Failed
+        </span>
       );
     }
+
+    return (
+      <span className="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded">
+        Unknown
+      </span>
+    );
   };
 
   return (
-    <div className="w-full flex flex-col gap-6 p-8 bg-gray-200">
+    <div className="w-full flex flex-col gap-6 p-8">
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-medium text-gray-900 leading-9">
@@ -129,9 +250,11 @@ const GeolocationVerificationPage = () => {
             <Button
               className="flex-1 hover:cursor-pointer"
               onClick={handleStartGeoVerification}
-              disabled={!locationInput.trim()}
+              disabled={!locationInput.trim() || startGeoMutation.isPending}
             >
-              Start Geolocation Verification
+              {startGeoMutation.isPending
+                ? 'Starting Verification...'
+                : 'Start Geolocation Verification'}
             </Button>
             <div className="flex gap-4">
               <Button
@@ -205,7 +328,8 @@ const GeolocationVerificationPage = () => {
               >
                 <option value="all">All status</option>
                 <option value="verified">Verified</option>
-                <option value="pending">Pending</option>
+                <option value="pending">Processing</option>
+                <option value="failed">Failed</option>
               </select>
             </div>
 
@@ -214,25 +338,27 @@ const GeolocationVerificationPage = () => {
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Media
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                       File name
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Original Source
+                      Claimed Location
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Date First Seen
+                      Status
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Similar Copies
+                      Confidence
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"></th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      Verified Date
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {isLoading ? (
+                  {isLoadingVerifications ? (
                     <tr>
                       <td
                         colSpan={6}
@@ -247,51 +373,90 @@ const GeolocationVerificationPage = () => {
                         colSpan={6}
                         className="px-6 py-12 text-center text-gray-500"
                       >
-                        No verifications found
+                        {searchQuery || statusFilter !== 'all'
+                          ? 'No verifications match your filters'
+                          : 'No verifications found. Start your first verification above!'}
                       </td>
                     </tr>
                   ) : (
-                    filteredVerifications.map((item) => (
+                    filteredVerifications.map((verification) => (
                       <tr
-                        key={item.id}
-                        className="hover:bg-gray-50 transition-colors"
+                        key={verification._id}
+                        className="hover:bg-gray-50 transition-colors cursor-pointer"
+                        onClick={() => handleViewVerification(verification._id)}
                       >
                         <td className="px-6 py-4">
-                          <div className="w-12 h-12 rounded overflow-hidden bg-gray-100">
-                            <img
-                              src={item.thumbnailUrl}
-                              alt={item.filename}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
+                          <p className="text-sm font-medium text-gray-900">
+                            {verification.mediaId.originalFilename}
+                          </p>
+                          {/* {verification.mediaId.humanFileSize && (
+                            <p className="text-xs text-gray-500">
+                              {verification.mediaId.humanFileSize}
+                            </p>
+                          )} */}
                         </td>
                         <td className="px-6 py-4">
-                          <p className="text-sm text-gray-900">
-                            {item.filename}
+                          <p className="text-sm text-gray-900 max-w-xs truncate">
+                            {verification.claimedLocation.raw}
                           </p>
+                          {verification.claimedLocation.parsed && (
+                            <p className="text-xs text-gray-500">
+                              {verification.claimedLocation.parsed.region},{' '}
+                              {verification.claimedLocation.parsed.country}
+                            </p>
+                          )}
                         </td>
                         <td className="px-6 py-4">
-                          <p className="text-sm text-gray-600 max-w-xs truncate">
-                            {/* {item.original_source} */}
-                          </p>
+                          {getStatusBadge(verification)}
+                        </td>
+                        <td className="px-6 py-4">
+                          {verification.verification?.status === 'completed' ||
+                          verification.verification?.status === 'partial' ? (
+                            <div className="flex items-center gap-2">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-medium text-gray-900">
+                                    {verification.verification.confidence}%
+                                  </span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+                                  <div
+                                    className={`h-1.5 rounded-full ${
+                                      verification.verification.confidence >= 80
+                                        ? 'bg-green-600'
+                                        : verification.verification
+                                            .confidence >= 50
+                                        ? 'bg-yellow-600'
+                                        : 'bg-red-600'
+                                    }`}
+                                    style={{
+                                      width: `${verification.verification.confidence}%`,
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-sm text-gray-500">-</span>
+                          )}
                         </td>
                         <td className="px-6 py-4">
                           <p className="text-sm text-gray-600">
-                            {/* {formatDate(item.date_first_seen)} */}
+                            {formatDate(verification.createdAt)}
                           </p>
                         </td>
                         <td className="px-6 py-4">
-                          <p className="text-sm text-gray-900 font-medium">
-                            {/* {item.similar_copies} */}
-                          </p>
-                        </td>
-                        <td className="px-6 py-4">
-                          <button
-                            type="button"
-                            className="p-1 hover:bg-gray-100 rounded transition-colors"
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewVerification(verification._id);
+                            }}
+                            className="cursor-pointer"
                           >
-                            <MoreVertical className="w-5 h-5 text-gray-400" />
-                          </button>
+                            View Details
+                          </Button>
                         </td>
                       </tr>
                     ))
@@ -300,15 +465,21 @@ const GeolocationVerificationPage = () => {
               </table>
             </div>
 
-            <div className="mt-6 flex justify-center">
-              <Button
-                type="button"
-                className="px-6 py-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors"
-                variant="outline"
-              >
-                Load More
-              </Button>
-            </div>
+            {verificationsData?.data?.pagination?.hasNextPage && (
+              <div className="mt-6 flex justify-center">
+                <Button
+                  type="button"
+                  className="px-6 py-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors cursor-pointer"
+                  variant="outline"
+                  onClick={() => {
+                    // Implement pagination if needed
+                    toast.info('Pagination coming soon');
+                  }}
+                >
+                  Load More
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>{' '}

@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
 
 export interface InitiateGeoVerificationResponse {
@@ -6,7 +6,7 @@ export interface InitiateGeoVerificationResponse {
   message: string;
   data: {
     verificationId: string;
-    status: string;
+    status: 'queued' | 'processing' | 'completed' | 'failed';
     estimatedTime: number;
   };
 }
@@ -15,9 +15,9 @@ export interface GeoVerificationResult {
   success: boolean;
   message: string;
   data: {
-    id: string;
+    _id: string;
     mediaId: {
-      id: string;
+      _id: string;
       originalFilename: string;
       fileExtension: string;
       humanFileSize?: string;
@@ -76,8 +76,20 @@ export interface GeoVerificationResult {
   };
 }
 
-export interface Gelocation {
-  id: string;
+export interface UserGeoVerifications {
+  success: boolean;
+  message: string;
+  data: {
+    verifications: GeoVerificationResult['data'][];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+      hasNextPage: boolean;
+      hasPrevPage: boolean;
+    };
+  };
 }
 
 const initiateVerification = async (
@@ -96,22 +108,32 @@ const initiateVerification = async (
     }
   );
 
-  console.log('initiate geo verification response', response.data);
+  // console.log('initiate geo verification response', response.data);
 
   return response.data;
 };
 
-const geoVerificationResult = async (
-  id: string
+const fetchGeoVerificationResult = async (
+  verificationId: string
 ): Promise<GeoVerificationResult> => {
-  const response = await api.get(`/api/geolocation/verify/${id}`, {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+  const response = await api.get(`/api/geolocation/verify/${verificationId}`);
 
-  console.log('geo verification result response', response.data);
+  // console.log('geo verification result response', response.data);
+  return response.data;
+};
 
+const fetchUserVerifications = async (): Promise<UserGeoVerifications> => {
+  const response = await api.get('/api/geolocation/verify');
+
+  // console.log('user geo verifications response', response.data);
+  return response.data;
+};
+
+const fetchGeoVerificationByMedia = async (mediaId: string) => {
+  const response = await api.get(
+    `/api/geolocation/media/${mediaId}/verification`
+  );
+  console.log('geo verification response', response.data);
   return response.data;
 };
 
@@ -127,104 +149,62 @@ export const useStartGeoVerification = () => {
   });
 };
 
-export const useGeoVerificationResult = () => {
-  return useMutation({
-    mutationFn: geoVerificationResult,
+export const useGeoVerificationResult = (
+  verificationId: string,
+  options?: {
+    pollingInterval?: number;
+    enabled?: boolean;
+  }
+) => {
+  const pollingInterval = options?.pollingInterval ?? 30000; // 30 seconds default
+
+  return useQuery({
+    queryKey: ['geoVerificationResult', verificationId],
+    queryFn: () => fetchGeoVerificationResult(verificationId),
+    enabled: options?.enabled ?? !!verificationId,
+    refetchInterval: (query) => {
+      // Access the data from the query state
+      const data = query.state.data;
+
+      if (!data?.data?.verification?.status) {
+        // If we don't have status yet, keep polling
+        return pollingInterval;
+      }
+
+      const status = data.data.verification.status;
+
+      // Only poll when status is queued or processing
+      if (['queued', 'processing'].includes(status)) {
+        return pollingInterval;
+      }
+
+      // Stop polling when completed or failed
+      return false;
+    },
+    retry: (failureCount, error) => {
+      // Don't retry on 404 - verification not found
+      if ((error as any)?.response?.status === 404) {
+        return false;
+      }
+      // Retry up to 3 times for other errors
+      return failureCount < 3;
+    },
+    staleTime: 0, // Always fetch fresh data when queried
   });
 };
 
-// {
-//   "success": true,
-//   "message": "Verification retrieved successfully",
-//   "data": {
-//       "_id": "690a9fbfd5a504d0ca4d2982",
-//       "mediaId": {
-//           "_id": "6904de787563783bc2eabf51",
-//           "originalFilename": "shooting-1024x683.jpg",
-//           "id": "6904de787563783bc2eabf51",
-//           "fileExtension": "jpg",
-//           "humanFileSize": "NaN undefined"
-//       },
-//       "userId": "68cd61fde04d94bd94cfb5f5",
-//       "claimedLocation": {
-//           "parsed": {
-//               "region": "Pennsylvania",
-//               "country": "United States of America",
-//               "coordinates": {
-//                   "lat": 40.9699889,
-//                   "lng": -77.7278831
-//               }
-//           },
-//           "raw": "Pennsylvania, USA"
-//       },
-//       "verification": {
-//           "confidenceExplanation": {
-//               "missingData": {
-//                   "gpsCoordinates": true,
-//                   "geocodedLocation": false
-//               },
-//               "summary": "Low confidence (25%) due to missing data required for location verification",
-//               "reasons": [
-//                   "No GPS coordinates extracted from media metadata",
-//                   "Successfully geocoded claimed location"
-//               ]
-//           },
-//           "discrepancies": {
-//               "addressMismatch": false
-//           },
-//           "status": "partial",
-//           "match": false,
-//           "confidence": 25
-//       },
-//       "mapData": {
-//           "centerCoordinates": {
-//               "lat": 40.9699889,
-//               "lng": -77.7278831
-//           },
-//           "zoom": 12,
-//           "markers": [
-//               {
-//                   "type": "claimed",
-//                   "coordinates": {
-//                       "lat": 40.9699889,
-//                       "lng": -77.7278831
-//                   },
-//                   "label": "Claimed: Pennsylvania, USA"
-//               }
-//           ]
-//       },
-//       "processingTime": 13209,
-//       "apiCosts": {
-//           "geocoding": 0.001,
-//           "staticMap": 0,
-//           "total": 0.001
-//       },
-//       "createdAt": "2025-11-05T00:52:15.082Z",
-//       "updatedAt": "2025-11-05T00:52:28.297Z",
-//       "__v": 0,
-//       "extractionFailure": {
-//           "reason": "no_gps_metadata",
-//           "details": "No GPS coordinates found in media metadata. The file does not contain embedded location information.",
-//           "checkedSources": [
-//               "EXIF GPS data",
-//               "Video metadata geolocation",
-//               "Legacy GPS metadata format",
-//               "S3 file-based extraction"
-//           ]
-//       },
-//       "geocoding": {
-//           "forwardGeocode": {
-//               "coordinates": {
-//                   "lat": 40.9699889,
-//                   "lng": -77.7278831
-//               },
-//               "confidence": 80,
-//               "provider": "nominatim"
-//           }
-//       },
-//       "insights": [
-//           "Low confidence match"
-//       ]
-//   },
-//   "timestamp": "2025-11-05T00:53:23.028Z"
-// }
+export const useUserGeoVerifications = () => {
+  return useQuery({
+    queryKey: ['userGeoVerifications'],
+    queryFn: fetchUserVerifications,
+    staleTime: 60 * 1000, // cache for 1 minute
+  });
+};
+
+export const useGeoVerificationByMedia = (mediaId: string) => {
+  return useQuery({
+    queryKey: ['geoVerificationByMedia', mediaId],
+    queryFn: () => fetchGeoVerificationByMedia(mediaId),
+    enabled: !!mediaId,
+  });
+};
