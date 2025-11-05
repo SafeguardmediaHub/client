@@ -3,7 +3,7 @@
 import { formatDate } from 'date-fns';
 import { Check, RefreshCw } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Button } from '@/components/ui/button';
 import { useGetMedia } from '@/hooks/useMedia';
@@ -12,7 +12,7 @@ import {
   useReverseLookupResult,
 } from '@/hooks/useReverseLookup';
 
-const ReverseLookupResultPage = () => {
+const ReverseLookupResultContent = () => {
   const router = useRouter();
   const searhParams = useSearchParams();
 
@@ -342,6 +342,23 @@ const ReverseLookupResultPage = () => {
         )}
       </div>
     </div>
+  );
+};
+
+const ReverseLookupResultPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8 flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading results...</p>
+          </div>
+        </div>
+      }
+    >
+      <ReverseLookupResultContent />
+    </Suspense>
   );
 };
 

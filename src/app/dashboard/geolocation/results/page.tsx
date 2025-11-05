@@ -9,12 +9,12 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useGeoVerificationResult } from '@/hooks/useGeolocation';
 
-const GeolocationResultPage = () => {
+const GeolocationResultContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const verificationId = searchParams.get('verificationId');
@@ -672,6 +672,30 @@ const GeolocationResultPage = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+const GeolocationResultPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="w-full flex flex-col items-center justify-center gap-6 p-8 bg-gray-50 min-h-screen">
+          <div className="max-w-md w-full bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <div className="flex flex-col items-center text-center gap-4">
+              <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+              <h2 className="text-xl font-semibold text-gray-900">
+                Loading Results
+              </h2>
+              <p className="text-sm text-gray-600">
+                Please wait while we load the verification results...
+              </p>
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <GeolocationResultContent />
+    </Suspense>
   );
 };
 

@@ -2,13 +2,13 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import TimelineResult from '@/components/timelineResult';
 import { useGetMedia } from '@/hooks/useMedia';
 import { useTimeline } from '@/hooks/useTimeline';
 
-export default function TimelineResultsPage() {
+function TimelineResultsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(true);
@@ -96,5 +96,22 @@ export default function TimelineResultsPage() {
       onBack={handleBack}
       claimedDate={claimedDate || ''}
     />
+  );
+}
+
+export default function TimelineResultsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8 flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading timeline results...</p>
+          </div>
+        </div>
+      }
+    >
+      <TimelineResultsContent />
+    </Suspense>
   );
 }
