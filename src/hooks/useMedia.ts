@@ -22,6 +22,7 @@ export interface Media {
   uploadedAt: Date;
   createdAt: Date;
   metadata?: any;
+  timeline?: any;
   analysis?: {
     possibleTampering?: boolean;
     strippedMetadata: boolean;
@@ -66,8 +67,6 @@ const fetchUserMedia = async (params?: {
     },
   });
 
-  console.log(data.data);
-
   return data.data;
 };
 
@@ -100,7 +99,7 @@ export const useGetMedia = () => {
   return useQuery({
     queryKey: ['userMedia'],
     queryFn: () => fetchUserMedia(),
-    staleTime: 60 * 1000,
+    staleTime: 5000,
     placeholderData: keepPreviousData,
   });
 };

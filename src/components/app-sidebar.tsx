@@ -83,12 +83,12 @@ const data = {
   verification: [
     {
       name: 'Reverse Lookup',
-      url: '#',
+      url: '/dashboard/reverse',
       icon: SearchCheck,
     },
     {
       name: 'Geolocation Verification',
-      url: '#',
+      url: '/dashboard/geolocation',
       icon: MapPin,
     },
     {

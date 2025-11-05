@@ -43,7 +43,6 @@ const LibraryPage = () => {
   const { data, isError, isLoading, refetch } = useGetMedia();
 
   const media = data?.media || [];
-  console.log('thisismedia', media);
 
   const deleteMedia = useDeleteMedia();
 
