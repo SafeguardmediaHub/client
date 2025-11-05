@@ -51,7 +51,7 @@ const GeolocationVerificationPage = () => {
   };
 
   return (
-    <div className="w-full flex flex-col gap-6 p-8">
+    <div className="w-full flex flex-col gap-6 p-8 bg-gray-200">
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-medium text-gray-900 leading-9">
@@ -74,7 +74,6 @@ const GeolocationVerificationPage = () => {
           </Link>
         </Button>{' '}
       </div>
-
       {selectedMedia ? (
         <div className="flex flex-col p-8 border border-gray-300 rounded-sm">
           <div className="mb-4">
@@ -169,7 +168,6 @@ const GeolocationVerificationPage = () => {
           </div>
         </div>
       )}
-
       {/*  */}
       <div className="pb-8">
         <div className="border-t border-gray-200 pt-6">
@@ -313,7 +311,7 @@ const GeolocationVerificationPage = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div>{' '}
     </div>
   );
 };

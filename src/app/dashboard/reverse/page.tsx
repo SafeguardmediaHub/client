@@ -5,9 +5,11 @@ import { MoreVertical, Search, UploadIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import MediaSelector from '@/components/media/MediaSelector';
 import { Button } from '@/components/ui/button';
 import { type Media, useGetMedia } from '@/hooks/useMedia';
+import { useReverseLookup } from '@/hooks/useReverseLookup';
 import { formatFileSize } from '@/lib/utils';
 
 export interface SearchResult {
@@ -26,6 +28,7 @@ const ReverseLookupPage = () => {
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
 
   const router = useRouter();
+  const reverseLookupMutation = useReverseLookup();
 
   const { data, isLoading } = useGetMedia();
   const media = data?.media || [];
@@ -51,9 +54,26 @@ const ReverseLookupPage = () => {
   const handleStartReverseLookup = () => {
     if (!selectedMedia) return;
 
-    if (selectedMedia) {
-      router.push(`/dashboard/reverse/results?mediaId=${selectedMedia.id}`);
-    }
+    reverseLookupMutation.mutate(
+      { mediaId: selectedMedia.id },
+      {
+        onSuccess: (data) => {
+          // Navigate to results page with both mediaId and jobId
+          router.push(
+            `/dashboard/reverse/results?mediaId=${selectedMedia.id}&jobId=${data.data.jobId}`
+          );
+        },
+        onError: (error) => {
+          console.error('Failed to start reverse lookup:', error);
+          toast.error(
+            `Failed to start reverse lookup: ${
+              error instanceof Error ? error.message : 'Unknown error'
+            }`
+          );
+          // Could show error toast here
+        },
+      }
+    );
   };
 
   return (
@@ -119,8 +139,11 @@ const ReverseLookupPage = () => {
             <Button
               className="flex-1 hover:cursor-pointer"
               onClick={handleStartReverseLookup}
+              disabled={reverseLookupMutation.isPending}
             >
-              Start reverse search
+              {reverseLookupMutation.isPending
+                ? 'Starting...'
+                : 'Start reverse search'}
             </Button>
             <div className="flex gap-4">
               <Button
@@ -157,7 +180,7 @@ const ReverseLookupPage = () => {
         </div>
       )}
 
-      <div className="pb-8">
+      {/* <div className="pb-8">
         <div className="border-t border-gray-200 pt-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
             Recent Verifications
@@ -261,17 +284,17 @@ const ReverseLookupPage = () => {
                         </td>
                         <td className="px-6 py-4">
                           <p className="text-sm text-gray-600 max-w-xs truncate">
-                            {/* {item.original_source} */}
+                            {item.original_source}
                           </p>
                         </td>
                         <td className="px-6 py-4">
                           <p className="text-sm text-gray-600">
-                            {/* {formatDate(item.date_first_seen)} */}
+                            {formatDate(item.date_first_seen)}
                           </p>
                         </td>
                         <td className="px-6 py-4">
                           <p className="text-sm text-gray-900 font-medium">
-                            {/* {item.similar_copies} */}
+                            {item.similar_copies}
                           </p>
                         </td>
                         <td className="px-6 py-4">
@@ -300,7 +323,7 @@ const ReverseLookupPage = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };
