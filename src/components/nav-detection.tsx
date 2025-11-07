@@ -29,7 +29,7 @@ export function NavDetectionTools({
           <SidebarMenuItem key={item.name}>
             <SidebarMenuButton asChild>
               <a href={item.url}>
-                <item.icon />
+                <item.icon className="text-primary" />
                 <span>{item.name}</span>
               </a>
             </SidebarMenuButton>
