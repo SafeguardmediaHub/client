@@ -1,34 +1,64 @@
 'use client';
 
 import { formatDate } from 'date-fns';
-import { Check, RefreshCw } from 'lucide-react';
+import {
+  AlertCircle,
+  Check,
+  CheckCircle2,
+  Clock,
+  Loader2,
+  RefreshCw,
+} from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Button } from '@/components/ui/button';
 import { useGetMedia } from '@/hooks/useMedia';
-import {
-  type ReverseLookupResult,
-  useReverseLookupResult,
-} from '@/hooks/useReverseLookup';
+import { useReverseLookupResult } from '@/hooks/useReverseLookup';
 
 const ReverseLookupResultContent = () => {
   const router = useRouter();
-  const searhParams = useSearchParams();
+  const searchParams = useSearchParams();
 
-  const mediaId = searhParams.get('mediaId');
+  const mediaId = searchParams.get('mediaId');
+  const jobId = searchParams.get('jobId');
 
-  const { data: mediaData, refetch, isLoading } = useGetMedia();
-  const reverseLookupResultMutation = useReverseLookupResult();
-
-  const [resultData, setResultData] = useState<ReverseLookupResult | null>(
-    null
-  );
-  const [hasChecked, setHasChecked] = useState(false);
+  const [lastRefreshTime, setLastRefreshTime] = useState<Date>(new Date());
   const [visibleResults, setVisibleResults] = useState(8);
 
-  const jobId = searhParams.get('jobId');
+  const { data: mediaData, isLoading: isLoadingMedia } = useGetMedia();
   const selectedMedia = mediaData?.media?.find((m) => m.id === mediaId);
+
+  // Fetch reverse lookup result with automatic polling
+  const {
+    data: resultData,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isFetching,
+  } = useReverseLookupResult(jobId || '', {
+    enabled: !!jobId,
+  });
+
+  const lookupStatus = resultData?.data?.status;
+
+  // Update last refresh time when data changes
+  useEffect(() => {
+    if (resultData) {
+      setLastRefreshTime(new Date());
+    }
+  }, [resultData]);
+
+  // Show toast when reverse lookup completes
+  useEffect(() => {
+    if (lookupStatus === 'completed') {
+      toast.success('Reverse lookup completed successfully!');
+    } else if (lookupStatus === 'failed') {
+      toast.error('Reverse lookup failed');
+    }
+  }, [lookupStatus]);
 
   const searchEngines = [
     { name: 'Google Images', checked: true },
@@ -41,24 +71,12 @@ const ReverseLookupResultContent = () => {
     router.push('/dashboard/reverse');
   };
 
-  const checkJobResult = () => {
-    if (!jobId) return;
-
-    setHasChecked(true);
-    reverseLookupResultMutation.mutate(
-      { jobId },
-      {
-        onSuccess: (data) => {
-          setResultData(data);
-        },
-        onError: (error) => {
-          console.error('Failed to get job result:', error);
-        },
-      }
-    );
+  const handleManualRefresh = () => {
+    refetch();
+    toast.info('Refreshing lookup status...');
   };
 
-  const results = resultData?.data.results || [];
+  const results = resultData?.data?.results || [];
   const displayedResults = results.slice(0, visibleResults);
   const hasMoreResults = results.length > visibleResults;
 
@@ -66,280 +84,505 @@ const ReverseLookupResultContent = () => {
     setVisibleResults((prev) => Math.min(prev + 8, results.length));
   };
 
-  if (isLoading) {
-    return <div className="p-8">isloading...</div>;
-  }
+  // Error state - job not found
+  if (isError) {
+    const errorStatus = (error as any)?.response?.status;
 
-  if (!selectedMedia) {
     return (
-      <div className="p-8 text-center">
-        <h2 className="text-xl font-semibold mb-2">Media not found</h2>
-        <p className="text-gray-600 mb-4">
-          The requested media file could not be found.
-        </p>
-        <button
-          type="button"
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 cursor-pointer"
-          onClick={handleBack}
-        >
-          Back to Reverse
-        </button>
+      <div className="w-full flex flex-col items-center justify-center gap-6 p-8 bg-gray-50 min-h-screen">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+          <div className="flex flex-col items-center text-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
+              <AlertCircle className="w-8 h-8 text-red-600" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900">
+              {errorStatus === 404
+                ? 'Lookup Not Found'
+                : 'Error Loading Lookup'}
+            </h2>
+            <p className="text-sm text-gray-600">
+              {errorStatus === 404
+                ? 'The requested reverse lookup could not be found. It may have been deleted or the link is invalid.'
+                : 'An error occurred while loading the reverse lookup. Please try again.'}
+            </p>
+            <div className="flex gap-3 mt-4">
+              <Button
+                variant="outline"
+                onClick={handleManualRefresh}
+                className="cursor-pointer"
+              >
+                Try Again
+              </Button>
+              <Button onClick={handleBack} className="cursor-pointer">
+                Back to Reverse Lookup
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
-  return (
-    <div className="w-full flex flex-col gap-6 p-8 bg-gray-100 min-h-screen">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex gap-6">
-            <img
-              src={selectedMedia.thumbnailUrl}
-              alt={selectedMedia.filename}
-              className="w-64 h-48 object-cover rounded-lg"
-            />
-            <div className="flex-1">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                Original Source
-              </h2>
-              <div className="space-y-4">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">First Published</span>
-                  <span className="text-gray-900 font-medium">
-                    {formatDate(selectedMedia.uploadedAt, 'dd-mmm-yyy')}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Source</span>
-                  <span className="text-gray-900 font-medium">
-                    User Library
-                  </span>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="mt-6 w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-              >
-                View Original Source
-              </button>
+  // No job ID provided
+  if (!jobId) {
+    return (
+      <div className="w-full flex flex-col items-center justify-center gap-6 p-8 bg-gray-50 min-h-screen">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+          <div className="flex flex-col items-center text-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center">
+              <AlertCircle className="w-8 h-8 text-yellow-600" />
             </div>
-          </div>
-        </div>
-        <div className="space-y-6">
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            {resultData?.data.status === 'completed' ? (
-              <>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Search Completed
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  Found {resultData.data.results?.length || 0} matches across
-                  search engines.
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xl font-bold text-gray-900">
-                    Reverse Lookup Results
-                  </h3>
-                  <button
-                    type="button"
-                    onClick={checkJobResult}
-                    disabled={reverseLookupResultMutation.isPending || !jobId}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <RefreshCw
-                      className={`w-4 h-4 ${
-                        reverseLookupResultMutation.isPending
-                          ? 'animate-spin'
-                          : ''
-                      }`}
-                    />
-                    {reverseLookupResultMutation.isPending
-                      ? 'Checking...'
-                      : 'Check Results'}
-                  </button>
-                </div>
-                <p className="text-gray-600 text-sm mb-3">
-                  {hasChecked ? (
-                    resultData?.data.status ? (
-                      <>
-                        Status:{' '}
-                        <span className="capitalize font-medium">
-                          {resultData.data.status}
-                        </span>
-                        {resultData.data.status === 'processing' &&
-                          ' - Analysis in progress...'}
-                        {resultData.data.status === 'queued' &&
-                          ' - Waiting to be processed...'}
-                      </>
-                    ) : (
-                      'Click "Check Results" to see if your analysis is ready.'
-                    )
-                  ) : (
-                    'Your reverse lookup is being processed. Click "Check Results" when ready.'
-                  )}
-                </p>
-              </>
-            )}
-          </div>
-
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">
-              Search Coverage
-            </h3>
-            {resultData?.data.status === 'completed' ? (
-              <div className="grid grid-cols-2 gap-4">
-                {searchEngines.map((engine) => (
-                  <div key={engine.name} className="flex items-center gap-2">
-                    <div className="w-5 h-5 bg-blue-600 rounded flex items-center justify-center flex-shrink-0">
-                      <Check className="w-3.5 h-3.5 text-white" />
-                    </div>
-                    <span className="text-gray-700 text-sm">{engine.name}</span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-4">
-                {searchEngines.map((engine) => (
-                  <div key={engine.name} className="flex items-center gap-2">
-                    <div className="w-5 h-5 bg-gray-200 rounded animate-pulse"></div>
-                    <div className="h-4 bg-gray-200 rounded w-24 animate-pulse"></div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <h2 className="text-xl font-semibold text-gray-900">
+              Missing Job ID
+            </h2>
+            <p className="text-sm text-gray-600">
+              No job ID was provided. Please start a new reverse lookup.
+            </p>
+            <Button onClick={handleBack} className="mt-4 cursor-pointer">
+              Start New Lookup
+            </Button>
           </div>
         </div>
       </div>
+    );
+  }
 
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          Search Results
-        </h2>
-        <p className="text-gray-600 text-sm mb-6">
-          {resultData?.data.status === 'completed'
-            ? `${
-                resultData.data.results?.length || 0
-              } matches found across search engines.`
-            : 'Results will appear here once the analysis is complete.'}
-        </p>
+  // Initial loading state
+  if (isLoading || isLoadingMedia) {
+    return (
+      <div className="w-full flex flex-col items-center justify-center gap-6 p-8 bg-gray-50 min-h-screen">
+        <div className="max-w-2xl w-full bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+          <div className="flex flex-col items-center text-center gap-4">
+            <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+            <h2 className="text-xl font-semibold text-gray-900">
+              Loading Reverse Lookup
+            </h2>
+            <p className="text-sm text-gray-600">
+              Please wait while we fetch your lookup details...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-        {resultData?.data.status === 'completed' ? (
-          results.length ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {displayedResults.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex flex-col max-w-sm bg-gray-100 border border-gray-200 rounded-lg shadow-sm"
+  // Media not found
+  if (!selectedMedia) {
+    return (
+      <div className="w-full flex flex-col items-center justify-center gap-6 p-8 bg-gray-50 min-h-screen">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+          <div className="flex flex-col items-center text-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center">
+              <AlertCircle className="w-8 h-8 text-yellow-600" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Media Not Found
+            </h2>
+            <p className="text-sm text-gray-600">
+              The requested media file could not be found.
+            </p>
+            <Button onClick={handleBack} className="mt-4 cursor-pointer">
+              Back to Reverse Lookup
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Processing/Queued state
+  if (lookupStatus === 'queued' || lookupStatus === 'processing') {
+    const estimatedTime = resultData?.data
+      ? (resultData as any).data.estimatedTime
+      : null;
+
+    return (
+      <div className="w-full flex flex-col gap-6 p-8 bg-gray-50 min-h-screen">
+        <div className="max-w-2xl mx-auto w-full">
+          {/* Header */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+                  Reverse Lookup
+                </h1>
+                <p className="text-sm text-gray-600">Job ID: {jobId}</p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBack}
+                className="cursor-pointer"
+              >
+                Back
+              </Button>
+            </div>
+          </div>
+
+          {/* Processing Status Card */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <div className="flex flex-col items-center text-center gap-6">
+              <div className="relative">
+                <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center">
+                  <Clock className="w-10 h-10 text-blue-600" />
+                </div>
+                <div className="absolute -bottom-1 -right-1">
+                  <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+                  {lookupStatus === 'queued'
+                    ? 'Lookup Queued'
+                    : 'Processing Lookup'}
+                </h2>
+                <p className="text-gray-600">
+                  {lookupStatus === 'queued'
+                    ? 'Your reverse lookup is in the queue and will start processing shortly.'
+                    : 'Your reverse lookup is currently being processed.'}
+                </p>
+              </div>
+
+              {estimatedTime && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg px-6 py-3">
+                  <p className="text-sm text-blue-800">
+                    <span className="font-medium">Estimated time: </span>~
+                    {estimatedTime} seconds remaining
+                  </p>
+                </div>
+              )}
+
+              {/* Auto-refresh indicator */}
+              <div className="flex flex-col items-center gap-2 text-sm text-gray-500">
+                <div className="flex items-center gap-2">
+                  <RefreshCw
+                    className={`w-4 h-4 ${
+                      isFetching ? 'animate-spin text-blue-600' : ''
+                    }`}
+                  />
+                  <span>
+                    {isFetching
+                      ? 'Checking status...'
+                      : 'Auto-refreshing every 30 seconds'}
+                  </span>
+                </div>
+                <p className="text-xs">
+                  Last updated: {lastRefreshTime.toLocaleTimeString()}
+                </p>
+              </div>
+
+              {/* Manual refresh button */}
+              <Button
+                variant="outline"
+                onClick={handleManualRefresh}
+                disabled={isFetching}
+                className="cursor-pointer"
+              >
+                <RefreshCw
+                  className={`w-4 h-4 mr-2 ${isFetching ? 'animate-spin' : ''}`}
+                />
+                {isFetching ? 'Refreshing...' : 'Refresh Now'}
+              </Button>
+            </div>
+          </div>
+
+          {/* Info box */}
+          <div className="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <p className="text-sm text-gray-600 text-center">
+              You can safely navigate away from this page. The lookup will
+              continue processing in the background.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Failed state
+  if (lookupStatus === 'failed') {
+    return (
+      <div className="w-full flex flex-col gap-6 p-8 bg-gray-50 min-h-screen">
+        <div className="max-w-2xl mx-auto w-full">
+          {/* Header */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+                  Reverse Lookup
+                </h1>
+                <p className="text-sm text-gray-600">Job ID: {jobId}</p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBack}
+                className="cursor-pointer"
+              >
+                Back
+              </Button>
+            </div>
+          </div>
+
+          {/* Failed Status Card */}
+          <div className="bg-white rounded-lg shadow-sm border border-red-200 p-8">
+            <div className="flex flex-col items-center text-center gap-6">
+              <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center">
+                <AlertCircle className="w-10 h-10 text-red-600" />
+              </div>
+
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+                  Lookup Failed
+                </h2>
+                <p className="text-gray-600">
+                  An error occurred during the reverse lookup process. Please
+                  try again or contact support if the issue persists.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={handleBack}
+                  className="cursor-pointer"
                 >
-                  <a href={item.url} target="_blank" rel="noopener noreferrer">
-                    <div className="relative">
-                      <AspectRatio
-                        ratio={16 / 9}
-                        className="bg-muted rounded-lg"
-                      >
-                        <img
-                          src={item.thumbnailUrl || '/placeholder-image.png'}
-                          alt={item.title}
-                          className="h-full w-full rounded-t-md object-cover"
-                        />
-                      </AspectRatio>
-                    </div>
-                  </a>
-                  <div className="p-3">
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <h5 className="mb-2 font-bold tracking-tight text-muted-foreground line-clamp-2">
-                        Source:{' '}
-                        <span className="text-gray-900">{item.source}</span>
-                      </h5>
-                    </a>
+                  Start New Lookup
+                </Button>
+                <Button
+                  onClick={handleManualRefresh}
+                  className="cursor-pointer"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Retry
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-                    {/* <div className="flex items-center gap-2 mb-2">
-                      {item.metadata?.sourceIcon && (
-                        <img
-                          src={item.metadata.sourceIcon}
-                          alt={item.source}
-                          className="w-4 h-4 rounded"
-                        />
-                      )}
-                      <span className="text-sm font-semibold text-gray-700">
-                        {item.source}
+  // Completed state - show results
+  if (lookupStatus === 'completed' && resultData?.data) {
+    return (
+      <div className="w-full flex flex-col gap-6 p-8 bg-gray-100 min-h-screen">
+        <div className="max-w-8xl mx-auto w-full">
+          {/* Header */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+                  Reverse Lookup Results
+                </h1>
+                <p className="text-sm text-gray-600">
+                  Found {results.length} matches across search engines
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleManualRefresh}
+                  className="cursor-pointer"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Refresh
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleBack}
+                  className="cursor-pointer"
+                >
+                  Back
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Success Banner and Media Info - Side by Side */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            {/* Media Info - 2/3 width */}
+            <div className="lg:col-span-2 bg-white rounded-lg border border-gray-200 p-6">
+              <div className="flex gap-6">
+                <img
+                  src={selectedMedia.thumbnailUrl}
+                  alt={selectedMedia.filename}
+                  className="w-64 h-48 object-cover rounded-lg"
+                />
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                    Original Source
+                  </h2>
+                  <div className="space-y-4">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">First Published</span>
+                      <span className="text-gray-900 font-medium">
+                        {formatDate(selectedMedia.uploadedAt, 'dd-MMM-yyyy')}
                       </span>
-                    </div> */}
-
-                    {/* <div className="text-xs text-gray-500 mb-3">
-                      Published: {formatDate(item.publishedAt, 'MMM dd, yyyy')}
-                    </div> */}
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Source</span>
+                      <span className="text-gray-900 font-medium">
+                        User Library
+                      </span>
+                    </div>
                   </div>
+                </div>
+              </div>
+            </div>
 
-                  <div className="flex justify-center mb-4 mt-auto">
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full mx-3"
-                      >
-                        View Source
-                      </Button>
-                    </a>
+            {/* Success Banner - 1/3 width */}
+            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+              <div className="flex flex-col items-center text-center gap-4">
+                <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle2 className="w-8 h-8 text-green-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-green-900 mb-2">
+                    Search Completed
+                  </h3>
+                  <p className="text-sm text-green-800">
+                    Found {results.length} matches across search engines
+                  </p>
+                  <div className="mt-3">
+                    <span className="text-xs font-medium text-green-900">
+                      Progress: {resultData.data.progress || 100}%
+                    </span>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Search Coverage */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Search Coverage
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {searchEngines.map((engine) => (
+                <div key={engine.name} className="flex items-center gap-2">
+                  <div className="w-5 h-5 bg-blue-600 rounded flex items-center justify-center flex-shrink-0">
+                    <Check className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <span className="text-gray-700 text-sm">{engine.name}</span>
                 </div>
               ))}
             </div>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              No matches found across search engines.
-            </div>
-          )
-        ) : (
-          // Skeleton loaders in grid format
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {Array.from({ length: 8 }).map((_, index) => (
-              <div
-                // biome-ignore lint/suspicious/noArrayIndexKey: <>
-                key={index}
-                className="flex flex-col max-w-sm bg-gray-200 border border-gray-200 rounded-lg shadow-sm animate-pulse"
-              >
-                <div className="relative">
-                  <AspectRatio
-                    ratio={16 / 9}
-                    className="bg-gray-300 rounded-t-lg"
-                  ></AspectRatio>
-                </div>
-                <div className="p-3">
-                  <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
-                  <div className="h-4 bg-gray-300 rounded w-1/2 mb-2"></div>
-                  <div className="h-3 bg-gray-300 rounded w-2/3"></div>
-                </div>
-                <div className="flex justify-center mb-4 mt-auto">
-                  <div className="h-8 bg-gray-300 rounded w-24 mx-3"></div>
-                </div>
-              </div>
-            ))}
           </div>
-        )}
 
-        {resultData?.data.status === 'completed' && hasMoreResults && (
-          <div className="mt-6 flex justify-center">
+          {/* Search Results */}
+
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Search Results
+            </h2>
+            <p className="text-gray-600 text-sm mb-6">
+              {results.length} matches found across search engines
+            </p>
+
+            {results.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {displayedResults.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex flex-col max-w-sm bg-gray-100 border border-gray-200 rounded-lg shadow-sm"
+                  >
+                    <a href={item.url} target="_blank" rel="noopener noreferrer">
+                      <div className="relative">
+                        <AspectRatio
+                          ratio={16 / 9}
+                          className="bg-muted rounded-lg"
+                        >
+                          <img
+                            src={item.thumbnailUrl || '/placeholder-image.png'}
+                            alt={item.title}
+                            className="h-full w-full rounded-t-md object-cover"
+                          />
+                        </AspectRatio>
+                      </div>
+                    </a>
+                    <div className="p-3">
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <h5 className="mb-2 font-bold tracking-tight text-muted-foreground line-clamp-2">
+                          Source:{' '}
+                          <span className="text-gray-900">{item.source}</span>
+                        </h5>
+                      </a>
+                    </div>
+
+                    <div className="flex justify-center mb-4 mt-auto">
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full mx-3"
+                        >
+                          View Source
+                        </Button>
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                No matches found across search engines.
+              </div>
+            )}
+
+            {hasMoreResults && (
+              <div className="mt-6 flex justify-center">
+                <Button
+                  onClick={loadMoreResults}
+                  variant="outline"
+                  className="px-6 py-2 cursor-pointer"
+                >
+                  Load More ({results.length - visibleResults} remaining)
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Actions */}
+          <div className="mt-6 flex justify-center gap-4">
             <Button
-              onClick={loadMoreResults}
               variant="outline"
-              className="px-6 py-2"
+              onClick={handleBack}
+              className="cursor-pointer"
             >
-              Load More ({results.length - visibleResults} remaining)
+              New Lookup
             </Button>
           </div>
-        )}
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback state
+  return (
+    <div className="w-full flex flex-col items-center justify-center gap-6 p-8 bg-gray-50 min-h-screen">
+      <div className="max-w-md w-full bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+        <div className="flex flex-col items-center text-center gap-4">
+          <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+          <h2 className="text-xl font-semibold text-gray-900">
+            Loading Results
+          </h2>
+          <p className="text-sm text-gray-600">
+            Please wait while we load the lookup results...
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -349,10 +592,17 @@ const ReverseLookupResultPage = () => {
   return (
     <Suspense
       fallback={
-        <div className="p-8 flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading results...</p>
+        <div className="w-full flex flex-col items-center justify-center gap-6 p-8 bg-gray-50 min-h-screen">
+          <div className="max-w-md w-full bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <div className="flex flex-col items-center text-center gap-4">
+              <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+              <h2 className="text-xl font-semibold text-gray-900">
+                Loading Results
+              </h2>
+              <p className="text-sm text-gray-600">
+                Please wait while we load the lookup results...
+              </p>
+            </div>
           </div>
         </div>
       }

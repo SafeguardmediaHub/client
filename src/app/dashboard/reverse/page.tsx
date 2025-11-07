@@ -4,12 +4,16 @@
 import { MoreVertical, Search, UploadIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import MediaSelector from '@/components/media/MediaSelector';
 import { Button } from '@/components/ui/button';
 import { type Media, useGetMedia } from '@/hooks/useMedia';
-import { useReverseLookup } from '@/hooks/useReverseLookup';
+import {
+  type UserReverseLookup,
+  useReverseLookup,
+  useUserReverseLookups,
+} from '@/hooks/useReverseLookup';
 import { formatFileSize } from '@/lib/utils';
 
 export interface SearchResult {
@@ -33,12 +37,64 @@ const ReverseLookupPage = () => {
   const { data, isLoading } = useGetMedia();
   const media = data?.media || [];
 
+  // Fetch user's previous reverse lookups
+  const {
+    data: lookupsData,
+    isLoading: isLoadingLookups,
+    refetch: refetchLookups,
+  } = useUserReverseLookups();
+
+  // Use useMemo to create a stable reference for userLookups
+  const userLookups = useMemo(
+    () => lookupsData?.data?.lookups || [],
+    [lookupsData?.data?.lookups]
+  );
+
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('newest');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [filteredVerifications, setFilteredVerifications] = useState<Media[]>(
+  const [filteredLookups, setFilteredLookups] = useState<UserReverseLookup[]>(
     []
   );
+
+  // Filter and sort lookups based on search, status, and sort order
+  useEffect(() => {
+    let filtered = [...userLookups];
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (lookup) =>
+          lookup.mediaId.originalFilename.toLowerCase().includes(query) ||
+          lookup.jobId.toLowerCase().includes(query) ||
+          lookup._id.toLowerCase().includes(query)
+      );
+    }
+
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter((lookup) => {
+        if (statusFilter === 'completed') {
+          return lookup.status === 'completed';
+        } else if (statusFilter === 'pending') {
+          return lookup.status === 'queued' || lookup.status === 'processing';
+        } else if (statusFilter === 'failed') {
+          return lookup.status === 'failed';
+        }
+        return true;
+      });
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return sortBy === 'newest' ? dateB - dateA : dateA - dateB;
+    });
+
+    setFilteredLookups(filtered);
+  }, [userLookups, searchQuery, statusFilter, sortBy]);
 
   const handleMediaSelection = (mediaFile: Media) => {
     const selectedFile = media.find((file) => file.id === mediaFile.id);
@@ -58,10 +114,15 @@ const ReverseLookupPage = () => {
       { mediaId: selectedMedia.id },
       {
         onSuccess: (data) => {
-          // Navigate to results page with both mediaId and jobId
-          router.push(
-            `/dashboard/reverse/results?mediaId=${selectedMedia.id}&jobId=${data.data.jobId}`
-          );
+          if (data.success && data.data.jobId) {
+            // Refetch lookups to update the list
+            // refetchLookups();
+
+            // Navigate to results page with both mediaId and jobId
+            router.push(
+              `/dashboard/reverse/results?mediaId=${selectedMedia.id}&jobId=${data.data.jobId}`
+            );
+          }
         },
         onError: (error) => {
           console.error('Failed to start reverse lookup:', error);
@@ -70,9 +131,64 @@ const ReverseLookupPage = () => {
               error instanceof Error ? error.message : 'Unknown error'
             }`
           );
-          // Could show error toast here
         },
       }
+    );
+  };
+
+  const handleViewLookup = (lookup: UserReverseLookup) => {
+    router.push(
+      `/dashboard/reverse/results?mediaId=${lookup.mediaId._id}&jobId=${lookup.jobId}`
+    );
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  const getStatusBadge = (lookup: UserReverseLookup) => {
+    const status = lookup.status;
+
+    if (status === 'completed') {
+      return (
+        <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
+          Completed
+        </span>
+      );
+    } else if (status === 'queued' || status === 'processing') {
+      return (
+        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
+          Processing
+        </span>
+      );
+    } else if (status === 'failed') {
+      return (
+        <span className="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">
+          Failed
+        </span>
+      );
+    } else if (status === 'cancelled') {
+      return (
+        <span className="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded">
+          Cancelled
+        </span>
+      );
+    } else if (status === 'expired') {
+      return (
+        <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">
+          Expired
+        </span>
+      );
+    }
+
+    return (
+      <span className="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded">
+        Unknown
+      </span>
     );
   };
 
@@ -180,14 +296,13 @@ const ReverseLookupPage = () => {
         </div>
       )}
 
-      {/* <div className="pb-8">
+      <div className="pb-8">
         <div className="border-t border-gray-200 pt-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Recent Verifications
+            Recent Reverse Lookups
           </h2>
           <div className="text-sm text-gray-500">
-            Your recent verifications will appear here after analyzing media
-            files
+            Your recent reverse lookups will appear here after analysis
           </div>
 
           <div className="mt-4">
@@ -216,8 +331,9 @@ const ReverseLookupPage = () => {
                 className="px-4 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
               >
                 <option value="all">All status</option>
-                <option value="verified">Verified</option>
-                <option value="pending">Pending</option>
+                <option value="completed">Completed</option>
+                <option value="pending">Processing</option>
+                <option value="failed">Failed</option>
               </select>
             </div>
 
@@ -226,84 +342,113 @@ const ReverseLookupPage = () => {
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Media
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                       File name
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Original Source
+                      Status
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Date First Seen
+                      Progress
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Similar Copies
+                      Results Found
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"></th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      Date Created
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {isLoading ? (
+                  {isLoadingLookups ? (
                     <tr>
                       <td
                         colSpan={6}
                         className="px-6 py-12 text-center text-gray-500"
                       >
-                        Loading verifications...
+                        Loading reverse lookups...
                       </td>
                     </tr>
-                  ) : filteredVerifications.length === 0 ? (
+                  ) : filteredLookups.length === 0 ? (
                     <tr>
                       <td
                         colSpan={6}
                         className="px-6 py-12 text-center text-gray-500"
                       >
-                        No verifications found
+                        {searchQuery || statusFilter !== 'all'
+                          ? 'No reverse lookups match your filters'
+                          : 'No reverse lookups found. Start your first lookup above!'}
                       </td>
                     </tr>
                   ) : (
-                    filteredVerifications.map((item) => (
+                    filteredLookups.map((lookup) => (
                       <tr
-                        key={item.id}
-                        className="hover:bg-gray-50 transition-colors"
+                        key={lookup._id}
+                        className="hover:bg-gray-50 transition-colors cursor-pointer"
+                        onClick={() => handleViewLookup(lookup)}
                       >
                         <td className="px-6 py-4">
-                          <div className="w-12 h-12 rounded overflow-hidden bg-gray-100">
-                            <img
-                              src={item.thumbnailUrl}
-                              alt={item.filename}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <p className="text-sm text-gray-900">
-                            {item.filename}
+                          <p className="text-sm font-medium text-gray-900">
+                            {lookup.mediaId.originalFilename}
                           </p>
                         </td>
+                        <td className="px-6 py-4">{getStatusBadge(lookup)}</td>
                         <td className="px-6 py-4">
-                          <p className="text-sm text-gray-600 max-w-xs truncate">
-                            {item.original_source}
-                          </p>
+                          {lookup.status === 'completed' ||
+                          lookup.status === 'processing' ? (
+                            <div className="flex items-center gap-2">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-medium text-gray-900">
+                                    {lookup.progress}%
+                                  </span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+                                  <div
+                                    className={`h-1.5 rounded-full ${
+                                      lookup.progress >= 100
+                                        ? 'bg-green-600'
+                                        : 'bg-blue-600'
+                                    }`}
+                                    style={{
+                                      width: `${lookup.progress}%`,
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-sm text-gray-500">-</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          {lookup.status === 'completed' ? (
+                            <p className="text-sm text-gray-900 font-medium">
+                              {lookup.resultsCount}
+                            </p>
+                          ) : (
+                            <span className="text-sm text-gray-500">-</span>
+                          )}
                         </td>
                         <td className="px-6 py-4">
                           <p className="text-sm text-gray-600">
-                            {formatDate(item.date_first_seen)}
+                            {formatDate(lookup.createdAt)}
                           </p>
                         </td>
                         <td className="px-6 py-4">
-                          <p className="text-sm text-gray-900 font-medium">
-                            {item.similar_copies}
-                          </p>
-                        </td>
-                        <td className="px-6 py-4">
-                          <button
-                            type="button"
-                            className="p-1 hover:bg-gray-100 rounded transition-colors"
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewLookup(lookup);
+                            }}
+                            className="cursor-pointer"
                           >
-                            <MoreVertical className="w-5 h-5 text-gray-400" />
-                          </button>
+                            View Details
+                          </Button>
                         </td>
                       </tr>
                     ))
@@ -312,18 +457,24 @@ const ReverseLookupPage = () => {
               </table>
             </div>
 
-            <div className="mt-6 flex justify-center">
-              <Button
-                type="button"
-                className="px-6 py-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors"
-                variant="outline"
-              >
-                Load More
-              </Button>
-            </div>
+            {lookupsData?.data?.pagination?.hasNextPage && (
+              <div className="mt-6 flex justify-center">
+                <Button
+                  type="button"
+                  className="px-6 py-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors cursor-pointer"
+                  variant="outline"
+                  onClick={() => {
+                    // Implement pagination if needed
+                    toast.info('Pagination coming soon');
+                  }}
+                >
+                  Load More
+                </Button>
+              </div>
+            )}
           </div>
         </div>
-      </div> */}
+      </div>
     </div>
   );
 };

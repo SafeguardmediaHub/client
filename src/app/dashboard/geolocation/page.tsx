@@ -3,7 +3,7 @@
 import { MoreVertical, Search, UploadIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import MediaSelector from '@/components/media/MediaSelector';
 import { Button } from '@/components/ui/button';
@@ -33,7 +33,11 @@ const GeolocationVerificationPage = () => {
     refetch: refetchVerifications,
   } = useUserGeoVerifications();
 
-  const userVerifications = verificationsData?.data?.verifications || [];
+  // Use useMemo to create a stable reference for userVerifications
+  const userVerifications = useMemo(
+    () => verificationsData?.data?.verifications || [],
+    [verificationsData?.data?.verifications]
+  );
 
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('newest');

@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: <> */
 'use client';
 
 import {
@@ -11,6 +12,7 @@ import {
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import GeolocationMap from '@/components/maps/GeolocationMap';
 import { Button } from '@/components/ui/button';
 import { useGeoVerificationResult } from '@/hooks/useGeolocation';
 
@@ -21,7 +23,6 @@ const GeolocationResultContent = () => {
 
   const [lastRefreshTime, setLastRefreshTime] = useState<Date>(new Date());
 
-  // Fetch verification result with automatic polling
   const {
     data: verificationData,
     isLoading,
@@ -37,14 +38,12 @@ const GeolocationResultContent = () => {
 
   const verificationStatus = verificationData?.data?.verification?.status;
 
-  // Update last refresh time when data changes
   useEffect(() => {
     if (verificationData) {
       setLastRefreshTime(new Date());
     }
   }, [verificationData]);
 
-  // Show toast when verification completes
   useEffect(() => {
     if (
       verificationStatus === 'completed' ||
@@ -65,7 +64,6 @@ const GeolocationResultContent = () => {
     router.push('/dashboard/geolocation');
   };
 
-  // Error state - verification not found
   if (isError) {
     const errorStatus = (error as any)?.response?.status;
 
@@ -107,7 +105,6 @@ const GeolocationResultContent = () => {
     );
   }
 
-  // No verification ID provided
   if (!verificationId) {
     return (
       <div className="w-full flex flex-col items-center justify-center gap-6 p-8 bg-gray-50 min-h-screen">
@@ -134,7 +131,6 @@ const GeolocationResultContent = () => {
     );
   }
 
-  // Initial loading state
   if (isLoading) {
     return (
       <div className="w-full flex flex-col items-center justify-center gap-6 p-8 bg-gray-50 min-h-screen">
@@ -153,7 +149,6 @@ const GeolocationResultContent = () => {
     );
   }
 
-  // Processing/Queued state
   if (verificationStatus === 'queued' || verificationStatus === 'processing') {
     const estimatedTime = verificationData?.data
       ? (verificationData as any).data.estimatedTime
@@ -264,7 +259,6 @@ const GeolocationResultContent = () => {
     );
   }
 
-  // Failed state
   if (verificationStatus === 'failed') {
     return (
       <div className="w-full flex flex-col gap-6 p-8 bg-gray-50 min-h-screen">
@@ -331,7 +325,6 @@ const GeolocationResultContent = () => {
     );
   }
 
-  // Completed state - show results
   if (
     (verificationStatus === 'completed' || verificationStatus === 'partial') &&
     verificationData?.data
@@ -377,35 +370,13 @@ const GeolocationResultContent = () => {
 
           {/* Success Banner and Map - Side by Side */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            {/* Map Placeholder - 2/3 width */}
+            {/* Interactive Map - 2/3 width */}
             {result.mapData && (
               <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
                   Interactive Map
                 </h3>
-                <div className="bg-gray-100 rounded-lg text-center relative">
-                  <img
-                    src="https://static-assets.mapbox.com/www/videos/maps/section_hero/poster.jpeg"
-                    alt="Map location"
-                    className="w-full h-56 object-cover rounded-lg"
-                  />
-                  <button
-                    type="button"
-                    className="absolute bottom-3 left-3 px-3 py-1.5 bg-white border border-gray-300 rounded text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
-                  >
-                    <MapPin className="w-3.5 h-3.5" />
-                    Open in Google Maps
-                  </button>
-                  {/* <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">
-                    Map visualization can be integrated here
-                  </p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Center: {result.mapData.centerCoordinates.lat.toFixed(6)},{' '}
-                    {result.mapData.centerCoordinates.lng.toFixed(6)} | Zoom:{' '}
-                    {result.mapData.zoom}
-                  </p> */}
-                </div>
+                <GeolocationMap mapData={result.mapData} />
               </div>
             )}
             {/* Success Banner - 1/3 width */}
@@ -463,6 +434,49 @@ const GeolocationResultContent = () => {
                 </div>
               </div>
             </div>
+
+            {/* <div>
+            <h2 className="text-lg font-bold text-gray-900 mb-8">Location Verified</h2>
+            <div className="flex flex-col items-center justify-center">
+              <div className="relative w-40 h-40 flex items-center justify-center">
+                <svg className="w-full h-full" viewBox="0 0 120 120">
+                  <circle
+                    cx="60"
+                    cy="60"
+                    r="55"
+                    fill="none"
+                    stroke="#e5e7eb"
+                    strokeWidth="8"
+                  />
+                  <circle
+                    cx="60"
+                    cy="60"
+                    r="55"
+                    fill="none"
+                    stroke="#16a34a"
+                    strokeWidth="8"
+                    strokeDasharray={`${data.confidencePercentage * 3.456} 345.6`}
+                    strokeLinecap="round"
+                    transform="rotate(-90 60 60)"
+                  />
+                </svg>
+                <div className="absolute text-center">
+                  <div className="text-4xl font-bold text-green-600">
+                    {data.confidencePercentage}%
+                  </div>
+                </div>
+              </div>
+              <p className="mt-4 text-center">
+                <span className="text-gray-600 text-sm">Confidence level: </span>
+                <span className={`font-bold ${getConfidenceColor(data.confidenceLevel)}`}>
+                  {data.confidenceLevel}
+                </span>
+              </p>
+              <p className="text-gray-600 text-sm mt-1">
+                Distance from claimed location: {data.distanceFromClaimed}
+              </p>
+            </div>
+          </div> */}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -657,7 +671,6 @@ const GeolocationResultContent = () => {
     );
   }
 
-  // Fallback state
   return (
     <div className="w-full flex flex-col items-center justify-center gap-6 p-8 bg-gray-50 min-h-screen">
       <div className="max-w-md w-full bg-white rounded-lg shadow-sm border border-gray-200 p-8">

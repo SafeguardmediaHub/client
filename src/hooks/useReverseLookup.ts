@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
 
 export interface SearchResult {
@@ -66,6 +66,45 @@ export interface ReverseLookupResult {
   };
 }
 
+export interface UserReverseLookup {
+  _id: string;
+  jobId: string;
+  mediaId: {
+    _id: string;
+    originalFilename: string;
+    fileExtension: string;
+    thumbnailUrl: string;
+  };
+  userId: string;
+  status:
+    | 'queued'
+    | 'processing'
+    | 'completed'
+    | 'failed'
+    | 'cancelled'
+    | 'expired';
+  progress: number;
+  resultsCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserReverseLookups {
+  success: boolean;
+  message: string;
+  data: {
+    lookups: UserReverseLookup[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+      hasNextPage: boolean;
+      hasPrevPage: boolean;
+    };
+  };
+}
+
 const reverseLookup = async ({
   mediaId,
 }: {
@@ -83,16 +122,19 @@ const reverseLookup = async ({
   return response.data;
 };
 
-const reverseLookupResult = async ({
-  jobId,
-}: {
-  jobId: string;
-}): Promise<ReverseLookupResult> => {
-  console.log('fetching results');
+const reverseLookupResult = async (jobId: string): Promise<ReverseLookupResult> => {
+  console.log('fetching results for jobId', jobId);
   const response = await api.get(`/api/reverse-lookup/result/${jobId}`);
 
   console.log('this is response', response.data);
 
+  return response.data;
+};
+
+const fetchUserReverseLookups = async (): Promise<UserReverseLookups> => {
+  const response = await api.get('/api/reverse-lookup/search');
+
+  console.log('user reverse lookups response', response.data);
   return response.data;
 };
 
@@ -102,8 +144,54 @@ export const useReverseLookup = () => {
   });
 };
 
-export const useReverseLookupResult = () => {
-  return useMutation({
-    mutationFn: reverseLookupResult,
+export const useReverseLookupResult = (
+  jobId: string,
+  options?: {
+    pollingInterval?: number;
+    enabled?: boolean;
+  }
+) => {
+  const pollingInterval = options?.pollingInterval ?? 30000; // 30 seconds default
+
+  return useQuery({
+    queryKey: ['reverseLookupResult', jobId],
+    queryFn: () => reverseLookupResult(jobId),
+    enabled: options?.enabled ?? !!jobId,
+    refetchInterval: (query) => {
+      // Access the data from the query state
+      const data = query.state.data;
+
+      if (!data?.data?.status) {
+        // If we don't have status yet, keep polling
+        return pollingInterval;
+      }
+
+      const status = data.data.status;
+
+      // Only poll when status is queued or processing
+      if (['queued', 'processing'].includes(status)) {
+        return pollingInterval;
+      }
+
+      // Stop polling when completed, failed, cancelled, or expired
+      return false;
+    },
+    retry: (failureCount, error) => {
+      // Don't retry on 404 - job not found
+      if ((error as any)?.response?.status === 404) {
+        return false;
+      }
+      // Retry up to 3 times for other errors
+      return failureCount < 3;
+    },
+    staleTime: 0, // Always fetch fresh data when queried
+  });
+};
+
+export const useUserReverseLookups = () => {
+  return useQuery({
+    queryKey: ['userReverseLookups'],
+    queryFn: fetchUserReverseLookups,
+    staleTime: 60 * 1000, // cache for 1 minute
   });
 };
