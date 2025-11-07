@@ -387,51 +387,71 @@ const GeolocationResultContent = () => {
                   : 'bg-yellow-50 border border-yellow-200'
               }`}
             >
-              <div className="flex flex-col items-center text-center gap-4">
-                <div
-                  className={`w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    result.verification.match ? 'bg-green-100' : 'bg-yellow-100'
-                  }`}
-                >
-                  {result.verification.match ? (
-                    <CheckCircle2 className="w-8 h-8 text-green-600" />
-                  ) : (
-                    <AlertCircle className="w-8 h-8 text-yellow-600" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <h3
-                    className={`text-lg font-semibold mb-2 ${
-                      result.verification.match
-                        ? 'text-green-900'
-                        : 'text-yellow-900'
-                    }`}
-                  >
-                    {result.verification.match
-                      ? 'Location Verified'
-                      : 'Location Mismatch'}
-                  </h3>
-                  <p
-                    className={`text-sm ${
-                      result.verification.match
-                        ? 'text-green-800'
-                        : 'text-yellow-800'
-                    }`}
-                  >
-                    {result.verification.confidenceExplanation.summary}
-                  </p>
-                  <div className="mt-3">
-                    <span
-                      className={`text-xs font-medium ${
+              <h2 className="text-lg font-bold text-gray-900 mb-8">
+                {result.verification.match
+                  ? 'Location Verified'
+                  : 'Location Mismatch'}
+              </h2>
+              <div className="flex flex-col items-center justify-center">
+                <div className="relative w-40 h-40 flex items-center justify-center">
+                  <svg className="w-full h-full" viewBox="0 0 120 120">
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="55"
+                      fill="none"
+                      stroke="#e5e7eb"
+                      strokeWidth="8"
+                    />
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="55"
+                      fill="none"
+                      stroke={result.verification.match ? '#16a34a' : '#ca8a04'}
+                      strokeWidth="8"
+                      strokeDasharray={`${
+                        result.verification.confidence * 3.456
+                      } 345.6`}
+                      strokeLinecap="round"
+                      transform="rotate(-90 60 60)"
+                    />
+                  </svg>
+                  <div className="absolute text-center">
+                    <div
+                      className={`text-4xl font-bold ${
                         result.verification.match
-                          ? 'text-green-900'
-                          : 'text-yellow-900'
+                          ? 'text-green-600'
+                          : 'text-yellow-600'
                       }`}
                     >
-                      Confidence: {result.verification.confidence}%
-                    </span>
+                      {result.verification.confidence}%
+                    </div>
                   </div>
                 </div>
+                <p className="mt-4 text-center">
+                  <span className="text-gray-600 text-sm">
+                    Confidence level:{' '}
+                  </span>
+                  <span
+                    className={`font-bold ${
+                      result.verification.confidence >= 80
+                        ? 'text-green-600'
+                        : result.verification.confidence >= 60
+                        ? 'text-yellow-600'
+                        : 'text-red-600'
+                    }`}
+                  >
+                    {result.verification.confidence >= 80
+                      ? 'High'
+                      : result.verification.confidence >= 60
+                      ? 'Medium'
+                      : 'Low'}
+                  </span>
+                </p>
+                <p className="text-gray-600 text-sm mt-2 text-center px-4">
+                  {result.verification.confidenceExplanation.summary}
+                </p>
               </div>
             </div>
 
