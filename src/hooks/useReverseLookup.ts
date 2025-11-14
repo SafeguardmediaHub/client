@@ -1,5 +1,5 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
-import api from '@/lib/api';
+import { useMutation, useQuery } from "@tanstack/react-query";
+import api from "@/lib/api";
 
 export interface SearchResult {
   id: string;
@@ -40,12 +40,12 @@ export interface InitiateReverseLookupResponse {
     jobId: string;
     estimatedTime: number;
     status:
-      | 'queued'
-      | 'processing'
-      | 'completed'
-      | 'failed'
-      | 'cancelled'
-      | 'expired';
+      | "queued"
+      | "processing"
+      | "completed"
+      | "failed"
+      | "cancelled"
+      | "expired";
   };
 }
 
@@ -55,12 +55,12 @@ export interface ReverseLookupResult {
   data: {
     jobId: string;
     status:
-      | 'queued'
-      | 'processing'
-      | 'completed'
-      | 'failed'
-      | 'cancelled'
-      | 'expired';
+      | "queued"
+      | "processing"
+      | "completed"
+      | "failed"
+      | "cancelled"
+      | "expired";
     progress: number;
     results: SearchResult[];
   };
@@ -77,12 +77,12 @@ export interface UserReverseLookup {
   };
   userId: string;
   status:
-    | 'queued'
-    | 'processing'
-    | 'completed'
-    | 'failed'
-    | 'cancelled'
-    | 'expired';
+    | "queued"
+    | "processing"
+    | "completed"
+    | "failed"
+    | "cancelled"
+    | "expired";
   progress: number;
   resultsCount: number;
   createdAt: string;
@@ -110,31 +110,33 @@ const reverseLookup = async ({
 }: {
   mediaId: string;
 }): Promise<InitiateReverseLookupResponse> => {
-  console.log('starting reverse lookup for mediaId', mediaId);
+  console.log("starting reverse lookup for mediaId", mediaId);
   const response = await api.post(
-    '/api/reverse-lookup/search',
-    { mediaId, includeSocial: true, priority: 'high' },
-    { headers: { 'Content-Type': 'application/json' } }
+    "/api/reverse-lookup/search",
+    { mediaId, includeSocial: true, priority: "high" },
+    { headers: { "Content-Type": "application/json" } },
   );
 
-  console.log('reverse lookup result', response.data);
+  console.log("reverse lookup result", response.data);
 
   return response.data;
 };
 
-const reverseLookupResult = async (jobId: string): Promise<ReverseLookupResult> => {
-  console.log('fetching results for jobId', jobId);
+const reverseLookupResult = async (
+  jobId: string,
+): Promise<ReverseLookupResult> => {
+  console.log("fetching results for jobId", jobId);
   const response = await api.get(`/api/reverse-lookup/result/${jobId}`);
 
-  console.log('this is response', response.data);
+  console.log("this is response", response.data);
 
   return response.data;
 };
 
 const fetchUserReverseLookups = async (): Promise<UserReverseLookups> => {
-  const response = await api.get('/api/reverse-lookup/search');
+  const response = await api.get("/api/reverse-lookup/search");
 
-  console.log('user reverse lookups response', response.data);
+  console.log("user reverse lookups response", response.data);
   return response.data;
 };
 
@@ -149,12 +151,12 @@ export const useReverseLookupResult = (
   options?: {
     pollingInterval?: number;
     enabled?: boolean;
-  }
+  },
 ) => {
   const pollingInterval = options?.pollingInterval ?? 30000; // 30 seconds default
 
   return useQuery({
-    queryKey: ['reverseLookupResult', jobId],
+    queryKey: ["reverseLookupResult", jobId],
     queryFn: () => reverseLookupResult(jobId),
     enabled: options?.enabled ?? !!jobId,
     refetchInterval: (query) => {
@@ -169,7 +171,7 @@ export const useReverseLookupResult = (
       const status = data.data.status;
 
       // Only poll when status is queued or processing
-      if (['queued', 'processing'].includes(status)) {
+      if (["queued", "processing"].includes(status)) {
         return pollingInterval;
       }
 
@@ -190,7 +192,7 @@ export const useReverseLookupResult = (
 
 export const useUserReverseLookups = () => {
   return useQuery({
-    queryKey: ['userReverseLookups'],
+    queryKey: ["userReverseLookups"],
     queryFn: fetchUserReverseLookups,
     staleTime: 60 * 1000, // cache for 1 minute
   });
