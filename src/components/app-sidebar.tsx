@@ -103,7 +103,7 @@ const data = {
     },
     {
       name: 'Fact Checking',
-      url: '#',
+      url: '/dashboard/fact-check',
       icon: BookCheck,
     },
     {
