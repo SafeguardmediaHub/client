@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(response.data.user);
           router.push("/dashboard");
         },
-      }
+      },
     );
   };
 

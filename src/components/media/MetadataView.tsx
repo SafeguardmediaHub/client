@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { CopyIcon, FileTextIcon } from 'lucide-react';
-import { toast } from 'sonner';
+import { CopyIcon, FileTextIcon } from "lucide-react";
+import { toast } from "sonner";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+} from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface MetadataGroupProps {
   data: Record<string, string | number | boolean>;
@@ -21,7 +21,7 @@ export function MetadataGroup({ data, title }: MetadataGroupProps) {
   if (!data || Object.keys(data).length === 0) {
     return (
       <div className="text-sm text-gray-500 italic">
-        No {title?.toLowerCase() || 'metadata'} available
+        No {title?.toLowerCase() || "metadata"} available
       </div>
     );
   }
@@ -31,13 +31,13 @@ export function MetadataGroup({ data, title }: MetadataGroupProps) {
       {Object.entries(data).map(([key, value]) => (
         <div key={key} className="flex items-center gap-4 py-1">
           <span className="text-gray-500 font-medium capitalize">
-            {key.replace(/([A-Z])/g, ' $1').trim()}:
+            {key.replace(/([A-Z])/g, " $1").trim()}:
           </span>
           <span
             className="text-gray-700 font-mono text-xs max-w-[200px] truncate"
             title={String(value)}
           >
-            {String(value) || '—'}
+            {String(value) || "—"}
           </span>
         </div>
       ))}
@@ -62,10 +62,10 @@ export function MetadataView({ metadata }: MetadataViewProps) {
     navigator.clipboard
       .writeText(JSON.stringify(metadata, null, 2))
       .then(() => {
-        toast.success('Metadata copied to clipboard');
+        toast.success("Metadata copied to clipboard");
       })
       .catch(() => {
-        toast.error('Failed to copy metadata');
+        toast.error("Failed to copy metadata");
       });
   };
 
@@ -86,15 +86,15 @@ export function MetadataView({ metadata }: MetadataViewProps) {
   }
 
   const metadataSections = [
-    { key: 'general', title: 'General Info', icon: '📄' },
-    { key: 'video', title: 'Video', icon: '🎥' },
-    { key: 'audio', title: 'Audio', icon: '🎵' },
-    { key: 'exif', title: 'EXIF Data', icon: '📷' },
+    { key: "general", title: "General Info", icon: "📄" },
+    { key: "video", title: "Video", icon: "🎥" },
+    { key: "audio", title: "Audio", icon: "🎵" },
+    { key: "exif", title: "EXIF Data", icon: "📷" },
   ];
 
   // any additional metadata sections that aren't in the predefined list
   const additionalSections = Object.keys(metadata).filter(
-    (key) => !metadataSections.some((section) => section.key === key)
+    (key) => !metadataSections.some((section) => section.key === key),
   );
 
   return (
@@ -152,7 +152,7 @@ export function MetadataView({ metadata }: MetadataViewProps) {
                 <div className="flex items-center gap-2">
                   <span>📋</span>
                   <span className="capitalize">
-                    {key.replace(/([A-Z])/g, ' $1').trim()}
+                    {key.replace(/([A-Z])/g, " $1").trim()}
                   </span>
                   <Badge variant="secondary" className="text-xs">
                     {Object.keys(sectionData).length} fields
@@ -191,10 +191,10 @@ export function MetadataView({ metadata }: MetadataViewProps) {
                 {Object.values(metadata).reduce(
                   (total, section) =>
                     total +
-                    (typeof section === 'object'
+                    (typeof section === "object"
                       ? Object.keys(section).length
                       : 0),
-                  0
+                  0,
                 )}
               </span>
             </div>

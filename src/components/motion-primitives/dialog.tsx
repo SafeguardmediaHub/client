@@ -1,21 +1,21 @@
-'use client';
-import { X } from 'lucide-react';
+"use client";
+import { X } from "lucide-react";
 import {
   AnimatePresence,
   motion,
   type Transition,
   type Variants,
-} from 'motion/react';
+} from "motion/react";
 import React, {
   createContext,
   useContext,
   useEffect,
   useId,
   useRef,
-} from 'react';
-import { createPortal } from 'react-dom';
-import { cn } from '@/lib/utils';
-import { usePreventScroll } from './usePreventScroll';
+} from "react";
+import { createPortal } from "react-dom";
+import { cn } from "@/lib/utils";
+import { usePreventScroll } from "./usePreventScroll";
 
 const DialogContext = createContext<{
   isOpen: boolean;
@@ -44,7 +44,7 @@ const defaultVariants: Variants = {
 };
 
 const defaultTransition: Transition = {
-  ease: 'easeOut',
+  ease: "easeOut",
   duration: 0.2,
 };
 
@@ -67,7 +67,7 @@ function Dialog({
   open,
 }: DialogProps) {
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(
-    defaultOpen || false
+    defaultOpen || false,
   );
   const dialogRef = useRef<HTMLDialogElement>(null);
   const isOpen = open !== undefined ? open : uncontrolledOpen;
@@ -82,7 +82,7 @@ function Dialog({
       setUncontrolledOpen(value);
       onOpenChange?.(value);
     },
-    [onOpenChange]
+    [onOpenChange],
   );
 
   useEffect(() => {
@@ -90,9 +90,9 @@ function Dialog({
     if (!dialog) return;
 
     if (isOpen) {
-      document.body.classList.add('overflow-hidden');
+      document.body.classList.add("overflow-hidden");
     } else {
-      document.body.classList.remove('overflow-hidden');
+      document.body.classList.remove("overflow-hidden");
     }
 
     const handleCancel = (e: Event) => {
@@ -102,10 +102,10 @@ function Dialog({
       }
     };
 
-    dialog.addEventListener('cancel', handleCancel);
+    dialog.addEventListener("cancel", handleCancel);
     return () => {
-      dialog.removeEventListener('cancel', handleCancel);
-      document.body.classList.remove('overflow-hidden');
+      dialog.removeEventListener("cancel", handleCancel);
+      document.body.classList.remove("overflow-hidden");
     };
   }, [dialogRef, isOpen, setIsOpen]);
 
@@ -120,7 +120,7 @@ function Dialog({
   };
 
   const onAnimationComplete = (definition: string) => {
-    if (definition === 'exit' && !isOpen) {
+    if (definition === "exit" && !isOpen) {
       dialogRef.current?.close();
     }
   };
@@ -157,16 +157,16 @@ export type DialogTriggerProps = {
 
 function DialogTrigger({ children, className }: DialogTriggerProps) {
   const context = useContext(DialogContext);
-  if (!context) throw new Error('DialogTrigger must be used within Dialog');
+  if (!context) throw new Error("DialogTrigger must be used within Dialog");
 
   return (
     <button
       onClick={context.handleTrigger}
       className={cn(
-        'inline-flex items-center justify-center rounded-md text-sm font-medium',
-        'transition-colors focus-visible:ring-2 focus-visible:outline-hidden',
-        'focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
-        className
+        "inline-flex items-center justify-center rounded-md text-sm font-medium",
+        "transition-colors focus-visible:ring-2 focus-visible:outline-hidden",
+        "focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+        className,
       )}
     >
       {children}
@@ -181,7 +181,7 @@ export type DialogPortalProps = {
 
 function DialogPortal({
   children,
-  container = typeof window !== 'undefined' ? document.body : null,
+  container = typeof window !== "undefined" ? document.body : null,
 }: DialogPortalProps) {
   const [mounted, setMounted] = React.useState(false);
   const [portalContainer, setPortalContainer] =
@@ -207,7 +207,7 @@ export type DialogContentProps = {
 
 function DialogContent({ children, className, container }: DialogContentProps) {
   const context = useContext(DialogContext);
-  if (!context) throw new Error('DialogContent must be used within Dialog');
+  if (!context) throw new Error("DialogContent must be used within Dialog");
   const {
     isOpen,
     setIsOpen,
@@ -241,10 +241,10 @@ function DialogContent({ children, className, container }: DialogContentProps) {
           transition={transition}
           onAnimationComplete={onAnimationComplete}
           className={cn(
-            'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-lg border border-zinc-200 p-0 shadow-lg dark:border dark:border-zinc-700',
-            'backdrop:bg-black/50 backdrop:backdrop-blur-xs',
-            'open:flex open:flex-col',
-            className
+            "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-lg border border-zinc-200 p-0 shadow-lg dark:border dark:border-zinc-700",
+            "backdrop:bg-black/50 backdrop:backdrop-blur-xs",
+            "open:flex open:flex-col",
+            className,
           )}
         >
           <div className="w-full">{children}</div>
@@ -263,7 +263,7 @@ export type DialogHeaderProps = {
 
 function DialogHeader({ children, className }: DialogHeaderProps) {
   return (
-    <div className={cn('flex flex-col space-y-1.5', className)}>{children}</div>
+    <div className={cn("flex flex-col space-y-1.5", className)}>{children}</div>
   );
 }
 
@@ -274,12 +274,12 @@ export type DialogTitleProps = {
 
 function DialogTitle({ children, className }: DialogTitleProps) {
   const context = useContext(DialogContext);
-  if (!context) throw new Error('DialogTitle must be used within Dialog');
+  if (!context) throw new Error("DialogTitle must be used within Dialog");
 
   return (
     <h2
       id={context.ids.title}
-      className={cn('text-base font-medium', className)}
+      className={cn("text-base font-medium", className)}
     >
       {children}
     </h2>
@@ -293,12 +293,12 @@ export type DialogDescriptionProps = {
 
 function DialogDescription({ children, className }: DialogDescriptionProps) {
   const context = useContext(DialogContext);
-  if (!context) throw new Error('DialogDescription must be used within Dialog');
+  if (!context) throw new Error("DialogDescription must be used within Dialog");
 
   return (
     <p
       id={context.ids.description}
-      className={cn('text-base text-zinc-500', className)}
+      className={cn("text-base text-zinc-500", className)}
     >
       {children}
     </p>
@@ -313,7 +313,7 @@ export type DialogCloseProps = {
 
 function DialogClose({ className, children, disabled }: DialogCloseProps) {
   const context = useContext(DialogContext);
-  if (!context) throw new Error('DialogClose must be used within Dialog');
+  if (!context) throw new Error("DialogClose must be used within Dialog");
 
   return (
     <button
@@ -321,10 +321,10 @@ function DialogClose({ className, children, disabled }: DialogCloseProps) {
       type="button"
       aria-label="Close dialog"
       className={cn(
-        'absolute top-4 right-4 rounded-xs opacity-70 transition-opacity',
-        'hover:opacity-100 focus:ring-2 focus:outline-hidden',
-        'focus:ring-zinc-500 focus:ring-offset-2 disabled:pointer-events-none',
-        className
+        "absolute top-4 right-4 rounded-xs opacity-70 transition-opacity",
+        "hover:opacity-100 focus:ring-2 focus:outline-hidden",
+        "focus:ring-zinc-500 focus:ring-offset-2 disabled:pointer-events-none",
+        className,
       )}
       disabled={disabled}
     >

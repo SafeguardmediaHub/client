@@ -3,14 +3,14 @@ import type {
   RegisterResponse,
   ResendEmailVerificationResponse,
   verifyEmailSuccessResponse,
-} from '@/hooks/useAuth';
-import api from '../api';
+} from "@/hooks/useAuth";
+import api from "../api";
 
 export const login = async (
   email: string,
-  password: string
+  password: string,
 ): Promise<LoginResponse> => {
-  const { data } = await api.post('/api/auth/login', {
+  const { data } = await api.post("/api/auth/login", {
     email,
     password,
     rememberMe: true,
@@ -23,9 +23,9 @@ export const register = async (
   email: string,
   password: string,
   firstName: string,
-  lastName: string
+  lastName: string,
 ): Promise<RegisterResponse> => {
-  const { data } = await api.post('/api/auth/register', {
+  const { data } = await api.post("/api/auth/register", {
     email,
     password,
     firstName,
@@ -37,40 +37,40 @@ export const register = async (
 };
 
 export const logout = async () => {
-  await api.post('/api/auth/logout', {});
+  await api.post("/api/auth/logout", {});
   return true;
 };
 
 export const refreshToken = async () => {
   const { data } = await api.post(
-    '/api/auth/refresh',
+    "/api/auth/refresh",
     {},
-    { withCredentials: true }
+    { withCredentials: true },
   );
   return data;
 };
 
 export const verifyEmail = async (
-  token: string
+  token: string,
 ): Promise<verifyEmailSuccessResponse> => {
   const response = await api.post(
-    '/api/auth/verify-email',
+    "/api/auth/verify-email",
     {
       token,
     },
-    { headers: { 'Content-Type': 'application/json' } }
+    { headers: { "Content-Type": "application/json" } },
   );
 
   return response.data as verifyEmailSuccessResponse;
 };
 
 export const requestVerificationEmail = async (
-  email: string
+  email: string,
 ): Promise<ResendEmailVerificationResponse> => {
   const response = await api.post(
-    '/api/auth/resend-verification',
+    "/api/auth/resend-verification",
     { email },
-    { headers: { 'Content-Type': 'application/json' } }
+    { headers: { "Content-Type": "application/json" } },
   );
 
   return response.data as ResendEmailVerificationResponse;

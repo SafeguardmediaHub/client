@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { FileIcon, PlayIcon } from 'lucide-react';
-import Image from 'next/image';
-import { useState } from 'react';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import type { Media } from '@/hooks/useMedia';
-import { getStatusColor } from '@/lib/utils';
+import { FileIcon, PlayIcon } from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import type { Media } from "@/hooks/useMedia";
+import { getStatusColor } from "@/lib/utils";
 
 interface MediaPreviewProps {
   media: Media;
@@ -22,7 +22,7 @@ export function MediaPreview({ media, className }: MediaPreviewProps) {
   }>({ image: false, video: false, audio: false });
 
   const renderMediaContent = () => {
-    if (media.uploadType === 'general_image') {
+    if (media.uploadType === "general_image") {
       if (previewError.image) {
         return (
           <div className="w-full h-full flex items-center justify-center bg-gray-100">
@@ -36,7 +36,7 @@ export function MediaPreview({ media, className }: MediaPreviewProps) {
 
       return (
         <Image
-          src={media.publicUrl || '/file.svg'}
+          src={media.publicUrl || "/file.svg"}
           alt={media.filename}
           fill
           className="object-cover"
@@ -45,7 +45,7 @@ export function MediaPreview({ media, className }: MediaPreviewProps) {
       );
     }
 
-    if (media.uploadType === 'video') {
+    if (media.uploadType === "video") {
       if (previewError.video) {
         return (
           <div className="w-full h-full flex items-center justify-center bg-gray-100">
@@ -60,7 +60,7 @@ export function MediaPreview({ media, className }: MediaPreviewProps) {
       return (
         <video
           src={media.publicUrl}
-          poster={media.thumbnailUrl || '/file.svg'}
+          poster={media.thumbnailUrl || "/file.svg"}
           controls
           className="w-full h-full object-cover"
           preload="metadata"
@@ -72,7 +72,7 @@ export function MediaPreview({ media, className }: MediaPreviewProps) {
       );
     }
 
-    if (media.uploadType === 'audio') {
+    if (media.uploadType === "audio") {
       if (previewError.audio) {
         return (
           <div className="w-full h-full flex items-center justify-center bg-gray-100">
@@ -133,7 +133,7 @@ export function MediaPreview({ media, className }: MediaPreviewProps) {
           <div className="absolute top-3 right-3">
             <Badge
               className={`px-3 py-1 text-xs rounded-full border ${getStatusColor(
-                media.status
+                media.status,
               )} flex-shrink-0`}
             >
               {media.status.charAt(0).toUpperCase() + media.status.slice(1)}
@@ -142,7 +142,7 @@ export function MediaPreview({ media, className }: MediaPreviewProps) {
 
           {/* Quick Metadata Badges */}
           <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
-            {media.uploadType === 'video' && media.metadata?.duration && (
+            {media.uploadType === "video" && media.metadata?.duration && (
               <Badge variant="secondary" className="text-xs">
                 Duration: {media.metadata.duration}
               </Badge>

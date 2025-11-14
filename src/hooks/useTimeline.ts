@@ -12,7 +12,13 @@ export interface VerifyTimelineJobResponse {
   };
 }
 
-export type VerificationStatus = 'idle' | 'processing' | 'partial' | 'completed' | 'failed' | 'cancelled';
+export type VerificationStatus =
+  | 'idle'
+  | 'processing'
+  | 'partial'
+  | 'completed'
+  | 'failed'
+  | 'cancelled';
 
 export interface TimelineVerificationState {
   status: VerificationStatus;
@@ -71,7 +77,9 @@ const verifyTimeline = async ({
   return response.data;
 };
 
-const fetchVerificationStatus = async (mediaId: string): Promise<TimelineVerificationState> => {
+const fetchVerificationStatus = async (
+  mediaId: string
+): Promise<TimelineVerificationState> => {
   const response = await api.get(`/api/timeline/status/${mediaId}`);
   return response.data.data;
 };

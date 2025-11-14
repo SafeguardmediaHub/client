@@ -1,14 +1,14 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: <> */
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { use } from 'react';
-import { toast } from 'sonner';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { use } from "react";
+import { toast } from "sonner";
 import {
   login,
   logout,
   register,
   requestVerificationEmail,
   verifyEmail,
-} from '@/lib/api/auth';
+} from "@/lib/api/auth";
 
 export interface User {
   id: string;
@@ -16,13 +16,13 @@ export interface User {
   firstName: string;
   lastName: string;
   displayName: string;
-  role: 'user' | 'admin';
+  role: "user" | "admin";
   accountStatus:
-    | 'active'
-    | 'inactive'
-    | 'suspended'
-    | 'banned'
-    | 'pending_verfication';
+    | "active"
+    | "inactive"
+    | "suspended"
+    | "banned"
+    | "pending_verfication";
   emailVerfied: boolean;
   profilePicture: string | null;
   lastLoginAt: Date;
@@ -48,11 +48,11 @@ export type RegisterResponse = {
   firstName: string;
   lastName: string;
   accountStatus:
-    | 'active'
-    | 'inactive'
-    | 'suspended'
-    | 'banned'
-    | 'pending_verfication';
+    | "active"
+    | "inactive"
+    | "suspended"
+    | "banned"
+    | "pending_verfication";
   emailverfied: boolean;
 };
 
@@ -65,11 +65,11 @@ export type verifyEmailSuccessResponse = {
       email: string;
       emailVerified: boolean;
       accountStatus:
-        | 'active'
-        | 'inactive'
-        | 'suspended'
-        | 'banned'
-        | 'pending_verfication';
+        | "active"
+        | "inactive"
+        | "suspended"
+        | "banned"
+        | "pending_verfication";
     };
   };
 };
@@ -86,16 +86,16 @@ export const useLogin = () => {
     mutationFn: ({ email, password }: { email: string; password: string }) =>
       login(email, password),
     onSuccess: (response) => {
-      queryClient.setQueryData(['user'], response.data.user);
+      queryClient.setQueryData(["user"], response.data.user);
       try {
-        if (typeof window !== 'undefined')
-          window.localStorage?.setItem('hasSession', 'true');
+        if (typeof window !== "undefined")
+          window.localStorage?.setItem("hasSession", "true");
       } catch {}
-      toast.success('Login successful');
+      toast.success("Login successful");
     },
     onError: (error: any) => {
-      console.error('Login error:', error);
-      toast.error(error?.response?.data?.message || 'Login failed');
+      console.error("Login error:", error);
+      toast.error(error?.response?.data?.message || "Login failed");
     },
   });
 };
@@ -106,16 +106,16 @@ export const useLogout = () => {
   return useMutation({
     mutationFn: async () => logout(),
     onSuccess: () => {
-      queryClient.removeQueries({ queryKey: ['user'] });
+      queryClient.removeQueries({ queryKey: ["user"] });
       try {
-        if (typeof window !== 'undefined')
-          window.localStorage?.removeItem('hasSession');
+        if (typeof window !== "undefined")
+          window.localStorage?.removeItem("hasSession");
       } catch {}
-      toast.success('Logout successful');
+      toast.success("Logout successful");
     },
     onError: (error: any) => {
-      console.error('Logout error:', error);
-      toast.error('Logout failed');
+      console.error("Logout error:", error);
+      toast.error("Logout failed");
     },
   });
 };
@@ -136,14 +136,14 @@ export const useRegister = () => {
       lastName: string;
     }) => register(email, password, firstName, lastName),
     onSuccess: (data) => {
-      queryClient.setQueryData(['user'], data);
-      toast.success('Registration successful. Please verify your email.');
+      queryClient.setQueryData(["user"], data);
+      toast.success("Registration successful. Please verify your email.");
       // navigate to login
-      window.location.href = '/auth/login';
+      window.location.href = "/auth/login";
     },
     onError: (error: any) => {
-      console.error('Registration error:', error);
-      toast.error(error?.response?.data?.message || 'Registration failed');
+      console.error("Registration error:", error);
+      toast.error(error?.response?.data?.message || "Registration failed");
     },
   });
 };
@@ -154,16 +154,16 @@ export const useVerifyEmail = () => {
   return useMutation({
     mutationFn: (token: string) => verifyEmail(token),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['user'] });
-      toast.success('Email verified successfully. You can now log in.');
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+      toast.success("Email verified successfully. You can now log in.");
       return data;
     },
     onError: (error: any) => {
-      console.error('Email verification error:', error);
+      console.error("Email verification error:", error);
       const errorMessage =
         error?.response?.data?.message ||
         error?.message ||
-        'Email verification failed. Please try again.';
+        "Email verification failed. Please try again.";
       toast.error(errorMessage);
       throw error;
     },
@@ -176,16 +176,16 @@ export const useResendVerificationEmail = () => {
   return useMutation({
     mutationFn: (email: string) => requestVerificationEmail(email),
     onSuccess: (data) => {
-      qeryClient.invalidateQueries({ queryKey: ['user'] });
-      toast.success(data.message || 'Verification email sent successfully.');
+      qeryClient.invalidateQueries({ queryKey: ["user"] });
+      toast.success(data.message || "Verification email sent successfully.");
       return data;
     },
     onError: (error: any) => {
-      console.error('Resend verification email error:', error);
+      console.error("Resend verification email error:", error);
       const errorMessage =
         error?.response?.data?.message ||
         error?.message ||
-        'Failed to resend verification email. Please try again.';
+        "Failed to resend verification email. Please try again.";
       toast.error(errorMessage);
       throw error;
     },

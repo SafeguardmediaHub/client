@@ -1,7 +1,7 @@
-import { Check, ChevronDown, Search } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import { type Media, useGetMedia } from '@/hooks/useMedia';
-import { formatFileSize } from '@/lib/utils';
+import { Check, ChevronDown, Search } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { type Media, useGetMedia } from "@/hooks/useMedia";
+import { formatFileSize } from "@/lib/utils";
 
 interface MediaSelectorProps {
   onSelect: (media: Media) => void;
@@ -9,7 +9,7 @@ interface MediaSelectorProps {
 
 const MediaSelector = ({ onSelect }: MediaSelectorProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [filteredMedia, setFilteredMedia] = useState<Media[]>([]);
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -20,7 +20,7 @@ const MediaSelector = ({ onSelect }: MediaSelectorProps) => {
   useEffect(() => {
     if (searchQuery) {
       const filtered = media.filter((item) =>
-        item.filename.toLowerCase().includes(searchQuery.toLowerCase())
+        item.filename.toLowerCase().includes(searchQuery.toLowerCase()),
       );
       setFilteredMedia(filtered);
     } else {
@@ -38,8 +38,8 @@ const MediaSelector = ({ onSelect }: MediaSelectorProps) => {
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   function handleSelect(item: Media) {
@@ -49,21 +49,21 @@ const MediaSelector = ({ onSelect }: MediaSelectorProps) => {
   }
 
   const formatDate = (date: Date | string) => {
-    if (typeof date === 'string') {
-      return new Date(date).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
+    if (typeof date === "string") {
+      return new Date(date).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
       });
     }
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -77,11 +77,11 @@ const MediaSelector = ({ onSelect }: MediaSelectorProps) => {
         <span className="text-gray-500">
           {selectedMedia
             ? selectedMedia.filename
-            : 'Select a media file to verify'}
+            : "Select a media file to verify"}
         </span>
         <ChevronDown
           className={`w-5 h-5 text-gray-500 transition-transform ${
-            isOpen ? 'rotate-180' : ''
+            isOpen ? "rotate-180" : ""
           }`}
         />
       </button>

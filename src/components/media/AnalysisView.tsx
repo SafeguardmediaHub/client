@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   AlertTriangle,
@@ -6,9 +6,9 @@ import {
   Info,
   ShieldCheck,
   XCircle,
-} from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface AnalysisData {
   possibleTampering?: boolean;
@@ -47,21 +47,21 @@ export function AnalysisView({ analysis }: AnalysisViewProps) {
     if (isTampered) {
       return {
         icon: AlertTriangle,
-        title: 'Possible Tampering Detected',
-        description: 'This file shows signs of manipulation or tampering.',
-        color: 'text-red-500',
-        bgColor: 'bg-red-50',
-        borderColor: 'border-red-200',
+        title: "Possible Tampering Detected",
+        description: "This file shows signs of manipulation or tampering.",
+        color: "text-red-500",
+        bgColor: "bg-red-50",
+        borderColor: "border-red-200",
       };
     } else {
       return {
         icon: ShieldCheck,
-        title: 'No Tampering Detected',
+        title: "No Tampering Detected",
         description:
-          'This file appears to be authentic with no signs of manipulation.',
-        color: 'text-green-500',
-        bgColor: 'bg-green-50',
-        borderColor: 'border-green-200',
+          "This file appears to be authentic with no signs of manipulation.",
+        color: "text-green-500",
+        bgColor: "bg-green-50",
+        borderColor: "border-green-200",
       };
     }
   };
@@ -87,10 +87,10 @@ export function AnalysisView({ analysis }: AnalysisViewProps) {
         <CardContent>
           <div className="flex flex-wrap gap-2">
             <Badge variant="outline" className="text-xs">
-              Tampered: {isTampered ? 'Yes' : 'No'}
+              Tampered: {isTampered ? "Yes" : "No"}
             </Badge>
             <Badge variant="outline" className="text-xs">
-              Metadata Stripped: {analysis.strippedMetadata ? 'Yes' : 'No'}
+              Metadata Stripped: {analysis.strippedMetadata ? "Yes" : "No"}
             </Badge>
             {analysis.missingFields.length > 0 && (
               <Badge variant="outline" className="text-xs">
@@ -117,11 +117,11 @@ export function AnalysisView({ analysis }: AnalysisViewProps) {
                 <span className="text-sm font-medium">Metadata Stripped:</span>
                 <Badge
                   variant={
-                    analysis.strippedMetadata ? 'destructive' : 'default'
+                    analysis.strippedMetadata ? "destructive" : "default"
                   }
                   className="text-xs"
                 >
-                  {analysis.strippedMetadata ? 'Yes' : 'No'}
+                  {analysis.strippedMetadata ? "Yes" : "No"}
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
@@ -197,16 +197,16 @@ export function AnalysisView({ analysis }: AnalysisViewProps) {
               <span className="font-medium">Overall Status:</span>
               <span
                 className={`ml-2 font-medium ${
-                  isTampered ? 'text-red-600' : 'text-green-600'
+                  isTampered ? "text-red-600" : "text-green-600"
                 }`}
               >
-                {isTampered ? 'Suspicious' : 'Authentic'}
+                {isTampered ? "Suspicious" : "Authentic"}
               </span>
             </div>
             <div>
               <span className="font-medium">Metadata Integrity:</span>
               <span className="ml-2 text-gray-700">
-                {analysis.strippedMetadata ? 'Compromised' : 'Intact'}
+                {analysis.strippedMetadata ? "Compromised" : "Intact"}
               </span>
             </div>
             <div>

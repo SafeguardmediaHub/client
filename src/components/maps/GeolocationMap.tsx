@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import { AlertCircle, ExternalLink, Loader2 } from 'lucide-react';
+import { useEffect, useRef, useState } from "react";
+import { AlertCircle, ExternalLink, Loader2 } from "lucide-react";
 
 interface Coordinates {
   lat: number;
@@ -33,7 +33,7 @@ declare global {
   }
 }
 
-const GeolocationMap = ({ mapData, className = '' }: GeolocationMapProps) => {
+const GeolocationMap = ({ mapData, className = "" }: GeolocationMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const googleMapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
@@ -45,7 +45,7 @@ const GeolocationMap = ({ mapData, className = '' }: GeolocationMapProps) => {
   useEffect(() => {
     // Check if API key exists
     if (!apiKey) {
-      setError('Google Maps API key not configured');
+      setError("Google Maps API key not configured");
       setIsLoading(false);
       return;
     }
@@ -57,7 +57,7 @@ const GeolocationMap = ({ mapData, className = '' }: GeolocationMapProps) => {
     }
 
     // Load Google Maps API
-    const script = document.createElement('script');
+    const script = document.createElement("script");
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
     script.async = true;
     script.defer = true;
@@ -65,7 +65,7 @@ const GeolocationMap = ({ mapData, className = '' }: GeolocationMapProps) => {
       initializeMap();
     };
     script.onerror = () => {
-      setError('Failed to load Google Maps');
+      setError("Failed to load Google Maps");
       setIsLoading(false);
     };
 
@@ -112,20 +112,25 @@ const GeolocationMap = ({ mapData, className = '' }: GeolocationMapProps) => {
             path: window.google.maps.SymbolPath.CIRCLE,
             scale: 8,
             fillColor:
-              markerData.type === 'claimed'
-                ? '#3B82F6' // Blue for claimed
-                : markerData.type === 'gps'
-                ? '#EF4444' // Red for GPS
-                : '#10B981', // Green for others
+              markerData.type === "claimed"
+                ? "#3B82F6" // Blue for claimed
+                : markerData.type === "gps"
+                  ? "#EF4444" // Red for GPS
+                  : "#10B981", // Green for others
             fillOpacity: 1,
-            strokeColor: '#FFFFFF',
+            strokeColor: "#FFFFFF",
             strokeWeight: 2,
           },
           label: {
-            text: markerData.type === 'claimed' ? 'C' : markerData.type === 'gps' ? 'G' : 'M',
-            color: '#FFFFFF',
-            fontSize: '12px',
-            fontWeight: 'bold',
+            text:
+              markerData.type === "claimed"
+                ? "C"
+                : markerData.type === "gps"
+                  ? "G"
+                  : "M",
+            color: "#FFFFFF",
+            fontSize: "12px",
+            fontWeight: "bold",
           },
         });
 
@@ -144,7 +149,7 @@ const GeolocationMap = ({ mapData, className = '' }: GeolocationMapProps) => {
           `,
         });
 
-        marker.addListener('click', () => {
+        marker.addListener("click", () => {
           // Close all other info windows
           markersRef.current.forEach((m) => {
             if (m.infoWindow) {
@@ -167,18 +172,22 @@ const GeolocationMap = ({ mapData, className = '' }: GeolocationMapProps) => {
         map.fitBounds(bounds);
 
         // Add some padding
-        const listener = window.google.maps.event.addListener(map, 'idle', () => {
-          if (map.getZoom() > mapData.zoom) {
-            map.setZoom(mapData.zoom);
-          }
-          window.google.maps.event.removeListener(listener);
-        });
+        const listener = window.google.maps.event.addListener(
+          map,
+          "idle",
+          () => {
+            if (map.getZoom() > mapData.zoom) {
+              map.setZoom(mapData.zoom);
+            }
+            window.google.maps.event.removeListener(listener);
+          },
+        );
       }
 
       setIsLoading(false);
     } catch (err) {
-      console.error('Error initializing map:', err);
-      setError('Failed to initialize map');
+      console.error("Error initializing map:", err);
+      setError("Failed to initialize map");
       setIsLoading(false);
     }
   };
@@ -186,12 +195,14 @@ const GeolocationMap = ({ mapData, className = '' }: GeolocationMapProps) => {
   const handleOpenInGoogleMaps = () => {
     const { lat, lng } = mapData.centerCoordinates;
     const url = `https://www.google.com/maps?q=${lat},${lng}&z=${mapData.zoom}`;
-    window.open(url, '_blank');
+    window.open(url, "_blank");
   };
 
   if (error) {
     return (
-      <div className={`flex flex-col items-center justify-center bg-gray-50 rounded-lg p-8 ${className}`}>
+      <div
+        className={`flex flex-col items-center justify-center bg-gray-50 rounded-lg p-8 ${className}`}
+      >
         <div className="flex flex-col items-center text-center gap-3">
           <AlertCircle className="w-12 h-12 text-red-500" />
           <div>

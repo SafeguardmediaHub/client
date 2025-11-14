@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { motion } from "framer-motion";
+import { useState } from "react";
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from '@/components/ui/sheet';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { Media } from '@/hooks/useMedia';
-import { AnalysisView } from './AnalysisView';
-import { GeneralInfoView } from './GeneralInfoView';
-import { MediaPreview } from './MediaPreview';
-import { MetadataView } from './MetadataView';
+} from "@/components/ui/sheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { Media } from "@/hooks/useMedia";
+import { AnalysisView } from "./AnalysisView";
+import { GeneralInfoView } from "./GeneralInfoView";
+import { MediaPreview } from "./MediaPreview";
+import { MetadataView } from "./MetadataView";
 
 // const analysisTypes = [
 //   {
@@ -55,7 +55,7 @@ export function MediaDetailsSheet({
   isOpen,
   onOpenChange,
 }: MediaDetailsSheetProps) {
-  const [activeTab, setActiveTab] = useState('general');
+  const [activeTab, setActiveTab] = useState("general");
 
   if (!media) return null;
 
