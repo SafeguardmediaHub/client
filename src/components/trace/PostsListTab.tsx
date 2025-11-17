@@ -11,14 +11,14 @@ import {
   Users,
   Calendar,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { Platform, PlatformAppearance } from "@/types/trace";
+import type { Platform, PlatformAppearance, PlatformPost } from "@/types/trace";
 
 interface PostsListTabProps {
-  posts: PlatformAppearance[];
+  platformAppearances: PlatformAppearance[];
 }
 
 const getPlatformColor = (platform: Platform) => {
@@ -35,30 +35,31 @@ const getPlatformColor = (platform: Platform) => {
 
 const POSTS_PER_PAGE = 10;
 
-export const PostsListTab = ({ posts }: PostsListTabProps) => {
+export const PostsListTab = ({ platformAppearances }: PostsListTabProps) => {
   const [selectedPlatform, setSelectedPlatform] = useState<Platform | "all">(
     "all",
   );
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Group posts by platform
-  const platformGroups = posts.reduce(
-    (acc, post) => {
-      if (!acc[post.platform]) {
-        acc[post.platform] = [];
-      }
-      acc[post.platform].push(post);
-      return acc;
-    },
-    {} as Record<Platform, PlatformAppearance[]>,
-  );
+  // Flatten all posts and group by platform
+  const { allPosts, platformGroups, platforms } = useMemo(() => {
+    const allPosts: PlatformPost[] = platformAppearances?.flatMap((pa) => pa.posts) || [];
+    const platformGroups = platformAppearances?.reduce(
+      (acc, pa) => {
+        acc[pa.platform] = pa.posts;
+        return acc;
+      },
+      {} as Record<Platform, PlatformPost[]>,
+    ) || {};
+    const platforms = platformAppearances?.map((pa) => pa.platform) || [];
 
-  const platforms = Object.keys(platformGroups) as Platform[];
+    return { allPosts, platformGroups, platforms };
+  }, [platformAppearances]);
 
   // Filter posts by selected platform
   const filteredPosts =
     selectedPlatform === "all"
-      ? posts
+      ? allPosts
       : platformGroups[selectedPlatform] || [];
 
   // Paginate
@@ -99,7 +100,7 @@ export const PostsListTab = ({ posts }: PostsListTabProps) => {
             }}
             className="cursor-pointer"
           >
-            All Platforms ({posts.length})
+            All Platforms ({allPosts.length})
           </Button>
           {platforms.map((platform) => (
             <Button
@@ -115,7 +116,7 @@ export const PostsListTab = ({ posts }: PostsListTabProps) => {
                 selectedPlatform === platform && getPlatformColor(platform),
               )}
             >
-              {platform} ({platformGroups[platform].length})
+              {platform} ({platformGroups[platform]?.length || 0})
             </Button>
           ))}
         </div>
@@ -133,7 +134,7 @@ export const PostsListTab = ({ posts }: PostsListTabProps) => {
           <div className="text-sm text-gray-600 mb-1">Total Likes</div>
           <div className="text-2xl font-bold text-gray-900">
             {formatNumber(
-              filteredPosts.reduce((sum, p) => sum + p.engagement.likes, 0),
+              filteredPosts.reduce((sum, p) => sum + (p.engagement?.likes || 0), 0),
             )}
           </div>
         </div>
@@ -141,7 +142,7 @@ export const PostsListTab = ({ posts }: PostsListTabProps) => {
           <div className="text-sm text-gray-600 mb-1">Total Shares</div>
           <div className="text-2xl font-bold text-gray-900">
             {formatNumber(
-              filteredPosts.reduce((sum, p) => sum + p.engagement.shares, 0),
+              filteredPosts.reduce((sum, p) => sum + (p.engagement?.shares || 0), 0),
             )}
           </div>
         </div>
@@ -149,7 +150,7 @@ export const PostsListTab = ({ posts }: PostsListTabProps) => {
           <div className="text-sm text-gray-600 mb-1">Total Comments</div>
           <div className="text-2xl font-bold text-gray-900">
             {formatNumber(
-              filteredPosts.reduce((sum, p) => sum + p.engagement.comments, 0),
+              filteredPosts.reduce((sum, p) => sum + (p.engagement?.comments || 0), 0),
             )}
           </div>
         </div>
@@ -171,9 +172,9 @@ export const PostsListTab = ({ posts }: PostsListTabProps) => {
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-gray-900">
-                      {post.displayName || post.username}
+                      {post.displayName}
                     </span>
-                    {post.metadata?.isVerified && (
+                    {post.isVerified && (
                       <BadgeCheck className="w-4 h-4 text-blue-600" />
                     )}
                   </div>
@@ -203,8 +204,8 @@ export const PostsListTab = ({ posts }: PostsListTabProps) => {
             </div>
 
             {/* Post Content */}
-            {post.content && (
-              <p className="text-gray-700 mb-4 line-clamp-3">{post.content}</p>
+            {post.caption && (
+              <p className="text-gray-700 mb-4 line-clamp-3">{post.caption}</p>
             )}
 
             {/* Post Metadata */}
@@ -213,16 +214,12 @@ export const PostsListTab = ({ posts }: PostsListTabProps) => {
                 <Calendar className="w-4 h-4" />
                 <span>{formatDate(post.timestamp)}</span>
               </div>
-              {post.metadata?.followerCount && (
+              {post.hashtags && post.hashtags.length > 0 && (
                 <div className="flex items-center gap-1">
-                  <Users className="w-4 h-4" />
-                  <span>{formatNumber(post.metadata.followerCount)} followers</span>
-                </div>
-              )}
-              {post.metadata?.accountCreated && (
-                <div className="flex items-center gap-1 text-xs">
-                  Account created:{" "}
-                  {new Date(post.metadata.accountCreated).toLocaleDateString()}
+                  <span className="text-blue-600">
+                    #{post.hashtags[0]}
+                    {post.hashtags.length > 1 && ` +${post.hashtags.length - 1}`}
+                  </span>
                 </div>
               )}
             </div>
@@ -232,25 +229,25 @@ export const PostsListTab = ({ posts }: PostsListTabProps) => {
               <div className="flex items-center gap-2 text-gray-600">
                 <Heart className="w-5 h-5" />
                 <span className="font-medium">
-                  {formatNumber(post.engagement.likes)}
+                  {formatNumber(post.engagement?.likes || 0)}
                 </span>
                 <span className="text-sm">Likes</span>
               </div>
               <div className="flex items-center gap-2 text-gray-600">
                 <Share2 className="w-5 h-5" />
                 <span className="font-medium">
-                  {formatNumber(post.engagement.shares)}
+                  {formatNumber(post.engagement?.shares || 0)}
                 </span>
                 <span className="text-sm">Shares</span>
               </div>
               <div className="flex items-center gap-2 text-gray-600">
                 <MessageCircle className="w-5 h-5" />
                 <span className="font-medium">
-                  {formatNumber(post.engagement.comments)}
+                  {formatNumber(post.engagement?.comments || 0)}
                 </span>
                 <span className="text-sm">Comments</span>
               </div>
-              {post.engagement.views !== undefined && (
+              {post.engagement?.views !== undefined && (
                 <div className="flex items-center gap-2 text-gray-600">
                   <Eye className="w-5 h-5" />
                   <span className="font-medium">

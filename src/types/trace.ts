@@ -68,115 +68,169 @@ export interface TraceStatusResponse {
   timestamp?: string;
 }
 
-// Platform appearance
+// Individual post data
+export interface PlatformPost {
+  postId: string;
+  userId: string;
+  username: string;
+  displayName: string;
+  platform: Platform;
+  timestamp: string;
+  url: string;
+  engagement: {
+    likes: number;
+    shares: number;
+    retweets: number;
+    comments: number;
+    replies: number;
+    views: number;
+    reactions: number;
+  };
+  hashtags: string[];
+  mentions: string[];
+  caption?: string;
+  isVerified: boolean;
+  spreadType: string;
+}
+
+// Platform appearance grouping
 export interface PlatformAppearance {
   platform: Platform;
-  postId: string;
-  url: string;
-  username: string;
-  displayName?: string;
-  timestamp: string;
-  content?: string;
-  engagement: {
-    likes: number;
-    shares: number;
-    comments: number;
-    views?: number;
-  };
-  metadata?: {
-    isVerified?: boolean;
-    followerCount?: number;
-    accountCreated?: string;
-  };
+  posts: PlatformPost[];
+  totalFound: number;
+  oldestPost: string;
+  newestPost: string;
 }
 
-// Distribution graph node
-export interface DistributionNode {
-  id: string;
-  type: "source" | "share" | "repost" | "quote";
+// Original poster info
+export interface OriginalPoster {
   platform: Platform;
+  userId: string;
   username: string;
+  displayName: string;
+  postId: string;
   timestamp: string;
+  url: string;
+  verified: boolean;
   engagement: {
     likes: number;
     shares: number;
+    retweets: number;
     comments: number;
+    replies: number;
+    views: number;
+    reactions: number;
   };
 }
 
-// Distribution graph edge
-export interface DistributionEdge {
-  source: string;
-  target: string;
-  type: "shared" | "reposted" | "quoted" | "replied";
+// Early spreader info
+export interface EarlySpreader {
+  platform: Platform;
+  userId: string;
+  username: string;
+  displayName: string;
+  postId: string;
   timestamp: string;
+  url: string;
+  engagement: {
+    likes: number;
+    shares: number;
+    retweets: number;
+    comments: number;
+    replies: number;
+    views: number;
+    reactions: number;
+  };
+  isInfluencer: boolean;
+  influenceScore: number;
+  verified: boolean;
+  timeFromOriginal: number;
+  spreadType: string;
+}
+
+// Viral moment
+export interface ViralMoment {
+  timestamp: string;
+  platform: Platform;
+  engagementSpike: number;
+  shareVelocity: number;
+  totalShares: number;
+  description: string;
+}
+
+// Platform breakdown
+export interface PlatformBreakdown {
+  platform: Platform;
+  postCount: number;
+  engagementTotal: number;
 }
 
 // Distribution graph
 export interface DistributionGraph {
-  nodes: DistributionNode[];
-  edges: DistributionEdge[];
-  metadata: {
-    totalNodes: number;
-    totalEdges: number;
-    platforms: Platform[];
-  };
+  originalPoster: OriginalPoster;
+  earlySpreaders: EarlySpreader[];
+  viralMoments: ViralMoment[];
+  totalPosts: number;
+  totalEngagement: number;
+  spreadDurationHours: number;
+  peakVelocity: number;
+  platformBreakdown: PlatformBreakdown[];
 }
 
-// Timeline event
-export interface TimelineEvent {
-  id: string;
-  timestamp: string;
-  type: "first_appearance" | "viral_spike" | "platform_spread" | "deletion";
-  platform: Platform;
-  description: string;
-  metadata?: Record<string, unknown>;
+// Coordinated behavior pattern
+export interface CoordinatedBehavior {
+  detected: boolean;
+  evidence: any[];
+  score: number;
+  accountsInvolved: any[];
+  timingClusters: any[];
+  similarityScore: number;
 }
 
-// Suspicious pattern
-export interface SuspiciousPattern {
-  id: string;
-  type:
-    | "coordinated_posting"
-    | "bot_activity"
-    | "rapid_spread"
-    | "suspicious_accounts"
-    | "unusual_timing";
-  severity: "low" | "medium" | "high";
-  confidence: number;
-  description: string;
-  affectedPosts: string[];
-  evidence?: Record<string, unknown>;
+// Bot amplification pattern
+export interface BotAmplification {
+  detected: boolean;
+  suspiciousAccounts: any[];
+  score: number;
+  indicators: any[];
+  botProbability: number;
+}
+
+// Rapid spread pattern
+export interface RapidSpread {
+  detected: boolean;
+  spreadRate: number;
+  score: number;
+  timeline: Array<{
+    hour: number;
+    postCount: number;
+    cumulativeTotal: number;
+  }>;
+  accelerationPoints: any[];
+  organicLikelihood: number;
+}
+
+// Suspicious patterns container
+export interface SuspiciousPatterns {
+  coordinatedBehavior: CoordinatedBehavior;
+  botAmplification: BotAmplification;
+  rapidSpread: RapidSpread;
+  overallSuspicionScore: number;
+  riskLevel: "low" | "medium" | "high";
+  flags: string[];
 }
 
 // Forensic analysis
 export interface ForensicAnalysis {
-  overallConfidence: number;
-  authenticity: {
-    score: number;
-    verdict: "authentic" | "suspicious" | "manipulated" | "inconclusive";
-    indicators: Array<{
-      type: string;
-      description: string;
-      confidence: number;
-    }>;
-  };
-  manipulation: {
-    detected: boolean;
-    types?: string[];
-    confidence?: number;
-  };
-  metadata: {
-    originalSource?: {
-      platform: Platform;
-      url: string;
-      timestamp: string;
-    };
-    earliestAppearance?: {
-      platform: Platform;
-      timestamp: string;
-    };
-  };
+  status: TraceStatus;
+  startedAt: string;
+  completedAt: string;
+  processingTimeSeconds: number;
+  tracingScore: number;
+  confidence: number;
+  flags: string[];
+  summary: string;
+  recommendations: string[];
 }
 
 // Full trace result
@@ -184,27 +238,13 @@ export interface TraceResult {
   traceId: string;
   mediaId: string;
   status: TraceStatus;
-  config: InitiateTraceRequest;
+  searchConfig: InitiateTraceRequest;
   createdAt: string;
   completedAt?: string;
   platformAppearances: PlatformAppearance[];
   distributionGraph: DistributionGraph;
-  timeline: TimelineEvent[];
-  suspiciousPatterns: SuspiciousPattern[];
+  suspiciousPatterns: SuspiciousPatterns;
   forensicAnalysis: ForensicAnalysis;
-  summary: {
-    totalPosts: number;
-    platforms: Platform[];
-    dateRange: {
-      earliest: string;
-      latest: string;
-    };
-    topEngagement: {
-      platform: Platform;
-      postId: string;
-      totalEngagement: number;
-    };
-  };
 }
 
 // Trace result response
@@ -222,11 +262,7 @@ export interface TraceListItem {
   status: TraceStatus;
   createdAt: string;
   completedAt?: string;
-  config: InitiateTraceRequest;
-  summary?: {
-    totalPosts: number;
-    platforms: Platform[];
-  };
+  searchConfig: InitiateTraceRequest;
 }
 
 export interface ListTracesResponse {
@@ -239,25 +275,6 @@ export interface ListTracesResponse {
   timestamp: string;
 }
 
-// Distribution graph response
-export interface DistributionGraphResponse {
-  success: boolean;
-  message: string;
-  data: {
-    visualizationData: DistributionGraph;
-  };
-  timestamp: string;
-}
-
-// Timeline response
-export interface TimelineResponse {
-  success: boolean;
-  message: string;
-  data: {
-    events: TimelineEvent[];
-  };
-  timestamp: string;
-}
 
 // Client-side state types
 export type TraceUIState =

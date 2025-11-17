@@ -202,11 +202,11 @@ export const TraceCardLive = ({
       )}
 
       {/* Platforms */}
-      {trace.config?.platforms && trace.config.platforms.length > 0 && (
+      {trace.searchConfig?.platforms && trace.searchConfig.platforms.length > 0 && (
         <div className="mb-4">
           <p className="text-xs font-medium text-gray-700 mb-2">Platforms:</p>
           <div className="flex flex-wrap gap-2">
-            {trace.config.platforms.map((platform) => (
+            {trace.searchConfig.platforms.map((platform) => (
               <Badge
                 key={platform}
                 variant="outline"
@@ -241,18 +241,18 @@ export const TraceCardLive = ({
       )}
 
       {/* Config Details */}
-      {trace.config && (
+      {trace.searchConfig && (
         <div className="mb-4 grid grid-cols-2 gap-2 text-xs">
           <div className="flex flex-col">
             <span className="text-gray-500">Search Depth:</span>
             <span className="font-medium text-gray-900">
-              {getSearchDepthLabel(trace.config.searchDepth)}
+              {getSearchDepthLabel(trace.searchConfig.searchDepth)}
             </span>
           </div>
           <div className="flex flex-col">
             <span className="text-gray-500">Max Results:</span>
             <span className="font-medium text-gray-900">
-              {trace.config.maxResults || 100}
+              {trace.searchConfig.maxResults || 100}
             </span>
           </div>
         </div>

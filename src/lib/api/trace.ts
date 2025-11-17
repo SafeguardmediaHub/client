@@ -1,9 +1,7 @@
 import type {
-  DistributionGraphResponse,
   InitiateTraceRequest,
   InitiateTraceResponse,
   ListTracesResponse,
-  TimelineResponse,
   TraceResultResponse,
   TraceStatusResponse,
 } from '@/types/trace';
@@ -39,24 +37,6 @@ export const getTraceResult = async (
   const { data } = await api.get(
     `/api/sm-tracing/media/${mediaId}/trace/${traceId}`
   );
-
-  return data;
-};
-
-export const getDistributionGraph = async (
-  traceId: string
-): Promise<DistributionGraphResponse> => {
-  const { data } = await api.get(
-    `/api/sm-tracing/trace/${traceId}/distribution`
-  );
-
-  return data;
-};
-
-export const getTimeline = async (
-  traceId: string
-): Promise<TimelineResponse> => {
-  const { data } = await api.get(`/api/sm-tracing/trace/${traceId}/timeline`);
 
   return data;
 };

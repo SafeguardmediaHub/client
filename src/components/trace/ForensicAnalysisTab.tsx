@@ -3,10 +3,11 @@
 import {
   AlertCircle,
   CheckCircle,
-  Globe,
+  Clock,
   Info,
+  Lightbulb,
   Shield,
-  XCircle,
+  Target,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -16,45 +17,38 @@ interface ForensicAnalysisTabProps {
   analysis: ForensicAnalysis;
 }
 
-const getVerdictConfig = (
-  verdict: "authentic" | "suspicious" | "manipulated" | "inconclusive",
-) => {
-  switch (verdict) {
-    case "authentic":
+const getStatusConfig = (status: string) => {
+  switch (status) {
+    case "completed":
       return {
         icon: CheckCircle,
-        label: "Authentic",
+        label: "Completed",
         color: "text-green-700 bg-green-50 border-green-200",
-        description: "Content appears to be authentic with no signs of manipulation",
       };
-    case "suspicious":
+    case "processing":
+      return {
+        icon: Clock,
+        label: "Processing",
+        color: "text-blue-700 bg-blue-50 border-blue-200",
+      };
+    case "failed":
       return {
         icon: AlertCircle,
-        label: "Suspicious",
-        color: "text-yellow-700 bg-yellow-50 border-yellow-200",
-        description:
-          "Some indicators suggest possible manipulation - further review recommended",
-      };
-    case "manipulated":
-      return {
-        icon: XCircle,
-        label: "Manipulated",
+        label: "Failed",
         color: "text-red-700 bg-red-50 border-red-200",
-        description: "Strong evidence of content manipulation detected",
       };
-    case "inconclusive":
+    default:
       return {
         icon: Info,
-        label: "Inconclusive",
+        label: "Unknown",
         color: "text-gray-700 bg-gray-50 border-gray-200",
-        description: "Insufficient data to make a definitive determination",
       };
   }
 };
 
 export const ForensicAnalysisTab = ({ analysis }: ForensicAnalysisTabProps) => {
-  const verdictConfig = getVerdictConfig(analysis.authenticity.verdict);
-  const VerdictIcon = verdictConfig.icon;
+  const statusConfig = getStatusConfig(analysis.status);
+  const StatusIcon = statusConfig.icon;
 
   const formatDate = (timestamp: string) => {
     return new Date(timestamp).toLocaleDateString("en-US", {
@@ -66,337 +60,218 @@ export const ForensicAnalysisTab = ({ analysis }: ForensicAnalysisTabProps) => {
     });
   };
 
+  const formatDuration = (seconds: number) => {
+    if (seconds < 60) return `${seconds.toFixed(1)}s`;
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}m ${remainingSeconds}s`;
+  };
+
+  if (!analysis) {
+    return (
+      <div className="p-12 text-center">
+        <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          No Forensic Analysis Available
+        </h3>
+        <p className="text-sm text-gray-600">
+          Forensic analysis data is not available for this trace.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      {/* Overall Assessment */}
-      <div
-        className={cn("p-6 border-2 rounded-lg", verdictConfig.color.split(" ")[1], `border-${verdictConfig.color.split("-")[1]}-200`)}
-      >
-        <div className="flex items-start gap-4">
-          <div
-            className={cn(
-              "p-3 rounded-full border-2",
-              verdictConfig.color,
-            )}
-          >
-            <VerdictIcon className="w-8 h-8" />
+      {/* Analysis Status */}
+      <div className="p-6 bg-white border border-gray-200 rounded-lg">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <Clock className="w-5 h-5" />
+          Analysis Status
+        </h3>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-600">Status</span>
+            <Badge className={cn("border", statusConfig.color)}>
+              <StatusIcon className="w-4 h-4 mr-1" />
+              {statusConfig.label}
+            </Badge>
           </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <h3 className="text-2xl font-bold text-gray-900">
-                {verdictConfig.label}
-              </h3>
-              <Badge className={cn("border", verdictConfig.color)}>
-                {analysis.overallConfidence}% Confidence
-              </Badge>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <div className="text-sm text-gray-600 mb-1">Started At</div>
+              <div className="text-sm font-medium text-gray-900">
+                {formatDate(analysis.startedAt)}
+              </div>
             </div>
-            <p className="text-sm text-gray-700">{verdictConfig.description}</p>
+            {analysis.completedAt && (
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="text-sm text-gray-600 mb-1">Completed At</div>
+                <div className="text-sm font-medium text-gray-900">
+                  {formatDate(analysis.completedAt)}
+                </div>
+              </div>
+            )}
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <div className="text-sm text-gray-600 mb-1">Processing Time</div>
+              <div className="text-sm font-medium text-gray-900">
+                {formatDuration(analysis.processingTimeSeconds)}
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Overall Confidence */}
+      {/* Tracing Score */}
       <div className="p-6 bg-white border border-gray-200 rounded-lg">
         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Shield className="w-5 h-5" />
-          Overall Confidence Score
+          <Target className="w-5 h-5" />
+          Tracing Score
         </h3>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Forensic Confidence</span>
+            <span className="text-sm text-gray-600">
+              How effectively we traced the content across platforms
+            </span>
             <span className="text-2xl font-bold text-gray-900">
-              {analysis.overallConfidence}%
+              {(analysis.tracingScore * 100).toFixed(1)}%
             </span>
           </div>
           <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
             <div
               className={cn(
                 "h-full rounded-full transition-all",
-                analysis.overallConfidence >= 70
+                analysis.tracingScore >= 0.7
                   ? "bg-green-600"
-                  : analysis.overallConfidence >= 40
+                  : analysis.tracingScore >= 0.4
                     ? "bg-yellow-600"
                     : "bg-red-600",
               )}
-              style={{ width: `${analysis.overallConfidence}%` }}
+              style={{ width: `${analysis.tracingScore * 100}%` }}
             />
           </div>
           <p className="text-xs text-gray-500">
-            This score represents the overall confidence in the forensic analysis
-            based on multiple indicators and data points.
+            A higher tracing score indicates better coverage and more comprehensive tracking across platforms.
           </p>
         </div>
       </div>
 
-      {/* Authenticity Assessment */}
-      <div className="p-6 bg-white border border-gray-200 rounded-lg">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Authenticity Assessment
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <div className="text-sm text-gray-600 mb-1">Authenticity Score</div>
-            <div className="flex items-center gap-3">
-              <div className="text-2xl font-bold text-gray-900">
-                {analysis.authenticity.score}%
-              </div>
-              <Badge className={cn("border", verdictConfig.color)}>
-                {verdictConfig.label}
-              </Badge>
-            </div>
-          </div>
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <div className="text-sm text-gray-600 mb-1">Verdict</div>
-            <div className="text-2xl font-bold text-gray-900 capitalize">
-              {analysis.authenticity.verdict}
-            </div>
-          </div>
-        </div>
-
-        {/* Authenticity Indicators */}
-        <div className="space-y-3">
-          <h4 className="text-sm font-semibold text-gray-900">
-            Authenticity Indicators
-          </h4>
-          {analysis.authenticity.indicators.length === 0 ? (
-            <p className="text-sm text-gray-600">No specific indicators detected</p>
-          ) : (
-            <div className="space-y-2">
-              {analysis.authenticity.indicators.map((indicator, index) => (
-                <div
-                  key={index}
-                  className="p-4 bg-gray-50 border border-gray-200 rounded-lg"
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <span className="font-medium text-gray-900">
-                      {indicator.type}
-                    </span>
-                    <Badge variant="outline" className="text-xs">
-                      {Math.round(indicator.confidence * 100)}% confident
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-gray-600">{indicator.description}</p>
-                  <div className="mt-2">
-                    <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                      <div
-                        className={cn(
-                          "h-full rounded-full",
-                          indicator.confidence >= 0.7
-                            ? "bg-green-600"
-                            : indicator.confidence >= 0.4
-                              ? "bg-yellow-600"
-                              : "bg-red-600",
-                        )}
-                        style={{ width: `${indicator.confidence * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Manipulation Detection */}
-      <div className="p-6 bg-white border border-gray-200 rounded-lg">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Manipulation Detection
-        </h3>
-        <div
-          className={cn(
-            "p-4 rounded-lg border-2 mb-4",
-            analysis.manipulation.detected
-              ? "bg-red-50 border-red-200"
-              : "bg-green-50 border-green-200",
-          )}
-        >
-          <div className="flex items-center gap-3">
-            {analysis.manipulation.detected ? (
-              <XCircle className="w-6 h-6 text-red-600" />
-            ) : (
-              <CheckCircle className="w-6 h-6 text-green-600" />
-            )}
-            <div>
-              <div className="font-semibold text-gray-900">
-                {analysis.manipulation.detected
-                  ? "Manipulation Detected"
-                  : "No Manipulation Detected"}
-              </div>
-              <div
-                className={cn(
-                  "text-sm",
-                  analysis.manipulation.detected
-                    ? "text-red-700"
-                    : "text-green-700",
-                )}
-              >
-                {analysis.manipulation.detected
-                  ? "Evidence of content manipulation was found"
-                  : "No signs of manipulation were detected in the content"}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {analysis.manipulation.detected && analysis.manipulation.types && (
-          <div className="space-y-2">
-            <h4 className="text-sm font-semibold text-gray-900">
-              Manipulation Types Detected
-            </h4>
-            <div className="flex flex-wrap gap-2">
-              {analysis.manipulation.types.map((type, index) => (
-                <Badge
-                  key={index}
-                  className="bg-red-100 text-red-700 border-red-200"
-                >
-                  {type}
-                </Badge>
-              ))}
-            </div>
-            {analysis.manipulation.confidence !== undefined && (
-              <div className="mt-4">
-                <div className="flex items-center justify-between text-sm mb-2">
-                  <span className="text-gray-600">Manipulation Confidence</span>
-                  <span className="font-semibold text-gray-900">
-                    {Math.round(analysis.manipulation.confidence * 100)}%
-                  </span>
-                </div>
-                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-red-600 rounded-full"
-                    style={{
-                      width: `${analysis.manipulation.confidence * 100}%`,
-                    }}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Metadata & Source Information */}
+      {/* Confidence Score */}
       <div className="p-6 bg-white border border-gray-200 rounded-lg">
         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Globe className="w-5 h-5" />
-          Source Information
+          <Shield className="w-5 h-5" />
+          Confidence Score
         </h3>
         <div className="space-y-4">
-          {analysis.metadata.originalSource ? (
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="text-sm font-semibold text-blue-900 mb-2">
-                Original Source Detected
-              </div>
-              <div className="space-y-1 text-sm text-blue-800">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">Platform:</span>
-                  <Badge className="bg-blue-100 text-blue-700 border-blue-300 capitalize">
-                    {analysis.metadata.originalSource.platform}
-                  </Badge>
-                </div>
-                <div>
-                  <span className="font-medium">Timestamp:</span>{" "}
-                  {formatDate(analysis.metadata.originalSource.timestamp)}
-                </div>
-                <div className="break-all">
-                  <span className="font-medium">URL:</span>{" "}
-                  <a
-                    href={analysis.metadata.originalSource.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
-                  >
-                    {analysis.metadata.originalSource.url}
-                  </a>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-              <div className="text-sm text-gray-600">
-                Original source could not be determined
-              </div>
-            </div>
-          )}
-
-          {analysis.metadata.earliestAppearance && (
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <div className="text-sm font-semibold text-gray-900 mb-2">
-                Earliest Detected Appearance
-              </div>
-              <div className="space-y-1 text-sm text-gray-700">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">Platform:</span>
-                  <Badge
-                    variant="outline"
-                    className="capitalize"
-                  >
-                    {analysis.metadata.earliestAppearance.platform}
-                  </Badge>
-                </div>
-                <div>
-                  <span className="font-medium">Timestamp:</span>{" "}
-                  {formatDate(analysis.metadata.earliestAppearance.timestamp)}
-                </div>
-              </div>
-            </div>
-          )}
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-600">
+              Overall confidence in the analysis results
+            </span>
+            <span className="text-2xl font-bold text-gray-900">
+              {(analysis.confidence * 100).toFixed(1)}%
+            </span>
+          </div>
+          <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className={cn(
+                "h-full rounded-full transition-all",
+                analysis.confidence >= 0.7
+                  ? "bg-blue-600"
+                  : analysis.confidence >= 0.4
+                    ? "bg-purple-600"
+                    : "bg-gray-600",
+              )}
+              style={{ width: `${analysis.confidence * 100}%` }}
+            />
+          </div>
+          <p className="text-xs text-gray-500">
+            This score represents the reliability of the forensic analysis based on data quality and coverage.
+          </p>
         </div>
       </div>
 
+      {/* Analysis Summary */}
+      {analysis.summary && (
+        <div className="p-6 bg-white border border-gray-200 rounded-lg">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Analysis Summary
+          </h3>
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-gray-700 leading-relaxed">
+              {analysis.summary}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Flags */}
+      {analysis.flags && analysis.flags.length > 0 && (
+        <div className="p-6 bg-white border border-gray-200 rounded-lg">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <AlertCircle className="w-5 h-5 text-yellow-600" />
+            Analysis Flags
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {analysis.flags.map((flag, index) => (
+              <Badge
+                key={index}
+                variant="outline"
+                className="border-yellow-300 bg-yellow-50 text-yellow-800"
+              >
+                {flag}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Recommendations */}
-      <div className="p-6 bg-white border border-gray-200 rounded-lg">
+      {analysis.recommendations && analysis.recommendations.length > 0 && (
+        <div className="p-6 bg-white border border-gray-200 rounded-lg">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <Lightbulb className="w-5 h-5 text-purple-600" />
+            Recommendations
+          </h3>
+          <ul className="space-y-3">
+            {analysis.recommendations.map((recommendation, index) => (
+              <li
+                key={index}
+                className="flex items-start gap-3 p-3 bg-purple-50 border border-purple-200 rounded-lg"
+              >
+                <CheckCircle className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                <span className="text-sm text-gray-700">{recommendation}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Interpretation Guide */}
+      <div className="p-6 bg-gray-50 border border-gray-200 rounded-lg">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Forensic Recommendations
+          Interpreting the Results
         </h3>
-        <ul className="space-y-2 text-sm text-gray-700">
-          {analysis.authenticity.verdict === "manipulated" && (
-            <>
-              <li className="flex items-start gap-2">
-                <span className="text-red-600">•</span>
-                <span>
-                  Content shows signs of manipulation - consider this when
-                  evaluating authenticity
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-red-600">•</span>
-                <span>
-                  Cross-reference with suspicious patterns to identify
-                  coordinated activity
-                </span>
-              </li>
-            </>
-          )}
-          {analysis.authenticity.verdict === "suspicious" && (
-            <>
-              <li className="flex items-start gap-2">
-                <span className="text-yellow-600">•</span>
-                <span>
-                  Some indicators suggest possible issues - perform additional
-                  verification
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-yellow-600">•</span>
-                <span>Compare with known authentic versions if available</span>
-              </li>
-            </>
-          )}
-          <li className="flex items-start gap-2">
-            <span className="text-blue-600">•</span>
-            <span>
-              Review the distribution timeline to understand content spread
-            </span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-blue-600">•</span>
-            <span>
-              Consider running additional forensic tools for deeper analysis
-            </span>
-          </li>
-        </ul>
+        <div className="space-y-3 text-sm text-gray-700">
+          <div className="flex items-start gap-2">
+            <div className="w-2 h-2 bg-green-600 rounded-full mt-1.5 flex-shrink-0" />
+            <div>
+              <span className="font-medium">High Scores (70%+):</span> Strong evidence trail with comprehensive platform coverage and reliable data
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <div className="w-2 h-2 bg-yellow-600 rounded-full mt-1.5 flex-shrink-0" />
+            <div>
+              <span className="font-medium">Medium Scores (40-70%):</span> Moderate coverage with some gaps in the evidence trail
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <div className="w-2 h-2 bg-red-600 rounded-full mt-1.5 flex-shrink-0" />
+            <div>
+              <span className="font-medium">Low Scores (Below 40%):</span> Limited coverage or insufficient data for conclusive analysis
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

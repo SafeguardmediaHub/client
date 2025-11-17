@@ -89,7 +89,24 @@ export const useTraceResult = (
     queryKey: ['traceResult', mediaId, traceId],
     queryFn: () => getTraceResult(mediaId, traceId),
     enabled: options?.enabled ?? !!(mediaId && traceId),
-    staleTime: 60000, // Cache for 1 minute
+    refetchInterval: (query) => {
+      // Stop polling if status is terminal
+      const status = query.state.data?.data?.status;
+      if (
+        status === 'completed' ||
+        status === 'failed' ||
+        status === 'no_results'
+      ) {
+        return false;
+      }
+
+      // Exponential backoff: 2s → 5s → 10s
+      const pollCount = query.state.dataUpdateCount || 0;
+      if (pollCount < 3) return 2000; // 2s for first 3 polls
+      if (pollCount < 10) return 5000; // 5s for next 7 polls
+      return 10000; // 10s thereafter
+    },
+    staleTime: 0, // Always fetch fresh data while polling
   });
 };
 

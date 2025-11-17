@@ -22,7 +22,7 @@ import { TraceProgress } from "@/components/trace/TraceProgress";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useTraceResult, useTraceStatus } from "@/hooks/useTrace";
+import { useTraceResult } from "@/hooks/useTrace";
 import type { TraceStatus } from "@/types/trace";
 
 const LoadingState = ({ message }: { message: string }) => {
@@ -42,36 +42,22 @@ const TraceDetailContent = () => {
   const traceId = params.traceId as string;
   const mediaId = searchParams.get("mediaId") || "";
 
-  const [isPolling, setIsPolling] = useState(true);
   const [pollStartTime] = useState(Date.now());
   const [isStale, setIsStale] = useState(false);
 
   // Stale timeout: 10 minutes (600000ms)
   const STALE_TIMEOUT = 600000;
 
-  // Poll trace status
-  const statusQuery = useTraceStatus(traceId, {
-    enabled: isPolling && !!traceId,
-  });
+  // Poll trace result (handles status + data in one query)
+  const resultQuery = useTraceResult(mediaId, traceId);
 
-  const status = statusQuery.data?.data?.status;
-  const progress = statusQuery.data?.data?.progress;
-  const error = statusQuery.data?.data?.error;
-
-  // Fetch result when completed
-  const resultQuery = useTraceResult(mediaId, traceId, {
-    enabled: status === "completed" && !!mediaId,
-  });
-
-  // Stop polling when status is terminal
-  useEffect(() => {
-    if (status === "completed" || status === "failed" || status === "no_results") {
-      setIsPolling(false);
-    }
-  }, [status]);
+  const status = resultQuery.data?.data?.status;
+  const progress = resultQuery.data?.data?.progress;
+  const error = resultQuery.data?.data?.error;
 
   // Check for stale timeout
   useEffect(() => {
+    const isPolling = status === "pending" || status === "processing";
     if (!isPolling) return;
 
     const checkStale = () => {
@@ -86,7 +72,7 @@ const TraceDetailContent = () => {
 
     const interval = setInterval(checkStale, 30000); // Check every 30s
     return () => clearInterval(interval);
-  }, [isPolling, pollStartTime, status]);
+  }, [status, pollStartTime, STALE_TIMEOUT]);
 
   // Handle online/offline status
   useEffect(() => {
@@ -95,7 +81,7 @@ const TraceDetailContent = () => {
         description: "Resuming trace monitoring...",
       });
       if (status === "pending" || status === "processing") {
-        statusQuery.refetch();
+        resultQuery.refetch();
       }
     };
 
@@ -112,7 +98,7 @@ const TraceDetailContent = () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
-  }, [status, statusQuery]);
+  }, [status, resultQuery]);
 
   const getStatusConfig = (currentStatus: TraceStatus) => {
     switch (currentStatus) {
@@ -175,7 +161,7 @@ const TraceDetailContent = () => {
     }
   };
 
-  if (statusQuery.isLoading) {
+  if (resultQuery.isLoading && !resultQuery.data) {
     return (
       <div className="w-full flex flex-col gap-6 p-8">
         <Skeleton className="h-12 w-64" />
@@ -185,7 +171,7 @@ const TraceDetailContent = () => {
     );
   }
 
-  if (statusQuery.isError) {
+  if (resultQuery.isError) {
     return (
       <div className="w-full flex flex-col gap-6 p-8">
         <Link href="/dashboard/trace">
@@ -207,7 +193,7 @@ const TraceDetailContent = () => {
               </p>
               <div className="flex gap-2">
                 <Button
-                  onClick={() => statusQuery.refetch()}
+                  onClick={() => resultQuery.refetch()}
                   className="cursor-pointer bg-red-600 hover:bg-red-500"
                 >
                   Retry
@@ -290,8 +276,7 @@ const TraceDetailContent = () => {
                 <Button
                   onClick={() => {
                     setIsStale(false);
-                    setIsPolling(true);
-                    statusQuery.refetch();
+                    resultQuery.refetch();
                   }}
                   variant="outline"
                   className="cursor-pointer border-yellow-300 hover:bg-yellow-100"
@@ -313,11 +298,7 @@ const TraceDetailContent = () => {
       {(status === "pending" || status === "processing") && (
         <TraceProgress
           progress={progress}
-          estimatedCompletionSeconds={
-            statusQuery.data?.data?.progress?.percentage
-              ? undefined
-              : undefined
-          }
+          estimatedCompletionSeconds={undefined}
           startedAt={new Date().toISOString()}
         />
       )}
@@ -338,16 +319,17 @@ const TraceDetailContent = () => {
               </h2>
               <TabsList className="w-full justify-start flex-wrap h-auto">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="timeline">
-                  Timeline ({resultQuery.data.data.timeline.length})
-                </TabsTrigger>
+                <TabsTrigger value="timeline">Timeline</TabsTrigger>
                 <TabsTrigger value="distribution">Distribution</TabsTrigger>
                 <TabsTrigger value="posts">
-                  Posts ({resultQuery.data.data.platformAppearances.length})
+                  Posts (
+                  {resultQuery.data?.data?.platformAppearances?.reduce(
+                    (sum, pa) => sum + (pa.posts?.length || 0),
+                    0
+                  ) || 0}
+                  )
                 </TabsTrigger>
-                <TabsTrigger value="suspicious">
-                  Suspicious ({resultQuery.data.data.suspiciousPatterns.length})
-                </TabsTrigger>
+                <TabsTrigger value="suspicious">Suspicious Patterns</TabsTrigger>
                 <TabsTrigger value="forensics">Forensics</TabsTrigger>
                 <TabsTrigger value="raw">Raw JSON</TabsTrigger>
               </TabsList>
@@ -359,7 +341,10 @@ const TraceDetailContent = () => {
               </TabsContent>
 
               <TabsContent value="timeline" className="mt-0">
-                <TimelineTab events={resultQuery.data.data.timeline} />
+                <TimelineTab
+                  distributionGraph={resultQuery.data.data.distributionGraph}
+                  platformAppearances={resultQuery.data.data.platformAppearances}
+                />
               </TabsContent>
 
               <TabsContent value="distribution" className="mt-0">
@@ -369,7 +354,9 @@ const TraceDetailContent = () => {
               </TabsContent>
 
               <TabsContent value="posts" className="mt-0">
-                <PostsListTab posts={resultQuery.data.data.platformAppearances} />
+                <PostsListTab
+                  platformAppearances={resultQuery.data.data.platformAppearances}
+                />
               </TabsContent>
 
               <TabsContent value="suspicious" className="mt-0">

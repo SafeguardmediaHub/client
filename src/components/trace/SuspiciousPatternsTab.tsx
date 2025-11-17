@@ -6,87 +6,56 @@ import {
   Clock,
   Link as LinkIcon,
   TrendingUp,
-  Users,
+  Shield,
+  Flag,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { SuspiciousPattern } from "@/types/trace";
+import type { SuspiciousPatterns } from "@/types/trace";
 
 interface SuspiciousPatternsTabProps {
-  patterns: SuspiciousPattern[];
+  patterns: SuspiciousPatterns;
 }
 
-const getPatternIcon = (
-  type: SuspiciousPattern["type"],
-): React.ComponentType<{ className?: string }> => {
-  switch (type) {
-    case "coordinated_posting":
-      return LinkIcon;
-    case "bot_activity":
-      return Bot;
-    case "rapid_spread":
-      return TrendingUp;
-    case "suspicious_accounts":
-      return Users;
-    case "unusual_timing":
-      return Clock;
-    default:
-      return AlertTriangle;
-  }
-};
-
-const getSeverityConfig = (severity: "low" | "medium" | "high") => {
-  switch (severity) {
+const getRiskConfig = (risk: "low" | "medium" | "high") => {
+  switch (risk) {
     case "high":
       return {
         color: "text-red-700 bg-red-50 border-red-200",
-        bgColor: "bg-red-50",
-        textColor: "text-red-700",
+        icon: AlertTriangle,
         label: "High Risk",
       };
     case "medium":
       return {
         color: "text-yellow-700 bg-yellow-50 border-yellow-200",
-        bgColor: "bg-yellow-50",
-        textColor: "text-yellow-700",
+        icon: Flag,
         label: "Medium Risk",
       };
     case "low":
       return {
-        color: "text-blue-700 bg-blue-50 border-blue-200",
-        bgColor: "bg-blue-50",
-        textColor: "text-blue-700",
+        color: "text-green-700 bg-green-50 border-green-200",
+        icon: Shield,
         label: "Low Risk",
       };
   }
 };
 
-const formatPatternType = (type: SuspiciousPattern["type"]) => {
-  return type
-    .split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-};
-
 export const SuspiciousPatternsTab = ({
   patterns,
 }: SuspiciousPatternsTabProps) => {
-  const sortedPatterns = [...patterns].sort((a, b) => {
-    const severityOrder = { high: 0, medium: 1, low: 2 };
-    return severityOrder[a.severity] - severityOrder[b.severity];
-  });
+  const riskConfig = getRiskConfig(patterns.riskLevel);
+  const RiskIcon = riskConfig.icon;
 
-  const highRiskCount = patterns.filter((p) => p.severity === "high").length;
-  const mediumRiskCount = patterns.filter(
-    (p) => p.severity === "medium",
-  ).length;
-  const lowRiskCount = patterns.filter((p) => p.severity === "low").length;
+  const hasAnyDetection =
+    patterns.coordinatedBehavior.detected ||
+    patterns.botAmplification.detected ||
+    patterns.rapidSpread.detected;
 
-  if (patterns.length === 0) {
+  if (!hasAnyDetection && patterns.flags.length === 0) {
     return (
       <div className="p-12 text-center">
         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <AlertTriangle className="w-8 h-8 text-green-600" />
+          <Shield className="w-8 h-8 text-green-600" />
         </div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
           No Suspicious Patterns Detected
@@ -101,242 +70,246 @@ export const SuspiciousPatternsTab = ({
 
   return (
     <div className="space-y-6">
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="p-4 bg-white border border-gray-200 rounded-lg">
-          <div className="text-sm text-gray-600 mb-1">Total Patterns</div>
-          <div className="text-3xl font-bold text-gray-900">
-            {patterns.length}
-          </div>
-        </div>
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-          <div className="text-sm text-red-700 mb-1">High Risk</div>
-          <div className="text-3xl font-bold text-red-900">{highRiskCount}</div>
-        </div>
-        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <div className="text-sm text-yellow-700 mb-1">Medium Risk</div>
-          <div className="text-3xl font-bold text-yellow-900">
-            {mediumRiskCount}
-          </div>
-        </div>
-        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <div className="text-sm text-blue-700 mb-1">Low Risk</div>
-          <div className="text-3xl font-bold text-blue-900">{lowRiskCount}</div>
-        </div>
-      </div>
-
       {/* Overall Risk Assessment */}
-      <div
-        className={cn(
-          "p-6 border-2 rounded-lg",
-          highRiskCount > 0
-            ? "bg-red-50 border-red-200"
-            : mediumRiskCount > 0
-              ? "bg-yellow-50 border-yellow-200"
-              : "bg-blue-50 border-blue-200",
+      <div className="p-6 bg-white border border-gray-200 rounded-lg">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">
+            Overall Risk Assessment
+          </h3>
+          <Badge className={cn("border", riskConfig.color)}>
+            <RiskIcon className="w-4 h-4 mr-1" />
+            {riskConfig.label}
+          </Badge>
+        </div>
+
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex-1">
+            <div className="text-sm text-gray-600 mb-2">Suspicion Score</div>
+            <div className="h-4 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className={cn(
+                  "h-full rounded-full transition-all",
+                  patterns.overallSuspicionScore >= 0.7
+                    ? "bg-red-600"
+                    : patterns.overallSuspicionScore >= 0.4
+                      ? "bg-yellow-600"
+                      : "bg-green-600"
+                )}
+                style={{
+                  width: `${patterns.overallSuspicionScore * 100}%`,
+                }}
+              />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-gray-900">
+            {(patterns.overallSuspicionScore * 100).toFixed(1)}%
+          </div>
+        </div>
+
+        {patterns.flags && patterns.flags.length > 0 && (
+          <div className="mt-4">
+            <div className="text-sm font-medium text-gray-700 mb-2">Flags:</div>
+            <div className="flex flex-wrap gap-2">
+              {patterns.flags.map((flag, index) => (
+                <Badge
+                  key={index}
+                  variant="outline"
+                  className="border-yellow-300 bg-yellow-50 text-yellow-800"
+                >
+                  {flag}
+                </Badge>
+              ))}
+            </div>
+          </div>
         )}
-      >
-        <div className="flex items-start gap-4">
-          <AlertTriangle
+      </div>
+
+      {/* Coordinated Behavior */}
+      <div className="p-6 bg-white border border-gray-200 rounded-lg">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-purple-50 rounded-lg">
+              <LinkIcon className="w-5 h-5 text-purple-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Coordinated Behavior
+              </h3>
+              <p className="text-sm text-gray-600">
+                Patterns suggesting coordinated posting activity
+              </p>
+            </div>
+          </div>
+          <Badge
+            variant="outline"
             className={cn(
-              "w-8 h-8 flex-shrink-0",
-              highRiskCount > 0
-                ? "text-red-600"
-                : mediumRiskCount > 0
-                  ? "text-yellow-600"
-                  : "text-blue-600",
+              "border",
+              patterns.coordinatedBehavior.detected
+                ? "bg-red-50 text-red-700 border-red-200"
+                : "bg-green-50 text-green-700 border-green-200"
             )}
-          />
-          <div>
-            <h3
-              className={cn(
-                "text-lg font-semibold mb-2",
-                highRiskCount > 0
-                  ? "text-red-900"
-                  : mediumRiskCount > 0
-                    ? "text-yellow-900"
-                    : "text-blue-900",
-              )}
-            >
-              {highRiskCount > 0
-                ? "High Risk Activity Detected"
-                : mediumRiskCount > 0
-                  ? "Medium Risk Activity Detected"
-                  : "Low Risk Activity Detected"}
-            </h3>
-            <p
-              className={cn(
-                "text-sm",
-                highRiskCount > 0
-                  ? "text-red-800"
-                  : mediumRiskCount > 0
-                    ? "text-yellow-800"
-                    : "text-blue-800",
-              )}
-            >
-              {highRiskCount > 0
-                ? "Several high-risk suspicious patterns were identified. Immediate review is recommended."
-                : mediumRiskCount > 0
-                  ? "Some medium-risk patterns were detected. Further investigation may be warranted."
-                  : "Minor anomalies detected, but overall activity appears normal."}
-            </p>
+          >
+            {patterns.coordinatedBehavior.detected ? "Detected" : "Not Detected"}
+          </Badge>
+        </div>
+
+        <div className="space-y-3">
+          <div className="flex items-center justify-between py-2 border-b border-gray-100">
+            <span className="text-sm text-gray-600">Detection Score</span>
+            <span className="font-medium text-gray-900">
+              {(patterns.coordinatedBehavior.score * 100).toFixed(1)}%
+            </span>
+          </div>
+          <div className="flex items-center justify-between py-2 border-b border-gray-100">
+            <span className="text-sm text-gray-600">Accounts Involved</span>
+            <span className="font-medium text-gray-900">
+              {patterns.coordinatedBehavior.accountsInvolved.length}
+            </span>
+          </div>
+          <div className="flex items-center justify-between py-2 border-b border-gray-100">
+            <span className="text-sm text-gray-600">Timing Clusters</span>
+            <span className="font-medium text-gray-900">
+              {patterns.coordinatedBehavior.timingClusters.length}
+            </span>
+          </div>
+          <div className="flex items-center justify-between py-2">
+            <span className="text-sm text-gray-600">Similarity Score</span>
+            <span className="font-medium text-gray-900">
+              {(patterns.coordinatedBehavior.similarityScore * 100).toFixed(1)}%
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Patterns List */}
-      <div className="space-y-4">
-        {sortedPatterns.map((pattern) => {
-          const Icon = getPatternIcon(pattern.type);
-          const severityConfig = getSeverityConfig(pattern.severity);
-
-          return (
-            <div
-              key={pattern.id}
-              className={cn(
-                "p-6 border-2 rounded-lg",
-                severityConfig.bgColor,
-                `border-${severityConfig.textColor.split("-")[1]}-200`,
-              )}
-            >
-              {/* Header */}
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-start gap-3">
-                  <div
-                    className={cn(
-                      "p-2 rounded-lg border-2",
-                      severityConfig.color,
-                    )}
-                  >
-                    <Icon className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-1">
-                      {formatPatternType(pattern.type)}
-                    </h4>
-                    <div className="flex items-center gap-2">
-                      <Badge className={cn("border text-xs", severityConfig.color)}>
-                        {severityConfig.label}
-                      </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        {Math.round(pattern.confidence * 100)}% confidence
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Description */}
-              <p className="text-sm text-gray-700 mb-4">{pattern.description}</p>
-
-              {/* Affected Posts */}
-              <div className="mb-4">
-                <div className="text-xs font-medium text-gray-700 mb-2">
-                  Affected Posts ({pattern.affectedPosts.length})
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {pattern.affectedPosts.slice(0, 10).map((postId) => (
-                    <Badge
-                      key={postId}
-                      variant="outline"
-                      className="text-xs font-mono"
-                    >
-                      {postId.slice(0, 8)}...
-                    </Badge>
-                  ))}
-                  {pattern.affectedPosts.length > 10 && (
-                    <Badge variant="outline" className="text-xs">
-                      +{pattern.affectedPosts.length - 10} more
-                    </Badge>
-                  )}
-                </div>
-              </div>
-
-              {/* Evidence */}
-              {pattern.evidence && Object.keys(pattern.evidence).length > 0 && (
-                <div className="pt-4 border-t border-gray-300">
-                  <details className="text-sm">
-                    <summary className="cursor-pointer font-medium text-gray-700 hover:text-gray-900">
-                      View evidence details
-                    </summary>
-                    <div className="mt-3 p-3 bg-white rounded border border-gray-200">
-                      <pre className="text-xs overflow-x-auto">
-                        {JSON.stringify(pattern.evidence, null, 2)}
-                      </pre>
-                    </div>
-                  </details>
-                </div>
-              )}
-
-              {/* Confidence Meter */}
-              <div className="mt-4 pt-4 border-t border-gray-300">
-                <div className="flex items-center justify-between text-xs mb-2">
-                  <span className="text-gray-600">Detection Confidence</span>
-                  <span className="font-semibold text-gray-900">
-                    {Math.round(pattern.confidence * 100)}%
-                  </span>
-                </div>
-                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className={cn(
-                      "h-full rounded-full transition-all",
-                      pattern.confidence >= 0.7
-                        ? "bg-red-600"
-                        : pattern.confidence >= 0.4
-                          ? "bg-yellow-600"
-                          : "bg-blue-600",
-                    )}
-                    style={{ width: `${pattern.confidence * 100}%` }}
-                  />
-                </div>
-              </div>
+      {/* Bot Amplification */}
+      <div className="p-6 bg-white border border-gray-200 rounded-lg">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-red-50 rounded-lg">
+              <Bot className="w-5 h-5 text-red-600" />
             </div>
-          );
-        })}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Bot Amplification
+              </h3>
+              <p className="text-sm text-gray-600">
+                Automated accounts potentially amplifying content
+              </p>
+            </div>
+          </div>
+          <Badge
+            variant="outline"
+            className={cn(
+              "border",
+              patterns.botAmplification.detected
+                ? "bg-red-50 text-red-700 border-red-200"
+                : "bg-green-50 text-green-700 border-green-200"
+            )}
+          >
+            {patterns.botAmplification.detected ? "Detected" : "Not Detected"}
+          </Badge>
+        </div>
+
+        <div className="space-y-3">
+          <div className="flex items-center justify-between py-2 border-b border-gray-100">
+            <span className="text-sm text-gray-600">Detection Score</span>
+            <span className="font-medium text-gray-900">
+              {(patterns.botAmplification.score * 100).toFixed(1)}%
+            </span>
+          </div>
+          <div className="flex items-center justify-between py-2 border-b border-gray-100">
+            <span className="text-sm text-gray-600">Suspicious Accounts</span>
+            <span className="font-medium text-gray-900">
+              {patterns.botAmplification.suspiciousAccounts.length}
+            </span>
+          </div>
+          <div className="flex items-center justify-between py-2 border-b border-gray-100">
+            <span className="text-sm text-gray-600">Bot Probability</span>
+            <span className="font-medium text-gray-900">
+              {(patterns.botAmplification.botProbability * 100).toFixed(1)}%
+            </span>
+          </div>
+          <div className="flex items-center justify-between py-2">
+            <span className="text-sm text-gray-600">Indicators Found</span>
+            <span className="font-medium text-gray-900">
+              {patterns.botAmplification.indicators.length}
+            </span>
+          </div>
+        </div>
       </div>
 
-      {/* Recommendations */}
+      {/* Rapid Spread */}
       <div className="p-6 bg-white border border-gray-200 rounded-lg">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Recommended Actions
-        </h3>
-        <ul className="space-y-2 text-sm text-gray-700">
-          {highRiskCount > 0 && (
-            <>
-              <li className="flex items-start gap-2">
-                <span className="text-red-600">•</span>
-                <span>
-                  Investigate high-risk patterns immediately - they may indicate
-                  coordinated manipulation or bot activity
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-red-600">•</span>
-                <span>
-                  Consider reporting suspicious accounts to platform moderators
-                </span>
-              </li>
-            </>
-          )}
-          <li className="flex items-start gap-2">
-            <span className="text-blue-600">•</span>
-            <span>
-              Review affected posts to understand the scope of suspicious activity
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-yellow-50 rounded-lg">
+              <TrendingUp className="w-5 h-5 text-yellow-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Rapid Spread Analysis
+              </h3>
+              <p className="text-sm text-gray-600">
+                Unusually fast content propagation patterns
+              </p>
+            </div>
+          </div>
+          <Badge
+            variant="outline"
+            className={cn(
+              "border",
+              patterns.rapidSpread.detected
+                ? "bg-red-50 text-red-700 border-red-200"
+                : "bg-green-50 text-green-700 border-green-200"
+            )}
+          >
+            {patterns.rapidSpread.detected ? "Detected" : "Not Detected"}
+          </Badge>
+        </div>
+
+        <div className="space-y-3">
+          <div className="flex items-center justify-between py-2 border-b border-gray-100">
+            <span className="text-sm text-gray-600">Spread Rate</span>
+            <span className="font-medium text-gray-900">
+              {patterns.rapidSpread.spreadRate.toFixed(2)} posts/hour
             </span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-blue-600">•</span>
-            <span>
-              Monitor for additional patterns over time with new traces
+          </div>
+          <div className="flex items-center justify-between py-2 border-b border-gray-100">
+            <span className="text-sm text-gray-600">Detection Score</span>
+            <span className="font-medium text-gray-900">
+              {(patterns.rapidSpread.score * 100).toFixed(1)}%
             </span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-blue-600">•</span>
-            <span>
-              Cross-reference with forensic analysis for a complete picture
+          </div>
+          <div className="flex items-center justify-between py-2 border-b border-gray-100">
+            <span className="text-sm text-gray-600">Organic Likelihood</span>
+            <span className="font-medium text-gray-900">
+              {(patterns.rapidSpread.organicLikelihood * 100).toFixed(1)}%
             </span>
-          </li>
-        </ul>
+          </div>
+          <div className="flex items-center justify-between py-2">
+            <span className="text-sm text-gray-600">Acceleration Points</span>
+            <span className="font-medium text-gray-900">
+              {patterns.rapidSpread.accelerationPoints.length}
+            </span>
+          </div>
+        </div>
+
+        {patterns.rapidSpread.timeline && patterns.rapidSpread.timeline.length > 0 && (
+          <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+            <div className="text-sm font-medium text-gray-700 mb-2">
+              Spread Timeline ({patterns.rapidSpread.timeline.length} hours tracked)
+            </div>
+            <div className="text-xs text-gray-600">
+              Peak activity at hour {patterns.rapidSpread.timeline.reduce((max, curr) =>
+                curr.postCount > max.postCount ? curr : max,
+                patterns.rapidSpread.timeline[0]
+              )?.hour || 0} with {patterns.rapidSpread.timeline.reduce((max, curr) =>
+                Math.max(max, curr.postCount),
+                0
+              )} posts
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
