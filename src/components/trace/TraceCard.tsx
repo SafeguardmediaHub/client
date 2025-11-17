@@ -157,7 +157,7 @@ export const TraceCard = ({ trace, onRetry }: TraceCardProps) => {
       </div>
 
       {/* Platforms */}
-      {trace.config.platforms && trace.config.platforms.length > 0 && (
+      {trace.config?.platforms && trace.config.platforms.length > 0 && (
         <div className="mb-4">
           <p className="text-xs font-medium text-gray-700 mb-2">Platforms:</p>
           <div className="flex flex-wrap gap-2">
@@ -196,20 +196,22 @@ export const TraceCard = ({ trace, onRetry }: TraceCardProps) => {
       )}
 
       {/* Config Details */}
-      <div className="mb-4 grid grid-cols-2 gap-2 text-xs">
-        <div className="flex flex-col">
-          <span className="text-gray-500">Search Depth:</span>
-          <span className="font-medium text-gray-900">
-            {getSearchDepthLabel(trace.config.searchDepth)}
-          </span>
+      {trace.config && (
+        <div className="mb-4 grid grid-cols-2 gap-2 text-xs">
+          <div className="flex flex-col">
+            <span className="text-gray-500">Search Depth:</span>
+            <span className="font-medium text-gray-900">
+              {getSearchDepthLabel(trace.config.searchDepth)}
+            </span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-gray-500">Max Results:</span>
+            <span className="font-medium text-gray-900">
+              {trace.config.maxResults || 100}
+            </span>
+          </div>
         </div>
-        <div className="flex flex-col">
-          <span className="text-gray-500">Max Results:</span>
-          <span className="font-medium text-gray-900">
-            {trace.config.maxResults || 100}
-          </span>
-        </div>
-      </div>
+      )}
 
       {/* Actions */}
       <div className="flex gap-2 pt-4 border-t border-gray-200">

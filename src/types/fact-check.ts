@@ -40,8 +40,14 @@ export interface Claim {
   verdicts: Array<{
     source: string;
     rating: string;
+    textual_rating: string;
     review_url: string;
     reviewed_at: string;
+    publisher_credibility: PublisherCredibility;
+    recency_days: number;
+    credibility_multiplier: number;
+    recency_multiplier: number;
+    weighted_score: number;
   }>;
 }
 

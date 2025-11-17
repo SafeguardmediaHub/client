@@ -45,7 +45,7 @@ export function NavReporting({
 
   return (
     <>
-      <SidebarGroup>
+      <SidebarGroup suppressHydrationWarning>
         <SidebarGroupLabel>Reporting & Collaboration</SidebarGroupLabel>
         <SidebarMenu>
           {projects.map((item) => {

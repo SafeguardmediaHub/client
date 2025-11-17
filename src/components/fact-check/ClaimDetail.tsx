@@ -1,12 +1,11 @@
 "use client";
 
-import { ArrowLeft, Tag } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useClaimDetail } from "@/hooks/useFactCheck";
 import { EmptyState } from "./EmptyState";
 import { ErrorState } from "./ErrorState";
 import { LoadingState } from "./LoadingState";
-import { VerdictBadge } from "./VerdictBadge";
 import { VerdictCard } from "./VerdictCard";
 
 interface ClaimDetailProps {
@@ -46,6 +45,26 @@ export const ClaimDetail = ({ claimId, onBack }: ClaimDetailProps) => {
 
   const { claim, verdicts, overall_status, confidence_score } = data.data;
 
+  // Map verdict string to overall_status if overall_status is missing
+  const getOverallStatus = () => {
+    if (overall_status && overall_status !== 'no_verdict') {
+      return overall_status;
+    }
+
+    // Fallback: derive from claim.verdict
+    const verdictLower = claim.verdict?.toLowerCase() || '';
+    if (verdictLower.includes('false')) return 'verified_false';
+    if (verdictLower.includes('true')) return 'verified_true';
+    if (verdictLower.includes('mixed')) return 'mixed';
+    if (verdictLower.includes('unknown')) return 'no_verdict';
+    return 'inconclusive';
+  };
+
+  const displayStatus = getOverallStatus();
+  const displayReliability = typeof claim.reliability_index === 'number'
+    ? claim.reliability_index
+    : 0;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -61,38 +80,20 @@ export const ClaimDetail = ({ claimId, onBack }: ClaimDetailProps) => {
       </div>
 
       <div className="p-6 bg-white border border-gray-200 rounded-lg">
-        <div className="flex items-start justify-between gap-4 mb-4">
-          <div className="flex-1">
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              Claim Analysis
-            </h2>
-            <p className="text-base text-gray-700 leading-relaxed">
-              {claim.text}
-            </p>
-          </div>
-          <VerdictBadge status={overall_status} size="lg" />
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Claim Analysis
+          </h2>
+          <p className="text-base text-gray-700 leading-relaxed">
+            {claim.text}
+          </p>
         </div>
 
         <div className="flex items-center gap-6 pt-4 border-t border-gray-100">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">Confidence:</span>
             <span className="text-sm font-semibold text-gray-900">
-              {claim.confidence}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Tag className="w-4 h-4 text-gray-600" />
-            <span className="text-sm text-gray-600">Verdict:</span>
-            <span className="text-sm font-semibold text-gray-900 capitalize">
-              {claim.verdict}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Reliability:</span>
-            <span className="text-sm font-semibold text-gray-900">
-              {(claim.reliability_index * 100).toFixed(0)}%
+              {claim.confidence || 'Unknown'}
             </span>
           </div>
         </div>
@@ -133,32 +134,6 @@ export const ClaimDetail = ({ claimId, onBack }: ClaimDetailProps) => {
           </div>
         )}
       </div>
-
-      {overall_status === "mixed" && verdicts.length > 1 && (
-        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <h4 className="text-sm font-semibold text-yellow-900 mb-1">
-            Mixed Verdicts Detected
-          </h4>
-          <p className="text-sm text-yellow-800">
-            Different fact-checking sources have reached different conclusions
-            about this claim. Review all verdicts carefully and consider the
-            credibility of each source when forming your own assessment.
-          </p>
-        </div>
-      )}
-
-      {overall_status === "inconclusive" && (
-        <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-          <h4 className="text-sm font-semibold text-gray-900 mb-1">
-            Inconclusive Results
-          </h4>
-          <p className="text-sm text-gray-700">
-            The available fact-checks do not provide a clear verdict on this
-            claim. This may indicate that the claim is nuanced,
-            context-dependent, or requires further investigation.
-          </p>
-        </div>
-      )}
     </div>
   );
 };

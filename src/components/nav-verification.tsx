@@ -45,7 +45,7 @@ export function NavVerificationTools({
 
   return (
     <>
-      <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+      <SidebarGroup className="group-data-[collapsible=icon]:hidden" suppressHydrationWarning>
         <SidebarGroupLabel>Verification Tools</SidebarGroupLabel>
         <SidebarMenu>
           {projects.map((item) => {

@@ -1,5 +1,5 @@
 import { Check, ChevronDown, Search } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { type Media, useGetMedia } from "@/hooks/useMedia";
 import { formatFileSize } from "@/lib/utils";
 
@@ -15,7 +15,8 @@ const MediaSelector = ({ onSelect }: MediaSelectorProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { data, isError, isLoading, refetch } = useGetMedia();
-  const media = data?.media || [];
+  // Memoize media array to prevent creating new array reference on every render
+  const media = useMemo(() => data?.media || [], [data?.media]);
 
   useEffect(() => {
     if (searchQuery) {

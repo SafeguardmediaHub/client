@@ -43,7 +43,7 @@ export function NavDetectionTools({
 
   return (
     <>
-      <SidebarGroup>
+      <SidebarGroup suppressHydrationWarning>
         <SidebarGroupLabel>AI-Detection Tools</SidebarGroupLabel>
         <SidebarMenu>
           {projects.map((item) => {

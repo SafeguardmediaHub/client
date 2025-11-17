@@ -89,7 +89,9 @@ export const FactCheckProcessing = ({ jobId }: FactCheckProcessingProps) => {
   } = data.data;
 
   // Set progress to 100% when completed
-  const displayProgress = status === "completed" ? 100 : (progress || 0);
+  // Ensure progress is a number, not an object
+  const progressValue = typeof progress === 'number' ? progress : 0;
+  const displayProgress = status === "completed" ? 100 : progressValue;
 
   console.log("[FactCheckProcessing] Rendering with status:", status, "progress:", progress, "displayProgress:", displayProgress, "claims:", claims?.length);
 
