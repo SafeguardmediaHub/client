@@ -67,7 +67,7 @@ export const ClaimDetail = ({ claimId, onBack }: ClaimDetailProps) => {
               Claim Analysis
             </h2>
             <p className="text-base text-gray-700 leading-relaxed">
-              {claim.original_text}
+              {claim.text}
             </p>
           </div>
           <VerdictBadge status={overall_status} size="lg" />
@@ -77,45 +77,32 @@ export const ClaimDetail = ({ claimId, onBack }: ClaimDetailProps) => {
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">Confidence:</span>
             <span className="text-sm font-semibold text-gray-900">
-              {Math.round(claim.confidence * 100)}%
+              {claim.confidence}
             </span>
           </div>
 
-          {claim.pattern_matched && (
-            <div className="flex items-center gap-2">
-              <Tag className="w-4 h-4 text-gray-600" />
-              <span className="text-sm text-gray-600">Pattern:</span>
-              <span className="text-sm font-semibold text-gray-900 capitalize">
-                {claim.pattern_matched}
-              </span>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            <Tag className="w-4 h-4 text-gray-600" />
+            <span className="text-sm text-gray-600">Verdict:</span>
+            <span className="text-sm font-semibold text-gray-900 capitalize">
+              {claim.verdict}
+            </span>
+          </div>
 
-          {confidence_score !== undefined && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Overall Score:</span>
-              <span className="text-sm font-semibold text-gray-900">
-                {confidence_score.toFixed(2)}
-              </span>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">Reliability:</span>
+            <span className="text-sm font-semibold text-gray-900">
+              {(claim.reliability_index * 100).toFixed(0)}%
+            </span>
+          </div>
         </div>
 
-        {claim.entities && claim.entities.length > 0 && (
+        {claim.context && (
           <div className="pt-4 border-t border-gray-100 mt-4">
             <span className="text-sm text-gray-600 mb-2 block">
-              Detected Entities:
+              Context:
             </span>
-            <div className="flex flex-wrap gap-2">
-              {claim.entities.map((entity) => (
-                <span
-                  key={entity}
-                  className="px-3 py-1 bg-blue-50 text-blue-700 text-sm rounded-md border border-blue-200"
-                >
-                  {entity}
-                </span>
-              ))}
-            </div>
+            <p className="text-sm text-gray-700 italic">{claim.context}</p>
           </div>
         )}
       </div>

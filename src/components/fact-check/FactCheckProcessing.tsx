@@ -25,15 +25,21 @@ export const FactCheckProcessing = ({ jobId }: FactCheckProcessingProps) => {
 
     const { progress, status } = data.data;
 
-    if (status === "processing") {
-      if (progress < 20) {
-        setCurrentStep("Extracting claims from content...");
-      } else if (progress < 50) {
-        setCurrentStep("Analyzing claim structure and entities...");
-      } else if (progress < 80) {
-        setCurrentStep("Querying fact-check databases...");
+    if (status === "prioritized") {
+      setCurrentStep("Job queued and prioritized...");
+    } else if (status === "processing") {
+      if (progress !== undefined) {
+        if (progress < 20) {
+          setCurrentStep("Extracting claims from content...");
+        } else if (progress < 50) {
+          setCurrentStep("Analyzing claim structure and entities...");
+        } else if (progress < 80) {
+          setCurrentStep("Querying fact-check databases...");
+        } else {
+          setCurrentStep("Finalizing results...");
+        }
       } else {
-        setCurrentStep("Finalizing results...");
+        setCurrentStep("Processing your request...");
       }
     }
   }, [data?.data]);
@@ -77,30 +83,35 @@ export const FactCheckProcessing = ({ jobId }: FactCheckProcessingProps) => {
     status,
     progress,
     estimated_remaining_seconds,
-    result,
+    claims,
+    summary,
     error: jobError,
   } = data.data;
+
+  // Set progress to 100% when completed
+  const displayProgress = status === "completed" ? 100 : (progress || 0);
+
+  console.log("[FactCheckProcessing] Rendering with status:", status, "progress:", progress, "displayProgress:", displayProgress, "claims:", claims?.length);
 
   return (
     <div className="space-y-6">
       <JobProgress
         status={status}
-        progress={progress}
+        progress={displayProgress}
         estimatedRemainingSeconds={estimated_remaining_seconds}
         currentStep={status === "processing" ? currentStep : undefined}
       />
 
-      {status === "success" && result && (
+      {status === "completed" && summary && (
         <div className="p-6 bg-green-50 border border-green-200 rounded-lg">
           <h3 className="text-lg font-semibold text-green-900 mb-2">
             Analysis Complete!
           </h3>
           <p className="text-sm text-green-800 mb-4">
-            Found {result.total_claims} claim
-            {result.total_claims !== 1 ? "s" : ""} in the provided content.
-            Processing time: {result.processing_time.toFixed(2)}s
+            Found {summary.total_claims} claim
+            {summary.total_claims !== 1 ? "s" : ""} in the provided content.
           </p>
-          {result.total_claims > 0 && (
+          {summary.total_claims > 0 && (
             <p className="text-sm text-gray-700 mb-4">
               Review the extracted claims below to see fact-check verdicts from
               trusted sources.

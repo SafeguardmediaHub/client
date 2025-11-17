@@ -76,8 +76,9 @@ const FactCheckContent = () => {
   };
 
   const jobStatus = jobStatusQuery.data?.data.status;
-  const jobResult = jobStatusQuery.data?.data.result;
-  const claims = jobResult?.claims || [];
+  const claims = jobStatusQuery.data?.data.claims || [];
+
+  console.log("[FactCheckPage] jobStatus:", jobStatus, "claims:", claims.length);
 
   return (
     <div className="w-full flex flex-col gap-6 p-8">
@@ -146,7 +147,7 @@ const FactCheckContent = () => {
         <div className="space-y-6">
           <FactCheckProcessing jobId={currentJobId} />
 
-          {jobStatus === 'success' &&
+          {jobStatus === 'completed' &&
             (claims.length === 0 ? (
               <div className="p-8 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <div className="flex items-start gap-4">

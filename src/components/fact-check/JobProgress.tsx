@@ -17,7 +17,15 @@ export const JobProgress = ({
   currentStep,
 }: JobProgressProps) => {
   const getStatusDisplay = () => {
-    if (status === "processing") {
+    if (status === "prioritized") {
+      return {
+        icon: <Clock className="w-6 h-6 text-purple-600" />,
+        text: "Prioritized",
+        color: "text-purple-600",
+        bgColor: "bg-purple-50",
+        borderColor: "border-purple-200",
+      };
+    } else if (status === "processing") {
       return {
         icon: <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />,
         text: "Processing",
@@ -25,7 +33,7 @@ export const JobProgress = ({
         bgColor: "bg-blue-50",
         borderColor: "border-blue-200",
       };
-    } else if (status === "success") {
+    } else if (status === "completed") {
       return {
         icon: <CheckCircle2 className="w-6 h-6 text-green-600" />,
         text: "Completed",
@@ -89,7 +97,7 @@ export const JobProgress = ({
         <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
           <div
             className={`h-full transition-all duration-500 ease-out ${
-              status === "success"
+              status === "completed"
                 ? "bg-green-600"
                 : status === "failed"
                   ? "bg-red-600"

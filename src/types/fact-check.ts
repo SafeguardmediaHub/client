@@ -1,6 +1,6 @@
 export type ContentType = "text" | "ocr" | "transcript" | "user_submission";
 
-export type JobStatus = "processing" | "success" | "failed";
+export type JobStatus = "prioritized" | "processing" | "completed" | "failed";
 
 export type PublisherCredibility =
   | "ifcn_certified"
@@ -31,10 +31,18 @@ export interface Entity {
 
 export interface Claim {
   claim_id: string;
-  original_text: string;
-  confidence: number;
-  pattern_matched: string;
-  entities: string[];
+  text: string;
+  context?: string;
+  credibility_score: number;
+  reliability_index: number;
+  verdict: string;
+  confidence: string;
+  verdicts: Array<{
+    source: string;
+    rating: string;
+    review_url: string;
+    reviewed_at: string;
+  }>;
 }
 
 export interface JobStatusResponse {
@@ -43,15 +51,18 @@ export interface JobStatusResponse {
   data: {
     job_id: string;
     status: JobStatus;
-    progress: number;
+    progress?: number;
     estimated_remaining_seconds?: number;
-    result?: {
-      claims: Claim[];
+    claims?: Claim[];
+    summary?: {
       total_claims: number;
-      processing_time: number;
+      verified_false: number;
+      verified_true: number;
+      mixed: number;
     };
     error?: string;
   };
+  timestamp: string;
 }
 
 export interface VerdictApiResponse {
