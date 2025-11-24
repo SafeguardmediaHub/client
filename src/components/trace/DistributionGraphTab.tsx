@@ -151,14 +151,10 @@ export const DistributionGraphTab = ({ graph }: DistributionGraphTabProps) => {
                 </div>
               </div>
             </div>
-            <a
-              href={graph.originalPoster.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-700"
-            >
+            {/* Link disabled for demo */}
+            <div className="text-gray-400 cursor-not-allowed">
               <ExternalLink className="w-5 h-5" />
-            </a>
+            </div>
           </div>
           <div className="text-sm text-gray-600 mb-2">
             Posted: {formatDate(graph.originalPoster.timestamp)}
@@ -222,14 +218,10 @@ export const DistributionGraphTab = ({ graph }: DistributionGraphTabProps) => {
                         </div>
                       </div>
                     </div>
-                    <a
-                      href={spreader.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-700"
-                    >
+                    {/* Link disabled for demo */}
+                    <div className="text-gray-400 cursor-not-allowed">
                       <ExternalLink className="w-4 h-4" />
-                    </a>
+                    </div>
                   </div>
                   <div className="flex gap-4 text-xs text-gray-600 mt-2">
                     <span>{formatNumber(spreader.engagement.likes)} likes</span>

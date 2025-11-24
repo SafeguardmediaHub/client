@@ -85,6 +85,7 @@ const GeolocationVerificationPage = () => {
       return sortBy === 'newest' ? dateB - dateA : dateA - dateB;
     });
 
+    console.log('this is filtered', filtered);
     setFilteredVerifications(filtered);
   }, [userVerifications, searchQuery, statusFilter, sortBy]);
 

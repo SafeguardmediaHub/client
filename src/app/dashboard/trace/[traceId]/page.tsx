@@ -329,7 +329,7 @@ const TraceDetailContent = () => {
                   ) || 0}
                   )
                 </TabsTrigger>
-                <TabsTrigger value="suspicious">Suspicious Patterns</TabsTrigger>
+                {/* <TabsTrigger value="suspicious">Suspicious Patterns</TabsTrigger> */}
                 <TabsTrigger value="forensics">Forensics</TabsTrigger>
                 <TabsTrigger value="raw">Raw JSON</TabsTrigger>
               </TabsList>
@@ -359,11 +359,11 @@ const TraceDetailContent = () => {
                 />
               </TabsContent>
 
-              <TabsContent value="suspicious" className="mt-0">
+              {/* <TabsContent value="suspicious" className="mt-0">
                 <SuspiciousPatternsTab
                   patterns={resultQuery.data.data.suspiciousPatterns}
                 />
-              </TabsContent>
+              </TabsContent> */}
 
               <TabsContent value="forensics" className="mt-0">
                 <ForensicAnalysisTab

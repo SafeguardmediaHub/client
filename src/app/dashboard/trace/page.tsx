@@ -1,6 +1,7 @@
 'use client';
 
 import { AlertCircle, Search } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Suspense, useState } from 'react';
 import { toast } from 'sonner';
 import MediaSelector from '@/components/media/MediaSelector';
@@ -42,6 +43,7 @@ const TraceListSkeleton = () => {
 };
 
 const TraceContent = () => {
+  const router = useRouter();
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
   const [showInitiatePanel, setShowInitiatePanel] = useState(false);
 
@@ -70,11 +72,13 @@ const TraceContent = () => {
         onSuccess: (response) => {
           if (response.success) {
             setShowInitiatePanel(false);
-            // Refresh the traces list
-            mediaTracesQuery.refetch();
             toast.success('Trace initiated successfully!', {
-              description: `Estimated completion: ~${response.data.estimatedCompletionSeconds}s`,
+              description: 'Redirecting to trace details...',
             });
+            // Navigate to trace details page
+            router.push(
+              `/dashboard/trace/${response.data.traceId}?mediaId=${selectedMedia.id}`
+            );
           }
         },
         onError: (error) => {
