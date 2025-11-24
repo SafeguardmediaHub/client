@@ -141,10 +141,13 @@ const Dashboard: FC<DashboardProps> = ({
         const { uploadUrl, s3Key, correlationId } = data.upload;
 
         return { uploadUrl, key: s3Key, correlationId };
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Failed to get presigned URL:', error);
-        toast.error('Failed to get upload URL. Please try again.');
-        throw new Error('Failed to get upload URL');
+        const errorMessage =
+          (error as { response?: { data?: { message?: string } } })?.response
+            ?.data?.message || 'Failed to get upload URL. Please try again.';
+        toast.error(errorMessage);
+        throw new Error(errorMessage);
       }
     },
     []
@@ -162,10 +165,13 @@ const Dashboard: FC<DashboardProps> = ({
         console.log('Upload confirmed:', result);
         toast.success('File uploaded and confirmed successfully!');
         return result;
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Failed to confirm upload:', error);
-        toast.error('Failed to confirm upload. Please try again.');
-        throw new Error('Failed to confirm upload');
+        const errorMessage =
+          (error as { response?: { data?: { message?: string } } })?.response
+            ?.data?.message || 'Failed to confirm upload. Please try again.';
+        toast.error(errorMessage);
+        throw new Error(errorMessage);
       }
     },
     []
