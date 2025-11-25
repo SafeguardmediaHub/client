@@ -450,7 +450,7 @@ export const getMockTraceStatus = (
     return {
       success: true,
       data: {
-        traceId,
+        jobId: traceId,
         status: 'completed',
         progress: {
           stage: 'forensics',
@@ -469,7 +469,7 @@ export const getMockTraceStatus = (
     return {
       success: true,
       data: {
-        traceId,
+        jobId: traceId,
         status: 'processing',
         progress: {
           stage: 'analysis',
@@ -487,7 +487,7 @@ export const getMockTraceStatus = (
   return {
     success: true,
     data: {
-      traceId,
+      jobId: traceId,
       status: 'pending',
       progress: {
         stage: 'discovery',

@@ -1,0 +1,307 @@
+// C2PA Verification Types
+
+export type VerificationStatus =
+  | 'verified'
+  | 'tampered'
+  | 'invalid_signature'
+  | 'invalid_certificate'
+  | 'no_c2pa'
+  | 'processing'
+  | 'error';
+
+export type MediaType = 'image' | 'video' | 'audio' | 'document';
+
+export interface MediaInfo {
+  _id: string;
+  mimeType: string;
+  originalFilename: string;
+  thumbnailUrl?: string;
+}
+
+export interface C2PAVerification {
+  id: string;
+  mediaId: string | MediaInfo;
+  userId?: string;
+  status: VerificationStatus;
+  mediaType?: MediaType;
+  fileName?: string;
+  fileSize?: number;
+  thumbnailUrl?: string;
+  manifestPresent?: boolean;
+  issuer?: string | null;
+  signatureValid?: boolean;
+  integrity?: string;
+  signedAt?: string | null;
+  createdAt: string;
+  updatedAt?: string;
+  completedAt?: string;
+  summary?: VerificationSummary;
+}
+
+export interface VerificationSummary {
+  status: VerificationStatus;
+  statusReason?: string;
+  manifestFound: boolean;
+  signatureValid: boolean;
+  certificateChainValid: boolean;
+  integrityPassed: boolean;
+  aiMarkersDetected: boolean;
+  creator?: CreatorInfo;
+  device?: DeviceInfo;
+  warnings?: string[];
+}
+
+export interface CreatorInfo {
+  name: string;
+  software?: string;
+  version?: string;
+  signedAt?: string;
+}
+
+export interface DeviceInfo {
+  manufacturer?: string;
+  model?: string;
+  serialNumber?: string;
+}
+
+export interface VerificationDetails {
+  id: string;
+  mediaId: string | MediaInfo;
+  status: VerificationStatus;
+  fileName?: string;
+  fileSize?: number;
+  mediaType?: MediaType;
+  thumbnailUrl?: string;
+  manifestPresent?: boolean;
+  manifestVersion?: string | null;
+  issuer?: string | null;
+  signatureValid?: boolean;
+  signatureAlgorithm?: string | null;
+  integrity?: string;
+  signedAt?: string | null;
+  createdAt: string;
+  completedAt?: string;
+  jobStatus?: string;
+  processingTimeMs?: number;
+  verifiedAt?: string;
+  editedAfterSigning?: boolean | null;
+  aiGenerated?: boolean | null;
+  aiModel?: string | null;
+  creator?: {
+    name: string | null;
+    device: string | null;
+    software: string | null;
+  };
+  certificate?: {
+    valid: boolean;
+    expired: boolean;
+    issuer: string | null;
+    expiresAt: string | null;
+  };
+  editHistory?: Array<{
+    action?: string;
+    timestamp?: string;
+    [key: string]: any;
+  }>;
+  errors?: string[];
+  insights?: string[];
+  summary?: VerificationSummary;
+  manifest?: ManifestNode;
+  certificateChain?: Certificate[];
+  rawMetadata?: Record<string, unknown>;
+  events?: VerificationEvent[];
+}
+
+export interface ManifestNode {
+  id: string;
+  label: string;
+  type: 'claim' | 'assertion' | 'ingredient' | 'action';
+  value?: string;
+  isTampered?: boolean;
+  children?: ManifestNode[];
+}
+
+export interface Certificate {
+  id: string;
+  subject: string;
+  issuer: string;
+  validFrom: string;
+  validTo: string;
+  isValid: boolean;
+  serialNumber: string;
+  fingerprint: string;
+}
+
+export interface VerificationEvent {
+  id: string;
+  type: 'started' | 'manifest_detected' | 'signature_verified' | 'certificate_validated' | 'integrity_checked' | 'ai_markers_scanned' | 'completed' | 'error';
+  message: string;
+  timestamp: string;
+  status: 'success' | 'warning' | 'error' | 'pending';
+}
+
+export interface VerificationStreamUpdate {
+  step: string;
+  status: 'pending' | 'processing' | 'completed' | 'error';
+  message?: string;
+  progress?: number;
+}
+
+export interface C2PAStats {
+  total: number;
+  verified: number;
+  tampered: number;
+  invalidSignature: number;
+  noC2PA: number;
+  processing: number;
+  error: number;
+  verifiedThisWeek: number;
+  tamperedThisWeek: number;
+  noC2PAThisWeek: number;
+  weeklyChange: {
+    verified: number;
+    tampered: number;
+    noC2PA: number;
+  };
+}
+
+export interface C2PABadge {
+  id: string;
+  name: string;
+  status: VerificationStatus;
+  color: string;
+  backgroundColor: string;
+  icon: string;
+  description: string;
+  displayRules: BadgeDisplayRule[];
+}
+
+export interface BadgeDisplayRule {
+  condition: string;
+  priority: number;
+  showWhen: string;
+}
+
+export interface AdminDashboard {
+  systemHealth: SystemHealth;
+  queueStatus: QueueStatus;
+  cacheStatus: CacheStatus;
+  recentActivity: AdminActivity[];
+}
+
+export interface SystemHealth {
+  status: 'healthy' | 'degraded' | 'down';
+  uptime: number;
+  lastChecked: string;
+  services: ServiceStatus[];
+}
+
+export interface ServiceStatus {
+  name: string;
+  status: 'up' | 'down' | 'degraded';
+  latency?: number;
+}
+
+export interface QueueStatus {
+  pending: number;
+  processing: number;
+  completed: number;
+  failed: number;
+  avgProcessingTime: number;
+}
+
+export interface CacheStatus {
+  size: number;
+  maxSize: number;
+  hitRate: number;
+  entries: number;
+}
+
+export interface AdminActivity {
+  id: string;
+  type: string;
+  userId: string;
+  action: string;
+  timestamp: string;
+  details?: Record<string, unknown>;
+}
+
+// API Request/Response Types
+export interface VerificationsListParams {
+  page?: number;
+  limit?: number;
+  status?: VerificationStatus;
+  mediaType?: MediaType;
+  search?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface VerificationsListResponse {
+  success: boolean;
+  data: {
+    verifications: C2PAVerification[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  };
+}
+
+export interface VerificationDetailsResponse {
+  success: boolean;
+  data: VerificationDetails;
+}
+
+export interface VerificationSummaryResponse {
+  success: boolean;
+  data: VerificationSummary;
+}
+
+export interface StatsResponse {
+  success: boolean;
+  data: C2PAStats;
+}
+
+export interface BadgesResponse {
+  success: boolean;
+  data: C2PABadge[];
+}
+
+export interface MediaBadgeResponse {
+  success: boolean;
+  data: C2PABadge;
+}
+
+export interface VerifyMediaRequest {
+  mediaId: string;
+}
+
+export interface BatchVerifyRequest {
+  mediaIds: string[];
+}
+
+export interface VerifyResponse {
+  success: boolean;
+  data: {
+    verificationId: string;
+    status: VerificationStatus;
+  };
+}
+
+export interface AdminDashboardResponse {
+  success: boolean;
+  data: AdminDashboard;
+}
+
+export interface AdminVerificationsParams extends VerificationsListParams {
+  userId?: string;
+}
+
+export interface ClearCacheResponse {
+  success: boolean;
+  message: string;
+  entriesCleared: number;
+}

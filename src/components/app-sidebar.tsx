@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  Award,
   BookCheck,
   BookOpen,
   CalendarClock,
@@ -9,13 +10,17 @@ import {
   FileText,
   Film,
   LayoutDashboard,
+  LayoutGrid,
   MapPin,
   Scissors,
   Search,
   SearchCheck,
+  Settings,
   Share2,
   ShieldAlert,
+  ShieldCheck,
   ShieldIcon,
+  Upload,
   Users,
 } from 'lucide-react';
 import type * as React from 'react';
@@ -27,6 +32,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { NavAuthenticity } from './nav-authenticity';
 import { NavDetectionTools } from './nav-detection';
 import { NavOverview } from './nav-overview';
 import { NavReporting } from './nav-reporting';
@@ -138,6 +144,34 @@ const data = {
       featureId: 'team_collaboration',
     },
   ],
+
+  authenticity: [
+    {
+      name: 'Overview',
+      url: '/dashboard/authenticity',
+      icon: ShieldCheck,
+      featureId: 'c2pa_overview',
+    },
+    {
+      name: 'Verify',
+      url: '/dashboard/authenticity/verify',
+      icon: Upload,
+      featureId: 'c2pa_verify',
+    },
+    {
+      name: 'Badges',
+      url: '/dashboard/authenticity/badges',
+      icon: Award,
+      featureId: 'c2pa_badges',
+    },
+    {
+      name: 'Admin Panel',
+      url: '/dashboard/authenticity/admin',
+      icon: Settings,
+      featureId: 'c2pa_admin',
+      adminOnly: true,
+    },
+  ],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -165,6 +199,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavOverview projects={data.overview} />
         <NavDetectionTools projects={data.detection} />
         <NavVerificationTools projects={data.verification} />
+        <NavAuthenticity items={data.authenticity} />
         <NavReporting projects={data.reporting} />
       </SidebarContent>
     </Sidebar>

@@ -48,11 +48,12 @@ export const initiateTrace = async (
       success: true,
       data: {
         traceId,
-        mediaId,
+        jobId: `job-${traceId}`,
         status: 'pending',
-        message: 'Trace initiated successfully',
+        estimatedCompletionSeconds: 30,
       },
       message: 'Trace initiated successfully',
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -103,6 +104,7 @@ export const getTraceResult = async (
         status,
       },
       message: 'Trace result retrieved successfully',
+      timestamp: new Date().toISOString(),
     };
   }
 

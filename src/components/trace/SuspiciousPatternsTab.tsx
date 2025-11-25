@@ -163,19 +163,19 @@ export const SuspiciousPatternsTab = ({
           <div className="flex items-center justify-between py-2 border-b border-gray-100">
             <span className="text-sm text-gray-600">Accounts Involved</span>
             <span className="font-medium text-gray-900">
-              {patterns.coordinatedBehavior.accountsInvolved.length}
+              {patterns.coordinatedBehavior.accountsInvolved?.length ?? 0}
             </span>
           </div>
           <div className="flex items-center justify-between py-2 border-b border-gray-100">
             <span className="text-sm text-gray-600">Timing Clusters</span>
             <span className="font-medium text-gray-900">
-              {patterns.coordinatedBehavior.timingClusters.length}
+              {patterns.coordinatedBehavior.timingClusters?.length ?? 0}
             </span>
           </div>
           <div className="flex items-center justify-between py-2">
             <span className="text-sm text-gray-600">Similarity Score</span>
             <span className="font-medium text-gray-900">
-              {(patterns.coordinatedBehavior.similarityScore * 100).toFixed(1)}%
+              {((patterns.coordinatedBehavior.similarityScore ?? 0) * 100).toFixed(1)}%
             </span>
           </div>
         </div>
@@ -220,19 +220,19 @@ export const SuspiciousPatternsTab = ({
           <div className="flex items-center justify-between py-2 border-b border-gray-100">
             <span className="text-sm text-gray-600">Suspicious Accounts</span>
             <span className="font-medium text-gray-900">
-              {patterns.botAmplification.suspiciousAccounts.length}
+              {patterns.botAmplification.suspiciousAccounts?.length ?? 0}
             </span>
           </div>
           <div className="flex items-center justify-between py-2 border-b border-gray-100">
             <span className="text-sm text-gray-600">Bot Probability</span>
             <span className="font-medium text-gray-900">
-              {(patterns.botAmplification.botProbability * 100).toFixed(1)}%
+              {((patterns.botAmplification.botProbability ?? 0) * 100).toFixed(1)}%
             </span>
           </div>
           <div className="flex items-center justify-between py-2">
             <span className="text-sm text-gray-600">Indicators Found</span>
             <span className="font-medium text-gray-900">
-              {patterns.botAmplification.indicators.length}
+              {patterns.botAmplification.indicators?.length ?? 0}
             </span>
           </div>
         </div>
@@ -271,7 +271,7 @@ export const SuspiciousPatternsTab = ({
           <div className="flex items-center justify-between py-2 border-b border-gray-100">
             <span className="text-sm text-gray-600">Spread Rate</span>
             <span className="font-medium text-gray-900">
-              {patterns.rapidSpread.spreadRate.toFixed(2)} posts/hour
+              {(patterns.rapidSpread.spreadRate ?? 0).toFixed(2)} posts/hour
             </span>
           </div>
           <div className="flex items-center justify-between py-2 border-b border-gray-100">
@@ -283,13 +283,13 @@ export const SuspiciousPatternsTab = ({
           <div className="flex items-center justify-between py-2 border-b border-gray-100">
             <span className="text-sm text-gray-600">Organic Likelihood</span>
             <span className="font-medium text-gray-900">
-              {(patterns.rapidSpread.organicLikelihood * 100).toFixed(1)}%
+              {((patterns.rapidSpread.organicLikelihood ?? 0) * 100).toFixed(1)}%
             </span>
           </div>
           <div className="flex items-center justify-between py-2">
             <span className="text-sm text-gray-600">Acceleration Points</span>
             <span className="font-medium text-gray-900">
-              {patterns.rapidSpread.accelerationPoints.length}
+              {patterns.rapidSpread.accelerationPoints?.length ?? 0}
             </span>
           </div>
         </div>

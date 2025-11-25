@@ -9,7 +9,7 @@ export interface FeatureMetadata {
   status: FeatureStatus;
   url?: string;
   icon?: LucideIcon;
-  category: "detection" | "verification" | "reporting" | "overview";
+  category: "detection" | "verification" | "reporting" | "overview" | "authenticity";
   estimatedRelease?: string; // e.g., "Q1 2025", "March 2025"
   benefits?: string[];
   comingSoonMessage?: string;
@@ -205,6 +205,44 @@ export const FEATURES: Record<string, FeatureMetadata> = {
     ],
     comingSoonMessage:
       "Team collaboration features are being designed for newsrooms and verification teams. Coming Q2 2025.",
+  },
+
+  // Authenticity (C2PA)
+  c2pa_overview: {
+    id: "c2pa_overview",
+    name: "Authenticity Overview",
+    description:
+      "View and manage all C2PA content authenticity verifications with detailed status tracking.",
+    status: "available",
+    url: "/dashboard/authenticity",
+    category: "authenticity",
+  },
+  c2pa_verify: {
+    id: "c2pa_verify",
+    name: "Manual Verification",
+    description:
+      "Manually verify media files for C2PA content credentials and authenticity markers.",
+    status: "available",
+    url: "/dashboard/authenticity/verify",
+    category: "authenticity",
+  },
+  c2pa_badges: {
+    id: "c2pa_badges",
+    name: "Authenticity Badges",
+    description:
+      "Browse and manage C2PA authenticity badges for verified content.",
+    status: "available",
+    url: "/dashboard/authenticity/badges",
+    category: "authenticity",
+  },
+  c2pa_admin: {
+    id: "c2pa_admin",
+    name: "Admin Panel",
+    description:
+      "Administrative dashboard for C2PA verification system monitoring and management.",
+    status: "available",
+    url: "/dashboard/authenticity/admin",
+    category: "authenticity",
   },
 };
 
