@@ -1,5 +1,5 @@
 import { Check, ChevronDown, Search } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { type Media, useGetMedia } from '@/hooks/useMedia';
 import { formatFileSize } from '@/lib/utils';
 
@@ -14,14 +14,21 @@ const MediaSelector = ({ onSelect }: MediaSelectorProps) => {
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const { data, isError, isLoading, refetch } = useGetMedia();
-  const media = data?.media || [];
+  const { data, isLoading } = useGetMedia();
+  // Memoize media array to prevent creating new array reference on every render
+  const media = useMemo(
+    () =>
+      data?.media.filter((item) => item.uploadType === 'general_image') || [],
+    [data?.media]
+  );
 
   useEffect(() => {
     if (searchQuery) {
       const filtered = media.filter((item) =>
         item.filename.toLowerCase().includes(searchQuery.toLowerCase())
       );
+
+      console.log('Filtered Media:', filtered);
       setFilteredMedia(filtered);
     } else {
       setFilteredMedia(media);

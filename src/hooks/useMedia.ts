@@ -5,9 +5,9 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
-} from '@tanstack/react-query';
-import { toast } from 'sonner';
-import api from '@/lib/api';
+} from "@tanstack/react-query";
+import { toast } from "sonner";
+import api from "@/lib/api";
 
 export interface Media {
   id: string;
@@ -60,10 +60,10 @@ const fetchUserMedia = async (params?: {
   type?: string;
   status?: string;
 }): Promise<UserMediaResponse> => {
-  const { data } = await api.get('/api/media', {
+  const { data } = await api.get("/api/media", {
     params,
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
   });
 
@@ -73,7 +73,7 @@ const fetchUserMedia = async (params?: {
 const deleteMedia = async (id: string): Promise<DeleteMediaResponse> => {
   const { data } = await api.delete(`/api/media/${id}`, {
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
   });
 
@@ -87,9 +87,9 @@ const urlUpload = async ({ url }: { url: string }) => {
     {
       withCredentials: true,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-    }
+    },
   );
 
   return data;
@@ -97,7 +97,7 @@ const urlUpload = async ({ url }: { url: string }) => {
 
 export const useGetMedia = () => {
   return useQuery({
-    queryKey: ['userMedia'],
+    queryKey: ["userMedia"],
     queryFn: () => fetchUserMedia(),
     staleTime: 5000,
     placeholderData: keepPreviousData,
@@ -108,15 +108,15 @@ export const useDeleteMedia = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: ['deleteMedia'],
+    mutationKey: ["deleteMedia"],
     mutationFn: (id: string) => deleteMedia(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['userMedia'] });
-      toast.success('Media deleted successfully.');
+      queryClient.invalidateQueries({ queryKey: ["userMedia"] });
+      toast.success("Media deleted successfully.");
     },
     onError: (error) => {
-      console.error('Error deleting media:', error);
-      toast.error('Failed to delete media. Please try again.');
+      console.error("Error deleting media:", error);
+      toast.error("Failed to delete media. Please try again.");
     },
   });
 };
@@ -126,12 +126,12 @@ export function useUrlUpload() {
   return useMutation({
     mutationFn: ({ url }: { url: string }) => urlUpload({ url }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['userMedia'] });
-      toast.success('Media uploaded successfully.');
+      queryClient.invalidateQueries({ queryKey: ["userMedia"] });
+      toast.success("Media uploaded successfully.");
     },
     onError: (error) => {
-      console.error('Error uploading media:', error);
-      toast.error('Failed to start media upload. Please try again.');
+      console.error("Error uploading media:", error);
+      toast.error("Failed to start media upload. Please try again.");
     },
   });
 }

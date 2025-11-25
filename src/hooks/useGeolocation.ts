@@ -1,12 +1,12 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
-import api from '@/lib/api';
+import { useMutation, useQuery } from "@tanstack/react-query";
+import api from "@/lib/api";
 
 export interface InitiateGeoVerificationResponse {
   success: boolean;
   message: string;
   data: {
     verificationId: string;
-    status: 'queued' | 'processing' | 'completed' | 'failed';
+    status: "queued" | "processing" | "completed" | "failed";
     estimatedTime: number;
   };
 }
@@ -80,7 +80,7 @@ export interface UserGeoVerifications {
   success: boolean;
   message: string;
   data: {
-    verifications: GeoVerificationResult['data'][];
+    verifications: GeoVerificationResult["data"][];
     pagination: {
       page: number;
       limit: number;
@@ -94,7 +94,7 @@ export interface UserGeoVerifications {
 
 const initiateVerification = async (
   id: string,
-  claimedLocation: string
+  claimedLocation: string,
 ): Promise<InitiateGeoVerificationResponse> => {
   const response = await api.post(
     `/api/geolocation/verify/${id}`,
@@ -103,9 +103,9 @@ const initiateVerification = async (
     },
     {
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-    }
+    },
   );
 
   // console.log('initiate geo verification response', response.data);
@@ -114,7 +114,7 @@ const initiateVerification = async (
 };
 
 const fetchGeoVerificationResult = async (
-  verificationId: string
+  verificationId: string,
 ): Promise<GeoVerificationResult> => {
   const response = await api.get(`/api/geolocation/verify/${verificationId}`);
 
@@ -123,7 +123,7 @@ const fetchGeoVerificationResult = async (
 };
 
 const fetchUserVerifications = async (): Promise<UserGeoVerifications> => {
-  const response = await api.get('/api/geolocation/verify');
+  const response = await api.get("/api/geolocation/verify");
 
   // console.log('user geo verifications response', response.data);
   return response.data;
@@ -131,9 +131,9 @@ const fetchUserVerifications = async (): Promise<UserGeoVerifications> => {
 
 const fetchGeoVerificationByMedia = async (mediaId: string) => {
   const response = await api.get(
-    `/api/geolocation/media/${mediaId}/verification`
+    `/api/geolocation/media/${mediaId}/verification`,
   );
-  console.log('geo verification response', response.data);
+  console.log("geo verification response", response.data);
   return response.data;
 };
 
@@ -154,12 +154,12 @@ export const useGeoVerificationResult = (
   options?: {
     pollingInterval?: number;
     enabled?: boolean;
-  }
+  },
 ) => {
   const pollingInterval = options?.pollingInterval ?? 30000; // 30 seconds default
 
   return useQuery({
-    queryKey: ['geoVerificationResult', verificationId],
+    queryKey: ["geoVerificationResult", verificationId],
     queryFn: () => fetchGeoVerificationResult(verificationId),
     enabled: options?.enabled ?? !!verificationId,
     refetchInterval: (query) => {
@@ -174,7 +174,7 @@ export const useGeoVerificationResult = (
       const status = data.data.verification.status;
 
       // Only poll when status is queued or processing
-      if (['queued', 'processing'].includes(status)) {
+      if (["queued", "processing"].includes(status)) {
         return pollingInterval;
       }
 
@@ -195,7 +195,7 @@ export const useGeoVerificationResult = (
 
 export const useUserGeoVerifications = () => {
   return useQuery({
-    queryKey: ['userGeoVerifications'],
+    queryKey: ["userGeoVerifications"],
     queryFn: fetchUserVerifications,
     staleTime: 60 * 1000, // cache for 1 minute
   });
@@ -203,7 +203,7 @@ export const useUserGeoVerifications = () => {
 
 export const useGeoVerificationByMedia = (mediaId: string) => {
   return useQuery({
-    queryKey: ['geoVerificationByMedia', mediaId],
+    queryKey: ["geoVerificationByMedia", mediaId],
     queryFn: () => fetchGeoVerificationByMedia(mediaId),
     enabled: !!mediaId,
   });

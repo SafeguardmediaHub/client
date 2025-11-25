@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  Award,
   BookCheck,
   BookOpen,
   CalendarClock,
@@ -9,13 +10,17 @@ import {
   FileText,
   Film,
   LayoutDashboard,
+  LayoutGrid,
   MapPin,
   Scissors,
   Search,
   SearchCheck,
+  Settings,
   Share2,
   ShieldAlert,
+  ShieldCheck,
   ShieldIcon,
+  Upload,
   Users,
 } from 'lucide-react';
 import type * as React from 'react';
@@ -27,6 +32,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { NavAuthenticity } from './nav-authenticity';
 import { NavDetectionTools } from './nav-detection';
 import { NavOverview } from './nav-overview';
 import { NavReporting } from './nav-reporting';
@@ -57,26 +63,31 @@ const data = {
       name: 'Deepfake Detection',
       url: '#',
       icon: ShieldIcon,
+      featureId: 'deepfake_detection',
     },
     {
       name: 'Cheapfake Detection',
       url: '#',
       icon: Film,
+      featureId: 'cheapfake_detection',
     },
     {
       name: 'Visual Forensics',
       url: '#',
       icon: Search,
+      featureId: 'visual_forensics',
     },
     {
       name: 'Tamper Detection',
       url: '#',
       icon: ShieldAlert,
+      featureId: 'tamper_detection',
     },
     {
       name: 'Keyframe Extraction',
       url: '/dashboard/keyframe',
       icon: Scissors,
+      featureId: 'keyframe_extraction',
     },
   ],
 
@@ -85,31 +96,37 @@ const data = {
       name: 'Reverse Lookup',
       url: '/dashboard/reverse',
       icon: SearchCheck,
+      featureId: 'reverse_lookup',
     },
     {
       name: 'Geolocation Verification',
       url: '/dashboard/geolocation',
       icon: MapPin,
+      featureId: 'geolocation_verification',
     },
     {
       name: 'Timeline Verification',
       url: '/dashboard/timeline',
       icon: CalendarClock,
+      featureId: 'timeline_verification',
     },
     {
       name: 'Text Extraction (OCR)',
       url: '#',
       icon: FileText,
+      featureId: 'ocr_extraction',
     },
     {
       name: 'Fact Checking',
-      url: '#',
+      url: '/dashboard/fact-check',
       icon: BookCheck,
+      featureId: 'fact_checking',
     },
     {
       name: 'Social Media Source Tracing',
-      url: '#',
+      url: '/dashboard/trace',
       icon: Share2,
+      featureId: 'social_media_tracing',
     },
   ],
 
@@ -118,11 +135,41 @@ const data = {
       name: 'Reports Generation',
       url: '/dashboard/reporting',
       icon: FileBarChart,
+      featureId: 'reports_generation',
     },
     {
       name: 'Team Collaboration',
       url: '#',
       icon: Users,
+      featureId: 'team_collaboration',
+    },
+  ],
+
+  authenticity: [
+    {
+      name: 'Overview',
+      url: '/dashboard/authenticity',
+      icon: ShieldCheck,
+      featureId: 'c2pa_overview',
+    },
+    {
+      name: 'Verify',
+      url: '/dashboard/authenticity/verify',
+      icon: Upload,
+      featureId: 'c2pa_verify',
+    },
+    {
+      name: 'Badges',
+      url: '/dashboard/authenticity/badges',
+      icon: Award,
+      featureId: 'c2pa_badges',
+    },
+    {
+      name: 'Admin Panel',
+      url: '/dashboard/authenticity/admin',
+      icon: Settings,
+      featureId: 'c2pa_admin',
+      adminOnly: true,
     },
   ],
 };
@@ -152,6 +199,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavOverview projects={data.overview} />
         <NavDetectionTools projects={data.detection} />
         <NavVerificationTools projects={data.verification} />
+        <NavAuthenticity items={data.authenticity} />
         <NavReporting projects={data.reporting} />
       </SidebarContent>
     </Sidebar>

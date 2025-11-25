@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
+import { useEffect } from 'react';
 
 // Add these type declarations
 declare global {
@@ -13,9 +13,9 @@ declare global {
 export default function GoogleTranslate() {
   useEffect(() => {
     // Add Google Translate script
-    const script = document.createElement("script");
+    const script = document.createElement('script');
     script.src =
-      "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+      '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
     script.async = true;
     document.body.appendChild(script);
 
@@ -23,11 +23,11 @@ export default function GoogleTranslate() {
     window.googleTranslateElementInit = () => {
       new window.google.translate.TranslateElement(
         {
-          pageLanguage: "en",
-          includedLanguages: "en,es,fr,de,zh-CN,ar,pt,ru,ja,hi",
+          pageLanguage: 'en',
+          includedLanguages: 'en,es,fr,de,zh-CN,ar,pt,ru,ja,hi',
           layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
         },
-        "google_translate_element"
+        'google_translate_element'
       );
     };
 

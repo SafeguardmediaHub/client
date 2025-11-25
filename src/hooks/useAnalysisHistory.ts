@@ -1,5 +1,5 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import api from '@/lib/api';
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import api from "@/lib/api";
 
 export interface Analysis {
   id: string;
@@ -19,7 +19,7 @@ interface UseAnalysisHistoryParams {
   page?: number;
   limit?: number;
   sort?: string;
-  order?: 'asc' | 'desc';
+  order?: "asc" | "desc";
   mediaType?: string;
   predictedClass?: string;
   isDeepfake?: boolean;
@@ -46,7 +46,7 @@ const fetchAnalysisHistory = async (params?: {
   page?: number;
   limit?: number;
   sort?: string;
-  order?: 'asc' | 'desc';
+  order?: "asc" | "desc";
   mediaType?: string;
   predictedClass?: string;
   isDeepfake?: boolean;
@@ -54,9 +54,9 @@ const fetchAnalysisHistory = async (params?: {
   confidenceMax?: number;
   dateRange?: string;
 }): Promise<AnalysisHistoryResponse> => {
-  const { data } = await api.get('/api/analysis', {
+  const { data } = await api.get("/api/analysis", {
     params,
-    headers: { 'Content-Type': 'application/json' },
+    headers: { "Content-Type": "application/json" },
   });
 
   return data.data;
@@ -64,7 +64,7 @@ const fetchAnalysisHistory = async (params?: {
 
 export const useAnalysisHistory = (params?: UseAnalysisHistoryParams) => {
   return useQuery({
-    queryKey: ['analysisHistory', params],
+    queryKey: ["analysisHistory", params],
     queryFn: () => fetchAnalysisHistory(params),
     staleTime: 60 * 1000,
     placeholderData: keepPreviousData,
