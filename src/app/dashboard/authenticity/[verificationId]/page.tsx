@@ -2,7 +2,7 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: <> */
 'use client';
 
-import { ArrowLeft, Download, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Download, RefreshCw, Trash2 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -18,7 +18,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useVerificationDetails, useVerificationStream } from '@/hooks/useC2PA';
+import { useVerificationDetails, useVerificationStream, useDeleteVerification } from '@/hooks/useC2PA';
 import { cn } from '@/lib/utils';
 import type { VerificationStreamUpdate } from '@/types/c2pa';
 
@@ -31,8 +31,10 @@ export default function VerificationDetailsPage() {
     VerificationStreamUpdate[]
   >([]);
   const [currentStep, setCurrentStep] = useState<string | undefined>();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const detailsQuery = useVerificationDetails(verificationId);
+  const deleteMutation = useDeleteVerification();
   const details = detailsQuery.data?.data;
   const isProcessing = details?.status === 'processing';
 
@@ -70,6 +72,17 @@ export default function VerificationDetailsPage() {
   const handleDownloadReport = () => {
     toast.info('Report download starting...');
     // Implementation would go here
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deleteMutation.mutateAsync(verificationId);
+      toast.success('Verification deleted successfully');
+      router.push('/dashboard/authenticity');
+    } catch (error) {
+      toast.error('Failed to delete verification');
+      console.error('Delete error:', error);
+    }
   };
 
   if (detailsQuery.isLoading) {
@@ -180,6 +193,35 @@ export default function VerificationDetailsPage() {
             <Download className="size-4 mr-1" />
             Download Report
           </Button>
+          {showDeleteConfirm ? (
+            <>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleDelete}
+                disabled={deleteMutation.isPending}
+              >
+                {deleteMutation.isPending ? 'Deleting...' : 'Confirm Delete'}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowDeleteConfirm(false)}
+              >
+                Cancel
+              </Button>
+            </>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowDeleteConfirm(true)}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <Trash2 className="size-4 mr-1" />
+              Delete
+            </Button>
+          )}
         </div>
       </div>
 

@@ -12,6 +12,7 @@ interface StatsCardProps {
   icon?: LucideIcon;
   change?: number; // Percentage change
   changeLabel?: string;
+  description?: string; // Additional context
   variant?: 'default' | 'success' | 'warning' | 'danger' | 'neutral';
   isLoading?: boolean;
   className?: string;
@@ -75,6 +76,7 @@ export function StatsCard({
   icon: Icon,
   change,
   changeLabel,
+  description,
   variant = 'default',
   isLoading = false,
   className,
@@ -135,6 +137,9 @@ export function StatsCard({
                   <span className="text-gray-400">{changeLabel}</span>
                 )}
               </div>
+            )}
+            {description && !change && (
+              <p className="text-xs text-gray-400">{description}</p>
             )}
           </div>
           {Icon && (

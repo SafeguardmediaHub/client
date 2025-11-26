@@ -1,25 +1,26 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  getVerifications,
-  getVerificationDetails,
-  getVerificationSummary,
-  getVerificationStats,
-  verifyMedia,
   batchVerifyMedia,
-  getBadges,
-  getMediaBadge,
-  getAdminDashboard,
-  getAdminVerifications,
   clearAdminCache,
   createVerificationStream,
+  deleteVerification,
+  getAdminDashboard,
+  getAdminVerifications,
+  getBadges,
+  getMediaBadge,
+  getVerificationDetails,
+  getVerificationStats,
+  getVerificationSummary,
+  getVerifications,
+  verifyMedia,
 } from '@/lib/api/c2pa';
 import type {
-  VerificationsListParams,
   AdminVerificationsParams,
-  VerificationStreamUpdate,
-  VerifyMediaRequest,
   BatchVerifyRequest,
+  VerificationStreamUpdate,
+  VerificationsListParams,
+  VerifyMediaRequest,
 } from '@/types/c2pa';
 
 // Query keys
@@ -34,8 +35,7 @@ export const c2paKeys = {
     [...c2paKeys.verification(id), 'summary'] as const,
   stats: () => [...c2paKeys.all, 'stats'] as const,
   badges: () => [...c2paKeys.all, 'badges'] as const,
-  mediaBadge: (mediaId: string) =>
-    [...c2paKeys.all, 'badge', mediaId] as const,
+  mediaBadge: (mediaId: string) => [...c2paKeys.all, 'badge', mediaId] as const,
   admin: () => [...c2paKeys.all, 'admin'] as const,
   adminDashboard: () => [...c2paKeys.admin(), 'dashboard'] as const,
   adminVerifications: (params?: AdminVerificationsParams) =>
@@ -252,6 +252,20 @@ export const useClearAdminCache = () => {
     mutationFn: clearAdminCache,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: c2paKeys.adminDashboard() });
+    },
+  });
+};
+
+// Delete verification mutation
+export const useDeleteVerification = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (verificationId: string) => deleteVerification(verificationId),
+    onSuccess: () => {
+      // Invalidate verifications list and stats to refresh the UI
+      queryClient.invalidateQueries({ queryKey: c2paKeys.verifications() });
+      queryClient.invalidateQueries({ queryKey: c2paKeys.stats() });
     },
   });
 };

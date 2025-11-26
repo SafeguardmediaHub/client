@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
+import { toast } from 'sonner';
 import {
   StatsCard,
   StatsCardSkeleton,
@@ -34,6 +35,7 @@ import {
   useVerifications,
   useVerificationStats,
   useVerificationSummary,
+  useDeleteVerification,
 } from '@/hooks/useC2PA';
 import type { C2PAVerification, VerificationsListParams } from '@/types/c2pa';
 
@@ -59,8 +61,9 @@ function OverviewContent() {
   // Queries
   const statsQuery = useVerificationStats();
   const verificationsQuery = useVerifications(filters);
+  const deleteMutation = useDeleteVerification();
 
-  const summaryQuery = useVerificationSummary(selectedVerification?.id || '', {
+  const summaryQuery = useVerificationSummary(selectedVerification?.verificationId || '', {
     enabled: !!selectedVerification && isSheetOpen,
   });
 
@@ -92,6 +95,16 @@ function OverviewContent() {
   const handleRowClick = (verification: C2PAVerification) => {
     setSelectedVerification(verification);
     setIsSheetOpen(true);
+  };
+
+  const handleDelete = async (verificationId: string) => {
+    try {
+      await deleteMutation.mutateAsync(verificationId);
+      toast.success('Verification deleted successfully');
+    } catch (error) {
+      toast.error('Failed to delete verification');
+      console.error('Delete error:', error);
+    }
   };
 
   const stats = statsQuery.data?.data;
@@ -139,40 +152,39 @@ function OverviewContent() {
         ) : (
           <>
             <StatsCard
+              title="Total"
+              value={stats?.counts?.total || 0}
+              icon={LayoutGrid}
+              variant="default"
+              description={`${stats?.counts?.avgProcessingTime ? `Avg: ${(stats.counts.avgProcessingTime / 1000).toFixed(1)}s` : ''}`}
+            />
+            <StatsCard
               title="Verified"
-              value={stats?.verified || 0}
+              value={stats?.counts?.verified || 0}
               icon={CheckCircle}
               variant="success"
-              change={stats?.weeklyChange?.verified}
-              changeLabel="this week"
+              description={`${stats?.percentages?.verifiedRate?.toFixed(1) || 0}% verified`}
             />
             <StatsCard
               title="Tampered"
-              value={stats?.tampered || 0}
+              value={stats?.counts?.tampered || 0}
               icon={ShieldAlert}
               variant="danger"
-              change={stats?.weeklyChange?.tampered}
-              changeLabel="this week"
+              description={`${stats?.percentages?.tamperRate?.toFixed(1) || 0}% tampered`}
             />
             <StatsCard
-              title="Invalid Signature"
-              value={stats?.invalidSignature || 0}
+              title="Invalid"
+              value={(stats?.counts?.invalidSignature || 0) + (stats?.counts?.invalidCertificate || 0)}
               icon={AlertTriangle}
               variant="warning"
+              description={`Sig: ${stats?.counts?.invalidSignature || 0} / Cert: ${stats?.counts?.invalidCertificate || 0}`}
             />
             <StatsCard
-              title="No C2PA"
-              value={stats?.noC2PA || 0}
+              title="No Manifest"
+              value={stats?.counts?.noManifest || 0}
               icon={CircleDashed}
               variant="neutral"
-              change={stats?.weeklyChange?.noC2PA}
-              changeLabel="this week"
-            />
-            <StatsCard
-              title="Total"
-              value={stats?.total || 0}
-              icon={LayoutGrid}
-              variant="default"
+              description={`${stats?.percentages?.manifestPresenceRate?.toFixed(1) || 0}% with manifest`}
             />
           </>
         )}
@@ -191,6 +203,7 @@ function OverviewContent() {
         onPageChange={handlePageChange}
         onViewDetails={handleViewDetails}
         onRowClick={handleRowClick}
+        onDelete={handleDelete}
         isLoading={verificationsQuery.isLoading}
       />
 
@@ -226,7 +239,7 @@ function OverviewContent() {
 
                 {/* View full details button */}
                 <Button
-                  onClick={() => handleViewDetails(selectedVerification.id)}
+                  onClick={() => handleViewDetails(selectedVerification.verificationId)}
                   className="w-full"
                 >
                   View Full Details

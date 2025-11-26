@@ -55,23 +55,29 @@ const MediaSelector = ({ onSelect }: MediaSelectorProps) => {
     onSelect(item);
   }
 
-  const formatDate = (date: Date | string) => {
-    if (typeof date === 'string') {
-      return new Date(date).toLocaleDateString('en-US', {
+  const formatDate = (date: Date | string | undefined) => {
+    if (!date) return 'N/A';
+
+    try {
+      if (typeof date === 'string') {
+        return new Date(date).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+      }
+      return date.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
       });
+    } catch (e) {
+      return 'Invalid date';
     }
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
   };
 
   return (

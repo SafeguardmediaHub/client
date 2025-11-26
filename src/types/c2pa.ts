@@ -20,6 +20,7 @@ export interface MediaInfo {
 
 export interface C2PAVerification {
   id: string;
+  verificationId: string; // UUID-based verification identifier
   mediaId: string | MediaInfo;
   userId?: string;
   status: VerificationStatus;
@@ -148,32 +149,39 @@ export interface VerificationStreamUpdate {
 }
 
 export interface C2PAStats {
-  total: number;
-  verified: number;
-  tampered: number;
-  invalidSignature: number;
-  noC2PA: number;
-  processing: number;
-  error: number;
-  verifiedThisWeek: number;
-  tamperedThisWeek: number;
-  noC2PAThisWeek: number;
-  weeklyChange: {
+  counts: {
+    total: number;
     verified: number;
+    noManifest: number;
     tampered: number;
-    noC2PA: number;
+    invalidSignature: number;
+    invalidCertificate: number;
+    errors: number;
+    avgProcessingTime: number;
   };
+  percentages: {
+    verifiedRate: number;
+    manifestPresenceRate: number;
+    tamperRate: number;
+  };
+  breakdown: Array<{
+    _id: string;
+    count: number;
+    avgProcessingTime: number;
+  }>;
 }
 
 export interface C2PABadge {
-  id: string;
-  name: string;
-  status: VerificationStatus;
-  color: string;
-  backgroundColor: string;
-  icon: string;
+  id?: string;
+  status: VerificationStatus | string;
+  label: string;
+  name?: string;
   description: string;
-  displayRules: BadgeDisplayRule[];
+  color: string;
+  backgroundColor?: string;
+  icon: string;
+  tooltip?: string;
+  displayRules?: BadgeDisplayRule[];
 }
 
 export interface BadgeDisplayRule {
@@ -267,7 +275,9 @@ export interface StatsResponse {
 
 export interface BadgesResponse {
   success: boolean;
-  data: C2PABadge[];
+  data: {
+    badges: C2PABadge[];
+  };
 }
 
 export interface MediaBadgeResponse {
@@ -277,6 +287,7 @@ export interface MediaBadgeResponse {
 
 export interface VerifyMediaRequest {
   mediaId: string;
+  forceRefresh?: boolean;
 }
 
 export interface BatchVerifyRequest {
@@ -287,7 +298,12 @@ export interface VerifyResponse {
   success: boolean;
   data: {
     verificationId: string;
-    status: VerificationStatus;
+    status: VerificationStatus | 'queued';
+    jobId?: string;
+    estimatedProcessingTime?: number;
+    alreadyVerified?: boolean;
+    manifestPresent?: boolean;
+    createdAt?: string;
   };
 }
 
@@ -304,4 +320,12 @@ export interface ClearCacheResponse {
   success: boolean;
   message: string;
   entriesCleared: number;
+}
+
+export interface DeleteVerificationResponse {
+  success: boolean;
+  message: string;
+  data: {
+    verificationId: string;
+  };
 }

@@ -14,16 +14,16 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import {
   MediaInfoBlock,
-  StatusBadge,
-  UploadDropzone,
   VerificationSteps,
 } from '@/components/c2pa';
+import MediaSelector from '@/components/media/MediaSelector';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useVerifyMedia, useVerificationStream } from '@/hooks/useC2PA';
+import type { Media } from '@/hooks/useMedia';
 import type { VerificationStreamUpdate } from '@/types/c2pa';
 
-type VerificationState = 'idle' | 'uploading' | 'processing' | 'completed' | 'error';
+type VerificationState = 'idle' | 'selecting' | 'processing' | 'completed' | 'error';
 
 export default function ManualVerificationPage() {
   const router = useRouter();
@@ -34,7 +34,7 @@ export default function ManualVerificationPage() {
   const [streamUpdates, setStreamUpdates] = useState<VerificationStreamUpdate[]>([]);
   const [currentStep, setCurrentStep] = useState<string | undefined>();
   const [error, setError] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<{ name: string; size: number } | null>(null);
+  const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
 
   // Stream hook
   const stream = useVerificationStream(verificationId || '', {
@@ -54,31 +54,18 @@ export default function ManualVerificationPage() {
     },
   });
 
-  const handleFileSelect = async (file: File) => {
-    setSelectedFile({ name: file.name, size: file.size });
-    setState('uploading');
-    setError(null);
-    setStreamUpdates([]);
-
-    // For demo, we'll simulate an upload and use a media ID
-    // In production, you'd upload the file first to get a mediaId
-    try {
-      // Simulating file upload to get media ID
-      toast.info('Uploading file...');
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      const mockMediaId = `media_${Date.now()}`;
-      handleStartVerification(mockMediaId);
-    } catch (err) {
-      setState('error');
-      setError('Failed to upload file. Please try again.');
-      toast.error('Upload failed');
-    }
+  const handleMediaSelect = (media: Media) => {
+    setSelectedMedia(media);
+    setState('selecting');
   };
 
-  const handleMediaIdSubmit = (mediaId: string) => {
-    setSelectedFile({ name: mediaId, size: 0 });
-    handleStartVerification(mediaId);
+  const handleConfirmVerification = () => {
+    if (selectedMedia) {
+      setState('processing');
+      setError(null);
+      setStreamUpdates([]);
+      handleStartVerification(selectedMedia.id);
+    }
   };
 
   const handleStartVerification = async (mediaId: string) => {
@@ -89,15 +76,30 @@ export default function ManualVerificationPage() {
       const result = await verifyMutation.mutateAsync({ mediaId });
       setVerificationId(result.data.verificationId);
 
-      if (result.data.status !== 'processing') {
-        // Already completed
+      // Check if verification already existed
+      const isAlreadyVerified = 'alreadyVerified' in result.data && result.data.alreadyVerified;
+
+      if (isAlreadyVerified || result.data.status !== 'processing') {
+        // Already completed or existing verification found
         setState('completed');
-        router.push(`/dashboard/authenticity/${result.data.verificationId}`);
+
+        if (isAlreadyVerified) {
+          toast.info('This media was already verified. Showing existing results.');
+        }
+
+        // Navigate to details page
+        setTimeout(() => {
+          router.push(`/dashboard/authenticity/${result.data.verificationId}`);
+        }, 1000);
+      } else {
+        // New verification started, wait for stream updates
+        toast.info('Verification started. Processing...');
       }
     } catch (err) {
       setState('error');
       setError('Failed to start verification. Please try again.');
       toast.error('Verification failed to start');
+      console.error('Verification error:', err);
     }
   };
 
@@ -107,8 +109,14 @@ export default function ManualVerificationPage() {
     setStreamUpdates([]);
     setCurrentStep(undefined);
     setError(null);
-    setSelectedFile(null);
+    setSelectedMedia(null);
     stream.disconnect();
+  };
+
+  const handleBack = () => {
+    setSelectedMedia(null);
+    setState('idle');
+    setError(null);
   };
 
   const handleViewDetails = () => {
@@ -141,7 +149,7 @@ export default function ManualVerificationPage() {
             Verify Media Authenticity
           </h1>
           <p className="text-sm text-gray-500 mt-2">
-            Upload a file or enter a media ID to verify its C2PA content credentials
+            Select media from your library to verify its C2PA content credentials
           </p>
         </div>
 
@@ -149,23 +157,25 @@ export default function ManualVerificationPage() {
         {state === 'idle' && (
           <Card className="animate-in fade-in slide-in-from-bottom-4">
             <CardHeader>
-              <CardTitle className="text-lg">Start Verification</CardTitle>
+              <CardTitle className="text-lg">Select Media to Verify</CardTitle>
             </CardHeader>
-            <CardContent>
-              <UploadDropzone
-                onFileSelect={handleFileSelect}
-                onMediaIdSubmit={handleMediaIdSubmit}
-                isLoading={false}
-              />
+            <CardContent className="space-y-6">
+              {/* Media selector dropdown */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Choose from your library
+                </label>
+                <MediaSelector onSelect={handleMediaSelect} />
+              </div>
 
               {/* How it works */}
-              <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <h3 className="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
                   <AlertCircle className="size-4" />
                   How verification works
                 </h3>
                 <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
-                  <li>Upload your media file or enter its ID</li>
+                  <li>Select media from your library</li>
                   <li>We scan for C2PA content credentials</li>
                   <li>Certificate chain is validated for authenticity</li>
                   <li>Content integrity is verified against manifest</li>
@@ -176,13 +186,62 @@ export default function ManualVerificationPage() {
           </Card>
         )}
 
-        {(state === 'uploading' || state === 'processing') && (
+        {state === 'selecting' && selectedMedia && (
+          <Card className="animate-in fade-in slide-in-from-bottom-4">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">Confirm Verification</CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleBack}
+                  className="text-gray-500"
+                >
+                  <X className="size-4 mr-1" />
+                  Cancel
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Selected media preview */}
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <MediaInfoBlock
+                  fileName={selectedMedia.filename}
+                  fileSize={Number.parseInt(selectedMedia.fileSize)}
+                  mediaType={selectedMedia.mimeType.startsWith('image') ? 'image' :
+                            selectedMedia.mimeType.startsWith('video') ? 'video' :
+                            selectedMedia.mimeType.startsWith('audio') ? 'audio' : 'document'}
+                  thumbnailUrl={selectedMedia.thumbnailUrl}
+                  size="lg"
+                />
+              </div>
+
+              {/* Confirmation */}
+              <div className="space-y-3">
+                <p className="text-sm text-gray-600">
+                  This will verify the C2PA content credentials for the selected media.
+                  The verification process may take up to 30 seconds.
+                </p>
+                <Button
+                  onClick={handleConfirmVerification}
+                  className="w-full"
+                  disabled={verifyMutation.isPending}
+                >
+                  <ShieldCheck className="size-4 mr-2" />
+                  Start Verification
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {state === 'processing' && selectedMedia && (
           <Card className="animate-in fade-in slide-in-from-bottom-4">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Loader2 className="size-5 animate-spin text-blue-600" />
-                  {state === 'uploading' ? 'Uploading...' : 'Verifying...'}
+                  Verifying...
                 </CardTitle>
                 <Button
                   variant="ghost"
@@ -196,36 +255,35 @@ export default function ManualVerificationPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* File info */}
-              {selectedFile && (
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <MediaInfoBlock
-                    fileName={selectedFile.name}
-                    fileSize={selectedFile.size}
-                    mediaType="document"
-                    size="sm"
-                  />
-                </div>
-              )}
+              {/* Media info */}
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <MediaInfoBlock
+                  fileName={selectedMedia.filename}
+                  fileSize={Number.parseInt(selectedMedia.fileSize)}
+                  mediaType={selectedMedia.mimeType.startsWith('image') ? 'image' :
+                            selectedMedia.mimeType.startsWith('video') ? 'video' :
+                            selectedMedia.mimeType.startsWith('audio') ? 'audio' : 'document'}
+                  thumbnailUrl={selectedMedia.thumbnailUrl}
+                  size="sm"
+                />
+              </div>
 
               {/* Progress steps */}
-              {state === 'processing' && (
-                <div className="py-4">
-                  <VerificationSteps
-                    updates={streamUpdates}
-                    currentStep={currentStep}
-                  />
-                  {stream.isConnected && (
-                    <p className="text-xs text-blue-600 mt-4 flex items-center gap-2">
-                      <span className="relative flex size-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
-                        <span className="relative inline-flex rounded-full size-2 bg-blue-500" />
-                      </span>
-                      Connected to live updates
-                    </p>
-                  )}
-                </div>
-              )}
+              <div className="py-4">
+                <VerificationSteps
+                  updates={streamUpdates}
+                  currentStep={currentStep}
+                />
+                {stream.isConnected && (
+                  <p className="text-xs text-blue-600 mt-4 flex items-center gap-2">
+                    <span className="relative flex size-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full size-2 bg-blue-500" />
+                    </span>
+                    Connected to live updates
+                  </p>
+                )}
+              </div>
             </CardContent>
           </Card>
         )}
