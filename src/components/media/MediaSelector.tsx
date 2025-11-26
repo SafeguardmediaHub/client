@@ -16,11 +16,12 @@ const MediaSelector = ({ onSelect }: MediaSelectorProps) => {
 
   const { data, isLoading } = useGetMedia();
   // Memoize media array to prevent creating new array reference on every render
-  const media = useMemo(
-    () =>
-      data?.media.filter((item) => item.uploadType === 'general_image') || [],
-    [data?.media]
-  );
+  // const media = useMemo(
+  //   () =>
+  //     data?.media.filter((item) => item.uploadType === 'general_image') || [],
+  //   [data?.media]
+  // );
+  const media = useMemo(() => data?.media || [], [data?.media]);
 
   useEffect(() => {
     if (searchQuery) {
@@ -55,23 +56,29 @@ const MediaSelector = ({ onSelect }: MediaSelectorProps) => {
     onSelect(item);
   }
 
-  const formatDate = (date: Date | string) => {
-    if (typeof date === 'string') {
-      return new Date(date).toLocaleDateString('en-US', {
+  const formatDate = (date: Date | string | undefined) => {
+    if (!date) return 'N/A';
+
+    try {
+      if (typeof date === 'string') {
+        return new Date(date).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+      }
+      return date.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
       });
+    } catch (e) {
+      return 'Invalid date';
     }
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
   };
 
   return (

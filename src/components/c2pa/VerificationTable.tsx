@@ -1,8 +1,11 @@
 'use client';
 
-import { Eye, FileImage, FileVideo, FileAudio, FileText } from 'lucide-react';
+import { Eye, FileImage, FileVideo, FileAudio, FileText, Trash2, X } from 'lucide-react';
 import Image from 'next/image';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { useDeleteVerification } from '@/hooks/useC2PA';
 import {
   Pagination,
   PaginationContent,
@@ -28,6 +31,7 @@ interface VerificationTableProps {
   onPageChange: (page: number) => void;
   onViewDetails: (verificationId: string) => void;
   onRowClick?: (verification: C2PAVerification) => void;
+  onDelete?: (verificationId: string) => void;
   isLoading?: boolean;
   className?: string;
 }
@@ -61,13 +65,16 @@ function VerificationRow({
   verification,
   onViewDetails,
   onRowClick,
+  onDelete,
   index,
 }: {
   verification: C2PAVerification;
   onViewDetails: (id: string) => void;
   onRowClick?: (v: C2PAVerification) => void;
+  onDelete?: (verificationId: string) => void;
   index: number;
 }) {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   // Handle both string and MediaInfo object for mediaId
   const mediaId = typeof verification.mediaId === 'string'
     ? verification.mediaId
@@ -155,18 +162,61 @@ function VerificationRow({
 
       {/* Actions */}
       <td className="py-3 px-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            onViewDetails(verification.id);
-          }}
-          className="h-8"
-        >
-          <Eye className="size-4 mr-1" />
-          View
-        </Button>
+        {showDeleteConfirm ? (
+          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete?.(verification.verificationId);
+                setShowDeleteConfirm(false);
+              }}
+              className="h-8 text-xs"
+            >
+              Confirm
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDeleteConfirm(false);
+              }}
+              className="h-8"
+            >
+              <X className="size-4" />
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onViewDetails(verification.verificationId);
+              }}
+              className="h-8"
+            >
+              <Eye className="size-4 mr-1" />
+              View
+            </Button>
+            {onDelete && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowDeleteConfirm(true);
+                }}
+                className="h-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <Trash2 className="size-4" />
+              </Button>
+            )}
+          </div>
+        )}
       </td>
     </tr>
   );
@@ -210,6 +260,7 @@ export function VerificationTable({
   onPageChange,
   onViewDetails,
   onRowClick,
+  onDelete,
   isLoading = false,
   className,
 }: VerificationTableProps) {
@@ -296,6 +347,7 @@ export function VerificationTable({
                   verification={verification}
                   onViewDetails={onViewDetails}
                   onRowClick={onRowClick}
+                  onDelete={onDelete}
                   index={index}
                 />
               ))

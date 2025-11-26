@@ -18,7 +18,9 @@ export default function BadgesPage() {
   const badgesQuery = useBadges();
   const [selectedBadge, setSelectedBadge] = useState<C2PABadge | null>(null);
 
-  const badges = Array.isArray(badgesQuery.data?.data) ? badgesQuery.data.data : [];
+  const badges = Array.isArray(badgesQuery.data?.data?.badges)
+    ? badgesQuery.data.data.badges
+    : [];
 
   const handleBadgeClick = (badge: C2PABadge) => {
     setSelectedBadge(badge);

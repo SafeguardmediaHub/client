@@ -5,6 +5,7 @@ import type {
   BadgesResponse,
   BatchVerifyRequest,
   ClearCacheResponse,
+  DeleteVerificationResponse,
   MediaBadgeResponse,
   StatsResponse,
   VerificationDetailsResponse,
@@ -63,9 +64,12 @@ export const getVerificationStats = async (): Promise<StatsResponse> => {
 export const verifyMedia = async (
   request: VerifyMediaRequest
 ): Promise<VerifyResponse> => {
+  const { mediaId, forceRefresh } = request;
+  const body = forceRefresh ? { forceRefresh } : {};
+
   const { data } = await api.post<VerifyResponse>(
-    `/api/c2pa/verify/${request.mediaId}`,
-    {},
+    `/api/c2pa/verify/${mediaId}`,
+    body,
     { headers: { 'Content-Type': 'application/json' } }
   );
   return data;
@@ -151,6 +155,16 @@ export const clearAdminCache = async (): Promise<ClearCacheResponse> => {
     '/api/c2pa/admin/cache/clear',
     {},
     { headers: { 'Content-Type': 'application/json' } }
+  );
+  return data;
+};
+
+// Delete verification
+export const deleteVerification = async (
+  verificationId: string
+): Promise<DeleteVerificationResponse> => {
+  const { data } = await api.delete<DeleteVerificationResponse>(
+    `/api/c2pa/verify/${verificationId}`
   );
   return data;
 };

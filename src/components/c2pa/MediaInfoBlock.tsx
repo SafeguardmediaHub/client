@@ -24,7 +24,10 @@ interface MediaInfoBlockProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-const mediaTypeIcons: Record<MediaType, React.ComponentType<{ className?: string }>> = {
+const mediaTypeIcons: Record<
+  MediaType,
+  React.ComponentType<{ className?: string }>
+> = {
   image: FileImage,
   video: FileVideo,
   audio: FileAudio,
@@ -41,7 +44,8 @@ const mediaTypeLabels: Record<MediaType, string> = {
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes < 1024 * 1024 * 1024)
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
 }
 
@@ -125,11 +129,16 @@ export function MediaInfoBlock({
         <h3 className={cn('font-medium text-gray-900 truncate', config.title)}>
           {fileName}
         </h3>
-        <div className={cn('flex items-center gap-3 text-gray-500 mt-1', config.details)}>
-          <span className="inline-flex items-center gap-1">
+        <div
+          className={cn(
+            'flex items-center gap-3 text-gray-500 mt-1',
+            config.details
+          )}
+        >
+          {/* <span className="inline-flex items-center gap-1">
             <HardDrive className="size-3.5" />
             {formatFileSize(fileSize)}
-          </span>
+          </span> */}
           <span className="inline-flex items-center gap-1">
             <File className="size-3.5" />
             {mediaTypeLabels[mediaType]}

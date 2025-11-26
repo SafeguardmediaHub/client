@@ -1,25 +1,27 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+/** biome-ignore-all lint/suspicious/noExplicitAny: <> */
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  getVerifications,
-  getVerificationDetails,
-  getVerificationSummary,
-  getVerificationStats,
-  verifyMedia,
   batchVerifyMedia,
-  getBadges,
-  getMediaBadge,
-  getAdminDashboard,
-  getAdminVerifications,
   clearAdminCache,
   createVerificationStream,
+  deleteVerification,
+  getAdminDashboard,
+  getAdminVerifications,
+  getBadges,
+  getMediaBadge,
+  getVerificationDetails,
+  getVerificationStats,
+  getVerificationSummary,
+  getVerifications,
+  verifyMedia,
 } from '@/lib/api/c2pa';
 import type {
-  VerificationsListParams,
   AdminVerificationsParams,
-  VerificationStreamUpdate,
-  VerifyMediaRequest,
   BatchVerifyRequest,
+  VerificationStreamUpdate,
+  VerificationsListParams,
+  VerifyMediaRequest,
 } from '@/types/c2pa';
 
 // Query keys
@@ -34,8 +36,7 @@ export const c2paKeys = {
     [...c2paKeys.verification(id), 'summary'] as const,
   stats: () => [...c2paKeys.all, 'stats'] as const,
   badges: () => [...c2paKeys.all, 'badges'] as const,
-  mediaBadge: (mediaId: string) =>
-    [...c2paKeys.all, 'badge', mediaId] as const,
+  mediaBadge: (mediaId: string) => [...c2paKeys.all, 'badge', mediaId] as const,
   admin: () => [...c2paKeys.all, 'admin'] as const,
   adminDashboard: () => [...c2paKeys.admin(), 'dashboard'] as const,
   adminVerifications: (params?: AdminVerificationsParams) =>
@@ -65,6 +66,21 @@ export const useVerificationDetails = (
     queryFn: () => getVerificationDetails(verificationId),
     enabled: !!verificationId && (options?.enabled ?? true),
     staleTime: 60000, // 1 minute
+    // Retry 404 errors during initial verification startup (race condition window)
+    retry: (failureCount, error: any) => {
+      // Retry 404s up to 6 times (~10 seconds total with delays)
+      // This handles the brief window where the job is queued but record not yet in DB
+      if (error?.response?.status === 404 && failureCount < 6) {
+        return true;
+      }
+      // Don't retry other errors
+      return false;
+    },
+    retryDelay: (attemptIndex) => {
+      // Exponential backoff: 500ms, 750ms, 1125ms, 1687ms, 2531ms, 3797ms
+      // Total: ~10 seconds of retries
+      return Math.min(500 * 1.5 ** attemptIndex, 4000);
+    },
   });
 };
 
@@ -252,6 +268,27 @@ export const useClearAdminCache = () => {
     mutationFn: clearAdminCache,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: c2paKeys.adminDashboard() });
+    },
+  });
+};
+
+// Delete verification mutation
+export const useDeleteVerification = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (verificationId: string) => deleteVerification(verificationId),
+    onSuccess: () => {
+      // Invalidate all verifications queries (with any filters) and refetch active ones
+      queryClient.invalidateQueries({
+        queryKey: ['c2pa', 'verifications'],
+        refetchType: 'active', // Refetch queries that are currently mounted
+      });
+      // Invalidate and refetch stats
+      queryClient.invalidateQueries({
+        queryKey: c2paKeys.stats(),
+        refetchType: 'active',
+      });
     },
   });
 };
