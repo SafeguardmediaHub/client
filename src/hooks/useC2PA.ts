@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: <> */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -65,6 +66,21 @@ export const useVerificationDetails = (
     queryFn: () => getVerificationDetails(verificationId),
     enabled: !!verificationId && (options?.enabled ?? true),
     staleTime: 60000, // 1 minute
+    // Retry 404 errors during initial verification startup (race condition window)
+    retry: (failureCount, error: any) => {
+      // Retry 404s up to 6 times (~10 seconds total with delays)
+      // This handles the brief window where the job is queued but record not yet in DB
+      if (error?.response?.status === 404 && failureCount < 6) {
+        return true;
+      }
+      // Don't retry other errors
+      return false;
+    },
+    retryDelay: (attemptIndex) => {
+      // Exponential backoff: 500ms, 750ms, 1125ms, 1687ms, 2531ms, 3797ms
+      // Total: ~10 seconds of retries
+      return Math.min(500 * 1.5 ** attemptIndex, 4000);
+    },
   });
 };
 
@@ -263,9 +279,16 @@ export const useDeleteVerification = () => {
   return useMutation({
     mutationFn: (verificationId: string) => deleteVerification(verificationId),
     onSuccess: () => {
-      // Invalidate verifications list and stats to refresh the UI
-      queryClient.invalidateQueries({ queryKey: c2paKeys.verifications() });
-      queryClient.invalidateQueries({ queryKey: c2paKeys.stats() });
+      // Invalidate all verifications queries (with any filters) and refetch active ones
+      queryClient.invalidateQueries({
+        queryKey: ['c2pa', 'verifications'],
+        refetchType: 'active', // Refetch queries that are currently mounted
+      });
+      // Invalidate and refetch stats
+      queryClient.invalidateQueries({
+        queryKey: c2paKeys.stats(),
+        refetchType: 'active',
+      });
     },
   });
 };

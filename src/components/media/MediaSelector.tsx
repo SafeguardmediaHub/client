@@ -16,11 +16,12 @@ const MediaSelector = ({ onSelect }: MediaSelectorProps) => {
 
   const { data, isLoading } = useGetMedia();
   // Memoize media array to prevent creating new array reference on every render
-  const media = useMemo(
-    () =>
-      data?.media.filter((item) => item.uploadType === 'general_image') || [],
-    [data?.media]
-  );
+  // const media = useMemo(
+  //   () =>
+  //     data?.media.filter((item) => item.uploadType === 'general_image') || [],
+  //   [data?.media]
+  // );
+  const media = useMemo(() => data?.media || [], [data?.media]);
 
   useEffect(() => {
     if (searchQuery) {

@@ -2,7 +2,14 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: <> */
 'use client';
 
-import { ArrowLeft, Download, RefreshCw, Trash2 } from 'lucide-react';
+import {
+  ArrowLeft,
+  Clock,
+  Download,
+  Loader2,
+  RefreshCw,
+  Trash2,
+} from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -18,7 +25,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useVerificationDetails, useVerificationStream, useDeleteVerification } from '@/hooks/useC2PA';
+import {
+  useDeleteVerification,
+  useVerificationDetails,
+  useVerificationStream,
+} from '@/hooks/useC2PA';
 import { cn } from '@/lib/utils';
 import type { VerificationStreamUpdate } from '@/types/c2pa';
 
@@ -85,26 +96,58 @@ export default function VerificationDetailsPage() {
     }
   };
 
+  // Show starting state during initial load or 404 retries
   if (detailsQuery.isLoading) {
-    return <DetailsLoadingState />;
+    return (
+      <VerificationStartingState
+        verificationId={verificationId}
+        onBack={handleBack}
+      />
+    );
   }
 
+  // Show starting state if we're retrying due to 404 (verification is being set up)
+  if (
+    detailsQuery.isError &&
+    (detailsQuery.error as any)?.response?.status === 404 &&
+    detailsQuery.fetchStatus === 'fetching'
+  ) {
+    return (
+      <VerificationStartingState
+        verificationId={verificationId}
+        onBack={handleBack}
+      />
+    );
+  }
+
+  // Only show "not found" error after all retries are exhausted
   if (detailsQuery.isError || !details) {
+    const is404 = (detailsQuery.error as any)?.response?.status === 404;
+
     return (
       <div className="w-full flex flex-col items-center justify-center gap-4 p-8 min-h-[400px]">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-gray-900">
-            Verification Not Found
+            {is404 ? 'Verification Not Found' : 'Error Loading Verification'}
           </h2>
           <p className="text-sm text-gray-500 mt-1">
-            The verification you're looking for doesn't exist or has been
-            removed.
+            {is404
+              ? "The verification you're looking for doesn't exist or has been removed."
+              : 'An error occurred while loading the verification details.'}
           </p>
         </div>
-        <Button onClick={handleBack} variant="outline">
-          <ArrowLeft className="size-4 mr-2" />
-          Back to Overview
-        </Button>
+        <div className="flex gap-3">
+          <Button onClick={handleBack} variant="outline">
+            <ArrowLeft className="size-4 mr-2" />
+            Back to Overview
+          </Button>
+          {!is404 && (
+            <Button onClick={() => detailsQuery.refetch()} variant="default">
+              <RefreshCw className="size-4 mr-2" />
+              Try Again
+            </Button>
+          )}
+        </div>
       </div>
     );
   }
@@ -152,7 +195,7 @@ export default function VerificationDetailsPage() {
       : 'document');
 
   // Use a default file size if not available
-  const fileSize = details.fileSize || 0;
+  const fileSize = parsedMediaId.fileSize || 0;
 
   // Map backend response to frontend summary structure
   const summary: any = {
@@ -647,6 +690,72 @@ export default function VerificationDetailsPage() {
           </TabsContent>
         </Tabs>
       )}
+    </div>
+  );
+}
+
+function VerificationStartingState({
+  verificationId,
+  onBack,
+}: {
+  verificationId: string;
+  onBack: () => void;
+}) {
+  return (
+    <div className="w-full flex flex-col gap-6 p-8">
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="sm" onClick={onBack}>
+          <ArrowLeft className="size-4 mr-1" />
+          Back
+        </Button>
+      </div>
+
+      {/* Main content */}
+      <div className="max-w-2xl mx-auto w-full">
+        <div className="flex flex-col items-center justify-center min-h-[500px] text-center animate-in fade-in slide-in-from-bottom-4">
+          {/* Animated loader */}
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="size-20 rounded-full bg-blue-100 animate-ping opacity-20" />
+            </div>
+            <div className="relative flex items-center justify-center size-20 rounded-full bg-blue-50">
+              <Loader2 className="size-10 text-blue-600 animate-spin" />
+            </div>
+          </div>
+
+          {/* Message */}
+          <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+            Verification Starting...
+          </h2>
+          <p className="text-gray-600 mb-6 max-w-md">
+            Setting up C2PA verification process. This usually takes just a
+            moment.
+          </p>
+
+          {/* Info card */}
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl max-w-md">
+            <div className="flex items-center gap-3 text-left">
+              <Clock className="size-5 text-blue-600 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-blue-900">
+                  Estimated Time: ~30 seconds
+                </p>
+                <p className="text-xs text-blue-700 mt-1">
+                  We're analyzing the media for C2PA content credentials
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Verification ID */}
+          <div className="mt-8 p-3 bg-gray-50 rounded-lg">
+            <p className="text-xs text-gray-500 font-mono">
+              ID: {verificationId}
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
