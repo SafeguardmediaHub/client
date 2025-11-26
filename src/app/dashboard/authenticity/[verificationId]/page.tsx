@@ -574,9 +574,9 @@ export default function VerificationDetailsPage() {
                     <p className="text-sm font-medium text-gray-900">
                       Verification Started
                     </p>
-                    <p className="text-xs text-gray-500">
+                    {/* <p className="text-xs text-gray-500">
                       {new Date(details.createdAt).toLocaleString()}
-                    </p>
+                    </p> */}
                   </div>
                 </div>
 

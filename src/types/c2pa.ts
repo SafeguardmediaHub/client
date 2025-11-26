@@ -191,47 +191,57 @@ export interface BadgeDisplayRule {
 }
 
 export interface AdminDashboard {
-  systemHealth: SystemHealth;
-  queueStatus: QueueStatus;
-  cacheStatus: CacheStatus;
-  recentActivity: AdminActivity[];
+  system: {
+    enabled: boolean;
+    tool: {
+      available: boolean;
+      version?: string;
+      error?: string;
+    };
+  };
+  queue: {
+    healthy: boolean;
+    connected: boolean;
+    paused: boolean;
+    jobs: {
+      waiting: number;
+      active: number;
+      completed: number;
+      failed: number;
+      delayed: number;
+    };
+  };
+  cache: {
+    mediaKeys: number;
+    hashKeys: number;
+    rateLimitKeys: number;
+  };
+  stats: {
+    today: DailyStats;
+    database: DatabaseStats;
+    weekly: WeeklyStats[];
+  };
 }
 
-export interface SystemHealth {
-  status: 'healthy' | 'degraded' | 'down';
-  uptime: number;
-  lastChecked: string;
-  services: ServiceStatus[];
-}
-
-export interface ServiceStatus {
-  name: string;
-  status: 'up' | 'down' | 'degraded';
-  latency?: number;
-}
-
-export interface QueueStatus {
-  pending: number;
-  processing: number;
-  completed: number;
-  failed: number;
+export interface DailyStats {
+  total: number;
+  byStatus: Record<string, number>;
   avgProcessingTime: number;
 }
 
-export interface CacheStatus {
-  size: number;
-  maxSize: number;
-  hitRate: number;
-  entries: number;
+export interface DatabaseStats {
+  total: number;
+  verified: number;
+  noManifest: number;
+  tampered: number;
+  errors: number;
 }
 
-export interface AdminActivity {
-  id: string;
-  type: string;
-  userId: string;
-  action: string;
-  timestamp: string;
-  details?: Record<string, unknown>;
+export interface WeeklyStats {
+  date: string;
+  total: number;
+  byStatus: Record<string, number>;
+  avgProcessingTime: number;
 }
 
 // API Request/Response Types

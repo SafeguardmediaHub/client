@@ -29,7 +29,10 @@ interface BadgePreviewProps {
   className?: string;
 }
 
-const statusIcons: Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
+const statusIcons: Record<
+  string,
+  React.ComponentType<{ className?: string; style?: React.CSSProperties }>
+> = {
   verified: CheckCircle,
   tampered: ShieldAlert,
   invalid_signature: ShieldX,
@@ -67,7 +70,8 @@ const getTextColor = (color: string): string => {
 
 export function BadgePreview({ badge, onClick, className }: BadgePreviewProps) {
   const Icon = statusIcons[badge.status] || Info;
-  const backgroundColor = badge.backgroundColor || getBackgroundColor(badge.color);
+  const backgroundColor =
+    badge.backgroundColor || getBackgroundColor(badge.color);
   const textColor = getTextColor(badge.color);
   const displayName = badge.label || badge.name || 'Unknown';
 
@@ -92,8 +96,12 @@ export function BadgePreview({ badge, onClick, className }: BadgePreviewProps) {
 
           {/* Badge info */}
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold text-gray-900">{displayName}</h3>
-            <p className="text-xs text-gray-500 truncate">{badge.description}</p>
+            <h3 className="text-sm font-semibold text-gray-900">
+              {displayName}
+            </h3>
+            <p className="text-xs text-gray-500 truncate">
+              {badge.description}
+            </p>
           </div>
 
           {/* Color indicator */}
@@ -119,7 +127,8 @@ export function BadgeModal({ badge, isOpen, onClose }: BadgeModalProps) {
   if (!badge) return null;
 
   const Icon = statusIcons[badge.status] || Info;
-  const backgroundColor = badge.backgroundColor || getBackgroundColor(badge.color);
+  const backgroundColor =
+    badge.backgroundColor || getBackgroundColor(badge.color);
   const textColor = getTextColor(badge.color);
   const displayName = badge.label || badge.name || 'Unknown';
 
@@ -135,7 +144,7 @@ export function BadgeModal({ badge, isOpen, onClose }: BadgeModalProps) {
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="sm:max-w-md">
+      <SheetContent className="sm:max-w-md p-4">
         <SheetHeader>
           <SheetTitle>Badge Details</SheetTitle>
           <SheetDescription>
@@ -152,7 +161,9 @@ export function BadgeModal({ badge, isOpen, onClose }: BadgeModalProps) {
             >
               <Icon className="size-10" style={{ color: textColor }} />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900">{displayName}</h3>
+            <h3 className="text-lg font-semibold text-gray-900">
+              {displayName}
+            </h3>
             <p className="text-sm text-gray-500 text-center mt-1">
               {badge.description}
             </p>
@@ -191,10 +202,13 @@ export function BadgeModal({ badge, isOpen, onClose }: BadgeModalProps) {
           {/* Display rules */}
           {badge.displayRules && badge.displayRules.length > 0 && (
             <div className="space-y-2">
-              <h4 className="text-sm font-medium text-gray-700">Display Rules</h4>
+              <h4 className="text-sm font-medium text-gray-700">
+                Display Rules
+              </h4>
               <div className="space-y-2">
                 {badge.displayRules.map((rule, index) => (
                   <div
+                    // biome-ignore lint/suspicious/noArrayIndexKey: <>
                     key={index}
                     className="p-3 bg-gray-50 rounded-lg text-sm"
                   >
@@ -215,7 +229,9 @@ export function BadgeModal({ badge, isOpen, onClose }: BadgeModalProps) {
 
           {/* Status and Icon */}
           <div className="space-y-2">
-            <h4 className="text-sm font-medium text-gray-700">Status Information</h4>
+            <h4 className="text-sm font-medium text-gray-700">
+              Status Information
+            </h4>
             <div className="p-3 bg-gray-50 rounded-lg text-sm space-y-1">
               <div className="flex justify-between">
                 <span className="text-gray-600">Status:</span>
@@ -229,11 +245,7 @@ export function BadgeModal({ badge, isOpen, onClose }: BadgeModalProps) {
           </div>
 
           {/* Copy JSON button */}
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={handleCopyJson}
-          >
+          <Button variant="outline" className="w-full" onClick={handleCopyJson}>
             <Copy className="size-4 mr-2" />
             {copied ? 'Copied!' : 'Copy Badge JSON'}
           </Button>

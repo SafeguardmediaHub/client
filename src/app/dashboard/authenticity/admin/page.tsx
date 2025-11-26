@@ -13,6 +13,7 @@ import {
   Server,
   Settings,
   Trash2,
+  TrendingUp,
   Users,
   XCircle,
   Zap,
@@ -38,41 +39,6 @@ import {
 } from '@/hooks/useC2PA';
 import { cn } from '@/lib/utils';
 import type { AdminVerificationsParams } from '@/types/c2pa';
-
-function HealthIndicator({
-  status,
-  label,
-  latency,
-}: {
-  status: 'up' | 'down' | 'degraded';
-  label: string;
-  latency?: number;
-}) {
-  const statusConfig = {
-    up: { color: 'bg-emerald-500', text: 'Healthy', textColor: 'text-emerald-700' },
-    down: { color: 'bg-red-500', text: 'Down', textColor: 'text-red-700' },
-    degraded: { color: 'bg-amber-500', text: 'Degraded', textColor: 'text-amber-700' },
-  };
-
-  const config = statusConfig[status];
-
-  return (
-    <div className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
-      <div className="flex items-center gap-3">
-        <span className={cn('size-2.5 rounded-full', config.color)} />
-        <span className="text-sm font-medium text-gray-700">{label}</span>
-      </div>
-      <div className="flex items-center gap-3">
-        {latency !== undefined && (
-          <span className="text-xs text-gray-400">{latency}ms</span>
-        )}
-        <span className={cn('text-xs font-medium', config.textColor)}>
-          {config.text}
-        </span>
-      </div>
-    </div>
-  );
-}
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -126,8 +92,9 @@ export default function AdminDashboardPage() {
   const handleClearCache = async () => {
     try {
       const result = await clearCacheMutation.mutateAsync();
-      toast.success(`Cache cleared! ${result.entriesCleared} entries removed.`);
+      toast.success(`Cache cleared! ${result.entriesCleared} keys removed.`);
       setShowClearConfirm(false);
+      dashboardQuery.refetch();
     } catch (err) {
       toast.error('Failed to clear cache');
     }
@@ -176,69 +143,107 @@ export default function AdminDashboardPage() {
         </Button>
       </div>
 
-      {/* System health section */}
+      {/* System Status Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Health status */}
+        {/* System Health */}
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <Activity className="size-4 text-blue-600" />
-              System Health
+              <Server className="size-4 text-blue-600" />
+              System Status
             </CardTitle>
           </CardHeader>
           <CardContent>
             {dashboardQuery.isLoading ? (
               <div className="space-y-3">
-                {[1, 2, 3, 4].map((i) => (
-                  <Skeleton key={i} className="h-8 w-full" />
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-12 w-full" />
                 ))}
               </div>
-            ) : dashboard?.systemHealth ? (
-              <>
-                <div className="mb-4 p-3 rounded-lg bg-gray-50">
-                  <div className="flex items-center justify-between">
+            ) : dashboard ? (
+              <div className="space-y-3">
+                {/* C2PA System Enabled */}
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={cn(
+                        'size-2 rounded-full',
+                        dashboard.system.enabled
+                          ? 'bg-emerald-500'
+                          : 'bg-gray-400'
+                      )}
+                    />
                     <span className="text-sm font-medium text-gray-700">
-                      Overall Status
+                      C2PA System
                     </span>
+                  </div>
+                  <span
+                    className={cn(
+                      'text-xs font-semibold px-2 py-1 rounded-full',
+                      dashboard.system.enabled
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-gray-100 text-gray-600'
+                    )}
+                  >
+                    {dashboard.system.enabled ? 'ENABLED' : 'DISABLED'}
+                  </span>
+                </div>
+
+                {/* C2PA Tool Status */}
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={cn(
+                        'size-2 rounded-full',
+                        dashboard.system.tool.available
+                          ? 'bg-emerald-500'
+                          : 'bg-red-500'
+                      )}
+                    />
+                    <span className="text-sm font-medium text-gray-700">
+                      C2PA Tool
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {dashboard.system.tool.version && (
+                      <span className="text-xs text-gray-500">
+                        v{dashboard.system.tool.version}
+                      </span>
+                    )}
                     <span
                       className={cn(
                         'text-xs font-semibold px-2 py-1 rounded-full',
-                        dashboard.systemHealth.status === 'healthy' &&
-                          'bg-emerald-100 text-emerald-700',
-                        dashboard.systemHealth.status === 'degraded' &&
-                          'bg-amber-100 text-amber-700',
-                        dashboard.systemHealth.status === 'down' &&
-                          'bg-red-100 text-red-700'
+                        dashboard.system.tool.available
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : 'bg-red-100 text-red-700'
                       )}
                     >
-                      {dashboard.systemHealth.status.toUpperCase()}
+                      {dashboard.system.tool.available
+                        ? 'AVAILABLE'
+                        : 'UNAVAILABLE'}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Uptime: {Math.floor(dashboard.systemHealth.uptime / 3600)}h{' '}
-                    {Math.floor((dashboard.systemHealth.uptime % 3600) / 60)}m
-                  </p>
                 </div>
-                <div>
-                  {dashboard.systemHealth.services.map((service) => (
-                    <HealthIndicator
-                      key={service.name}
-                      status={service.status}
-                      label={service.name}
-                      latency={service.latency}
-                    />
-                  ))}
-                </div>
-              </>
+
+                {dashboard.system.tool.error && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-xs text-red-700">
+                      {dashboard.system.tool.error}
+                    </p>
+                  </div>
+                )}
+              </div>
             ) : (
-              <p className="text-sm text-gray-500">Unable to load health data</p>
+              <p className="text-sm text-gray-500">
+                Unable to load system data
+              </p>
             )}
           </CardContent>
         </Card>
 
-        {/* Queue status */}
+        {/* Queue Status */}
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Clock className="size-4 text-purple-600" />
               Queue Status
@@ -246,53 +251,99 @@ export default function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             {dashboardQuery.isLoading ? (
-              <div className="grid grid-cols-2 gap-4">
-                {[1, 2, 3, 4].map((i) => (
-                  <Skeleton key={i} className="h-16" />
-                ))}
+              <div className="space-y-3">
+                <Skeleton className="h-12 w-full" />
+                <div className="grid grid-cols-2 gap-3">
+                  {[1, 2, 3, 4].map((i) => (
+                    <Skeleton key={i} className="h-14" />
+                  ))}
+                </div>
               </div>
-            ) : dashboard?.queueStatus ? (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-3 bg-amber-50 rounded-lg">
-                  <p className="text-2xl font-semibold text-amber-700">
-                    {dashboard.queueStatus.pending}
-                  </p>
-                  <p className="text-xs text-amber-600">Pending</p>
+            ) : dashboard ? (
+              <div className="space-y-3">
+                {/* Queue Health */}
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={cn(
+                        'size-2 rounded-full',
+                        dashboard.queue.healthy && dashboard.queue.connected
+                          ? 'bg-emerald-500'
+                          : 'bg-red-500'
+                      )}
+                    />
+                    <span className="text-sm font-medium text-gray-700">
+                      Queue Health
+                    </span>
+                  </div>
+                  <span
+                    className={cn(
+                      'text-xs font-semibold px-2 py-1 rounded-full',
+                      dashboard.queue.healthy && dashboard.queue.connected
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-red-100 text-red-700'
+                    )}
+                  >
+                    {dashboard.queue.healthy && dashboard.queue.connected
+                      ? 'HEALTHY'
+                      : 'UNHEALTHY'}
+                  </span>
                 </div>
-                <div className="p-3 bg-blue-50 rounded-lg">
-                  <p className="text-2xl font-semibold text-blue-700">
-                    {dashboard.queueStatus.processing}
-                  </p>
-                  <p className="text-xs text-blue-600">Processing</p>
+
+                {/* Job Stats */}
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="p-2 bg-amber-50 rounded-lg text-center">
+                    <p className="text-xl font-semibold text-amber-700">
+                      {dashboard.queue.jobs.waiting}
+                    </p>
+                    <p className="text-xs text-amber-600">Waiting</p>
+                  </div>
+                  <div className="p-2 bg-blue-50 rounded-lg text-center">
+                    <p className="text-xl font-semibold text-blue-700">
+                      {dashboard.queue.jobs.active}
+                    </p>
+                    <p className="text-xs text-blue-600">Active</p>
+                  </div>
+                  <div className="p-2 bg-red-50 rounded-lg text-center">
+                    <p className="text-xl font-semibold text-red-700">
+                      {dashboard.queue.jobs.delayed}
+                    </p>
+                    <p className="text-xs text-red-600">Delayed</p>
+                  </div>
                 </div>
-                <div className="p-3 bg-emerald-50 rounded-lg">
-                  <p className="text-2xl font-semibold text-emerald-700">
-                    {dashboard.queueStatus.completed}
-                  </p>
-                  <p className="text-xs text-emerald-600">Completed</p>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-2 bg-emerald-50 rounded-lg text-center">
+                    <p className="text-xl font-semibold text-emerald-700">
+                      {dashboard.queue.jobs.completed}
+                    </p>
+                    <p className="text-xs text-emerald-600">Completed</p>
+                  </div>
+                  <div className="p-2 bg-gray-50 rounded-lg text-center">
+                    <p className="text-xl font-semibold text-gray-700">
+                      {dashboard.queue.jobs.failed}
+                    </p>
+                    <p className="text-xs text-gray-600">Failed</p>
+                  </div>
                 </div>
-                <div className="p-3 bg-red-50 rounded-lg">
-                  <p className="text-2xl font-semibold text-red-700">
-                    {dashboard.queueStatus.failed}
-                  </p>
-                  <p className="text-xs text-red-600">Failed</p>
-                </div>
+
+                {dashboard.queue.paused && (
+                  <div className="p-2 bg-amber-50 border border-amber-200 rounded-lg">
+                    <p className="text-xs text-amber-700 font-medium">
+                      ⚠️ Queue is paused
+                    </p>
+                  </div>
+                )}
               </div>
             ) : (
               <p className="text-sm text-gray-500">Unable to load queue data</p>
             )}
-            {dashboard?.queueStatus && (
-              <p className="text-xs text-gray-500 mt-4">
-                Avg. processing time:{' '}
-                {(dashboard.queueStatus.avgProcessingTime / 1000).toFixed(1)}s
-              </p>
-            )}
           </CardContent>
         </Card>
 
-        {/* Cache status */}
+        {/* Cache Status */}
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Database className="size-4 text-teal-600" />
               Cache Status
@@ -300,45 +351,52 @@ export default function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             {dashboardQuery.isLoading ? (
-              <div className="space-y-4">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-8 w-full" />
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-12 w-full" />
+                ))}
                 <Skeleton className="h-10 w-full" />
               </div>
-            ) : dashboard?.cacheStatus ? (
+            ) : dashboard ? (
               <>
-                <div className="space-y-3">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Size</span>
-                    <span className="font-medium">
-                      {(dashboard.cacheStatus.size / 1024 / 1024).toFixed(1)} MB /{' '}
-                      {(dashboard.cacheStatus.maxSize / 1024 / 1024).toFixed(0)} MB
+                <div className="space-y-3 mb-4">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm text-gray-600">Media Keys</span>
+                    <span className="text-lg font-semibold text-gray-900">
+                      {dashboard.cache.mediaKeys.toLocaleString()}
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-teal-500 h-2 rounded-full transition-all"
-                      style={{
-                        width: `${(dashboard.cacheStatus.size / dashboard.cacheStatus.maxSize) * 100}%`,
-                      }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Hit Rate</span>
-                    <span className="font-medium text-emerald-600">
-                      {(dashboard.cacheStatus.hitRate * 100).toFixed(1)}%
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm text-gray-600">Hash Keys</span>
+                    <span className="text-lg font-semibold text-gray-900">
+                      {dashboard.cache.hashKeys.toLocaleString()}
                     </span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Entries</span>
-                    <span className="font-medium">
-                      {dashboard.cacheStatus.entries.toLocaleString()}
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm text-gray-600">
+                      Rate Limit Keys
                     </span>
+                    <span className="text-lg font-semibold text-gray-900">
+                      {dashboard.cache.rateLimitKeys.toLocaleString()}
+                    </span>
+                  </div>
+
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm font-medium text-blue-900">
+                      Total Cached Items
+                    </p>
+                    <p className="text-2xl font-bold text-blue-700 mt-1">
+                      {(
+                        dashboard.cache.mediaKeys +
+                        dashboard.cache.hashKeys +
+                        dashboard.cache.rateLimitKeys
+                      ).toLocaleString()}
+                    </p>
                   </div>
                 </div>
 
                 {/* Clear cache button */}
-                <div className="mt-6 pt-4 border-t border-gray-100">
+                <div className="pt-3 border-t border-gray-100">
                   {showClearConfirm ? (
                     <div className="space-y-2">
                       <p className="text-xs text-red-600">
@@ -376,7 +434,7 @@ export default function AdminDashboardPage() {
                       className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
                     >
                       <Trash2 className="size-4 mr-1" />
-                      Clear Cache
+                      Clear All Caches
                     </Button>
                   )}
                 </div>
@@ -387,6 +445,161 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Statistics Section */}
+      {dashboard && (
+        <>
+          {/* Today's Stats */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Activity className="size-4 text-blue-600" />
+                  Today's Activity
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">
+                      Total Verifications
+                    </span>
+                    <span className="text-2xl font-bold text-gray-900">
+                      {dashboard.stats.today.total}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">
+                      Avg Processing Time
+                    </span>
+                    <span className="text-lg font-semibold text-gray-700">
+                      {dashboard.stats.today.avgProcessingTime > 0
+                        ? `${(
+                            dashboard.stats.today.avgProcessingTime / 1000
+                          ).toFixed(2)}s`
+                        : 'N/A'}
+                    </span>
+                  </div>
+                  {Object.keys(dashboard.stats.today.byStatus).length > 0 && (
+                    <div className="pt-3 border-t border-gray-100">
+                      <p className="text-xs text-gray-500 mb-2">By Status</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {Object.entries(dashboard.stats.today.byStatus).map(
+                          ([status, count]) => (
+                            <div
+                              key={status}
+                              className="p-2 bg-gray-50 rounded text-center"
+                            >
+                              <p className="text-lg font-semibold text-gray-900">
+                                {count}
+                              </p>
+                              <p className="text-xs text-gray-600 capitalize">
+                                {status.replace(/_/g, ' ')}
+                              </p>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Database Stats */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <HardDrive className="size-4 text-purple-600" />
+                  Database Overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 bg-blue-50 rounded-lg">
+                    <p className="text-2xl font-bold text-blue-700">
+                      {dashboard.stats.database.total}
+                    </p>
+                    <p className="text-xs text-blue-600">Total Records</p>
+                  </div>
+                  <div className="p-3 bg-emerald-50 rounded-lg">
+                    <p className="text-2xl font-bold text-emerald-700">
+                      {dashboard.stats.database.verified}
+                    </p>
+                    <p className="text-xs text-emerald-600">Verified</p>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <p className="text-2xl font-bold text-gray-700">
+                      {dashboard.stats.database.noManifest}
+                    </p>
+                    <p className="text-xs text-gray-600">No Manifest</p>
+                  </div>
+                  <div className="p-3 bg-red-50 rounded-lg">
+                    <p className="text-2xl font-bold text-red-700">
+                      {dashboard.stats.database.tampered}
+                    </p>
+                    <p className="text-xs text-red-600">Tampered</p>
+                  </div>
+                  <div className="p-3 bg-amber-50 rounded-lg col-span-2">
+                    <p className="text-2xl font-bold text-amber-700">
+                      {dashboard.stats.database.errors}
+                    </p>
+                    <p className="text-xs text-amber-600">Errors</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Weekly Trends */}
+          {/* <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <TrendingUp className="size-4 text-green-600" />
+                Last 7 Days Activity
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {dashboard.stats.weekly.map((day, index) => {
+                  const maxTotal = Math.max(
+                    ...dashboard.stats.weekly.map((d) => d.total)
+                  );
+                  const widthPercent = maxTotal > 0 ? (day.total / maxTotal) * 100 : 0;
+
+                  return (
+                    <div key={index} className="flex items-center gap-3">
+                      <span className="text-xs text-gray-500 w-20 text-right">
+                        {new Date(day.date).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </span>
+                      <div className="flex-1 bg-gray-100 rounded-full h-8 relative overflow-hidden">
+                        <div
+                          className="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all flex items-center px-3"
+                          style={{ width: `${Math.max(widthPercent, 2)}%` }}
+                        >
+                          {day.total > 0 && (
+                            <span className="text-xs font-semibold text-white">
+                              {day.total}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <span className="text-xs text-gray-400 w-16">
+                        {day.avgProcessingTime > 0
+                          ? `${(day.avgProcessingTime / 1000).toFixed(1)}s`
+                          : '-'}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card> */}
+        </>
+      )}
 
       {/* Admin verifications section */}
       <div className="space-y-4">
@@ -431,40 +644,6 @@ export default function AdminDashboardPage() {
           isLoading={verificationsQuery.isLoading}
         />
       </div>
-
-      {/* Recent activity */}
-      {dashboard?.recentActivity && dashboard.recentActivity.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Recent Activity</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {dashboard.recentActivity.slice(0, 5).map((activity) => (
-                <div
-                  key={activity.id}
-                  className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
-                >
-                  <div className="flex items-center gap-3">
-                    <Zap className="size-4 text-gray-400" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-700">
-                        {activity.action}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        User: {activity.userId.slice(0, 8)}...
-                      </p>
-                    </div>
-                  </div>
-                  <span className="text-xs text-gray-400">
-                    {new Date(activity.timestamp).toLocaleString()}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

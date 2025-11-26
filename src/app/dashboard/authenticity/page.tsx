@@ -236,7 +236,7 @@ function OverviewContent() {
 
       {/* Quick view sheet */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="sm:max-w-lg overflow-y-auto">
+        <SheetContent className="sm:max-w-lg overflow-y-auto p-4">
           <SheetHeader>
             <SheetTitle>Quick View</SheetTitle>
             <SheetDescription>

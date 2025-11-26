@@ -93,7 +93,13 @@ export function StatusBadge({
   showLabel = true,
   className,
 }: StatusBadgeProps) {
-  const config = statusConfig[status];
+  // Fallback config for unknown statuses
+  const config = statusConfig[status] || {
+    label: status?.toString() || 'Unknown',
+    icon: CircleDashed,
+    className: 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100',
+    dotColor: 'bg-gray-400',
+  };
   const Icon = config.icon;
 
   return (
@@ -130,7 +136,13 @@ export function StatusDot({
   pulse?: boolean;
   className?: string;
 }) {
-  const config = statusConfig[status];
+  // Fallback config for unknown statuses
+  const config = statusConfig[status] || {
+    label: status?.toString() || 'Unknown',
+    icon: CircleDashed,
+    className: 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100',
+    dotColor: 'bg-gray-400',
+  };
 
   const dotSizes = {
     sm: 'size-2',

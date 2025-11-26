@@ -343,7 +343,7 @@ export function VerificationTable({
             ) : (
               verifications.map((verification, index) => (
                 <VerificationRow
-                  key={verification.id}
+                  key={verification.verificationId}
                   verification={verification}
                   onViewDetails={onViewDetails}
                   onRowClick={onRowClick}
