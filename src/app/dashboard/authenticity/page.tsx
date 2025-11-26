@@ -6,21 +6,19 @@ import {
   CircleDashed,
   LayoutGrid,
   ShieldAlert,
-  ShieldCheck,
   Upload,
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
 import { toast } from 'sonner';
 import {
+  MediaInfoBlock,
   StatsCard,
   StatsCardSkeleton,
-  VerificationFilters,
-  VerificationTable,
   SummaryCard,
   SummaryCardSkeleton,
-  MediaInfoBlock,
-  MediaInfoBlockSkeleton,
+  VerificationFilters,
+  VerificationTable,
 } from '@/components/c2pa';
 import { Button } from '@/components/ui/button';
 import {
@@ -32,10 +30,10 @@ import {
 } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  useVerifications,
+  useDeleteVerification,
   useVerificationStats,
   useVerificationSummary,
-  useDeleteVerification,
+  useVerifications,
 } from '@/hooks/useC2PA';
 import type { C2PAVerification, VerificationsListParams } from '@/types/c2pa';
 
@@ -47,15 +45,21 @@ function OverviewContent() {
   const initialFilters: VerificationsListParams = {
     page: Number(searchParams.get('page')) || 1,
     limit: 10,
-    status: searchParams.get('status') as VerificationsListParams['status'] || undefined,
-    mediaType: searchParams.get('mediaType') as VerificationsListParams['mediaType'] || undefined,
+    status:
+      (searchParams.get('status') as VerificationsListParams['status']) ||
+      undefined,
+    mediaType:
+      (searchParams.get('mediaType') as VerificationsListParams['mediaType']) ||
+      undefined,
     search: searchParams.get('search') || undefined,
     startDate: searchParams.get('startDate') || undefined,
     endDate: searchParams.get('endDate') || undefined,
   };
 
-  const [filters, setFilters] = useState<VerificationsListParams>(initialFilters);
-  const [selectedVerification, setSelectedVerification] = useState<C2PAVerification | null>(null);
+  const [filters, setFilters] =
+    useState<VerificationsListParams>(initialFilters);
+  const [selectedVerification, setSelectedVerification] =
+    useState<C2PAVerification | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   // Queries
@@ -63,9 +67,12 @@ function OverviewContent() {
   const verificationsQuery = useVerifications(filters);
   const deleteMutation = useDeleteVerification();
 
-  const summaryQuery = useVerificationSummary(selectedVerification?.verificationId || '', {
-    enabled: !!selectedVerification && isSheetOpen,
-  });
+  const summaryQuery = useVerificationSummary(
+    selectedVerification?.verificationId || '',
+    {
+      enabled: !!selectedVerification && isSheetOpen,
+    }
+  );
 
   // Handlers
   const handleFiltersChange = (newFilters: VerificationsListParams) => {
@@ -73,7 +80,8 @@ function OverviewContent() {
 
     // Update URL
     const params = new URLSearchParams();
-    if (newFilters.page && newFilters.page > 1) params.set('page', String(newFilters.page));
+    if (newFilters.page && newFilters.page > 1)
+      params.set('page', String(newFilters.page));
     if (newFilters.status) params.set('status', newFilters.status);
     if (newFilters.mediaType) params.set('mediaType', newFilters.mediaType);
     if (newFilters.search) params.set('search', newFilters.search);
@@ -81,7 +89,9 @@ function OverviewContent() {
     if (newFilters.endDate) params.set('endDate', newFilters.endDate);
 
     const queryString = params.toString();
-    router.push(`/dashboard/authenticity${queryString ? `?${queryString}` : ''}`);
+    router.push(
+      `/dashboard/authenticity${queryString ? `?${queryString}` : ''}`
+    );
   };
 
   const handlePageChange = (page: number) => {
@@ -156,35 +166,52 @@ function OverviewContent() {
               value={stats?.counts?.total || 0}
               icon={LayoutGrid}
               variant="default"
-              description={`${stats?.counts?.avgProcessingTime ? `Avg: ${(stats.counts.avgProcessingTime / 1000).toFixed(1)}s` : ''}`}
+              description={`${
+                stats?.counts?.avgProcessingTime
+                  ? `Avg: ${(stats.counts.avgProcessingTime / 1000).toFixed(
+                      1
+                    )}s`
+                  : ''
+              }`}
             />
             <StatsCard
               title="Verified"
               value={stats?.counts?.verified || 0}
               icon={CheckCircle}
               variant="success"
-              description={`${stats?.percentages?.verifiedRate?.toFixed(1) || 0}% verified`}
+              description={`${
+                stats?.percentages?.verifiedRate?.toFixed(1) || 0
+              }% verified`}
             />
             <StatsCard
               title="Tampered"
               value={stats?.counts?.tampered || 0}
               icon={ShieldAlert}
               variant="danger"
-              description={`${stats?.percentages?.tamperRate?.toFixed(1) || 0}% tampered`}
+              description={`${
+                stats?.percentages?.tamperRate?.toFixed(1) || 0
+              }% tampered`}
             />
             <StatsCard
               title="Invalid"
-              value={(stats?.counts?.invalidSignature || 0) + (stats?.counts?.invalidCertificate || 0)}
+              value={
+                (stats?.counts?.invalidSignature || 0) +
+                (stats?.counts?.invalidCertificate || 0)
+              }
               icon={AlertTriangle}
               variant="warning"
-              description={`Sig: ${stats?.counts?.invalidSignature || 0} / Cert: ${stats?.counts?.invalidCertificate || 0}`}
+              description={`Sig: ${
+                stats?.counts?.invalidSignature || 0
+              } / Cert: ${stats?.counts?.invalidCertificate || 0}`}
             />
             <StatsCard
               title="No Manifest"
               value={stats?.counts?.noManifest || 0}
               icon={CircleDashed}
               variant="neutral"
-              description={`${stats?.percentages?.manifestPresenceRate?.toFixed(1) || 0}% with manifest`}
+              description={`${
+                stats?.percentages?.manifestPresenceRate?.toFixed(1) || 0
+              }% with manifest`}
             />
           </>
         )}
@@ -222,8 +249,8 @@ function OverviewContent() {
               <>
                 {/* Media info */}
                 <MediaInfoBlock
-                  fileName={selectedVerification.fileName}
-                  fileSize={selectedVerification.fileSize}
+                  fileName={selectedVerification.fileName ?? 'Unknown file'}
+                  fileSize={selectedVerification.fileSize ?? 0}
                   mediaType={selectedVerification.mediaType}
                   thumbnailUrl={selectedVerification.thumbnailUrl}
                   uploadedAt={selectedVerification.createdAt}
@@ -239,7 +266,9 @@ function OverviewContent() {
 
                 {/* View full details button */}
                 <Button
-                  onClick={() => handleViewDetails(selectedVerification.verificationId)}
+                  onClick={() =>
+                    handleViewDetails(selectedVerification.verificationId)
+                  }
                   className="w-full"
                 >
                   View Full Details

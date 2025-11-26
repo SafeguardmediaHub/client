@@ -16,7 +16,7 @@ import type { MediaType } from '@/types/c2pa';
 
 interface MediaInfoBlockProps {
   fileName: string;
-  fileSize: number;
+  fileSize?: number;
   mediaType?: MediaType;
   thumbnailUrl?: string;
   uploadedAt?: string;
