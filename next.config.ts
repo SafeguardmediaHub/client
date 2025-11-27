@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
       'images.pexels.com',
       'png.pngtree.com',
       'freesvg.org',
+      'ik.imagekit.io',
     ],
   },
 };

@@ -22,40 +22,64 @@ export type VerificationStatus =
 
 export interface TimelineVerificationState {
   status: VerificationStatus;
-  progress: number;
-  currentStage: string;
-  startedAt?: string;
-  completedAt?: string;
-  error?: string;
-  data?: {
-    timeline?: Array<{
-      label: string;
-      timestamp: string;
-      source: string;
-    }>;
-    matches?: Array<{
-      title: string;
-      link: string;
-      source: string;
-      thumbnail?: string;
-      sourceIcon?: string;
-    }>;
-    flags?: string[];
-    analysis?: {
-      hasMetadata: boolean;
-      metadataConsistent: boolean;
-      earlierOnlineAppearance: boolean;
-      spoofedMetadata: boolean;
+  score?: number;
+  classification?: string;
+  timeline?: Array<{
+    label: string;
+    timestamp: string;
+    source: string;
+    _id?: string;
+    id?: string;
+  }>;
+  sources?: Array<any>;
+  flags?: string[];
+  last_verified_at?: string;
+  matches?: Array<{
+    id: string;
+    platform: string;
+    url: string;
+    link: string;
+    thumbnailUrl?: string;
+    thumbnail?: string;
+    title: string;
+    snippet?: string;
+    confidence: number;
+    source: string;
+    sourceIcon?: string;
+    searchEngine: string;
+    foundAt: string;
+    metadata?: any;
+  }>;
+  analysis?: {
+    hasMetadata: boolean;
+    metadataConsistent: boolean;
+    earlierOnlineAppearance: boolean;
+    spoofedMetadata: boolean;
+  };
+  metadata?: {
+    extractedAt: string;
+    confidence: number;
+    possibleTampering: boolean;
+    strippedMetadata: boolean;
+    image?: {
+      originalDateTime?: string;
+      cameraMake?: string;
+      cameraModel?: string;
+      software?: string;
+      dimensions?: string;
+      gpsCoordinates?: any;
+      cameraSettings?: any;
     };
-    metadata?: {
-      extractedAt: string;
-      analysis: {
-        integrityScore: number;
-        authenticityScore: number;
-        completenessScore: number;
-      };
+    video?: any;
+    analysis: {
+      integrityScore: number;
+      authenticityScore: number;
+      completenessScore: number;
+      missingFields?: string[];
+      reasons?: string[];
     };
   };
+  error?: string;
 }
 
 const verifyTimeline = async ({
@@ -77,10 +101,10 @@ const verifyTimeline = async ({
   return response.data;
 };
 
-const fetchVerificationStatus = async (
+const fetchVerificationResult = async (
   mediaId: string
 ): Promise<TimelineVerificationState> => {
-  const response = await api.get(`/api/timeline/status/${mediaId}`);
+  const response = await api.get(`/api/timeline/result/${mediaId}`);
   return response.data.data;
 };
 
@@ -96,19 +120,33 @@ export const useStartTimelineVerification = () => {
   });
 };
 
-export const useTimelineVerificationStatus = (mediaId: string) => {
+export const useTimelineVerificationResult = (
+  mediaId: string,
+  options?: {
+    enabled?: boolean;
+  }
+) => {
   return useQuery({
-    queryKey: ['timeline-verification-status', mediaId],
-    queryFn: () => fetchVerificationStatus(mediaId),
+    queryKey: ['timeline-verification-result', mediaId],
+    queryFn: () => fetchVerificationResult(mediaId),
     refetchInterval: (query) => {
       const data = query.state.data;
-      // Poll every 3 seconds if still processing or partial
+      // Poll every 10 seconds if still processing or partial
       if (data?.status === 'processing' || data?.status === 'partial') {
-        return 3000;
+        return 10000;
       }
       // Stop polling if completed, failed, cancelled, or idle
       return false;
     },
-    enabled: !!mediaId,
+    enabled: options?.enabled ?? !!mediaId,
+    retry: (failureCount, error) => {
+      // Don't retry on 404 - verification not found yet
+      if ((error as any)?.response?.status === 404) {
+        return false;
+      }
+      // Retry up to 3 times for other errors
+      return failureCount < 3;
+    },
+    staleTime: 0, // Always fetch fresh data when queried
   });
 };
