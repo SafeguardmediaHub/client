@@ -156,7 +156,7 @@ export const useGeoVerificationResult = (
     enabled?: boolean;
   },
 ) => {
-  const pollingInterval = options?.pollingInterval ?? 30000; // 30 seconds default
+  const pollingInterval = options?.pollingInterval ?? 10000; // 10 seconds default
 
   return useQuery({
     queryKey: ["geoVerificationResult", verificationId],

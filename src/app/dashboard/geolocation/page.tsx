@@ -118,9 +118,14 @@ const GeolocationVerificationPage = () => {
             );
           }
         },
-        onError: (error) => {
+        onError: (error: any) => {
           console.error('Error initiating verification:', error);
-          toast.error('Failed to start verification. Please try again.');
+          // Extract error message from backend response
+          const errorMessage =
+            error?.response?.data?.message ||
+            error?.message ||
+            'Failed to start verification. Please try again.';
+          toast.error(errorMessage);
         },
       }
     );

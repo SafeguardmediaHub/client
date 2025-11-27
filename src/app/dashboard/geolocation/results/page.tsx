@@ -224,7 +224,7 @@ const GeolocationResultContent = () => {
                   <span>
                     {isFetching
                       ? 'Checking status...'
-                      : 'Auto-refreshing every 30 seconds'}
+                      : 'Auto-refreshing every 10 seconds'}
                   </span>
                 </div>
                 <p className="text-xs">

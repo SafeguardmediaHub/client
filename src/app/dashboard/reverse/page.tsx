@@ -124,13 +124,13 @@ const ReverseLookupPage = () => {
             );
           }
         },
-        onError: (error) => {
+        onError: (error: any) => {
           console.error('Failed to start reverse lookup:', error);
-          toast.error(
-            `Failed to start reverse lookup: ${
-              error instanceof Error ? error.message : 'Unknown error'
-            }`
-          );
+          // Extract error message from backend response
+          const errorMessage = error?.response?.data?.message ||
+                               error?.message ||
+                               'Unknown error';
+          toast.error(errorMessage);
         },
       }
     );

@@ -53,10 +53,14 @@ function TimelineResultsContent() {
           setIsLoading(false);
           toast.success('Timeline verification completed.');
         },
-        onError: (error) => {
+        onError: (error: any) => {
           setIsLoading(false);
           console.error('Error verifying timeline:', error);
-          toast.error('Failed to verify timeline. Please try again.');
+          // Extract error message from backend response
+          const errorMessage = error?.response?.data?.message ||
+                               error?.message ||
+                               'Failed to verify timeline. Please try again.';
+          toast.error(errorMessage);
         },
       }
     );

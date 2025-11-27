@@ -264,7 +264,7 @@ const ReverseLookupResultContent = () => {
                   <span>
                     {isFetching
                       ? 'Checking status...'
-                      : 'Auto-refreshing every 30 seconds'}
+                      : 'Auto-refreshing every 10 seconds'}
                   </span>
                 </div>
                 <p className="text-xs">
@@ -288,12 +288,12 @@ const ReverseLookupResultContent = () => {
           </div>
 
           {/* Info box */}
-          <div className="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
+          {/* <div className="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
             <p className="text-sm text-gray-600 text-center">
               You can safely navigate away from this page. The lookup will
               continue processing in the background.
             </p>
-          </div>
+          </div> */}
         </div>
       </div>
     );
@@ -491,7 +491,11 @@ const ReverseLookupResultContent = () => {
                     key={item.id}
                     className="flex flex-col max-w-sm bg-gray-100 border border-gray-200 rounded-lg shadow-sm"
                   >
-                    <a href={item.url} target="_blank" rel="noopener noreferrer">
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       <div className="relative">
                         <AspectRatio
                           ratio={16 / 9}
