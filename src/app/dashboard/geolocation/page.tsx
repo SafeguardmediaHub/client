@@ -1,6 +1,9 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: <> */
+/** biome-ignore-all lint/a11y/noStaticElementInteractions: <> */
+/** biome-ignore-all lint/a11y/useKeyWithClickEvents: <> */
 'use client';
 
-import { MoreVertical, Search, UploadIcon } from 'lucide-react';
+import { Search, Trash2, UploadIcon, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
@@ -9,6 +12,7 @@ import MediaSelector from '@/components/media/MediaSelector';
 import { Button } from '@/components/ui/button';
 import {
   type GeoVerificationResult,
+  useDeleteGeoVerification,
   useStartGeoVerification,
   useUserGeoVerifications,
 } from '@/hooks/useGeolocation';
@@ -18,13 +22,15 @@ import { formatFileSize } from '@/lib/utils';
 const GeolocationVerificationPage = () => {
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
   const [locationInput, setLocationInput] = useState('');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const router = useRouter();
 
-  const { data, isLoading } = useGetMedia();
+  const { data } = useGetMedia();
   const media = data?.media || [];
 
   const startGeoMutation = useStartGeoVerification();
+  const deleteMutation = useDeleteGeoVerification();
 
   // Fetch user's previous verifications
   const {
@@ -135,6 +141,20 @@ const GeolocationVerificationPage = () => {
     router.push(
       `/dashboard/geolocation/results?verificationId=${verificationId}`
     );
+  };
+
+  const handleDelete = async (verificationId: string) => {
+    try {
+      await deleteMutation.mutateAsync(verificationId);
+      toast.success('Verification deleted successfully');
+      setDeletingId(null);
+    } catch (error: any) {
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        'Failed to delete verification';
+      toast.error(errorMessage);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -456,17 +476,63 @@ const GeolocationVerificationPage = () => {
                           </p>
                         </td>
                         <td className="px-6 py-4">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleViewVerification(verification._id);
-                            }}
-                            className="cursor-pointer"
-                          >
-                            View Details
-                          </Button>
+                          {deletingId === verification._id ? (
+                            <div
+                              className="flex items-center gap-2"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDelete(verification._id);
+                                }}
+                                disabled={deleteMutation.isPending}
+                                className="text-xs cursor-pointer"
+                              >
+                                {deleteMutation.isPending
+                                  ? 'Deleting...'
+                                  : 'Confirm'}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDeletingId(null);
+                                }}
+                                className="cursor-pointer"
+                              >
+                                <X className="size-4" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleViewVerification(verification._id);
+                                }}
+                                className="cursor-pointer"
+                              >
+                                View Details
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDeletingId(verification._id);
+                                }}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
+                              >
+                                <Trash2 className="size-4" />
+                              </Button>
+                            </div>
+                          )}
                         </td>
                       </tr>
                     ))

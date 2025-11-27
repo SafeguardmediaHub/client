@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 
 export interface InitiateGeoVerificationResponse {
@@ -137,6 +137,13 @@ const fetchGeoVerificationByMedia = async (mediaId: string) => {
   return response.data;
 };
 
+const deleteGeoVerification = async (verificationId: string) => {
+  const response = await api.delete(
+    `/api/geolocation/verify/${verificationId}`,
+  );
+  return response.data;
+};
+
 export const useStartGeoVerification = () => {
   return useMutation({
     mutationFn: ({
@@ -206,5 +213,20 @@ export const useGeoVerificationByMedia = (mediaId: string) => {
     queryKey: ["geoVerificationByMedia", mediaId],
     queryFn: () => fetchGeoVerificationByMedia(mediaId),
     enabled: !!mediaId,
+  });
+};
+
+export const useDeleteGeoVerification = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (verificationId: string) => deleteGeoVerification(verificationId),
+    onSuccess: () => {
+      // Invalidate and refetch user verifications list
+      queryClient.invalidateQueries({
+        queryKey: ["userGeoVerifications"],
+        refetchType: "active",
+      });
+    },
   });
 };
