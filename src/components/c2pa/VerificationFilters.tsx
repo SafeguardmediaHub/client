@@ -18,7 +18,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import type { MediaType, VerificationStatus, VerificationsListParams } from '@/types/c2pa';
+import type {
+  MediaType,
+  VerificationStatus,
+  VerificationsListParams,
+} from '@/types/c2pa';
 
 interface VerificationFiltersProps {
   filters: VerificationsListParams;
@@ -31,7 +35,7 @@ const statusOptions: { value: VerificationStatus | 'all'; label: string }[] = [
   { value: 'verified', label: 'Verified' },
   { value: 'tampered', label: 'Tampered' },
   { value: 'invalid_signature', label: 'Invalid Signature' },
-  { value: 'no_c2pa', label: 'No C2PA' },
+  { value: 'no_c2pa_found', label: 'No C2PA' },
   { value: 'processing', label: 'Processing' },
   { value: 'error', label: 'Error' },
 ];
@@ -81,7 +85,9 @@ export function VerificationFilters({
     });
   };
 
-  const handleDateSelect = (range: { from: Date | undefined; to?: Date | undefined } | undefined) => {
+  const handleDateSelect = (
+    range: { from: Date | undefined; to?: Date | undefined } | undefined
+  ) => {
     setDateRange(range || { from: undefined, to: undefined });
     onFiltersChange({
       ...filters,
