@@ -5,7 +5,7 @@ export type VerificationStatus =
   | 'tampered'
   | 'invalid_signature'
   | 'invalid_certificate'
-  | 'no_c2pa'
+  | 'no_c2pa_found'
   | 'processing'
   | 'error';
 
@@ -135,7 +135,15 @@ export interface Certificate {
 
 export interface VerificationEvent {
   id: string;
-  type: 'started' | 'manifest_detected' | 'signature_verified' | 'certificate_validated' | 'integrity_checked' | 'ai_markers_scanned' | 'completed' | 'error';
+  type:
+    | 'started'
+    | 'manifest_detected'
+    | 'signature_verified'
+    | 'certificate_validated'
+    | 'integrity_checked'
+    | 'ai_markers_scanned'
+    | 'completed'
+    | 'error';
   message: string;
   timestamp: string;
   status: 'success' | 'warning' | 'error' | 'pending';

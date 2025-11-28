@@ -1,11 +1,21 @@
+/** biome-ignore-all lint/a11y/noStaticElementInteractions: <> */
+/** biome-ignore-all lint/suspicious/noArrayIndexKey: <> */
+/** biome-ignore-all lint/a11y/useKeyWithClickEvents: <> */
 'use client';
 
-import { Eye, FileImage, FileVideo, FileAudio, FileText, Trash2, X } from 'lucide-react';
+import {
+  Eye,
+  FileAudio,
+  FileImage,
+  FileText,
+  FileVideo,
+  Trash2,
+  X,
+} from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { useDeleteVerification } from '@/hooks/useC2PA';
 import {
   Pagination,
   PaginationContent,
@@ -16,6 +26,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useDeleteVerification } from '@/hooks/useC2PA';
 import { cn } from '@/lib/utils';
 import type { C2PAVerification, MediaType } from '@/types/c2pa';
 import { StatusBadge } from './StatusBadge';
@@ -36,7 +47,10 @@ interface VerificationTableProps {
   className?: string;
 }
 
-const mediaTypeIcons: Record<MediaType, React.ComponentType<{ className?: string }>> = {
+const mediaTypeIcons: Record<
+  MediaType,
+  React.ComponentType<{ className?: string }>
+> = {
   image: FileImage,
   video: FileVideo,
   audio: FileAudio,
@@ -76,27 +90,38 @@ function VerificationRow({
 }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   // Handle both string and MediaInfo object for mediaId
-  const mediaId = typeof verification.mediaId === 'string'
-    ? verification.mediaId
-    : verification.mediaId._id;
+  const mediaId =
+    typeof verification.mediaId === 'string'
+      ? verification.mediaId
+      : verification.mediaId._id;
 
-  const thumbnailUrl = typeof verification.mediaId === 'object' && verification.mediaId.thumbnailUrl
-    ? verification.mediaId.thumbnailUrl
-    : verification.thumbnailUrl;
+  const thumbnailUrl =
+    typeof verification.mediaId === 'object' &&
+    verification.mediaId.thumbnailUrl
+      ? verification.mediaId.thumbnailUrl
+      : verification.thumbnailUrl;
 
-  const fileName = typeof verification.mediaId === 'object' && verification.mediaId.originalFilename
-    ? verification.mediaId.originalFilename
-    : verification.fileName;
+  const fileName =
+    typeof verification.mediaId === 'object' &&
+    verification.mediaId.originalFilename
+      ? verification.mediaId.originalFilename
+      : verification.fileName;
 
-  const mimeType = typeof verification.mediaId === 'object' && verification.mediaId.mimeType
-    ? verification.mediaId.mimeType
-    : undefined;
+  const mimeType =
+    typeof verification.mediaId === 'object' && verification.mediaId.mimeType
+      ? verification.mediaId.mimeType
+      : undefined;
 
   // Determine media type from mimeType or fall back to verification.mediaType
-  const mediaType = verification.mediaType ||
-    (mimeType?.startsWith('image/') ? 'image' :
-     mimeType?.startsWith('video/') ? 'video' :
-     mimeType?.startsWith('audio/') ? 'audio' : 'document');
+  const mediaType =
+    verification.mediaType ||
+    (mimeType?.startsWith('image/')
+      ? 'image'
+      : mimeType?.startsWith('video/')
+      ? 'video'
+      : mimeType?.startsWith('audio/')
+      ? 'audio'
+      : 'document');
 
   const MediaIcon = mediaTypeIcons[mediaType];
 
@@ -163,7 +188,10 @@ function VerificationRow({
       {/* Actions */}
       <td className="py-3 px-4">
         {showDeleteConfirm ? (
-          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="flex items-center gap-2"
+            onClick={(e) => e.stopPropagation()}
+          >
             <Button
               variant="destructive"
               size="sm"
@@ -281,7 +309,11 @@ export function VerificationTable({
       pages.push('ellipsis');
     }
 
-    for (let i = Math.max(2, page - 1); i <= Math.min(totalPages - 1, page + 1); i++) {
+    for (
+      let i = Math.max(2, page - 1);
+      i <= Math.min(totalPages - 1, page + 1);
+      i++
+    ) {
       if (!pages.includes(i)) {
         pages.push(i);
       }
@@ -299,7 +331,9 @@ export function VerificationTable({
   };
 
   return (
-    <div className={cn('bg-white rounded-xl border border-gray-200', className)}>
+    <div
+      className={cn('bg-white rounded-xl border border-gray-200', className)}
+    >
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full">
@@ -333,7 +367,9 @@ export function VerificationTable({
                 <td colSpan={6} className="py-12 text-center">
                   <div className="text-gray-500">
                     <FileImage className="size-12 mx-auto mb-3 text-gray-300" />
-                    <p className="text-sm font-medium">No verifications found</p>
+                    <p className="text-sm font-medium">
+                      No verifications found
+                    </p>
                     <p className="text-xs mt-1">
                       Try adjusting your filters or verify some media
                     </p>
@@ -360,8 +396,8 @@ export function VerificationTable({
       {totalPages > 1 && (
         <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
           <p className="text-sm text-gray-500">
-            Showing {(page - 1) * limit + 1} to{' '}
-            {Math.min(page * limit, total)} of {total} results
+            Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)}{' '}
+            of {total} results
           </p>
 
           <Pagination>
@@ -369,9 +405,7 @@ export function VerificationTable({
               <PaginationItem>
                 <PaginationPrevious
                   onClick={() => page > 1 && onPageChange(page - 1)}
-                  className={cn(
-                    page === 1 && 'pointer-events-none opacity-50'
-                  )}
+                  className={cn(page === 1 && 'pointer-events-none opacity-50')}
                 />
               </PaginationItem>
 

@@ -33,7 +33,8 @@ const statusConfig: Record<
   verified: {
     label: 'Verified',
     icon: CheckCircle,
-    className: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100',
+    className:
+      'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100',
     dotColor: 'bg-emerald-500',
   },
   tampered: {
@@ -45,16 +46,18 @@ const statusConfig: Record<
   invalid_signature: {
     label: 'Invalid Signature',
     icon: ShieldX,
-    className: 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100',
+    className:
+      'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100',
     dotColor: 'bg-orange-500',
   },
   invalid_certificate: {
     label: 'Invalid Certificate',
     icon: AlertTriangle,
-    className: 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100',
+    className:
+      'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100',
     dotColor: 'bg-yellow-500',
   },
-  no_c2pa: {
+  no_c2pa_found: {
     label: 'No C2PA',
     icon: CircleDashed,
     className: 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100',
@@ -94,6 +97,7 @@ export function StatusBadge({
   className,
 }: StatusBadgeProps) {
   // Fallback config for unknown statuses
+  console.log('status', status);
   const config = statusConfig[status] || {
     label: status?.toString() || 'Unknown',
     icon: CircleDashed,

@@ -42,6 +42,7 @@ export function DatePickerDemo({ onChange, value }: DatePickerDemoProps) {
           mode="single"
           selected={date ?? undefined}
           onSelect={handleSelect}
+          captionLayout="dropdown"
         />
       </PopoverContent>
     </Popover>

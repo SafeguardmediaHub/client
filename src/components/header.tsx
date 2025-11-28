@@ -3,7 +3,6 @@
 import { Menu, X } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
-import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -99,7 +98,7 @@ export const HeroHeader = () => {
                   size="sm"
                   className={cn(isScrolled && 'lg:hidden')}
                 >
-                  <Link href="#">
+                  <Link href="/auth/login">
                     <span>Login</span>
                   </Link>
                 </Button>
@@ -108,7 +107,7 @@ export const HeroHeader = () => {
                   size="sm"
                   className={cn(isScrolled && 'lg:hidden')}
                 >
-                  <Link href="#">
+                  <Link href="/auth/signup">
                     <span>Sign Up</span>
                   </Link>
                 </Button>

@@ -1,4 +1,5 @@
 /** biome-ignore-all lint/a11y/noStaticElementInteractions: <> */
+/** biome-ignore-all lint/suspicious/noArrayIndexKey: <> */
 /** biome-ignore-all lint/a11y/useKeyWithClickEvents: <> */
 'use client';
 
