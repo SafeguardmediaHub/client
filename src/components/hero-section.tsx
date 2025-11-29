@@ -1,4 +1,6 @@
-import { ArrowRight } from 'lucide-react';
+'use client';
+
+import { ArrowRight, Shield, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { AnimatedGroup } from '@/components/ui/animated-group';
@@ -30,80 +32,43 @@ export default function HeroSection() {
   return (
     <>
       <HeroHeader />
-      <main className="overflow-hidden">
-        <div
-          aria-hidden
-          className="absolute inset-0 isolate hidden opacity-65 contain-strict lg:block"
-        >
-          <div className="w-140 h-320 -translate-y-87.5 absolute left-0 top-0 -rotate-45 rounded-full bg-[radial-gradient(68.54%_68.72%_at_55.02%_31.46%,hsla(0,0%,85%,.08)_0,hsla(0,0%,55%,.02)_50%,hsla(0,0%,45%,0)_80%)]" />
-          <div className="h-320 absolute left-0 top-0 w-60 -rotate-45 rounded-full bg-[radial-gradient(50%_50%_at_50%_50%,hsla(0,0%,85%,.06)_0,hsla(0,0%,45%,.02)_80%,transparent_100%)] [translate:5%_-50%]" />
-          <div className="h-320 -translate-y-87.5 absolute left-0 top-0 w-60 -rotate-45 bg-[radial-gradient(50%_50%_at_50%_50%,hsla(0,0%,85%,.04)_0,hsla(0,0%,45%,.02)_80%,transparent_100%)]" />
+      <main className="overflow-hidden relative">
+        {/* Animated Gradient Background Mesh */}
+        <div className="absolute inset-0 -z-10 overflow-hidden">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob" />
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-500/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000" />
+          <div className="absolute -bottom-8 left-1/2 w-96 h-96 bg-pink-500/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/50 to-white" />
         </div>
+
+        {/* Floating Particles */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-[10%] w-2 h-2 bg-purple-400 rounded-full animate-float" />
+          <div className="absolute top-40 right-[15%] w-3 h-3 bg-blue-400 rounded-full animate-float animation-delay-1000" />
+          <div className="absolute top-60 left-[20%] w-2 h-2 bg-pink-400 rounded-full animate-float animation-delay-2000" />
+          <div className="absolute top-96 right-[25%] w-3 h-3 bg-indigo-400 rounded-full animate-float animation-delay-3000" />
+        </div>
+
         <section>
           <div className="relative pt-24 md:pt-36">
-            <AnimatedGroup
-              variants={{
-                container: {
-                  visible: {
-                    transition: {
-                      delayChildren: 1,
-                    },
-                  },
-                },
-                item: {
-                  hidden: {
-                    opacity: 0,
-                    y: 20,
-                  },
-                  visible: {
-                    opacity: 1,
-                    y: 0,
-                    transition: {
-                      type: 'spring' as const,
-                      bounce: 0.3,
-                      duration: 2,
-                    },
-                  },
-                },
-              }}
-              className="mask-b-from-35% mask-b-to-90% absolute inset-0 top-56 -z-20 lg:top-32"
-            >
-              <Image
-                src="https://ik.imagekit.io/lrigu76hy/tailark/night-background.jpg?updatedAt=1745733451120"
-                alt="background"
-                className="hidden size-full dark:block"
-                width="3276"
-                height="4095"
-              />
-            </AnimatedGroup>
-
-            <div
-              aria-hidden
-              className="absolute inset-0 -z-10 size-full [background:radial-gradient(125%_125%_at_50%_100%,transparent_0%,var(--color-background)_75%)]"
-            />
-
             <div className="mx-auto max-w-7xl px-6">
               <div className="text-center sm:mx-auto lg:mr-auto lg:mt-0">
                 <AnimatedGroup variants={transitionVariants}>
                   <Link
                     href="/dashboard/authenticity"
-                    className="hover:bg-background dark:hover:border-t-border bg-muted group mx-auto flex w-fit items-center gap-4 rounded-full border p-1 pl-4 shadow-md shadow-zinc-950/5 transition-colors duration-300 dark:border-t-white/5 dark:shadow-zinc-950"
+                    className="hover:bg-white/80 dark:hover:border-t-border bg-white/60 backdrop-blur-sm group mx-auto flex w-fit items-center gap-4 rounded-full border border-purple-200 p-1 pl-4 shadow-lg shadow-purple-500/20 transition-all duration-300 hover:shadow-purple-500/30 hover:scale-105"
                   >
-                    <span className="text-foreground text-sm">
-                      Introducing C2PA Verification{' '}
-                      <span className="hidden sm:inline">— Now Live!</span>
-                    </span>
-                    <span className="dark:border-background block h-4 w-0.5 border-l bg-white dark:bg-zinc-700"></span>
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-purple-600 animate-pulse" />
+                      <span className="text-purple-600 text-sm font-semibold">
+                        Introducing C2PA Verification
+                      </span>
+                    </div>
+                    <span className="hidden sm:inline text-sm text-gray-600">— Now Live!</span>
+                    <span className="dark:border-background block h-4 w-0.5 border-l bg-purple-200"></span>
 
-                    <div className="bg-background group-hover:bg-muted size-6 overflow-hidden rounded-full duration-500">
-                      <div className="flex w-12 -translate-x-1/2 duration-500 ease-in-out group-hover:translate-x-0">
-                        <span className="flex size-6">
-                          <ArrowRight className="m-auto size-3" />
-                        </span>
-                        <span className="flex size-6">
-                          <ArrowRight className="m-auto size-3" />
-                        </span>
-                      </div>
+                    <div className="bg-purple-600 size-6 overflow-hidden rounded-full duration-500 flex items-center justify-center">
+                      <ArrowRight className="size-3 text-white" />
                     </div>
                   </Link>
                 </AnimatedGroup>
@@ -112,7 +77,7 @@ export default function HeroSection() {
                   preset="fade-in-blur"
                   speedSegment={0.3}
                   as="h1"
-                  className="mx-auto mt-8 max-w-4xl text-balance text-5xl max-md:font-semibold md:text-7xl lg:mt-16 xl:text-[5.25rem]"
+                  className="mx-auto mt-8 max-w-4xl text-balance text-5xl font-bold max-md:font-semibold md:text-7xl lg:mt-16 xl:text-[5.25rem] text-gray-900"
                 >
                   The Standard for Digital Trust
                 </TextEffect>
@@ -122,7 +87,7 @@ export default function HeroSection() {
                   speedSegment={0.3}
                   delay={0.5}
                   as="p"
-                  className="mx-auto mt-8 max-w-2xl text-balance text-lg"
+                  className="mx-auto mt-8 max-w-2xl text-balance text-lg text-gray-600"
                 >
                   Arm your organization with the industry's most comprehensive
                   AI suite to instantly detect deepfakes, verify multimedia
@@ -141,19 +106,21 @@ export default function HeroSection() {
                     },
                     ...transitionVariants,
                   }}
-                  className="mt-12 flex flex-col items-center justify-center gap-2 md:flex-row"
+                  className="mt-12 flex flex-col items-center justify-center gap-4 md:flex-row"
                 >
                   <div
                     key={1}
-                    className="bg-foreground/10 rounded-[calc(var(--radius-xl)+0.125rem)] border p-0.5"
+                    className="relative group"
                   >
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-300 animate-pulse-slow" />
                     <Button
                       asChild
                       size="lg"
-                      className="rounded-xl px-5 text-base"
+                      className="relative rounded-xl px-8 py-6 text-base bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0 shadow-xl"
                     >
-                      <Link href="/auth/signup">
-                        <span className="text-nowrap">Get Started</span>
+                      <Link href="/auth/signup" className="flex items-center gap-2">
+                        <Shield className="w-5 h-5" />
+                        <span className="text-nowrap font-semibold">Get Started Free</span>
                       </Link>
                     </Button>
                   </div>
@@ -161,13 +128,41 @@ export default function HeroSection() {
                     key={2}
                     asChild
                     size="lg"
-                    variant="ghost"
-                    className="h-10.5 rounded-xl px-5"
+                    variant="outline"
+                    className="h-12 rounded-xl px-8 border-2 border-gray-300 hover:border-purple-400 hover:bg-purple-50 transition-all duration-300"
                   >
-                    <Link href="/about">
-                      <span className="text-nowrap">Learn More</span>
+                    <Link href="/about" className="flex items-center gap-2">
+                      <span className="text-nowrap">Watch Demo</span>
+                      <ArrowRight className="w-4 h-4" />
                     </Link>
                   </Button>
+                </AnimatedGroup>
+
+                {/* Trust Indicators */}
+                <AnimatedGroup
+                  variants={transitionVariants}
+                  className="mt-16 flex items-center justify-center gap-8 flex-wrap"
+                >
+                  <div className="text-center">
+                    <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                      98%
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">Accuracy Rate</div>
+                  </div>
+                  <div className="h-12 w-px bg-gray-300" />
+                  <div className="text-center">
+                    <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                      1M+
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">Media Verified</div>
+                  </div>
+                  <div className="h-12 w-px bg-gray-300" />
+                  <div className="text-center">
+                    <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                      500+
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">Organizations</div>
+                  </div>
                 </AnimatedGroup>
               </div>
             </div>
@@ -185,17 +180,12 @@ export default function HeroSection() {
                 ...transitionVariants,
               }}
             >
-              <div className="mask-b-from-55% relative -mr-56 mt-8 overflow-hidden px-2 sm:mr-0 sm:mt-12 md:mt-20">
-                <div className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border p-4 shadow-lg shadow-zinc-950/15 ring-1">
+              <div className="mask-b-from-55% relative -mr-56 mt-16 overflow-hidden px-2 sm:mr-0 sm:mt-20 md:mt-24">
+                <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl border-2 border-purple-200/50 p-4 shadow-2xl shadow-purple-500/20 bg-gradient-to-br from-white via-purple-50/30 to-blue-50/30 backdrop-blur-sm">
+                  <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-400/20 rounded-full blur-3xl" />
+                  <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl" />
                   <Image
-                    className="bg-background aspect-15/8 relative hidden rounded-2xl dark:block"
-                    src="https://images.unsplash.com/photo-1685391896546-9abaf50bfc99?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                    alt="app screen"
-                    width="2700"
-                    height="1440"
-                  />
-                  <Image
-                    className="z-2 border-border/25 relative rounded-2xl border dark:hidden"
+                    className="relative rounded-2xl border border-gray-200/50 shadow-xl"
                     src="https://images.unsplash.com/photo-1685391896546-9abaf50bfc99?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                     alt="app screen"
                     width="2700"
@@ -207,6 +197,69 @@ export default function HeroSection() {
           </div>
         </section>
       </main>
+
+      <style jsx global>{`
+        @keyframes blob {
+          0% {
+            transform: translate(0px, 0px) scale(1);
+          }
+          33% {
+            transform: translate(30px, -50px) scale(1.1);
+          }
+          66% {
+            transform: translate(-20px, 20px) scale(0.9);
+          }
+          100% {
+            transform: translate(0px, 0px) scale(1);
+          }
+        }
+
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-20px);
+          }
+        }
+
+        @keyframes pulse-slow {
+          0%, 100% {
+            opacity: 0.75;
+          }
+          50% {
+            opacity: 1;
+          }
+        }
+
+        .animate-blob {
+          animation: blob 7s infinite;
+        }
+
+        .animate-float {
+          animation: float 3s ease-in-out infinite;
+        }
+
+        .animate-pulse-slow {
+          animation: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .animation-delay-1000 {
+          animation-delay: 1s;
+        }
+
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+
+        .animation-delay-3000 {
+          animation-delay: 3s;
+        }
+
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+      `}</style>
     </>
   );
 }
