@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
+import { Analytics } from '@vercel/analytics/next';
 import { Toaster } from 'sonner';
 // import GoogleTranslate from '@/components/GoogleTranslate';
 import QueryProvider from '@/components/providers/QueryProvider';
@@ -38,6 +39,7 @@ export default function RootLayout({
         </QueryProvider>
 
         <Toaster richColors expand={true} />
+        <Analytics />
       </body>
     </html>
   );
