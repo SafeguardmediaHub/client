@@ -89,11 +89,11 @@ function VerificationRow({
   index: number;
 }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  // Handle both string and MediaInfo object for mediaId
+  // Handle both string and MediaInfo object for mediaId, and null case
   const mediaId =
     typeof verification.mediaId === 'string'
       ? verification.mediaId
-      : verification.mediaId._id;
+      : verification.mediaId?._id || null;
 
   const thumbnailUrl =
     typeof verification.mediaId === 'object' &&
@@ -160,7 +160,7 @@ function VerificationRow({
             {fileName || 'Unknown file'}
           </p>
           <p className="text-xs text-gray-500 font-mono">
-            {mediaId.slice(0, 12)}...
+            {mediaId ? `${mediaId.slice(0, 12)}...` : 'No media ID'}
           </p>
         </div>
       </td>

@@ -41,16 +41,16 @@ export default function FlagshipSolution() {
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Left Content */}
           <div className="space-y-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-100 to-blue-100 rounded-full">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 rounded-full">
               <Sparkles className="w-4 h-4 text-purple-600" />
-              <span className="text-sm font-semibold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              <span className="text-sm font-semibold text-purple-600">
                 Flagship Solution
               </span>
             </div>
 
             <h2 className="text-5xl md:text-6xl font-bold text-gray-900 leading-tight">
               AI Deepfake{' '}
-              <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent">
+              <span className="text-purple-600">
                 Detection.
               </span>
             </h2>
@@ -63,33 +63,29 @@ export default function FlagshipSolution() {
             <div className="flex gap-4">
               <button
                 type="button"
-                className="relative group px-8 py-4 rounded-xl font-semibold transition-all duration-300 overflow-hidden"
+                className="px-8 py-4 rounded-xl font-semibold bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 flex items-center gap-2"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 group-hover:scale-105 transition-transform duration-300" />
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur" />
-                <span className="relative text-white flex items-center gap-2">
-                  Try DF Detector
-                  <Brain className="w-5 h-5" />
-                </span>
+                Try DF Detector
+                <Brain className="w-5 h-5" />
               </button>
             </div>
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-6 pt-8">
               <div className="text-center p-4 rounded-2xl bg-white/50 backdrop-blur-sm border border-purple-100">
-                <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                <div className="text-3xl font-bold text-purple-600">
                   <span className="animate-pulse">98%</span>
                 </div>
                 <div className="text-sm text-gray-600 mt-1">Accuracy</div>
               </div>
               <div className="text-center p-4 rounded-2xl bg-white/50 backdrop-blur-sm border border-blue-100">
-                <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                <div className="text-3xl font-bold text-blue-600">
                   &lt;1s
                 </div>
                 <div className="text-sm text-gray-600 mt-1">Response</div>
               </div>
-              <div className="text-center p-4 rounded-2xl bg-white/50 backdrop-blur-sm border border-green-100">
-                <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+              <div className="text-center p-4 rounded-2xl bg-white/50 backdrop-blur-sm border border-emerald-100">
+                <div className="text-3xl font-bold text-emerald-600">
                   24/7
                 </div>
                 <div className="text-sm text-gray-600 mt-1">Available</div>

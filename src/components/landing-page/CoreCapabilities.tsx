@@ -97,13 +97,13 @@ export default function CoreCapabilities() {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-20">
-          <div className="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-purple-100 to-blue-100 rounded-full mb-6">
-            <span className="text-sm font-semibold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          <div className="inline-flex items-center justify-center px-4 py-2 bg-purple-100 rounded-full mb-6">
+            <span className="text-sm font-semibold text-purple-600">
               Core Capabilities
             </span>
           </div>
           <h2 className="text-5xl md:text-6xl font-bold mb-6">
-            <span className="bg-gradient-to-r from-gray-900 via-purple-900 to-blue-900 bg-clip-text text-transparent">
+            <span className="text-gray-900">
               Powerful Features
             </span>
             <br />
@@ -202,13 +202,13 @@ export default function CoreCapabilities() {
 
         {/* Trust Badge */}
         <div className="mt-20 text-center">
-          <div className="inline-flex items-center gap-8 px-8 py-6 bg-gradient-to-r from-purple-50 via-blue-50 to-cyan-50 rounded-2xl border-2 border-purple-100/50">
+          <div className="inline-flex items-center gap-8 px-8 py-6 bg-purple-50 rounded-2xl border-2 border-purple-100/50">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center">
                 <Shield className="w-6 h-6 text-white" />
               </div>
               <div className="text-left">
-                <div className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                <div className="text-2xl font-bold text-purple-600">
                   Trusted by 500+ Organizations
                 </div>
                 <div className="text-sm text-gray-600">

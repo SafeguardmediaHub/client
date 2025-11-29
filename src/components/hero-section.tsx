@@ -112,11 +112,11 @@ export default function HeroSection() {
                     key={1}
                     className="relative group"
                   >
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-300 animate-pulse-slow" />
+                    <div className="absolute -inset-0.5 bg-purple-600 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-300 animate-pulse-slow" />
                     <Button
                       asChild
                       size="lg"
-                      className="relative rounded-xl px-8 py-6 text-base bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0 shadow-xl"
+                      className="relative rounded-xl px-8 py-6 text-base bg-purple-600 hover:bg-purple-700 text-white border-0 shadow-xl"
                     >
                       <Link href="/auth/signup" className="flex items-center gap-2">
                         <Shield className="w-5 h-5" />
@@ -129,7 +129,7 @@ export default function HeroSection() {
                     asChild
                     size="lg"
                     variant="outline"
-                    className="h-12 rounded-xl px-8 border-2 border-gray-300 hover:border-purple-400 hover:bg-purple-50 transition-all duration-300"
+                    className="h-12 rounded-xl px-8 border-2 border-gray-300 hover:border-purple-600 hover:bg-purple-50 transition-all duration-300"
                   >
                     <Link href="/about" className="flex items-center gap-2">
                       <span className="text-nowrap">Watch Demo</span>
@@ -144,21 +144,21 @@ export default function HeroSection() {
                   className="mt-16 flex items-center justify-center gap-8 flex-wrap"
                 >
                   <div className="text-center">
-                    <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                    <div className="text-3xl font-bold text-purple-600">
                       98%
                     </div>
                     <div className="text-sm text-gray-600 mt-1">Accuracy Rate</div>
                   </div>
                   <div className="h-12 w-px bg-gray-300" />
                   <div className="text-center">
-                    <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                    <div className="text-3xl font-bold text-blue-600">
                       1M+
                     </div>
                     <div className="text-sm text-gray-600 mt-1">Media Verified</div>
                   </div>
                   <div className="h-12 w-px bg-gray-300" />
                   <div className="text-center">
-                    <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                    <div className="text-3xl font-bold text-emerald-600">
                       500+
                     </div>
                     <div className="text-sm text-gray-600 mt-1">Organizations</div>
