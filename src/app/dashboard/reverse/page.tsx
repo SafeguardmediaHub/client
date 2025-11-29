@@ -1,124 +1,73 @@
 /** biome-ignore-all lint/performance/noImgElement: <> */
 'use client';
 
-import { MoreVertical, Search, UploadIcon } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowLeft,
+  CheckCircle,
+  FileImage,
+  Film,
+  Image as ImageIcon,
+  Loader2,
+  ScanSearch,
+  Video,
+  X,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import MediaSelector from '@/components/media/MediaSelector';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { type Media, useGetMedia } from '@/hooks/useMedia';
-import {
-  type UserReverseLookup,
-  useReverseLookup,
-  useUserReverseLookups,
-} from '@/hooks/useReverseLookup';
+import { useReverseLookup } from '@/hooks/useReverseLookup';
 import { formatFileSize } from '@/lib/utils';
 
-export interface SearchResult {
-  id: string;
-  source: string;
-  url: string;
-  similarity: number;
-  publishDate: string;
-  title: string;
-  description: string;
-  thumbnailUrl: string;
-  verified: boolean;
-}
+type PageState = 'idle' | 'selecting' | 'video-warning' | 'processing';
 
 const ReverseLookupPage = () => {
+  const [state, setState] = useState<PageState>('idle');
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
 
   const router = useRouter();
   const reverseLookupMutation = useReverseLookup();
-
-  const { data, isLoading } = useGetMedia();
+  const { data } = useGetMedia();
   const media = data?.media || [];
-
-  // Fetch user's previous reverse lookups
-  const {
-    data: lookupsData,
-    isLoading: isLoadingLookups,
-    refetch: refetchLookups,
-  } = useUserReverseLookups();
-
-  // Use useMemo to create a stable reference for userLookups
-  const userLookups = useMemo(
-    () => lookupsData?.data?.lookups || [],
-    [lookupsData?.data?.lookups]
-  );
-
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('newest');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [filteredLookups, setFilteredLookups] = useState<UserReverseLookup[]>(
-    []
-  );
-
-  // Filter and sort lookups based on search, status, and sort order
-  useEffect(() => {
-    let filtered = [...userLookups];
-
-    // Apply search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (lookup) =>
-          lookup.mediaId.originalFilename.toLowerCase().includes(query) ||
-          lookup.jobId.toLowerCase().includes(query) ||
-          lookup._id.toLowerCase().includes(query)
-      );
-    }
-
-    // Apply status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter((lookup) => {
-        if (statusFilter === 'completed') {
-          return lookup.status === 'completed';
-        } else if (statusFilter === 'pending') {
-          return lookup.status === 'queued' || lookup.status === 'processing';
-        } else if (statusFilter === 'failed') {
-          return lookup.status === 'failed';
-        }
-        return true;
-      });
-    }
-
-    // Apply sorting
-    filtered.sort((a, b) => {
-      const dateA = new Date(a.createdAt).getTime();
-      const dateB = new Date(b.createdAt).getTime();
-      return sortBy === 'newest' ? dateB - dateA : dateA - dateB;
-    });
-
-    setFilteredLookups(filtered);
-  }, [userLookups, searchQuery, statusFilter, sortBy]);
 
   const handleMediaSelection = (mediaFile: Media) => {
     const selectedFile = media.find((file) => file.id === mediaFile.id);
+
     if (selectedFile) {
-      setSelectedMedia(selectedFile);
+      // Check if it's a video or non-image file
+      const isImage = selectedFile.mimeType.startsWith('image/');
+
+      if (!isImage) {
+        setSelectedMedia(selectedFile);
+        setState('video-warning');
+      } else {
+        setSelectedMedia(selectedFile);
+        setState('selecting');
+      }
     }
   };
 
-  const handleNewSearch = () => {
+  const handleReset = () => {
+    setState('idle');
     setSelectedMedia(null);
   };
 
   const handleStartReverseLookup = () => {
     if (!selectedMedia) return;
 
+    setState('processing');
+
     reverseLookupMutation.mutate(
       { mediaId: selectedMedia.id },
       {
         onSuccess: (data) => {
           if (data.success && data.data.jobId) {
-            // Refetch lookups to update the list
-            // refetchLookups();
-
-            // Navigate to results page with both mediaId and jobId
+            toast.success('Reverse lookup started!');
             router.push(
               `/dashboard/reverse/results?mediaId=${selectedMedia.id}&jobId=${data.data.jobId}`
             );
@@ -126,354 +75,374 @@ const ReverseLookupPage = () => {
         },
         onError: (error: any) => {
           console.error('Failed to start reverse lookup:', error);
-          // Extract error message from backend response
-          const errorMessage = error?.response?.data?.message ||
-                               error?.message ||
-                               'Unknown error';
+          const errorMessage =
+            error?.response?.data?.message ||
+            error?.message ||
+            'Failed to start reverse lookup';
           toast.error(errorMessage);
+          setState('selecting');
         },
       }
     );
   };
 
-  const handleViewLookup = (lookup: UserReverseLookup) => {
-    router.push(
-      `/dashboard/reverse/results?mediaId=${lookup.mediaId._id}&jobId=${lookup.jobId}`
-    );
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
-  const getStatusBadge = (lookup: UserReverseLookup) => {
-    const status = lookup.status;
-
-    if (status === 'completed') {
-      return (
-        <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
-          Completed
-        </span>
-      );
-    } else if (status === 'queued' || status === 'processing') {
-      return (
-        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
-          Processing
-        </span>
-      );
-    } else if (status === 'failed') {
-      return (
-        <span className="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">
-          Failed
-        </span>
-      );
-    } else if (status === 'cancelled') {
-      return (
-        <span className="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded">
-          Cancelled
-        </span>
-      );
-    } else if (status === 'expired') {
-      return (
-        <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">
-          Expired
-        </span>
-      );
-    }
-
-    return (
-      <span className="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded">
-        Unknown
-      </span>
-    );
-  };
-
   return (
     <div className="w-full flex flex-col gap-6 p-8">
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-        {' '}
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-medium text-gray-900 leading-9">
-            Reverse Lookup
-          </h1>
-          <p className="text-sm font-medium text-gray-600 leading-[21px]">
-            Trace the origin and history of media files across the internet to
-            find original sources{' '}
-          </p>
-        </div>
+      {/* Back Button */}
+      <div className="flex items-center gap-4">
         <Button
-          asChild
-          className="h-10 px-6 bg-blue-600 hover:bg-blue-500 rounded-xl flex-shrink-0 cursor-pointer"
+          variant="ghost"
+          size="sm"
+          onClick={() => router.push('/dashboard')}
         >
-          <Link href="/dashboard" aria-label="Upload new media files">
-            <UploadIcon className="w-4 h-4 mr-2" />
-            <span className="text-base font-medium text-white whitespace-nowrap">
-              Upload Files
-            </span>
-          </Link>
-        </Button>{' '}
+          <ArrowLeft className="size-4 mr-1" />
+          Back
+        </Button>
       </div>
 
-      {selectedMedia ? (
-        <div className="flex flex-col p-8 border border-gray-300 rounded-sm">
-          <div className="mb-4">
-            <h2 className="text-lg font-semibold">
-              Selected Media for Reverse Search
-            </h2>
-            <p className="text-sm text-gray-500">
-              Review the selected media file before starting the reverse search
-            </p>
+      {/* Main Content - Centered */}
+      <div className="max-w-3xl mx-auto w-full">
+        {/* Hero Section */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center size-16 rounded-2xl bg-purple-50 mb-4">
+            <ScanSearch className="size-8 text-purple-600" />
           </div>
-
-          <div className="flex items-center justify-between gap-2 mb-2">
-            <span className="text-sm font-medium text-green-800">
-              Ready to start reverse search
-            </span>
-            <span className="px-2 py-1 bg-green-200 text-green-800 text-xs font-medium rounded">
-              1/1 Completed
-            </span>
-          </div>
-
-          <div className="flex gap-8">
-            <img
-              src={selectedMedia.thumbnailUrl}
-              alt={selectedMedia.filename}
-              className="w-24 h-24 object-cover mb-4 border border-gray-200 rounded-md"
-            />
-            <div className="flex flex-col justify-center">
-              <p className="font-semibold">{selectedMedia.filename}</p>
-              <p className="text-muted-foreground">
-                {formatFileSize(Number(selectedMedia.fileSize))}
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-8">
-            <Button
-              className="flex-1 hover:cursor-pointer"
-              onClick={handleStartReverseLookup}
-              disabled={reverseLookupMutation.isPending}
-            >
-              {reverseLookupMutation.isPending
-                ? 'Starting...'
-                : 'Start reverse search'}
-            </Button>
-            <div className="flex gap-4">
-              <Button
-                variant="outline"
-                className="cursor-pointer"
-                onClick={handleNewSearch}
-              >
-                Upload another file
-              </Button>
-              <Button
-                variant="outline"
-                className="cursor-pointer"
-                onClick={handleNewSearch}
-              >
-                Clear
-              </Button>
-            </div>
-          </div>
+          <h1 className="text-2xl font-semibold text-gray-900">
+            Reverse Image Lookup
+          </h1>
+          <p className="text-sm text-gray-500 mt-2">
+            Trace the origin and history of images across the internet to find
+            original sources
+          </p>
         </div>
-      ) : (
-        <div className="p-8">
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 bg-gray-50">
-            <div className="text-center mb-6">
-              <p className="text-gray-600 mb-2">
-                Select from previously uploaded files
-              </p>
-              <p className="text-sm text-gray-500">
-                Choose a media file to search for its origin and distribution
-              </p>
+
+        {/* State: Idle - Show info cards and selector */}
+        {state === 'idle' && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+            {/* Info Cards Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Images Only Card */}
+              <Card className="border-blue-200 bg-blue-50/50">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 size-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                      <ImageIcon className="size-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-blue-900 mb-2">
+                        Images Only
+                      </h3>
+                      <p className="text-sm text-blue-800 mb-3">
+                        This tool analyzes images. Supported formats:
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="px-2 py-1 bg-blue-200/50 text-blue-900 text-xs font-medium rounded">
+                          JPG
+                        </span>
+                        <span className="px-2 py-1 bg-blue-200/50 text-blue-900 text-xs font-medium rounded">
+                          PNG
+                        </span>
+                        <span className="px-2 py-1 bg-blue-200/50 text-blue-900 text-xs font-medium rounded">
+                          WebP
+                        </span>
+                        <span className="px-2 py-1 bg-blue-200/50 text-blue-900 text-xs font-medium rounded">
+                          GIF
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Got Videos Card */}
+              <Card className="border-purple-200 bg-purple-50/50">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 size-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                      <Film className="size-5 text-purple-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-purple-900 mb-2">
+                        Got Videos?
+                      </h3>
+                      <p className="text-sm text-purple-800 mb-3">
+                        Extract keyframes first, then upload them here!
+                      </p>
+                      <Button
+                        asChild
+                        size="sm"
+                        className="bg-purple-600 hover:bg-purple-700 text-white"
+                      >
+                        <Link href="/dashboard/keyframe">
+                          <Video className="size-3 mr-1" />
+                          Extract Keyframes
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
-            <MediaSelector onSelect={handleMediaSelection} />
+            {/* Media Selector Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Select Image to Analyze</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Media selector dropdown */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Choose from your library
+                  </label>
+                  <MediaSelector onSelect={handleMediaSelection} />
+                </div>
+
+                {/* Tip */}
+                <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <AlertCircle className="size-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-amber-800">
+                    <span className="font-medium">Tip:</span> Only images can be
+                    analyzed. If you have videos, use the{' '}
+                    <Link
+                      href="/dashboard/keyframe"
+                      className="underline font-medium hover:text-amber-900"
+                    >
+                      Keyframe Extraction
+                    </Link>{' '}
+                    feature first.
+                  </div>
+                </div>
+
+                {/* How it works */}
+                <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                    <FileImage className="size-4" />
+                    How reverse lookup works
+                  </h3>
+                  <ol className="text-sm text-gray-700 space-y-1 list-decimal list-inside">
+                    <li>Select an image from your library</li>
+                    <li>We search across multiple image databases</li>
+                    <li>Matches are analyzed for similarity and context</li>
+                    <li>View detailed results with sources and dates</li>
+                  </ol>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="pb-8">
-        <div className="border-t border-gray-200 pt-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Recent Reverse Lookups
-          </h2>
-          <div className="text-sm text-gray-500">
-            Your recent reverse lookups will appear here after analysis
-          </div>
-
-          <div className="mt-4">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search here..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:bg-white"
-                />
-              </div>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-              >
-                <option value="newest">Newest to Oldest</option>
-                <option value="oldest">Oldest to Newest</option>
-              </select>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-              >
-                <option value="all">All status</option>
-                <option value="completed">Completed</option>
-                <option value="pending">Processing</option>
-                <option value="failed">Failed</option>
-              </select>
-            </div>
-
-            <div className="border border-gray-200 rounded-lg overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      File name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Progress
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Results Found
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Date Created
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {isLoadingLookups ? (
-                    <tr>
-                      <td
-                        colSpan={6}
-                        className="px-6 py-12 text-center text-gray-500"
-                      >
-                        Loading reverse lookups...
-                      </td>
-                    </tr>
-                  ) : filteredLookups.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={6}
-                        className="px-6 py-12 text-center text-gray-500"
-                      >
-                        {searchQuery || statusFilter !== 'all'
-                          ? 'No reverse lookups match your filters'
-                          : 'No reverse lookups found. Start your first lookup above!'}
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredLookups.map((lookup) => (
-                      <tr
-                        key={lookup._id}
-                        className="hover:bg-gray-50 transition-colors cursor-pointer"
-                        onClick={() => handleViewLookup(lookup)}
-                      >
-                        <td className="px-6 py-4">
-                          <p className="text-sm font-medium text-gray-900">
-                            {lookup.mediaId.originalFilename}
-                          </p>
-                        </td>
-                        <td className="px-6 py-4">{getStatusBadge(lookup)}</td>
-                        <td className="px-6 py-4">
-                          {lookup.status === 'completed' ||
-                          lookup.status === 'processing' ? (
-                            <div className="flex items-center gap-2">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm font-medium text-gray-900">
-                                    {lookup.progress}%
-                                  </span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
-                                  <div
-                                    className={`h-1.5 rounded-full ${
-                                      lookup.progress >= 100
-                                        ? 'bg-green-600'
-                                        : 'bg-blue-600'
-                                    }`}
-                                    style={{
-                                      width: `${lookup.progress}%`,
-                                    }}
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          ) : (
-                            <span className="text-sm text-gray-500">-</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4">
-                          {lookup.status === 'completed' ? (
-                            <p className="text-sm text-gray-900 font-medium">
-                              {lookup.resultsCount}
-                            </p>
-                          ) : (
-                            <span className="text-sm text-gray-500">-</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4">
-                          <p className="text-sm text-gray-600">
-                            {formatDate(lookup.createdAt)}
-                          </p>
-                        </td>
-                        <td className="px-6 py-4">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleViewLookup(lookup);
-                            }}
-                            className="cursor-pointer"
-                          >
-                            View Details
-                          </Button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {lookupsData?.data?.pagination?.hasNextPage && (
-              <div className="mt-6 flex justify-center">
+        {/* State: Video Warning */}
+        {state === 'video-warning' && selectedMedia && (
+          <Card className="animate-in fade-in slide-in-from-bottom-4 border-amber-200 bg-amber-50/50">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg flex items-center gap-2 text-amber-800">
+                  <AlertCircle className="size-5 text-amber-600" />
+                  Video Files Not Supported
+                </CardTitle>
                 <Button
-                  type="button"
-                  className="px-6 py-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors cursor-pointer"
-                  variant="outline"
-                  onClick={() => {
-                    // Implement pagination if needed
-                    toast.info('Pagination coming soon');
-                  }}
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleReset}
+                  className="text-gray-500"
                 >
-                  Load More
+                  <X className="size-4 mr-1" />
+                  Cancel
                 </Button>
               </div>
-            )}
-          </div>
-        </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Selected file info */}
+              <div className="p-4 bg-white rounded-lg border border-amber-200">
+                <div className="flex items-center gap-4">
+                  <div className="size-16 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+                    <Video className="size-8 text-amber-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 truncate">
+                      {selectedMedia.filename}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {formatFileSize(Number(selectedMedia.fileSize))} •{' '}
+                      {selectedMedia.mimeType}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Explanation */}
+              <div className="space-y-3">
+                <p className="text-sm text-amber-800 font-medium">
+                  Reverse lookup only works with images.
+                </p>
+                <p className="text-sm text-amber-700">
+                  To analyze frames from your video:
+                </p>
+                <ol className="text-sm text-amber-800 space-y-2 list-decimal list-inside pl-2">
+                  <li>Use the Keyframe Extraction tool to extract frames</li>
+                  <li>Upload the extracted keyframes to your library</li>
+                  <li>Return here and select the keyframe images</li>
+                </ol>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3">
+                <Button
+                  asChild
+                  className="flex-1 bg-purple-600 hover:bg-purple-700"
+                >
+                  <Link href="/dashboard/keyframe">
+                    <Film className="size-4 mr-2" />
+                    Go to Keyframe Extraction
+                  </Link>
+                </Button>
+                <Button variant="outline" onClick={handleReset}>
+                  Select Different File
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* State: Selecting - Image selected, ready to proceed */}
+        {state === 'selecting' && selectedMedia && (
+          <Card className="animate-in fade-in slide-in-from-bottom-4">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">Confirm Reverse Lookup</CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleReset}
+                  className="text-gray-500"
+                >
+                  <X className="size-4 mr-1" />
+                  Cancel
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Selected media preview */}
+              <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center gap-4">
+                  <div className="size-20 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0 border border-gray-300">
+                    <img
+                      src={selectedMedia.thumbnailUrl}
+                      alt={selectedMedia.filename}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 truncate mb-1">
+                      {selectedMedia.filename}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {formatFileSize(Number(selectedMedia.fileSize))} • Image
+                    </p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <CheckCircle className="size-4 text-green-600" />
+                      <span className="text-sm text-green-700 font-medium">
+                        Ready to analyze
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Confirmation text */}
+              <div className="space-y-3">
+                <p className="text-sm text-gray-600">
+                  This will search for matches of this image across the internet.
+                  The process typically takes 30-60 seconds.
+                </p>
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    <span className="font-medium">What we'll search:</span> Multiple
+                    image databases, news sources, and web archives to find where
+                    this image has been published.
+                  </p>
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="space-y-3">
+                <Button
+                  onClick={handleStartReverseLookup}
+                  className="w-full"
+                  disabled={reverseLookupMutation.isPending}
+                >
+                  <ScanSearch className="size-4 mr-2" />
+                  Start Reverse Lookup
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleReset}
+                  className="w-full"
+                  disabled={reverseLookupMutation.isPending}
+                >
+                  Select Different Image
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* State: Processing */}
+        {state === 'processing' && selectedMedia && (
+          <Card className="animate-in fade-in slide-in-from-bottom-4">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Loader2 className="size-5 animate-spin text-purple-600" />
+                  Searching the Internet...
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Media info */}
+              <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center gap-4">
+                  <div className="size-16 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
+                    <img
+                      src={selectedMedia.thumbnailUrl}
+                      alt={selectedMedia.filename}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 truncate">
+                      {selectedMedia.filename}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {formatFileSize(Number(selectedMedia.fileSize))}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Progress indicator */}
+              <div className="py-8 text-center">
+                <Loader2 className="size-12 animate-spin text-purple-600 mx-auto mb-4" />
+                <p className="text-sm font-medium text-gray-700 mb-2">
+                  Analyzing image across multiple databases
+                </p>
+                <p className="text-xs text-gray-500">
+                  This may take up to 60 seconds...
+                </p>
+              </div>
+
+              {/* Live indicator */}
+              <div className="flex items-center justify-center gap-2 text-xs text-purple-600">
+                <span className="relative flex size-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full size-2 bg-purple-500" />
+                </span>
+                Processing your request
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

@@ -1,10 +1,11 @@
 "use client";
 
-import { LinkIcon, Loader2, UploadIcon } from "lucide-react";
+import { LinkIcon, Loader2, UploadIcon, CloudUpload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { FC } from "react";
 import { useCallback, useId, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { useUploadKeyframe } from "@/hooks/useMedia";
 import api from "@/lib/api";
 import {
   batchProcessingData,
@@ -74,6 +75,16 @@ const Keyframe: FC<DashboardProps> = ({
       uploadDate: string;
     }>
   >([]);
+  const [uploadingFrames, setUploadingFrames] = useState<Set<number>>(
+    new Set()
+  );
+  const [uploadedFrames, setUploadedFrames] = useState<Set<number>>(new Set());
+  const [isBulkUploading, setIsBulkUploading] = useState(false);
+  const [bulkUploadProgress, setBulkUploadProgress] = useState({
+    current: 0,
+    total: 0,
+  });
+  const uploadKeyframeMutation = useUploadKeyframe();
 
   const filteredExtractions = mockExtractions.filter((item) =>
     item.fileName.toLowerCase().includes(searchQuery.toLowerCase())
@@ -260,6 +271,144 @@ const Keyframe: FC<DashboardProps> = ({
     },
     [onAnalyzeLink, url]
   );
+
+  // Convert blob URL to File object
+  const blobToFile = useCallback(
+    async (blobUrl: string, fileName: string): Promise<File> => {
+      const response = await fetch(blobUrl);
+      const blob = await response.blob();
+      return new File([blob], fileName, { type: "image/jpeg" });
+    },
+    []
+  );
+
+  // Upload individual keyframe
+  const handleUploadKeyframe = useCallback(
+    async (index: number) => {
+      if (uploadingFrames.has(index) || uploadedFrames.has(index)) return;
+
+      const blobUrl = extractedKeyframes[index];
+      const sourceFileName = actualFile?.name || uploadingFiles[0]?.name || "video";
+      const fileName = `${sourceFileName.replace(/\.[^/.]+$/, "")}_keyframe_${String(index + 1).padStart(3, "0")}.jpg`;
+      const timestamp = `00:${String(Math.floor((index * 17) / 60)).padStart(2, "0")}:${String((index * 17) % 60).padStart(2, "0")}`;
+
+      try {
+        setUploadingFrames((prev) => new Set(prev).add(index));
+        toast.info(`Uploading keyframe ${index + 1}...`);
+
+        const file = await blobToFile(blobUrl, fileName);
+        await uploadKeyframeMutation.mutateAsync({
+          file,
+          metadata: {
+            isKeyframe: true,
+            sourceVideo: sourceFileName,
+            frameIndex: index,
+            timestamp,
+          },
+        });
+
+        setUploadedFrames((prev) => new Set(prev).add(index));
+        toast.success(`Keyframe ${index + 1} uploaded successfully!`);
+      } catch (error) {
+        console.error("Error uploading keyframe:", error);
+        toast.error(`Failed to upload keyframe ${index + 1}`);
+      } finally {
+        setUploadingFrames((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(index);
+          return newSet;
+        });
+      }
+    },
+    [
+      extractedKeyframes,
+      actualFile,
+      uploadingFiles,
+      uploadingFrames,
+      uploadedFrames,
+      blobToFile,
+      uploadKeyframeMutation,
+    ]
+  );
+
+  // Bulk upload all keyframes
+  const handleBulkUpload = useCallback(async () => {
+    if (isBulkUploading || extractedKeyframes.length === 0) return;
+
+    const framesToUpload = extractedKeyframes
+      .map((_, index) => index)
+      .filter((index) => !uploadedFrames.has(index));
+
+    if (framesToUpload.length === 0) {
+      toast.info("All keyframes are already uploaded!");
+      return;
+    }
+
+    setIsBulkUploading(true);
+    setBulkUploadProgress({ current: 0, total: framesToUpload.length });
+
+    toast.info(`Uploading ${framesToUpload.length} keyframes...`);
+
+    let successCount = 0;
+    let failCount = 0;
+
+    for (let i = 0; i < framesToUpload.length; i++) {
+      const index = framesToUpload[i];
+      const blobUrl = extractedKeyframes[index];
+      const sourceFileName = actualFile?.name || uploadingFiles[0]?.name || "video";
+      const fileName = `${sourceFileName.replace(/\.[^/.]+$/, "")}_keyframe_${String(index + 1).padStart(3, "0")}.jpg`;
+      const timestamp = `00:${String(Math.floor((index * 17) / 60)).padStart(2, "0")}:${String((index * 17) % 60).padStart(2, "0")}`;
+
+      try {
+        setUploadingFrames((prev) => new Set(prev).add(index));
+
+        const file = await blobToFile(blobUrl, fileName);
+        await uploadKeyframeMutation.mutateAsync({
+          file,
+          metadata: {
+            isKeyframe: true,
+            sourceVideo: sourceFileName,
+            frameIndex: index,
+            timestamp,
+          },
+        });
+
+        setUploadedFrames((prev) => new Set(prev).add(index));
+        successCount++;
+      } catch (error) {
+        console.error(`Error uploading keyframe ${index}:`, error);
+        failCount++;
+      } finally {
+        setUploadingFrames((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(index);
+          return newSet;
+        });
+        setBulkUploadProgress({ current: i + 1, total: framesToUpload.length });
+      }
+    }
+
+    setIsBulkUploading(false);
+
+    if (failCount === 0) {
+      toast.success(`Successfully uploaded all ${successCount} keyframes!`);
+    } else if (successCount > 0) {
+      toast.warning(
+        `Uploaded ${successCount} keyframes, ${failCount} failed.`
+      );
+    } else {
+      toast.error("Failed to upload keyframes. Please try again.");
+    }
+  }, [
+    extractedKeyframes,
+    actualFile,
+    uploadingFiles,
+    uploadedFrames,
+    isBulkUploading,
+    blobToFile,
+    uploadKeyframeMutation,
+  ]);
+
   const inputId = useId();
 
   return (
@@ -690,16 +839,43 @@ const Keyframe: FC<DashboardProps> = ({
                   Frames selected based on motion, lighting, and composition
                   changes
                 </p>
+                {isBulkUploading && (
+                  <p className="text-xs text-primary mt-1">
+                    Uploading {bulkUploadProgress.current} of{" "}
+                    {bulkUploadProgress.total} keyframes...
+                  </p>
+                )}
               </div>
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={handleBulkUpload}
+                  disabled={
+                    isBulkUploading ||
+                    extractedKeyframes.length === 0 ||
+                    uploadedFrames.size === extractedKeyframes.length
+                  }
+                  className="w-full sm:w-auto"
+                >
+                  <CloudUpload className="w-4 h-4 mr-2" />
+                  {isBulkUploading
+                    ? "Uploading..."
+                    : uploadedFrames.size === extractedKeyframes.length
+                      ? "All Uploaded"
+                      : `Upload All (${extractedKeyframes.length - uploadedFrames.size})`}
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => {
                     setExtractedKeyframes([]);
                     setUploadingFiles([]);
+                    setUploadedFrames(new Set());
+                    setUploadingFrames(new Set());
                   }}
                   className="w-full sm:w-auto"
+                  disabled={isBulkUploading}
                 >
                   Extract New Video
                 </Button>
@@ -707,36 +883,96 @@ const Keyframe: FC<DashboardProps> = ({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {extractedKeyframes.map((frame, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="relative rounded-lg overflow-hidden border bg-muted aspect-video">
-                    <img
-                      src={frame}
-                      alt={`Keyframe ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                      {`00:${String(Math.floor((index * 17) / 60)).padStart(
-                        2,
-                        "0"
-                      )}:${String((index * 17) % 60).padStart(2, "0")}`}
+              {extractedKeyframes.map((frame, index) => {
+                const sourceFileName =
+                  actualFile?.name || uploadingFiles[0]?.name || "video";
+                const keyframeFileName = `${sourceFileName.replace(/\.[^/.]+$/, "")}_keyframe_${String(index + 1).padStart(3, "0")}.jpg`;
+
+                return (
+                  <div key={index} className="space-y-2">
+                    <div className="relative rounded-lg overflow-hidden border bg-muted aspect-video">
+                      <img
+                        src={frame}
+                        alt={`Keyframe ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                        {`00:${String(Math.floor((index * 17) / 60)).padStart(
+                          2,
+                          "0"
+                        )}:${String((index * 17) % 60).padStart(2, "0")}`}
+                      </div>
+                      <div className="absolute bottom-2 left-2 bg-blue-500/90 text-white text-xs px-2 py-1 rounded font-medium">
+                        JPG
+                      </div>
+                      {uploadedFrames.has(index) && (
+                        <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                          <span>✓</span>
+                          <span>Uploaded</span>
+                        </div>
+                      )}
+                      {uploadingFrames.has(index) && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <Loader2 className="w-8 h-8 text-white animate-spin" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="px-1">
+                      <p
+                        className="text-xs text-muted-foreground truncate"
+                        title={keyframeFileName}
+                      >
+                        {keyframeFileName}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant={
+                          uploadedFrames.has(index) ? "secondary" : "default"
+                        }
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => handleUploadKeyframe(index)}
+                        disabled={
+                          uploadingFrames.has(index) ||
+                          uploadedFrames.has(index) ||
+                          isBulkUploading
+                        }
+                      >
+                        {uploadingFrames.has(index) ? (
+                          <>
+                            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                            Uploading...
+                          </>
+                        ) : uploadedFrames.has(index) ? (
+                          <>
+                            <span className="mr-1">✓</span>
+                            Uploaded
+                          </>
+                        ) : (
+                          <>
+                            <CloudUpload className="w-3 h-3 mr-1" />
+                            Upload
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => {
+                          const link = document.createElement("a");
+                          link.href = frame;
+                          link.download = keyframeFileName;
+                          link.click();
+                        }}
+                      >
+                        Download
+                      </Button>
                     </div>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                    onClick={() => {
-                      const link = document.createElement("a");
-                      link.href = frame;
-                      link.download = `keyframe-${index + 1}.jpg`;
-                      link.click();
-                    }}
-                  >
-                    Download
-                  </Button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>

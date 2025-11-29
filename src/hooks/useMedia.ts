@@ -53,6 +53,24 @@ interface DeleteMediaResponse {
   message: string;
 }
 
+interface UploadKeyframeParams {
+  file: File;
+  metadata?: {
+    isKeyframe: boolean;
+    sourceVideo: string;
+    frameIndex: number;
+    timestamp: string;
+  };
+}
+
+interface PresignedUrlResponse {
+  upload: {
+    uploadUrl: string;
+    s3Key: string;
+    correlationId: string;
+  };
+}
+
 const fetchUserMedia = async (params?: {
   page?: number;
   limit?: number;
@@ -95,6 +113,64 @@ const urlUpload = async ({ url }: { url: string }) => {
   return data;
 };
 
+const requestPresignedUrl = async (
+  filename: string,
+  contentType: string,
+  fileSize: number,
+  uploadType: string,
+) => {
+  const { data } = await api.post("/api/media/presigned-url", {
+    filename,
+    contentType,
+    fileSize,
+    uploadType,
+  });
+
+  return data.data as PresignedUrlResponse;
+};
+
+const uploadToS3 = async (file: File, uploadUrl: string): Promise<void> => {
+  await fetch(uploadUrl, {
+    method: "PUT",
+    body: file,
+    headers: {
+      "Content-Type": file.type || "application/octet-stream",
+    },
+  });
+};
+
+const confirmUpload = async (s3Key: string, correlationId: string) => {
+  const { data } = await api.post("/api/media/confirm-upload", {
+    s3Key,
+    correlationId,
+  });
+
+  return data;
+};
+
+const uploadKeyframe = async ({
+  file,
+  metadata,
+}: UploadKeyframeParams): Promise<any> => {
+  // Request presigned URL
+  const presignedData = await requestPresignedUrl(
+    file.name,
+    file.type,
+    file.size,
+    "general_image",
+  );
+
+  const { uploadUrl, s3Key, correlationId } = presignedData.upload;
+
+  // Upload to S3
+  await uploadToS3(file, uploadUrl);
+
+  // Confirm upload
+  const result = await confirmUpload(s3Key, correlationId);
+
+  return result;
+};
+
 export const useGetMedia = () => {
   return useQuery({
     queryKey: ["userMedia"],
@@ -132,6 +208,20 @@ export function useUrlUpload() {
     onError: (error) => {
       console.error("Error uploading media:", error);
       toast.error("Failed to start media upload. Please try again.");
+    },
+  });
+}
+
+export function useUploadKeyframe() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (params: UploadKeyframeParams) => uploadKeyframe(params),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["userMedia"] });
+    },
+    onError: (error) => {
+      console.error("Error uploading keyframe:", error);
+      throw error;
     },
   });
 }

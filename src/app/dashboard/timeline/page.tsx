@@ -5,29 +5,42 @@
 
 import { format } from 'date-fns';
 import {
+  AlertCircle,
+  ArrowLeft,
+  Calendar,
+  CheckCircle,
   CheckCircleIcon,
+  Clock,
   ClockIcon,
-  UploadIcon,
+  Film,
+  Image as ImageIcon,
+  Loader2,
+  Video,
+  X,
   XCircleIcon,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { DatePickerDemo } from '@/components/date-picker';
 import MediaSelector from '@/components/media/MediaSelector';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { type Media, useGetMedia } from '@/hooks/useMedia';
 import { formatFileSize, timeAgo } from '@/lib/utils';
 
+type PageState = 'idle' | 'selecting' | 'video-warning' | 'processing';
+
 const TimelineVerificationPage = () => {
+  const [state, setState] = useState<PageState>('idle');
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
   const [claimedDate, setClaimedDate] = useState<Date | null>(null);
-  const router = useRouter();
 
+  const router = useRouter();
   const { data, isLoading } = useGetMedia();
   const media = data?.media || [];
 
@@ -37,26 +50,42 @@ const TimelineVerificationPage = () => {
       item.timeline?.status === 'failed'
   );
 
-  const handleNewSearch = () => {
-    setSelectedMedia(null);
-    setClaimedDate(null);
-  };
-
   const handleMediaSelection = (mediaFile: Media) => {
     const selectedFile = media.find((file) => file.id === mediaFile.id);
+
     if (selectedFile) {
-      setSelectedMedia(selectedFile);
+      // Check if it's a video or non-image file
+      const isImage = selectedFile.mimeType.startsWith('image/');
+
+      if (!isImage) {
+        setSelectedMedia(selectedFile);
+        setState('video-warning');
+      } else {
+        setSelectedMedia(selectedFile);
+        setState('selecting');
+      }
     }
+  };
+
+  const handleReset = () => {
+    setState('idle');
+    setSelectedMedia(null);
+    setClaimedDate(null);
   };
 
   const handleStartVerification = () => {
     if (!claimedDate || !selectedMedia) return;
 
+    setState('processing');
+
     const shortDate = format(claimedDate, 'yyyy-MM-dd');
 
-    router.push(
-      `/dashboard/timeline/results?mediaId=${selectedMedia.id}&claimedDate=${shortDate}`
-    );
+    // Simulate processing for a moment, then navigate
+    setTimeout(() => {
+      router.push(
+        `/dashboard/timeline/results?mediaId=${selectedMedia.id}&claimedDate=${shortDate}`
+      );
+    }, 1000);
   };
 
   const handleTimelineClick = (mediaItem: Media) => {
@@ -96,103 +125,390 @@ const TimelineVerificationPage = () => {
 
   return (
     <div className="w-full flex flex-col gap-6 p-8">
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-medium text-gray-900 leading-9">
-            Timeline Verification
-          </h1>
-          <p className="text-sm text-gray-600 leading-[21px]">
-            Overview of your timeline verifications
-          </p>
-        </div>
+      {/* Back Button */}
+      <div className="flex items-center gap-4">
         <Button
-          asChild
-          className="h-10 px-6 bg-blue-600 hover:bg-blue-500 rounded-xl flex-shrink-0 cursor-pointer"
+          variant="ghost"
+          size="sm"
+          onClick={() => router.push('/dashboard')}
         >
-          <Link href="/dashboard" aria-label="Upload new media files">
-            <UploadIcon className="w-4 h-4 mr-2" />
-            <span className="text-base font-medium text-white whitespace-nowrap">
-              Upload Files
-            </span>
-          </Link>
+          <ArrowLeft className="size-4 mr-1" />
+          Back
         </Button>
       </div>
 
-      {selectedMedia ? (
-        <div className="flex flex-col p-8 border border-gray-300 rounded-sm">
-          <div className="mb-4">
-            <h3 className="text-md">
-              Select the claimed date of the media file
-            </h3>
+      {/* Main Content - Centered */}
+      <div className="max-w-3xl mx-auto w-full">
+        {/* Hero Section */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center size-16 rounded-2xl bg-indigo-50 mb-4">
+            <Clock className="size-8 text-indigo-600" />
           </div>
+          <h1 className="text-2xl font-semibold text-gray-900">
+            Timeline Verification
+          </h1>
+          <p className="text-sm text-gray-500 mt-2">
+            Verify when media was created by analyzing temporal metadata and
+            digital fingerprints
+          </p>
+        </div>
 
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex gap-4">
-              <Image
-                src={selectedMedia.thumbnailUrl}
-                alt={selectedMedia.filename}
-                width={64}
-                height={64}
-                className="object-cover mb-4 border border-gray-200 rounded-sm"
-              />
-              <div className="flex flex-col justify-center">
-                <p className="font-semibold">{selectedMedia.filename}</p>
-                <p className="text-muted-foreground">
-                  {formatFileSize(Number(selectedMedia.fileSize))}
+        {/* State: Idle - Show info cards and selector */}
+        {state === 'idle' && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+            {/* Info Cards Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Images & Videos Card */}
+              <Card className="border-blue-200 bg-blue-50/50">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 size-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                      <ImageIcon className="size-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-blue-900 mb-2">
+                        Images & Videos
+                      </h3>
+                      <p className="text-sm text-blue-800 mb-3">
+                        Temporal metadata is found in both images and videos from
+                        digital cameras.
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="px-2 py-1 bg-blue-200/50 text-blue-900 text-xs font-medium rounded">
+                          JPG
+                        </span>
+                        <span className="px-2 py-1 bg-blue-200/50 text-blue-900 text-xs font-medium rounded">
+                          PNG
+                        </span>
+                        <span className="px-2 py-1 bg-blue-200/50 text-blue-900 text-xs font-medium rounded">
+                          MP4
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Got Videos Card */}
+              <Card className="border-indigo-200 bg-indigo-50/50">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 size-10 rounded-lg bg-indigo-100 flex items-center justify-center">
+                      <Film className="size-5 text-indigo-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-indigo-900 mb-2">
+                        Video Frames?
+                      </h3>
+                      <p className="text-sm text-indigo-800 mb-3">
+                        Extract keyframes for more detailed temporal analysis!
+                      </p>
+                      <Button
+                        asChild
+                        size="sm"
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                      >
+                        <Link href="/dashboard/keyframe">
+                          <Video className="size-3 mr-1" />
+                          Extract Keyframes
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Media Selector Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">
+                  Select Media to Verify Timeline
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Media selector dropdown */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Choose from your library
+                  </label>
+                  <MediaSelector onSelect={handleMediaSelection} />
+                </div>
+
+                {/* Tip */}
+                <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <AlertCircle className="size-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-amber-800">
+                    <span className="font-medium">Tip:</span> For video files, you
+                    can also extract keyframes using the{' '}
+                    <Link
+                      href="/dashboard/keyframe"
+                      className="underline font-medium hover:text-amber-900"
+                    >
+                      Keyframe Extraction
+                    </Link>{' '}
+                    feature for frame-by-frame analysis.
+                  </div>
+                </div>
+
+                {/* How it works */}
+                <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                    <Calendar className="size-4" />
+                    How timeline verification works
+                  </h3>
+                  <ol className="text-sm text-gray-700 space-y-1 list-decimal list-inside">
+                    <li>Select media from your library</li>
+                    <li>Enter the claimed creation date</li>
+                    <li>We analyze temporal metadata and digital signatures</li>
+                    <li>Compare claimed date with extracted timestamps</li>
+                    <li>View detailed chronological analysis</li>
+                  </ol>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* State: Video Warning */}
+        {state === 'video-warning' && selectedMedia && (
+          <Card className="animate-in fade-in slide-in-from-bottom-4 border-amber-200 bg-amber-50/50">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg flex items-center gap-2 text-amber-800">
+                  <AlertCircle className="size-5 text-amber-600" />
+                  Consider Keyframe Extraction
+                </CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleReset}
+                  className="text-gray-500"
+                >
+                  <X className="size-4 mr-1" />
+                  Cancel
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Selected file info */}
+              <div className="p-4 bg-white rounded-lg border border-amber-200">
+                <div className="flex items-center gap-4">
+                  <div className="size-16 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+                    <Video className="size-8 text-amber-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 truncate">
+                      {selectedMedia.filename}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {formatFileSize(Number(selectedMedia.fileSize))} •{' '}
+                      {selectedMedia.mimeType}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Explanation */}
+              <div className="space-y-3">
+                <p className="text-sm text-amber-800 font-medium">
+                  You can verify this video file, or extract keyframes for
+                  frame-level analysis.
+                </p>
+                <div className="space-y-2">
+                  <p className="text-sm text-amber-700 font-medium">
+                    Option 1: Verify entire video
+                  </p>
+                  <p className="text-xs text-amber-700">
+                    Quick analysis of video metadata
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-amber-700 font-medium">
+                    Option 2: Extract keyframes first (recommended)
+                  </p>
+                  <ol className="text-xs text-amber-700 space-y-1 list-decimal list-inside pl-2">
+                    <li>Extract individual frames from video</li>
+                    <li>Analyze each frame's temporal data</li>
+                    <li>Get more detailed timeline insights</li>
+                  </ol>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => setState('selecting')}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Continue with Video
+                </Button>
+                <Button
+                  asChild
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-700"
+                >
+                  <Link href="/dashboard/keyframe">
+                    <Film className="size-4 mr-2" />
+                    Extract Keyframes
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* State: Selecting - Media selected, need date */}
+        {state === 'selecting' && selectedMedia && (
+          <Card className="animate-in fade-in slide-in-from-bottom-4">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">
+                  Enter Claimed Creation Date
+                </CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleReset}
+                  className="text-gray-500"
+                >
+                  <X className="size-4 mr-1" />
+                  Cancel
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Selected media preview */}
+              <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center gap-4">
+                  <div className="size-20 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0 border border-gray-300">
+                    <img
+                      src={selectedMedia.thumbnailUrl}
+                      alt={selectedMedia.filename}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 truncate mb-1">
+                      {selectedMedia.filename}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {formatFileSize(Number(selectedMedia.fileSize))} •{' '}
+                      {selectedMedia.mimeType.startsWith('image/')
+                        ? 'Image'
+                        : 'Video'}
+                    </p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <CheckCircle className="size-4 text-green-600" />
+                      <span className="text-sm text-green-700 font-medium">
+                        Ready to verify
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Date Picker */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Claimed Creation Date <span className="text-red-500">*</span>
+                </label>
+                <DatePickerDemo
+                  value={claimedDate}
+                  onChange={(date: Date | null) => setClaimedDate(date)}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Select the date when this media was supposedly created
                 </p>
               </div>
-            </div>
 
-            <div>
-              <DatePickerDemo
-                value={claimedDate}
-                onChange={(date: Date | null) => setClaimedDate(date)}
-              />
-            </div>
-          </div>
+              {/* Info */}
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <span className="font-medium">What we'll do:</span> Extract
+                  temporal metadata from the file and compare it with your claimed
+                  date to detect inconsistencies or tampering.
+                </p>
+              </div>
 
-          <div className="flex gap-8">
-            <Button
-              className="flex-1 hover:cursor-pointer"
-              onClick={handleStartVerification}
-              disabled={!claimedDate}
-            >
-              Start timeline verification
-            </Button>
+              {/* Action buttons */}
+              <div className="space-y-3">
+                <Button
+                  onClick={handleStartVerification}
+                  className="w-full"
+                  disabled={!claimedDate}
+                >
+                  <Clock className="size-4 mr-2" />
+                  Start Timeline Verification
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleReset}
+                  className="w-full"
+                >
+                  Select Different Media
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-            <div className="flex gap-4">
-              <Button
-                variant="outline"
-                className="cursor-pointer"
-                onClick={handleNewSearch}
-              >
-                Upload another file
-              </Button>
-              <Button
-                variant="outline"
-                className="cursor-pointer"
-                onClick={handleNewSearch}
-              >
-                Clear
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="p-8">
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 bg-gray-50">
-            <div className="text-center mb-6">
-              <p className="text-gray-600 mb-2">
-                Select from previously uploaded files
-              </p>
-              <p className="text-sm text-gray-500">
-                Choose a media file to verify its timeline
-              </p>
-            </div>
-            <MediaSelector onSelect={handleMediaSelection} />
-          </div>
-        </div>
-      )}
+        {/* State: Processing */}
+        {state === 'processing' && selectedMedia && claimedDate && (
+          <Card className="animate-in fade-in slide-in-from-bottom-4">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Loader2 className="size-5 animate-spin text-indigo-600" />
+                  Analyzing Timeline...
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Media info */}
+              <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center gap-4">
+                  <div className="size-16 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
+                    <img
+                      src={selectedMedia.thumbnailUrl}
+                      alt={selectedMedia.filename}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 truncate">
+                      {selectedMedia.filename}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Claimed: {format(claimedDate, 'MMM dd, yyyy')}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Progress indicator */}
+              <div className="py-8 text-center">
+                <Loader2 className="size-12 animate-spin text-indigo-600 mx-auto mb-4" />
+                <p className="text-sm font-medium text-gray-700 mb-2">
+                  Extracting temporal metadata and analyzing timeline
+                </p>
+                <p className="text-xs text-gray-500">
+                  This may take a few moments...
+                </p>
+              </div>
+
+              {/* Live indicator */}
+              <div className="flex items-center justify-center gap-2 text-xs text-indigo-600">
+                <span className="relative flex size-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full size-2 bg-indigo-500" />
+                </span>
+                Processing verification
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
       {/* Previous Timeline Verifications Section */}
       <Card className="bg-white rounded-xl border border-gray-200 p-6">
