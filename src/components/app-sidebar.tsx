@@ -112,7 +112,7 @@ const data = {
     },
     {
       name: 'Text Extraction (OCR)',
-      url: '#',
+      url: '/dashboard/ocr',
       icon: FileText,
       featureId: 'ocr_extraction',
     },
