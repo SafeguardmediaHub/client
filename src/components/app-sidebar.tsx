@@ -11,6 +11,7 @@ import {
   Film,
   LayoutDashboard,
   LayoutGrid,
+  Layers,
   MapPin,
   Scissors,
   Search,
@@ -56,6 +57,11 @@ const data = {
       url: '/dashboard/library',
       icon: BookOpen,
     },
+    {
+      name: 'Batch Processing',
+      url: '/dashboard/batches',
+      icon: Layers,
+    },
   ],
 
   detection: [
@@ -76,12 +82,6 @@ const data = {
       url: '#',
       icon: Search,
       featureId: 'visual_forensics',
-    },
-    {
-      name: 'Tamper Detection',
-      url: '#',
-      icon: ShieldAlert,
-      featureId: 'tamper_detection',
     },
     {
       name: 'Keyframe Extraction',
@@ -123,8 +123,8 @@ const data = {
       featureId: 'fact_checking',
     },
     {
-      name: 'Social Media Source Tracing',
-      url: '/dashboard/trace',
+      name: 'SM Source Tracing',
+      url: '#', // '/dashboard/trace',
       icon: Share2,
       featureId: 'social_media_tracing',
     },

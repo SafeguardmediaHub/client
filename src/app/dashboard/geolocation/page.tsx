@@ -10,6 +10,7 @@ import {
   Film,
   Globe,
   Image as ImageIcon,
+  Info,
   Loader2,
   MapPin,
   Search,
@@ -21,6 +22,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { FeatureInfoDialog, FEATURE_INFO } from '@/components/FeatureInfoDialog';
 import MediaSelector from '@/components/media/MediaSelector';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -44,10 +46,16 @@ const GeolocationVerificationPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('newest');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [showInfoDialog, setShowInfoDialog] = useState(false);
 
   const router = useRouter();
   const startGeoMutation = useStartGeoVerification();
   const deleteMutation = useDeleteGeoVerification();
+
+  // Show dialog on first visit
+  useEffect(() => {
+    setShowInfoDialog(true);
+  }, []);
   const { data } = useGetMedia();
   const media = data?.media || [];
 
@@ -251,7 +259,22 @@ const GeolocationVerificationPage = () => {
             Verify claimed locations by analyzing GPS metadata and cross-referencing
             coordinates
           </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowInfoDialog(true)}
+            className="cursor-pointer mt-4"
+          >
+            <Info className="size-4 mr-2" />
+            How it works
+          </Button>
         </div>
+
+        <FeatureInfoDialog
+          open={showInfoDialog}
+          onOpenChange={setShowInfoDialog}
+          featureInfo={FEATURE_INFO.geolocation}
+        />
 
         {/* State: Idle - Show info cards and selector */}
         {state === 'idle' && (

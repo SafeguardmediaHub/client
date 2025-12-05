@@ -6,6 +6,7 @@ import { Toaster } from 'sonner';
 // import GoogleTranslate from '@/components/GoogleTranslate';
 import QueryProvider from '@/components/providers/QueryProvider';
 import { AuthProvider } from '@/context/AuthContext';
+import { WebSocketProvider } from '@/context/WebSocketContext';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -35,7 +36,9 @@ export default function RootLayout({
       >
         {/* <GoogleTranslate /> */}
         <QueryProvider>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <WebSocketProvider>{children}</WebSocketProvider>
+          </AuthProvider>
         </QueryProvider>
 
         <Toaster richColors expand={true} />

@@ -8,6 +8,8 @@ import {
   register,
   requestVerificationEmail,
   verifyEmail,
+  forgotPassword,
+  resetPassword,
 } from "@/lib/api/auth";
 
 export interface User {
@@ -186,6 +188,45 @@ export const useResendVerificationEmail = () => {
         error?.response?.data?.message ||
         error?.message ||
         "Failed to resend verification email. Please try again.";
+      toast.error(errorMessage);
+      throw error;
+    },
+  });
+};
+
+export const useForgotPassword = () => {
+  return useMutation({
+    mutationFn: (email: string) => forgotPassword(email),
+    onSuccess: (data) => {
+      toast.success(data.message || "If an account with that email exists, a password reset link has been sent");
+      return data;
+    },
+    onError: (error: any) => {
+      console.error("Forgot password error:", error);
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to send password reset email. Please try again.";
+      toast.error(errorMessage);
+      throw error;
+    },
+  });
+};
+
+export const useResetPassword = () => {
+  return useMutation({
+    mutationFn: ({ token, password }: { token: string; password: string }) =>
+      resetPassword(token, password),
+    onSuccess: (data) => {
+      toast.success(data.message || "Password reset successful. Please login with your new password");
+      return data;
+    },
+    onError: (error: any) => {
+      console.error("Reset password error:", error);
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to reset password. Please try again.";
       toast.error(errorMessage);
       throw error;
     },

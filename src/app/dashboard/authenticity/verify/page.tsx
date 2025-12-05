@@ -5,17 +5,19 @@ import {
   ArrowLeft,
   CheckCircle,
   FileSearch,
+  Info,
   Loader2,
   ShieldCheck,
   X,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
   MediaInfoBlock,
   VerificationSteps,
 } from '@/components/c2pa';
+import { FeatureInfoDialog, FEATURE_INFO } from '@/components/FeatureInfoDialog';
 import MediaSelector from '@/components/media/MediaSelector';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,6 +37,12 @@ export default function ManualVerificationPage() {
   const [currentStep, setCurrentStep] = useState<string | undefined>();
   const [error, setError] = useState<string | null>(null);
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
+  const [showInfoDialog, setShowInfoDialog] = useState(false);
+
+  // Show dialog on first visit
+  useEffect(() => {
+    setShowInfoDialog(true);
+  }, []);
 
   // Stream hook
   const stream = useVerificationStream(verificationId || '', {
@@ -151,7 +159,22 @@ export default function ManualVerificationPage() {
           <p className="text-sm text-gray-500 mt-2">
             Select media from your library to verify its C2PA content credentials
           </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowInfoDialog(true)}
+            className="cursor-pointer mt-4"
+          >
+            <Info className="size-4 mr-2" />
+            How it works
+          </Button>
         </div>
+
+        <FeatureInfoDialog
+          open={showInfoDialog}
+          onOpenChange={setShowInfoDialog}
+          featureInfo={FEATURE_INFO.c2pa}
+        />
 
         {/* Main content */}
         {state === 'idle' && (

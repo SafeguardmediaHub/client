@@ -8,6 +8,7 @@ import {
   FileImage,
   Film,
   Image as ImageIcon,
+  Info,
   Loader2,
   ScanSearch,
   Video,
@@ -15,8 +16,9 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { FeatureInfoDialog, FEATURE_INFO } from '@/components/FeatureInfoDialog';
 import MediaSelector from '@/components/media/MediaSelector';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,11 +31,17 @@ type PageState = 'idle' | 'selecting' | 'video-warning' | 'processing';
 const ReverseLookupPage = () => {
   const [state, setState] = useState<PageState>('idle');
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
+  const [showInfoDialog, setShowInfoDialog] = useState(false);
 
   const router = useRouter();
   const reverseLookupMutation = useReverseLookup();
   const { data } = useGetMedia();
   const media = data?.media || [];
+
+  // Show dialog on first visit
+  useEffect(() => {
+    setShowInfoDialog(true);
+  }, []);
 
   const handleMediaSelection = (mediaFile: Media) => {
     const selectedFile = media.find((file) => file.id === mediaFile.id);
@@ -114,7 +122,22 @@ const ReverseLookupPage = () => {
             Trace the origin and history of images across the internet to find
             original sources
           </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowInfoDialog(true)}
+            className="cursor-pointer mt-4"
+          >
+            <Info className="size-4 mr-2" />
+            How it works
+          </Button>
         </div>
+
+        <FeatureInfoDialog
+          open={showInfoDialog}
+          onOpenChange={setShowInfoDialog}
+          featureInfo={FEATURE_INFO.reverseLookup}
+        />
 
         {/* State: Idle - Show info cards and selector */}
         {state === 'idle' && (

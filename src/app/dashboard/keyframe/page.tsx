@@ -1,10 +1,11 @@
 "use client";
 
-import { LinkIcon, Loader2, UploadIcon, CloudUpload } from "lucide-react";
+import { LinkIcon, Loader2, UploadIcon, CloudUpload, Info } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { FC } from "react";
-import { useCallback, useId, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { FeatureInfoDialog, FEATURE_INFO } from "@/components/FeatureInfoDialog";
 import { useUploadKeyframe } from "@/hooks/useMedia";
 import api from "@/lib/api";
 import {
@@ -85,6 +86,12 @@ const Keyframe: FC<DashboardProps> = ({
     total: 0,
   });
   const uploadKeyframeMutation = useUploadKeyframe();
+  const [showInfoDialog, setShowInfoDialog] = useState(false);
+
+  // Show dialog on first visit
+  useEffect(() => {
+    setShowInfoDialog(true);
+  }, []);
 
   const filteredExtractions = mockExtractions.filter((item) =>
     item.fileName.toLowerCase().includes(searchQuery.toLowerCase())
@@ -414,14 +421,33 @@ const Keyframe: FC<DashboardProps> = ({
   return (
     <section className="flex flex-1 flex-col gap-4 py-4 px-8">
       <header className="flex-col items-start gap-1 flex">
-        <h1 className="text-2xl font-medium text-black leading-9">
-          Keyframe Extraction
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Intelligently extract the most important frames from videos for
-          focused analysis
-        </p>
+        <div className="flex items-center justify-between w-full">
+          <div>
+            <h1 className="text-2xl font-medium text-black leading-9">
+              Keyframe Extraction
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Intelligently extract the most important frames from videos for
+              focused analysis
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowInfoDialog(true)}
+            className="cursor-pointer"
+          >
+            <Info className="size-4 mr-2" />
+            How it works
+          </Button>
+        </div>
       </header>
+
+      <FeatureInfoDialog
+        open={showInfoDialog}
+        onOpenChange={setShowInfoDialog}
+        featureInfo={FEATURE_INFO.keyframe}
+      />
 
       {extractedKeyframes.length === 0 ? (
         <>

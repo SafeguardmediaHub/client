@@ -75,3 +75,23 @@ export const requestVerificationEmail = async (
 
   return response.data as ResendEmailVerificationResponse;
 };
+
+export const forgotPassword = async (email: string): Promise<{ success: boolean; message: string }> => {
+  const response = await api.post(
+    "/api/auth/forgot-password",
+    { email },
+    { headers: { "Content-Type": "application/json" } },
+  );
+
+  return response.data;
+};
+
+export const resetPassword = async (token: string, password: string): Promise<{ success: boolean; message: string }> => {
+  const response = await api.post(
+    "/api/auth/reset-password",
+    { token, password },
+    { headers: { "Content-Type": "application/json" } },
+  );
+
+  return response.data;
+};

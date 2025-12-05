@@ -1,14 +1,15 @@
 'use client';
 
-import { AlertCircle, FileText } from 'lucide-react';
+import { AlertCircle, FileText, Info } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { ClaimDetail } from '@/components/fact-check/ClaimDetail';
 import { ClaimList } from '@/components/fact-check/ClaimList';
 import { FactCheckForm } from '@/components/fact-check/FactCheckForm';
 import { FactCheckProcessing } from '@/components/fact-check/FactCheckProcessing';
 import { LoadingState } from '@/components/fact-check/LoadingState';
+import { FeatureInfoDialog, FEATURE_INFO } from '@/components/FeatureInfoDialog';
 import { Button } from '@/components/ui/button';
 import { useAnalyzeContent, useJobStatus } from '@/hooks/useFactCheck';
 import type { AnalyzeContentRequest } from '@/types/fact-check';
@@ -24,11 +25,19 @@ const FactCheckContent = () => {
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(
     claimIdFromUrl
   );
+  const [showInfoDialog, setShowInfoDialog] = useState(false);
 
   const analyzeContentMutation = useAnalyzeContent();
   const jobStatusQuery = useJobStatus(currentJobId || '', {
     enabled: !!currentJobId && !selectedClaimId,
   });
+
+  // Show dialog on first visit (only when no job is active)
+  useEffect(() => {
+    if (!currentJobId) {
+      setShowInfoDialog(true);
+    }
+  }, [currentJobId]);
 
   const handleFormSubmit = (data: AnalyzeContentRequest) => {
     analyzeContentMutation.mutate(data, {
@@ -92,18 +101,35 @@ const FactCheckContent = () => {
             fact-checking sources
           </p>
         </div>
-        {currentJobId && (
+        <div className="flex gap-2">
           <Button
-            onClick={handleStartNew}
-            className="h-10 px-6 bg-blue-600 hover:bg-blue-500 rounded-xl flex-shrink-0 cursor-pointer"
+            variant="outline"
+            size="sm"
+            onClick={() => setShowInfoDialog(true)}
+            className="cursor-pointer"
           >
-            <FileText className="w-4 h-4 mr-2" />
-            <span className="text-base font-medium text-white whitespace-nowrap">
-              New Analysis
-            </span>
+            <Info className="size-4 mr-2" />
+            How it works
           </Button>
-        )}
+          {currentJobId && (
+            <Button
+              onClick={handleStartNew}
+              className="h-10 px-6 bg-blue-600 hover:bg-blue-500 rounded-xl flex-shrink-0 cursor-pointer"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              <span className="text-base font-medium text-white whitespace-nowrap">
+                New Analysis
+              </span>
+            </Button>
+          )}
+        </div>
       </div>
+
+      <FeatureInfoDialog
+        open={showInfoDialog}
+        onOpenChange={setShowInfoDialog}
+        featureInfo={FEATURE_INFO.factCheck}
+      />
 
       {!currentJobId ? (
         <div className="p-8 bg-white border border-gray-200 rounded-lg">
