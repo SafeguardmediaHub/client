@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
-import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
   Pagination,
@@ -26,7 +25,6 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useDeleteVerification } from '@/hooks/useC2PA';
 import { cn } from '@/lib/utils';
 import type { C2PAVerification, MediaType } from '@/types/c2pa';
 import { StatusBadge } from './StatusBadge';
@@ -96,19 +94,23 @@ function VerificationRow({
       : verification.mediaId?._id || null;
 
   const thumbnailUrl =
+    verification.mediaId &&
     typeof verification.mediaId === 'object' &&
-    verification.mediaId.thumbnailUrl
+    'thumbnailUrl' in verification.mediaId
       ? verification.mediaId.thumbnailUrl
       : verification.thumbnailUrl;
 
   const fileName =
+    verification.mediaId &&
     typeof verification.mediaId === 'object' &&
-    verification.mediaId.originalFilename
+    'originalFilename' in verification.mediaId
       ? verification.mediaId.originalFilename
       : verification.fileName;
 
   const mimeType =
-    typeof verification.mediaId === 'object' && verification.mediaId.mimeType
+    verification.mediaId &&
+    typeof verification.mediaId === 'object' &&
+    'mimeType' in verification.mediaId
       ? verification.mediaId.mimeType
       : undefined;
 

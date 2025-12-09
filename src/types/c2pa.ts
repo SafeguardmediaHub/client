@@ -21,7 +21,7 @@ export interface MediaInfo {
 export interface C2PAVerification {
   id: string;
   verificationId: string; // UUID-based verification identifier
-  mediaId: string | MediaInfo;
+  mediaId: string | MediaInfo | null;
   userId?: string;
   status: VerificationStatus;
   mediaType?: MediaType;
