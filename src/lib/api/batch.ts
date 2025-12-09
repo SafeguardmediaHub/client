@@ -2,8 +2,11 @@ import axios from 'axios';
 import api from '@/lib/api';
 import type {
   Batch,
+  BatchItemDetailsResponse,
   BatchListParams,
   BatchListResponse,
+  BatchResultsParams,
+  BatchResultsResponse,
   BatchStatsResponse,
   ConfirmBatchRequest,
   CreateBatchRequest,
@@ -11,6 +14,7 @@ import type {
   DeleteBatchRequest,
   ExportBatchRequest,
   ExportBatchResponse,
+  ItemVerificationResponse,
   RestoreBatchRequest,
   RetryBatchItemsRequest,
 } from '@/types/batch';
@@ -62,11 +66,12 @@ export const confirmBatch = async (
 export const getBatches = async (
   params?: BatchListParams
 ): Promise<BatchListResponse> => {
+  console.log('getBatches called with params:', params);
   const response = await api.get<BatchListResponse>('/api/media/batch', {
     params,
   });
 
-  console.log('this is the response', response.data);
+  console.log('getBatches response:', response.data);
   return response.data;
 };
 
@@ -148,4 +153,44 @@ export const cancelBatch = async (
 ): Promise<{ success: boolean }> => {
   const response = await api.post(`/api/media/batch/${batchId}/cancel`);
   return response.data;
+};
+
+// Get paginated batch results with optional detailed summaries
+export const getBatchResults = async (
+  batchId: string,
+  params?: BatchResultsParams
+): Promise<BatchResultsResponse> => {
+  const response = await api.get<BatchResultsResponse>(
+    `/api/media/batch/${batchId}/results`,
+    { params }
+  );
+  return response.data;
+};
+
+// Get full details for a single batch item
+export const getBatchItemDetails = async (
+  batchId: string,
+  itemId: string
+): Promise<BatchItemDetailsResponse['data']> => {
+  const response = await api.get<BatchItemDetailsResponse>(
+    `/api/media/batch/${batchId}/item/${itemId}`
+  );
+  return response.data.data;
+};
+
+// Get specific verification data for an item
+export const getItemVerification = async (
+  batchId: string,
+  itemId: string,
+  verificationType:
+    | 'c2pa'
+    | 'timeline'
+    | 'geolocation'
+    | 'factCheck'
+    | 'deepfake'
+): Promise<ItemVerificationResponse['data']> => {
+  const response = await api.get<ItemVerificationResponse>(
+    `/api/media/batch/${batchId}/item/${itemId}/${verificationType}`
+  );
+  return response.data.data;
 };

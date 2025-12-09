@@ -34,17 +34,27 @@ export default function BatchesPage() {
   const batches = batchesData?.data?.batches || [];
   const pagination = batchesData?.data?.pagination;
 
-  console.log('this is batches data', batchesData);
-
-  console.log('this is stats', stats);
+  console.log('Current filters:', filters);
+  console.log('Batches data:', batchesData);
+  console.log('Batches returned:', batches.length);
+  console.log('Stats:', stats);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
-    setFilters({ ...filters, search: value || undefined, page: 1 });
+    setFilters((prev) => ({
+      ...prev,
+      search: value || undefined,
+      page: 1
+    }));
   };
 
   const handleStatusFilter = (status?: BatchStatus) => {
-    setFilters({ ...filters, status, page: 1 });
+    console.log('Filtering by status:', status);
+    setFilters((prev) => ({
+      ...prev,
+      status: status,
+      page: 1
+    }));
   };
 
   return (
@@ -189,16 +199,32 @@ export default function BatchesPage() {
           <Card className="p-12 text-center">
             <div className="max-w-md mx-auto space-y-4">
               <div className="text-6xl">📦</div>
-              <h3 className="text-xl font-semibold text-gray-900">
-                No batches yet
-              </h3>
-              <p className="text-gray-600">
-                Start by uploading your first batch of media files
-              </p>
-              <Button onClick={() => setUploadModalOpen(true)} size="lg">
-                <Plus className="mr-2 h-5 w-5" />
-                Create Your First Batch
-              </Button>
+              {filters.status ? (
+                <>
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    No {filters.status.toLowerCase()} batches
+                  </h3>
+                  <p className="text-gray-600">
+                    There are no batches with status "{filters.status}"
+                  </p>
+                  <Button onClick={() => handleStatusFilter(undefined)} variant="outline">
+                    Clear Filter
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    No batches yet
+                  </h3>
+                  <p className="text-gray-600">
+                    Start by uploading your first batch of media files
+                  </p>
+                  <Button onClick={() => setUploadModalOpen(true)} size="lg">
+                    <Plus className="mr-2 h-5 w-5" />
+                    Create Your First Batch
+                  </Button>
+                </>
+              )}
             </div>
           </Card>
         ) : (

@@ -5,6 +5,7 @@ import {
   CheckCircle2,
   Clock,
   Download,
+  Eye,
   Loader2,
   MoreVertical,
   RefreshCcw,
@@ -13,8 +14,11 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { use, useState } from 'react';
+import { BatchItemDetailModal } from '@/components/batches/BatchItemDetailModal';
 import { BatchProgress } from '@/components/batches/BatchProgress';
 import { BatchStatusBadge } from '@/components/batches/BatchStatusBadge';
+import { VerificationBadges } from '@/components/batches/VerificationBadges';
+import { VerificationScoresComponent } from '@/components/batches/VerificationScores';
 import { WebSocketStatus } from '@/components/batches/WebSocketStatus';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -27,10 +31,11 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBatch } from '@/hooks/batches/useBatch';
+import { useBatchResults } from '@/hooks/batches/useBatchResults';
 import { useDeleteBatch } from '@/hooks/batches/useDeleteBatch';
 import { useRetryBatch } from '@/hooks/batches/useRetryBatch';
 import { formatDate, formatFileSize, getFileIcon } from '@/lib/batch-utils';
-import type { BatchItem } from '@/types/batch';
+import type { BatchResultItem, BatchResultsParams } from '@/types/batch';
 
 export default function BatchDetailPage({
   params,
@@ -41,8 +46,21 @@ export default function BatchDetailPage({
   const router = useRouter();
   const { batchId } = resolvedParams;
   const [activeTab, setActiveTab] = useState('all');
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [selectedItemFilename, setSelectedItemFilename] = useState<string>('');
+  const [resultsParams, setResultsParams] = useState<BatchResultsParams>({
+    page: 1,
+    limit: 50,
+    detailed: false,
+    sortBy: 'createdAt',
+    sortOrder: 'asc',
+  });
 
   const { data: batch, isLoading } = useBatch(batchId);
+  const { data: batchResults, isLoading: resultsLoading } = useBatchResults(
+    batchId,
+    resultsParams
+  );
   const deleteBatchMutation = useDeleteBatch();
   const retryBatchMutation = useRetryBatch();
 
@@ -60,19 +78,32 @@ export default function BatchDetailPage({
   };
 
   const handleRetry = () => {
-    const failedItems =
-      batch?.items.filter((item) => item.status === 'FAILED') || [];
-    if (failedItems.length === 0) return;
+    if (!batch || batch.failedItems === 0) return;
 
     retryBatchMutation.mutate({
       batchId,
       data: {
-        itemIds: failedItems.map((item) => item.itemId),
+        itemIds: [], // Backend will retry all failed items if empty
       },
     });
   };
 
-  const filterItems = (items: BatchItem[]) => {
+  const handleViewDetails = (item: BatchResultItem) => {
+    setSelectedItemId(item.itemId);
+    setSelectedItemFilename(item.originalFilename || item.filename);
+  };
+
+  const handleDownload = (format: 'csv' | 'json') => {
+    if (batchResults?.data?.downloadUrls) {
+      const url =
+        format === 'csv'
+          ? batchResults.data.downloadUrls.csv
+          : batchResults.data.downloadUrls.json;
+      window.open(url, '_blank');
+    }
+  };
+
+  const filterItems = (items: BatchResultItem[]) => {
     switch (activeTab) {
       case 'completed':
         return items.filter((item) => item.status === 'COMPLETED');
@@ -127,7 +158,9 @@ export default function BatchDetailPage({
     );
   }
 
-  const filteredItems = filterItems(batch.items);
+  const items = batchResults?.data?.items || [];
+  const filteredItems = filterItems(items);
+  const pagination = batchResults?.data?.pagination;
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -194,9 +227,13 @@ export default function BatchDetailPage({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleDownload('csv')}>
                 <Download className="mr-2 h-4 w-4" />
-                Export
+                Download CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleDownload('json')}>
+                <Download className="mr-2 h-4 w-4" />
+                Download JSON
               </DropdownMenuItem>
               <DropdownMenuItem className="text-red-600" onClick={handleDelete}>
                 <Trash2 className="mr-2 h-4 w-4" />
@@ -272,16 +309,22 @@ export default function BatchDetailPage({
           </TabsList>
 
           <TabsContent value={activeTab} className="mt-4">
-            {filteredItems.length === 0 ? (
+            {resultsLoading ? (
+              <div className="space-y-3">
+                {[...Array(5)].map((_, i) => (
+                  <Skeleton key={i} className="h-24 w-full" />
+                ))}
+              </div>
+            ) : filteredItems.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
                 No files in this category
               </div>
             ) : (
-              <div className="space-y-3 max-h-96 overflow-y-auto">
+              <div className="space-y-3">
                 {filteredItems.map((item) => (
                   <div
                     key={item.itemId}
-                    className="flex items-start gap-4 p-4 bg-gray-50 rounded-md border border-gray-200"
+                    className="flex items-start gap-4 p-4 bg-gray-50 rounded-md border border-gray-200 hover:shadow-md transition-shadow"
                   >
                     <span className="text-2xl flex-shrink-0">
                       {getFileIcon(item.mimeType)}
@@ -290,64 +333,114 @@ export default function BatchDetailPage({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <h4 className="font-medium text-gray-900 truncate">
-                          {item.filename}
+                          {item.originalFilename || item.filename}
                         </h4>
                         {getItemStatusIcon(item.status)}
                       </div>
 
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-600 mb-2">
                         {formatFileSize(item.fileSize)} • {item.mimeType}
                       </p>
 
-                      {item.status === 'COMPLETED' &&
-                        item.processingStartedAt &&
-                        item.processingCompletedAt && (
-                          <p className="text-xs text-green-600 mt-1">
-                            ✓ Processed in{' '}
-                            {(
-                              (new Date(item.processingCompletedAt).getTime() -
-                                new Date(item.processingStartedAt).getTime()) /
-                              1000
-                            ).toFixed(1)}
-                            s
-                          </p>
-                        )}
-
-                      {item.status === 'PROCESSING' && item.progress > 0 && (
-                        <div className="mt-2">
-                          <div className="h-1 w-full bg-gray-200 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-blue-600 transition-all duration-300"
-                              style={{ width: `${item.progress}%` }}
-                            />
-                          </div>
-                          <p className="text-xs text-gray-600 mt-1">
-                            {item.progress}% complete
-                          </p>
+                      {/* Verification Badges */}
+                      {item.verifications && (
+                        <div className="mb-2">
+                          <VerificationBadges
+                            verifications={item.verifications}
+                            showLabels={false}
+                          />
                         </div>
                       )}
 
-                      {item.status === 'FAILED' && item.error && (
-                        <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
-                          <p className="text-xs text-red-700">
-                            <strong>Error:</strong> {item.error.message}
-                          </p>
-                          {item.retryCount < item.maxRetries && (
-                            <p className="text-xs text-red-600 mt-1">
-                              Retry {item.retryCount + 1} of {item.maxRetries}{' '}
-                              available
-                            </p>
-                          )}
+                      {/* Verification Scores */}
+                      {item.scores && (
+                        <div className="mb-2">
+                          <VerificationScoresComponent
+                            scores={item.scores}
+                            compact={true}
+                          />
                         </div>
+                      )}
+
+                      {item.status === 'COMPLETED' && item.processingCompletedAt && (
+                        <p className="text-xs text-green-600 mt-1">
+                          ✓ Completed {formatDate(item.processingCompletedAt)}
+                        </p>
                       )}
                     </div>
+
+                    {/* View Details Button */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleViewDetails(item)}
+                      disabled={item.status !== 'COMPLETED'}
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      Details
+                    </Button>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Pagination */}
+            {pagination && pagination.totalPages > 1 && (
+              <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                <p className="text-sm text-gray-600">
+                  Page {pagination.page} of {pagination.totalPages} ({pagination.total}{' '}
+                  total items)
+                </p>
+
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={!pagination.hasPrev}
+                    onClick={() =>
+                      setResultsParams((prev) => ({
+                        ...prev,
+                        page: (prev.page || 1) - 1,
+                      }))
+                    }
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={!pagination.hasNext}
+                    onClick={() =>
+                      setResultsParams((prev) => ({
+                        ...prev,
+                        page: (prev.page || 1) + 1,
+                      }))
+                    }
+                  >
+                    Next
+                  </Button>
+                </div>
               </div>
             )}
           </TabsContent>
         </Tabs>
       </Card>
+
+      {/* Item Detail Modal */}
+      {selectedItemId && (
+        <BatchItemDetailModal
+          open={!!selectedItemId}
+          onOpenChange={(open) => {
+            if (!open) {
+              setSelectedItemId(null);
+              setSelectedItemFilename('');
+            }
+          }}
+          batchId={batchId}
+          itemId={selectedItemId}
+          filename={selectedItemFilename}
+        />
+      )}
     </div>
   );
 }

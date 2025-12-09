@@ -225,3 +225,224 @@ export interface UploadProgress {
   status: 'pending' | 'uploading' | 'completed' | 'failed';
   error?: string;
 }
+
+// New types for batch results API
+
+export type VerificationStatus =
+  | 'verified'
+  | 'tampered'
+  | 'no_data_found'
+  | 'failed'
+  | 'pending'
+  | 'processing'
+  | 'skipped';
+
+export interface VerificationStatuses {
+  c2pa?: VerificationStatus;
+  timeline?: VerificationStatus;
+  geolocation?: VerificationStatus;
+  factCheck?: VerificationStatus;
+  deepfake?: VerificationStatus;
+}
+
+export interface VerificationScores {
+  overall?: number;
+  c2pa?: number;
+  timeline?: number;
+  geolocation?: number;
+  deepfake?: number;
+}
+
+export interface C2PASummary {
+  status: VerificationStatus;
+  manifestPresent: boolean;
+  issuer?: string;
+  signedAt?: string;
+  signatureValid?: boolean;
+  certificateValid?: boolean;
+  integrity?: string;
+  editedAfterSigning?: boolean;
+}
+
+export interface C2PAProcessingInfo {
+  processingTimeMs: number;
+  toolVersion: string;
+  fileSizeBytes: number;
+  mediaType: string;
+  verifiedAt: string;
+}
+
+export interface C2PAResult {
+  status: string;
+  manifestPresent: boolean;
+  issuer: string | null;
+  device: string | null;
+  software: string | null;
+  signedAt: string | null;
+  signatureValid: boolean;
+  certificateChainValid: boolean;
+  certificateExpired: boolean;
+  integrity: string | null;
+  editedAfterSigning: boolean | null;
+  rawManifest: unknown | null;
+  errors: string[];
+  processingInfo: C2PAProcessingInfo;
+}
+
+export interface C2PAFileInfo {
+  originalFilename: string;
+  mimeType: string;
+  sizeBytes: number;
+  hash: string;
+}
+
+export interface C2PAMetrics {
+  processingTimeMs: number;
+  queueWaitTimeMs: number;
+  retryCount: number;
+}
+
+export interface C2PAFull {
+  _id: string;
+  verificationId: string;
+  mediaId: string;
+  userId: string;
+  result: C2PAResult;
+  fileInfo: C2PAFileInfo;
+  metrics: C2PAMetrics;
+  isDeleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+export interface TimelineEvent {
+  date: string;
+  source: string;
+  url: string;
+  title?: string;
+  description?: string;
+}
+
+export interface TimelineSource {
+  name: string;
+  count: number;
+  urls: string[];
+}
+
+export interface TimelineFull {
+  status: string;
+  flags: string[];
+  timeline: TimelineEvent[];
+  sources: TimelineSource[];
+}
+
+export interface OCRData {
+  confidence: number;
+  language: string;
+}
+
+export interface TimelineSummary {
+  status: VerificationStatus;
+  score?: number;
+  classification?: string;
+  earliestDate?: string;
+  latestDate?: string;
+  daysDiscrepancy?: number;
+  topSources?: string[];
+}
+
+export interface BatchResultItem {
+  itemId: string;
+  filename: string;
+  originalFilename?: string;
+  mimeType: string;
+  fileSize: number;
+  status: BatchItemStatus;
+  mediaId?: string;
+  verifications?: VerificationStatuses;
+  scores?: VerificationScores;
+  uploadedAt: string;
+  processingStartedAt?: string;
+  processingCompletedAt?: string;
+  // Detailed fields (only with detailed=true)
+  c2paSummary?: C2PASummary;
+  timelineSummary?: TimelineSummary;
+  c2paVerification?: C2PASummary;
+  ocr?: OCRData;
+  ocrText?: string;
+  ocrConfidence?: number;
+  metadata?: {
+    cameraMake?: string;
+    cameraModel?: string;
+    datetimeOriginal?: string;
+    gps?: {
+      lat: number;
+      lon: number;
+    };
+    [key: string]: unknown;
+  };
+}
+
+export interface BatchResultsSummary {
+  totalItems: number;
+  successfulItems: number;
+  failedItems: number;
+  totalProcessingTime?: number;
+  averageProcessingTime?: number;
+  successRate?: number;
+  detectedDeepfakes?: number;
+  c2paVerified?: number;
+  metadataIssues?: number;
+}
+
+export interface BatchResultsPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+export interface BatchResultsParams {
+  page?: number;
+  limit?: number;
+  detailed?: boolean;
+  sortBy?: 'filename' | 'status' | 'createdAt' | 'score';
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface BatchResultsResponse {
+  success: boolean;
+  message: string;
+  data: {
+    batchId: string;
+    status: BatchStatus;
+    summary: BatchResultsSummary;
+    items: BatchResultItem[];
+    pagination: BatchResultsPagination;
+    downloadUrls?: {
+      csv: string;
+      json: string;
+    };
+  };
+}
+
+export interface BatchItemDetailsResponse {
+  success: boolean;
+  message: string;
+  data: BatchResultItem & {
+    c2paFull?: C2PAFull;
+    timelineFull?: TimelineFull;
+    geolocationFull?: unknown;
+    deepfakeFull?: unknown;
+    factCheckFull?: unknown;
+  };
+  timestamp: string;
+}
+
+export interface ItemVerificationResponse {
+  success: boolean;
+  data: unknown;
+}
