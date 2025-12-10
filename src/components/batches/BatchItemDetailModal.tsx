@@ -14,11 +14,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBatchItemDetails } from '@/hooks/batches/useBatchItemDetails';
 import { formatDate, formatFileSize, getFileIcon } from '@/lib/batch-utils';
-import { C2PACertificateStatus } from './C2PACertificateStatus';
 import { PerformanceMetrics } from './PerformanceMetrics';
-import { TimelineEventsDisplay } from './TimelineEventsDisplay';
 import { VerificationBadges } from './VerificationBadges';
 import { VerificationScoresComponent } from './VerificationScores';
+import { AllVerificationsTab } from './verifications/AllVerificationsTab';
+import { getAvailableVerifications } from './verifications/VerificationRegistry';
 
 interface BatchItemDetailModalProps {
   open: boolean;
@@ -49,6 +49,11 @@ export function BatchItemDetailModal({
     setCopiedMediaId(true);
     setTimeout(() => setCopiedMediaId(false), 2000);
   };
+
+  // Get count of available verifications for badge
+  const verificationsCount = itemDetails
+    ? getAvailableVerifications(itemDetails).length
+    : 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -82,12 +87,19 @@ export function BatchItemDetailModal({
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="verifications">Verifications</TabsTrigger>
-              {/* <TabsTrigger value="timeline">Timeline</TabsTrigger> */}
+              <TabsTrigger value="verifications">
+                Verifications
+                {verificationsCount > 0 && (
+                  <Badge variant="secondary" className="ml-2 text-xs">
+                    {verificationsCount}
+                  </Badge>
+                )}
+              </TabsTrigger>
               <TabsTrigger value="metadata">Metadata</TabsTrigger>
               <TabsTrigger value="raw">Raw Data</TabsTrigger>
             </TabsList>
 
+            {/* OVERVIEW TAB */}
             <TabsContent value="overview" className="space-y-4">
               {/* File Information */}
               <Card className="p-4">
@@ -173,7 +185,7 @@ export function BatchItemDetailModal({
                 c2paMetrics={itemDetails.c2paFull?.metrics}
               />
 
-              {/* Verification Status */}
+              {/* Verification Status Summary */}
               {itemDetails.verifications && (
                 <Card className="p-4">
                   <h3 className="text-sm font-semibold text-gray-900 mb-3">
@@ -186,7 +198,7 @@ export function BatchItemDetailModal({
                 </Card>
               )}
 
-              {/* Verification Scores */}
+              {/* Verification Scores Summary */}
               {itemDetails.scores && (
                 <Card className="p-4">
                   <h3 className="text-sm font-semibold text-gray-900 mb-3">
@@ -195,124 +207,14 @@ export function BatchItemDetailModal({
                   <VerificationScoresComponent scores={itemDetails.scores} />
                 </Card>
               )}
-
-              {/* OCR Results */}
-              {(itemDetails.ocrText || itemDetails.ocr) && (
-                <Card className="p-4">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                    OCR Extracted Text
-                    {(itemDetails.ocrConfidence ||
-                      itemDetails.ocr?.confidence) && (
-                      <span className="ml-2 text-xs text-gray-600">
-                        (Confidence:{' '}
-                        {(
-                          (itemDetails.ocrConfidence ||
-                            itemDetails.ocr?.confidence ||
-                            0) * 100
-                        ).toFixed(1)}
-                        %)
-                      </span>
-                    )}
-                    {itemDetails.ocr?.language &&
-                      itemDetails.ocr.language !== 'unknown' && (
-                        <Badge variant="secondary" className="ml-2 text-xs">
-                          {itemDetails.ocr.language}
-                        </Badge>
-                      )}
-                  </h3>
-                  {itemDetails.ocrText ? (
-                    <div className="bg-gray-50 rounded p-3 max-h-48 overflow-y-auto">
-                      <p className="text-sm text-gray-800 whitespace-pre-wrap">
-                        {itemDetails.ocrText}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="text-sm text-gray-500 text-center py-4">
-                      No text extracted
-                    </div>
-                  )}
-                </Card>
-              )}
             </TabsContent>
 
+            {/* VERIFICATIONS TAB - New Dynamic System */}
             <TabsContent value="verifications" className="space-y-4">
-              {/* C2PA Certificate Details */}
-              <C2PACertificateStatus c2paFull={itemDetails.c2paFull} />
-
-              {/* Quick Summary */}
-              {itemDetails.timelineSummary && (
-                <Card className="p-4">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                    Timeline Summary
-                  </h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Status:</span>
-                      <Badge variant="secondary">
-                        {itemDetails.timelineSummary.status}
-                      </Badge>
-                    </div>
-                    {itemDetails.timelineSummary.score !== undefined && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Score:</span>
-                        <span className="font-medium">
-                          {(itemDetails.timelineSummary.score * 100).toFixed(0)}
-                          %
-                        </span>
-                      </div>
-                    )}
-                    {itemDetails.timelineSummary.classification && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Classification:</span>
-                        <span className="font-medium">
-                          {itemDetails.timelineSummary.classification}
-                        </span>
-                      </div>
-                    )}
-                    {itemDetails.timelineSummary.earliestDate && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Earliest Date:</span>
-                        <span className="font-medium">
-                          {itemDetails.timelineSummary.earliestDate}
-                        </span>
-                      </div>
-                    )}
-                    {itemDetails.timelineSummary.latestDate && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Latest Date:</span>
-                        <span className="font-medium">
-                          {itemDetails.timelineSummary.latestDate}
-                        </span>
-                      </div>
-                    )}
-                    {itemDetails.timelineSummary.topSources &&
-                      itemDetails.timelineSummary.topSources.length > 0 && (
-                        <div>
-                          <span className="text-gray-600">Top Sources:</span>
-                          <div className="flex flex-wrap gap-2 mt-1">
-                            {itemDetails.timelineSummary.topSources.map(
-                              (source) => (
-                                <Badge
-                                  key={source}
-                                  variant="secondary"
-                                  className="text-xs"
-                                >
-                                  {source}
-                                </Badge>
-                              )
-                            )}
-                          </div>
-                        </div>
-                      )}
-                  </div>
-                </Card>
-              )}
+              <AllVerificationsTab itemDetails={itemDetails} />
             </TabsContent>
 
-            <TabsContent value="timeline" className="space-y-4">
-              <TimelineEventsDisplay timelineFull={itemDetails.timelineFull} />
-            </TabsContent>
-
+            {/* METADATA TAB */}
             <TabsContent value="metadata" className="space-y-4">
               {itemDetails.metadata &&
               Object.keys(itemDetails.metadata).length > 0 ? (
@@ -363,6 +265,7 @@ export function BatchItemDetailModal({
               )}
             </TabsContent>
 
+            {/* RAW DATA TAB */}
             <TabsContent value="raw" className="space-y-4">
               <Card className="p-4">
                 <h3 className="text-sm font-semibold text-gray-900 mb-3">

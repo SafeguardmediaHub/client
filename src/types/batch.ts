@@ -243,6 +243,7 @@ export interface VerificationStatuses {
   geolocation?: VerificationStatus;
   factCheck?: VerificationStatus;
   deepfake?: VerificationStatus;
+  ocr?: VerificationStatus;
 }
 
 export interface VerificationScores {
@@ -429,16 +430,19 @@ export interface BatchResultsResponse {
   };
 }
 
+// Extended type for detailed item view
+export interface BatchItemDetails extends BatchResultItem {
+  c2paFull?: C2PAFull;
+  timelineFull?: TimelineFull;
+  geolocationFull?: unknown;
+  deepfakeFull?: unknown;
+  factCheckFull?: unknown;
+}
+
 export interface BatchItemDetailsResponse {
   success: boolean;
   message: string;
-  data: BatchResultItem & {
-    c2paFull?: C2PAFull;
-    timelineFull?: TimelineFull;
-    geolocationFull?: unknown;
-    deepfakeFull?: unknown;
-    factCheckFull?: unknown;
-  };
+  data: BatchItemDetails;
   timestamp: string;
 }
 
