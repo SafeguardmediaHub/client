@@ -5,9 +5,9 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
-} from "@tanstack/react-query";
-import { toast } from "sonner";
-import api from "@/lib/api";
+} from '@tanstack/react-query';
+import { toast } from 'sonner';
+import api from '@/lib/api';
 
 export interface Media {
   id: string;
@@ -32,6 +32,7 @@ export interface Media {
   user?: {
     name: string;
   };
+  extractedText?: string;
 }
 
 interface Pagination {
@@ -78,10 +79,10 @@ const fetchUserMedia = async (params?: {
   type?: string;
   status?: string;
 }): Promise<UserMediaResponse> => {
-  const { data } = await api.get("/api/media", {
+  const { data } = await api.get('/api/media', {
     params,
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
   });
 
@@ -91,7 +92,7 @@ const fetchUserMedia = async (params?: {
 const deleteMedia = async (id: string): Promise<DeleteMediaResponse> => {
   const { data } = await api.delete(`/api/media/${id}`, {
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
   });
 
@@ -105,9 +106,9 @@ const urlUpload = async ({ url }: { url: string }) => {
     {
       withCredentials: true,
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
-    },
+    }
   );
 
   return data;
@@ -117,9 +118,9 @@ const requestPresignedUrl = async (
   filename: string,
   contentType: string,
   fileSize: number,
-  uploadType: string,
+  uploadType: string
 ) => {
-  const { data } = await api.post("/api/media/presigned-url", {
+  const { data } = await api.post('/api/media/presigned-url', {
     filename,
     contentType,
     fileSize,
@@ -131,16 +132,16 @@ const requestPresignedUrl = async (
 
 const uploadToS3 = async (file: File, uploadUrl: string): Promise<void> => {
   await fetch(uploadUrl, {
-    method: "PUT",
+    method: 'PUT',
     body: file,
     headers: {
-      "Content-Type": file.type || "application/octet-stream",
+      'Content-Type': file.type || 'application/octet-stream',
     },
   });
 };
 
 const confirmUpload = async (s3Key: string, correlationId: string) => {
-  const { data } = await api.post("/api/media/confirm-upload", {
+  const { data } = await api.post('/api/media/confirm-upload', {
     s3Key,
     correlationId,
   });
@@ -157,7 +158,7 @@ const uploadKeyframe = async ({
     file.name,
     file.type,
     file.size,
-    "general_image",
+    'general_image'
   );
 
   const { uploadUrl, s3Key, correlationId } = presignedData.upload;
@@ -173,7 +174,7 @@ const uploadKeyframe = async ({
 
 export const useGetMedia = () => {
   return useQuery({
-    queryKey: ["userMedia"],
+    queryKey: ['userMedia'],
     queryFn: () => fetchUserMedia(),
     staleTime: 5000,
     placeholderData: keepPreviousData,
@@ -184,15 +185,15 @@ export const useDeleteMedia = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: ["deleteMedia"],
+    mutationKey: ['deleteMedia'],
     mutationFn: (id: string) => deleteMedia(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userMedia"] });
-      toast.success("Media deleted successfully.");
+      queryClient.invalidateQueries({ queryKey: ['userMedia'] });
+      toast.success('Media deleted successfully.');
     },
     onError: (error) => {
-      console.error("Error deleting media:", error);
-      toast.error("Failed to delete media. Please try again.");
+      console.error('Error deleting media:', error);
+      toast.error('Failed to delete media. Please try again.');
     },
   });
 };
@@ -202,12 +203,12 @@ export function useUrlUpload() {
   return useMutation({
     mutationFn: ({ url }: { url: string }) => urlUpload({ url }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userMedia"] });
-      toast.success("Media uploaded successfully.");
+      queryClient.invalidateQueries({ queryKey: ['userMedia'] });
+      toast.success('Media uploaded successfully.');
     },
     onError: (error) => {
-      console.error("Error uploading media:", error);
-      toast.error("Failed to start media upload. Please try again.");
+      console.error('Error uploading media:', error);
+      toast.error('Failed to start media upload. Please try again.');
     },
   });
 }
@@ -217,10 +218,10 @@ export function useUploadKeyframe() {
   return useMutation({
     mutationFn: (params: UploadKeyframeParams) => uploadKeyframe(params),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userMedia"] });
+      queryClient.invalidateQueries({ queryKey: ['userMedia'] });
     },
     onError: (error) => {
-      console.error("Error uploading keyframe:", error);
+      console.error('Error uploading keyframe:', error);
       throw error;
     },
   });

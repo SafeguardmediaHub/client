@@ -1,45 +1,46 @@
-"use client";
+'use client';
 
 import {
   CalendarIcon,
   FileIcon,
   FileTextIcon,
   HardDriveIcon,
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Media } from "@/hooks/useMedia";
-import { formatFileSize } from "@/lib/utils";
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { Media } from '@/hooks/useMedia';
+import { formatFileSize } from '@/lib/utils';
 
 interface GeneralInfoViewProps {
   media: Media;
 }
 
 export function GeneralInfoView({ media }: GeneralInfoViewProps) {
+  console.log('this is media', media);
   const formatDate = (date: Date | string) => {
-    if (typeof date === "string") {
-      return new Date(date).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
+    if (typeof date === 'string') {
+      return new Date(date).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
       });
     }
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
     });
   };
 
   const getFileTypeIcon = (uploadType: string) => {
     switch (uploadType) {
-      case "video":
+      case 'video':
         return <FileTextIcon className="w-4 h-4" />;
-      case "audio":
+      case 'audio':
         return <HardDriveIcon className="w-4 h-4" />;
       default:
         return <FileIcon className="w-4 h-4" />;
@@ -100,7 +101,7 @@ export function GeneralInfoView({ media }: GeneralInfoViewProps) {
           <div className="flex items-center gap-2">
             <span className="font-medium">Type:</span>
             <Badge variant="outline" className="text-xs">
-              {media.uploadType.replace("_", " ").toUpperCase()}
+              {media.uploadType.replace('_', ' ').toUpperCase()}
             </Badge>
           </div>
 
@@ -147,6 +148,22 @@ export function GeneralInfoView({ media }: GeneralInfoViewProps) {
           </CardContent>
         </Card>
       )}
+
+      {/* Extracted Text (OCR) */}
+      {media.extractedText && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base font-semibold">
+              Extracted Text (OCR)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-sm text-gray-700 whitespace-pre-wrap break-words max-h-96 overflow-y-auto">
+              {media.extractedText}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
@@ -154,15 +171,15 @@ export function GeneralInfoView({ media }: GeneralInfoViewProps) {
 // Helper function to get status color (assuming it exists in utils)
 function getStatusColor(status: string): string {
   switch (status.toLowerCase()) {
-    case "analyzed":
-      return "bg-green-100 text-green-800 border-green-200";
-    case "processing":
-      return "bg-yellow-100 text-yellow-800 border-yellow-200";
-    case "pending":
-      return "bg-gray-100 text-gray-800 border-gray-200";
-    case "error":
-      return "bg-red-100 text-red-800 border-red-200";
+    case 'analyzed':
+      return 'bg-green-100 text-green-800 border-green-200';
+    case 'processing':
+      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    case 'pending':
+      return 'bg-gray-100 text-gray-800 border-gray-200';
+    case 'error':
+      return 'bg-red-100 text-red-800 border-red-200';
     default:
-      return "bg-gray-100 text-gray-800 border-gray-200";
+      return 'bg-gray-100 text-gray-800 border-gray-200';
   }
 }
