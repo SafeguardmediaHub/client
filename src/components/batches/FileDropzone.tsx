@@ -143,7 +143,7 @@ export function FileDropzone({
           Drop files here or click to browse
         </p>
         <p className="text-sm text-gray-500">
-          Supported: Images, Videos, Audio, Documents
+          Supported: Images (JPG, PNG, HEIC, HEIF, WebP, GIF, BMP), Videos, Audio, Documents
         </p>
         <p className="text-xs text-gray-500 mt-2">
           Max file size: 100MB • Max files: {maxFiles}

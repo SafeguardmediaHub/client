@@ -249,7 +249,7 @@ export function BatchItemDetailModal({
                     )}
                     {itemDetails.metadata.gps && (
                       <div>
-                        <span className="text-gray-600">GPS Location:</span>
+                        <span className="text-gray-600">GPS Coordinates:</span>
                         <p className="font-medium text-gray-900">
                           {itemDetails.metadata.gps.lat.toFixed(6)},{' '}
                           {itemDetails.metadata.gps.lon.toFixed(6)}

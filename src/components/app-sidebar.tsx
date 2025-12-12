@@ -9,9 +9,9 @@ import {
   FileBarChart,
   FileText,
   Film,
+  Layers,
   LayoutDashboard,
   LayoutGrid,
-  Layers,
   MapPin,
   Scissors,
   Search,
@@ -51,6 +51,12 @@ const data = {
       name: 'Dashboard',
       url: '/dashboard',
       icon: LayoutDashboard,
+    },
+    {
+      name: 'Authenticity Check',
+      url: '/dashboard/authenticity-check',
+      icon: ShieldCheck,
+      featureId: 'authenticity_check',
     },
     {
       name: 'Library',
@@ -111,12 +117,6 @@ const data = {
       featureId: 'timeline_verification',
     },
     {
-      name: 'Text Extraction (OCR)',
-      url: '#',
-      icon: FileText,
-      featureId: 'ocr_extraction',
-    },
-    {
       name: 'Fact Checking',
       url: '/dashboard/fact-check',
       icon: BookCheck,
@@ -164,13 +164,13 @@ const data = {
       icon: Award,
       featureId: 'c2pa_badges',
     },
-    {
-      name: 'Admin Panel',
-      url: '/dashboard/authenticity/admin',
-      icon: Settings,
-      featureId: 'c2pa_admin',
-      adminOnly: true,
-    },
+    // {
+    //   name: 'Admin Panel',
+    //   url: '/dashboard/authenticity/admin',
+    //   icon: Settings,
+    //   featureId: 'c2pa_admin',
+    //   adminOnly: true,
+    // },
   ],
 };
 
@@ -195,7 +195,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="pb-4">
         <NavOverview projects={data.overview} />
         <NavDetectionTools projects={data.detection} />
         <NavVerificationTools projects={data.verification} />

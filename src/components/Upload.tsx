@@ -68,7 +68,7 @@ export function Upload() {
       <form onSubmit={handleUpload}>
         <input
           type="file"
-          accept="image/jpeg,image/png"
+          accept="image/jpeg,image/png,image/heic,image/heif,.heic,.heif"
           name="file"
           className=""
           onChange={handleFileChange}

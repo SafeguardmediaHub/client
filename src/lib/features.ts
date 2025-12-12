@@ -33,6 +33,22 @@ export const FEATURES: Record<string, FeatureMetadata> = {
     url: "/dashboard/library",
     category: "overview",
   },
+  authenticity_check: {
+    id: "authenticity_check",
+    name: "Authenticity Check",
+    description:
+      "Comprehensive media integrity verification including metadata analysis, cryptographic verification, and forensic examination.",
+    status: "available",
+    url: "/dashboard/authenticity-check",
+    category: "overview",
+    benefits: [
+      "Multi-layered integrity verification",
+      "Metadata and EXIF analysis",
+      "Cryptographic signature validation",
+      "Forensic tampering detection",
+      "Comprehensive findings report",
+    ],
+  },
 
   // Detection Tools
   deepfake_detection: {

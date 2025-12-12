@@ -280,6 +280,16 @@ export default function BatchDetailPage({
               ✗ Reverse Search
             </span>
           )}
+          {batch.options?.enableGeolocation && (
+            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+              ✓ Geolocation Verification
+            </span>
+          )}
+          {!batch.options?.enableGeolocation && (
+            <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
+              ✗ Geolocation Verification
+            </span>
+          )}
         </div>
         {batch.webhookUrl && (
           <p className="text-sm text-gray-600 mt-3">

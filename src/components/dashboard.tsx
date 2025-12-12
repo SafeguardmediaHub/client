@@ -407,6 +407,8 @@ const Dashboard: FC<DashboardProps> = ({
                   '.jpg',
                   '.jpeg',
                   '.png',
+                  '.heic',
+                  '.heif',
                   '.mp4',
                   '.mov',
                   '.mp3',

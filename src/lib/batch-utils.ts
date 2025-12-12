@@ -2,7 +2,15 @@ import type { FileValidationResult } from '@/types/batch';
 
 // Allowed file types by category
 export const ALLOWED_FILE_TYPES = {
-  image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp'],
+  image: [
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'image/bmp',
+    'image/heic',
+    'image/heif',
+  ],
   video: [
     'video/mp4',
     'video/webm',
@@ -25,6 +33,8 @@ const MIME_TO_EXTENSIONS: Record<string, string[]> = {
   'image/gif': ['gif'],
   'image/webp': ['webp'],
   'image/bmp': ['bmp'],
+  'image/heic': ['heic'],
+  'image/heif': ['heif'],
   'video/mp4': ['mp4'],
   'video/webm': ['webm'],
   'video/quicktime': ['mov'],
@@ -58,19 +68,27 @@ export function validateFile(file: File): FileValidationResult {
     return { valid: false, error: 'File is empty' };
   }
 
-  // Check MIME type
-  const allowedTypes: string[] = Object.values(ALLOWED_FILE_TYPES).flat();
-  if (!allowedTypes.includes(file.type)) {
-    return { valid: false, error: 'Unsupported file type' };
-  }
-
-  // Check file extension matches MIME type
+  // Get file extension
   const extension = file.name.split('.').pop()?.toLowerCase();
   if (!extension) {
     return { valid: false, error: 'File has no extension' };
   }
 
-  const allowedExtensions = MIME_TO_EXTENSIONS[file.type];
+  // Special handling for HEIC/HEIF files - browsers often don't set correct MIME type
+  let mimeType = file.type;
+  if ((extension === 'heic' || extension === 'heif') &&
+      (!mimeType || mimeType === 'application/octet-stream' || mimeType === '')) {
+    mimeType = extension === 'heic' ? 'image/heic' : 'image/heif';
+  }
+
+  // Check MIME type
+  const allowedTypes: string[] = Object.values(ALLOWED_FILE_TYPES).flat();
+  if (!allowedTypes.includes(mimeType)) {
+    return { valid: false, error: 'Unsupported file type' };
+  }
+
+  // Check file extension matches MIME type
+  const allowedExtensions = MIME_TO_EXTENSIONS[mimeType];
   if (!allowedExtensions || !allowedExtensions.includes(extension)) {
     return {
       valid: false,
@@ -243,4 +261,61 @@ export async function retryWithBackoff<T>(
   }
 
   throw new Error('Max retries exceeded');
+}
+
+/**
+ * Format GPS coordinates to a readable string
+ * @param lat - Latitude
+ * @param lng - Longitude
+ * @returns Formatted coordinate string (e.g., "7.4819°N, 5.7420°E")
+ */
+export function formatCoordinates(lat: number, lng: number): string {
+  const latDir = lat >= 0 ? 'N' : 'S';
+  const lngDir = lng >= 0 ? 'E' : 'W';
+
+  return `${Math.abs(lat).toFixed(4)}°${latDir}, ${Math.abs(lng).toFixed(4)}°${lngDir}`;
+}
+
+/**
+ * Generate Google Static Maps API URL
+ * @param lat - Latitude
+ * @param lng - Longitude
+ * @param zoom - Zoom level (default 12)
+ * @param width - Image width in pixels (default 600)
+ * @param height - Image height in pixels (default 300)
+ * @returns Static map image URL
+ */
+export function generateStaticMapUrl(
+  lat: number,
+  lng: number,
+  zoom: number = 12,
+  width: number = 600,
+  height: number = 300,
+): string {
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+  if (!apiKey) {
+    console.warn('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is not set');
+    return '';
+  }
+
+  const params = new URLSearchParams({
+    center: `${lat},${lng}`,
+    zoom: zoom.toString(),
+    size: `${width}x${height}`,
+    markers: `color:red|${lat},${lng}`,
+    key: apiKey,
+  });
+
+  return `https://maps.googleapis.com/maps/api/staticmap?${params.toString()}`;
+}
+
+/**
+ * Generate Google Maps link for opening in new tab
+ * @param lat - Latitude
+ * @param lng - Longitude
+ * @returns Google Maps URL
+ */
+export function generateGoogleMapsLink(lat: number, lng: number): string {
+  return `https://www.google.com/maps?q=${lat},${lng}`;
 }

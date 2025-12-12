@@ -20,6 +20,7 @@ export interface BatchOptions {
   enableOCR: boolean;
   enableReverseSearch: boolean;
   enableDeepfake: boolean;
+  enableGeolocation: boolean;
   priority: Priority;
 }
 
@@ -102,6 +103,7 @@ export interface CreateBatchRequest {
     enableOCR?: boolean;
     enableReverseSearch?: boolean;
     enableDeepfake?: boolean;
+    enableGeolocation?: boolean;
   };
   webhookUrl?: string;
 }
@@ -210,6 +212,7 @@ export interface RetryBatchItemsRequest {
     reverseSearch?: boolean;
     ocrExtraction?: boolean;
     metadataExtraction?: boolean;
+    geolocationVerification?: boolean;
   };
 }
 
@@ -353,6 +356,96 @@ export interface TimelineSummary {
   topSources?: string[];
 }
 
+export interface GeolocationSummary {
+  id: string;
+  status: string;
+  match?: boolean;
+  confidence?: number;
+  claimedLocation?: string;
+}
+
+export interface GeolocationCoordinates {
+  lat: number;
+  lng: number;
+}
+
+export interface GeolocationMarker {
+  type: string;
+  coordinates: GeolocationCoordinates;
+  label: string;
+}
+
+export interface GeolocationMapData {
+  centerCoordinates: GeolocationCoordinates;
+  zoom: number;
+  markers: GeolocationMarker[];
+}
+
+export interface GeolocationAddressComponents {
+  city?: string;
+  state?: string;
+  country?: string;
+  country_code?: string;
+}
+
+export interface GeolocationReverseGeocode {
+  address: string;
+  components: GeolocationAddressComponents;
+  provider: string;
+}
+
+export interface GeolocationGeocoding {
+  reverseGeocode?: GeolocationReverseGeocode;
+}
+
+export interface GeolocationExtractedCoordinates {
+  lat: number;
+  lng: number;
+  source: string;
+}
+
+export interface GeolocationVerification {
+  status: string;
+  match?: boolean;
+  confidence?: number;
+  confidenceExplanation?: {
+    summary: string;
+    reasons: string[];
+    missingData?: {
+      gpsCoordinates: boolean;
+      geocodedLocation: boolean;
+    };
+  };
+  discrepancies?: {
+    addressMismatch: boolean;
+    countryMismatch: boolean;
+  };
+}
+
+export interface GeolocationApiCosts {
+  geocoding: number;
+  staticMap: number;
+  total: number;
+}
+
+export interface GeolocationFull {
+  _id: string;
+  mediaId: string;
+  userId: string;
+  claimedLocation?: {
+    raw?: string;
+  };
+  verification: GeolocationVerification;
+  mapData: GeolocationMapData;
+  extractedCoordinates?: GeolocationExtractedCoordinates;
+  geocoding?: GeolocationGeocoding;
+  processingTime: number;
+  apiCosts: GeolocationApiCosts;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
 export interface BatchResultItem {
   itemId: string;
   filename: string;
@@ -369,6 +462,7 @@ export interface BatchResultItem {
   // Detailed fields (only with detailed=true)
   c2paSummary?: C2PASummary;
   timelineSummary?: TimelineSummary;
+  geolocation?: GeolocationSummary;
   c2paVerification?: C2PASummary;
   ocr?: OCRData;
   ocrText?: string;
@@ -380,6 +474,7 @@ export interface BatchResultItem {
     gps?: {
       lat: number;
       lon: number;
+      altitude?: number;
     };
     [key: string]: unknown;
   };
@@ -434,7 +529,7 @@ export interface BatchResultsResponse {
 export interface BatchItemDetails extends BatchResultItem {
   c2paFull?: C2PAFull;
   timelineFull?: TimelineFull;
-  geolocationFull?: unknown;
+  geolocationFull?: GeolocationFull;
   deepfakeFull?: unknown;
   factCheckFull?: unknown;
 }

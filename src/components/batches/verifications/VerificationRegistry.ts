@@ -90,16 +90,19 @@ export const VERIFICATION_REGISTRY: Record<string, VerificationMeta> = {
       text: 'text-green-700',
     },
     priority: 3,
-    isAvailable: (item) => !!(item.geolocationFull || item.metadata?.gps),
+    isAvailable: (item) => !!(item.geolocationFull || item.geolocation || item.metadata?.gps),
     extractData: (item) => {
-      if (!item.geolocationFull && !item.metadata?.gps) return null;
-
-      const geoData = item.geolocationFull as { status?: string } | undefined;
+      if (!item.geolocationFull && !item.geolocation && !item.metadata?.gps) return null;
 
       return {
-        status: geoData?.status || 'completed',
+        status: item.geolocation?.status || 'completed',
         score: item.scores?.geolocation,
-        summary: item.metadata?.gps,
+        summary: item.geolocation,
+        details: {
+          coordinates: item.geolocationFull?.extractedCoordinates,
+          address: item.geolocationFull?.geocoding?.reverseGeocode,
+          metadata: item.metadata,
+        },
         fullData: item.geolocationFull,
       };
     },

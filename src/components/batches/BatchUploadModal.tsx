@@ -1,8 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { CheckCircle2, Loader2 } from 'lucide-react';
+import { CheckCircle2, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -10,47 +12,46 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Progress } from '@/components/ui/progress';
-import { FileDropzone } from './FileDropzone';
-import { useCreateBatch } from '@/hooks/batches/useCreateBatch';
-import type { UploadProgress } from '@/types/batch';
-import { formatFileSize, getFileIcon } from '@/lib/batch-utils';
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import { Textarea } from "@/components/ui/textarea";
+import { useCreateBatch } from "@/hooks/batches/useCreateBatch";
+import { formatFileSize, getFileIcon } from "@/lib/batch-utils";
+import type { UploadProgress } from "@/types/batch";
+import { FileDropzone } from "./FileDropzone";
 
 interface BatchUploadModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-type UploadStep = 'details' | 'files' | 'uploading' | 'complete';
+type UploadStep = "details" | "files" | "uploading" | "complete";
 
 export function BatchUploadModal({
   open,
   onOpenChange,
 }: BatchUploadModalProps) {
   const router = useRouter();
-  const [step, setStep] = useState<UploadStep>('details');
+  const [step, setStep] = useState<UploadStep>("details");
   const [files, setFiles] = useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = useState<UploadProgress[]>([]);
-  const [createdBatchId, setCreatedBatchId] = useState<string>('');
+  const [createdBatchId, setCreatedBatchId] = useState<string>("");
 
   // Form state
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
+    name: "",
+    description: "",
     tags: [] as string[],
-    tagInput: '',
-    webhookUrl: '',
+    tagInput: "",
+    webhookUrl: "",
     options: {
       enableC2PA: true,
       enableOCR: true,
       enableReverseSearch: false,
       enableDeepfake: true,
+      enableGeolocation: false,
     },
   });
 
@@ -58,7 +59,7 @@ export function BatchUploadModal({
     onUploadProgress: setUploadProgress,
     onSuccess: (batchId) => {
       setCreatedBatchId(batchId);
-      setStep('complete');
+      setStep("complete");
     },
   });
 
@@ -70,7 +71,7 @@ export function BatchUploadModal({
       setFormData({
         ...formData,
         tags: [...formData.tags, formData.tagInput.trim()],
-        tagInput: '',
+        tagInput: "",
       });
     }
   };
@@ -83,10 +84,10 @@ export function BatchUploadModal({
   };
 
   const handleNext = () => {
-    if (step === 'details') {
-      setStep('files');
-    } else if (step === 'files' && files.length > 0) {
-      setStep('uploading');
+    if (step === "details") {
+      setStep("files");
+    } else if (step === "files" && files.length > 0) {
+      setStep("uploading");
       handleUpload();
     }
   };
@@ -112,21 +113,22 @@ export function BatchUploadModal({
     onOpenChange(false);
     // Reset state after closing
     setTimeout(() => {
-      setStep('details');
+      setStep("details");
       setFiles([]);
       setUploadProgress([]);
-      setCreatedBatchId('');
+      setCreatedBatchId("");
       setFormData({
-        name: '',
-        description: '',
+        name: "",
+        description: "",
         tags: [],
-        tagInput: '',
-        webhookUrl: '',
+        tagInput: "",
+        webhookUrl: "",
         options: {
           enableC2PA: true,
           enableOCR: true,
           enableReverseSearch: false,
-          enableDeepfake: true,
+          enableDeepfake: false,
+          enableGeolocation: false,
         },
       });
     }, 300);
@@ -134,16 +136,16 @@ export function BatchUploadModal({
 
   const renderStepIndicator = () => (
     <div className="flex items-center gap-2 mb-6">
-      {['details', 'files', 'uploading'].map((s, idx) => (
+      {["details", "files", "uploading"].map((s, idx) => (
         <div key={s} className="flex items-center gap-2">
           <div
             className={`h-2 w-2 rounded-full ${
               step === s
-                ? 'bg-blue-600'
-                : ['details', 'files'].indexOf(step as string) >
-                    ['details', 'files'].indexOf(s)
-                  ? 'bg-blue-600'
-                  : 'bg-gray-300'
+                ? "bg-blue-600"
+                : ["details", "files"].indexOf(step as string) >
+                    ["details", "files"].indexOf(s)
+                  ? "bg-blue-600"
+                  : "bg-gray-300"
             }`}
           />
           {idx < 2 && <div className="h-0.5 w-8 bg-gray-300" />}
@@ -155,10 +157,10 @@ export function BatchUploadModal({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[680px] max-h-[90vh] overflow-y-auto">
-        {step !== 'complete' && renderStepIndicator()}
+        {step !== "complete" && renderStepIndicator()}
 
         {/* Step 1: Batch Details */}
-        {step === 'details' && (
+        {step === "details" && (
           <>
             <DialogHeader>
               <DialogTitle>Create New Batch</DialogTitle>
@@ -212,13 +214,17 @@ export function BatchUploadModal({
                       setFormData({ ...formData, tagInput: e.target.value })
                     }
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
+                      if (e.key === "Enter") {
                         e.preventDefault();
                         handleAddTag();
                       }
                     }}
                   />
-                  <Button type="button" variant="outline" onClick={handleAddTag}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleAddTag}
+                  >
                     Add
                   </Button>
                 </div>
@@ -331,6 +337,27 @@ export function BatchUploadModal({
                       Enable Deepfake Detection
                     </label>
                   </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="geolocation"
+                      checked={formData.options.enableGeolocation}
+                      onCheckedChange={(checked) =>
+                        setFormData({
+                          ...formData,
+                          options: {
+                            ...formData.options,
+                            enableGeolocation: checked as boolean,
+                          },
+                        })
+                      }
+                    />
+                    <label
+                      htmlFor="geolocation"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Enable Geolocation Verification
+                    </label>
+                  </div>
                 </div>
               </div>
 
@@ -359,7 +386,7 @@ export function BatchUploadModal({
         )}
 
         {/* Step 2: File Selection */}
-        {step === 'files' && (
+        {step === "files" && (
           <>
             <DialogHeader>
               <DialogTitle>Upload Files</DialogTitle>
@@ -373,7 +400,7 @@ export function BatchUploadModal({
             </div>
 
             <DialogFooter>
-              <Button variant="outline" onClick={() => setStep('details')}>
+              <Button variant="outline" onClick={() => setStep("details")}>
                 Back
               </Button>
               <Button onClick={handleNext} disabled={files.length === 0}>
@@ -384,7 +411,7 @@ export function BatchUploadModal({
         )}
 
         {/* Step 3: Uploading */}
-        {step === 'uploading' && (
+        {step === "uploading" && (
           <>
             <DialogHeader>
               <DialogTitle>Uploading Files</DialogTitle>
@@ -399,13 +426,16 @@ export function BatchUploadModal({
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium">Overall Progress</span>
                   <span className="font-bold">
-                    {uploadProgress.filter((p) => p.status === 'completed').length}/
-                    {uploadProgress.length}
+                    {
+                      uploadProgress.filter((p) => p.status === "completed")
+                        .length
+                    }
+                    /{uploadProgress.length}
                   </span>
                 </div>
                 <Progress
                   value={
-                    (uploadProgress.filter((p) => p.status === 'completed')
+                    (uploadProgress.filter((p) => p.status === "completed")
                       .length /
                       uploadProgress.length) *
                     100
@@ -425,7 +455,7 @@ export function BatchUploadModal({
                         <span className="text-lg">
                           {getFileIcon(
                             files.find((f) => f.name === progress.filename)
-                              ?.type || '',
+                              ?.type || "",
                           )}
                         </span>
                         <p className="text-sm font-medium truncate">
@@ -433,18 +463,18 @@ export function BatchUploadModal({
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        {progress.status === 'uploading' && (
+                        {progress.status === "uploading" && (
                           <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
                         )}
-                        {progress.status === 'completed' && (
+                        {progress.status === "completed" && (
                           <CheckCircle2 className="h-4 w-4 text-green-600" />
                         )}
-                        {progress.status === 'failed' && (
+                        {progress.status === "failed" && (
                           <span className="text-red-600 text-xs">Failed</span>
                         )}
                       </div>
                     </div>
-                    {progress.status === 'uploading' && (
+                    {progress.status === "uploading" && (
                       <Progress value={progress.progress} className="h-1" />
                     )}
                     {progress.error && (
@@ -464,7 +494,7 @@ export function BatchUploadModal({
         )}
 
         {/* Step 4: Complete */}
-        {step === 'complete' && (
+        {step === "complete" && (
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
