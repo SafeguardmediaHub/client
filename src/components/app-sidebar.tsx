@@ -85,9 +85,15 @@ const data = {
     },
     {
       name: 'Visual Forensics',
-      url: '#',
+      url: '/dashboard/visual',
       icon: Search,
       featureId: 'visual_forensics',
+    },
+        {
+      name: 'Audio Forensics',
+      url: '/dashboard/audio',
+      icon: Search,
+      featureId: 'audio_forensics',
     },
     {
       name: 'Keyframe Extraction',
