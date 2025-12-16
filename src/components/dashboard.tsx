@@ -360,12 +360,20 @@ const Dashboard: FC<DashboardProps> = ({
               <UploadIcon className="w-8 h-8 sm:w-10 sm:h-10 text-muted-foreground" />
               <div className="flex flex-col items-center gap-1 w-full">
                 <p className="text-sm sm:text-base text-center">
-                  <span className="hidden sm:inline">Drag and drop to upload or click to browse files</span>
-                  <span className="sm:hidden">Tap to select files or drag & drop</span>
+                  <span className="hidden sm:inline">
+                    Drag and drop to upload or click to browse files
+                  </span>
+                  <span className="sm:hidden">
+                    Tap to select files or drag & drop
+                  </span>
                 </p>
                 <p className="text-xs sm:text-sm text-primary text-center">
-                  <span className="hidden sm:inline">Supports JPEG, PNG, MP4, MOV and common audio (Max 1GB)</span>
-                  <span className="sm:hidden">Images, videos, audio (Max 1GB)</span>
+                  <span className="hidden sm:inline">
+                    Supports JPEG, PNG, MP4, MOV and common audio (Max 1GB)
+                  </span>
+                  <span className="sm:hidden">
+                    Images, videos, audio (Max 1GB)
+                  </span>
                 </p>
               </div>
 
@@ -427,12 +435,19 @@ const Dashboard: FC<DashboardProps> = ({
                 disabled={isBusy}
               />
 
-              <Button type="button" onClick={onBrowseClick} disabled={isBusy} className="w-full sm:w-auto">
+              <Button
+                type="button"
+                onClick={onBrowseClick}
+                disabled={isBusy}
+                className="w-full sm:w-auto"
+              >
                 {isBusy ? (
                   'Please wait…'
                 ) : (
                   <>
-                    <span className="hidden sm:inline">Select Files to Upload</span>
+                    <span className="hidden sm:inline">
+                      Select Files to Upload
+                    </span>
                     <span className="sm:hidden">Select Files</span>
                   </>
                 )}
@@ -519,7 +534,7 @@ const Dashboard: FC<DashboardProps> = ({
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
+      {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
         <Card className="p-6">
           <CardContent className="p-0 space-y-4">
             <h3 className="text-xl font-medium">Recent Activities</h3>
@@ -589,7 +604,7 @@ const Dashboard: FC<DashboardProps> = ({
             </div>
           </CardContent>
         </Card>
-      </div>
+      </div> */}
 
       <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min" />
     </section>
