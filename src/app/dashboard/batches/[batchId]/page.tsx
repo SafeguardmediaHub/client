@@ -163,7 +163,7 @@ export default function BatchDetailPage({
   const pagination = batchResults?.data?.pagination;
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
@@ -178,7 +178,7 @@ export default function BatchDetailPage({
           </Button>
 
           <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-responsive-3xl font-bold text-gray-900">
               {batch.name || `Batch ${batch.batchId.slice(0, 8)}`}
             </h1>
             <BatchStatusBadge status={batch.status} />
@@ -334,49 +334,51 @@ export default function BatchDetailPage({
                 {filteredItems.map((item) => (
                   <div
                     key={item.itemId}
-                    className="flex items-start gap-4 p-4 bg-gray-50 rounded-md border border-gray-200 hover:shadow-md transition-shadow"
+                    className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-md border border-gray-200 hover:shadow-md transition-shadow"
                   >
-                    <span className="text-2xl flex-shrink-0">
-                      {getFileIcon(item.mimeType)}
-                    </span>
+                    <div className="flex items-start gap-3 w-full sm:w-auto sm:flex-1">
+                      <span className="text-2xl flex-shrink-0">
+                        {getFileIcon(item.mimeType)}
+                      </span>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-medium text-gray-900 truncate">
-                          {item.originalFilename || item.filename}
-                        </h4>
-                        {getItemStatusIcon(item.status)}
-                      </div>
-
-                      <p className="text-sm text-gray-600 mb-2">
-                        {formatFileSize(item.fileSize)} • {item.mimeType}
-                      </p>
-
-                      {/* Verification Badges */}
-                      {item.verifications && (
-                        <div className="mb-2">
-                          <VerificationBadges
-                            verifications={item.verifications}
-                            showLabels={false}
-                          />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-medium text-gray-900 truncate">
+                            {item.originalFilename || item.filename}
+                          </h4>
+                          {getItemStatusIcon(item.status)}
                         </div>
-                      )}
 
-                      {/* Verification Scores */}
-                      {item.scores && (
-                        <div className="mb-2">
-                          <VerificationScoresComponent
-                            scores={item.scores}
-                            compact={true}
-                          />
-                        </div>
-                      )}
-
-                      {item.status === 'COMPLETED' && item.processingCompletedAt && (
-                        <p className="text-xs text-green-600 mt-1">
-                          ✓ Completed {formatDate(item.processingCompletedAt)}
+                        <p className="text-sm text-gray-600 mb-2">
+                          {formatFileSize(item.fileSize)} • {item.mimeType}
                         </p>
-                      )}
+
+                        {/* Verification Badges */}
+                        {item.verifications && (
+                          <div className="mb-2">
+                            <VerificationBadges
+                              verifications={item.verifications}
+                              showLabels={false}
+                            />
+                          </div>
+                        )}
+
+                        {/* Verification Scores */}
+                        {item.scores && (
+                          <div className="mb-2">
+                            <VerificationScoresComponent
+                              scores={item.scores}
+                              compact={true}
+                            />
+                          </div>
+                        )}
+
+                        {item.status === 'COMPLETED' && item.processingCompletedAt && (
+                          <p className="text-xs text-green-600 mt-1">
+                            ✓ Completed {formatDate(item.processingCompletedAt)}
+                          </p>
+                        )}
+                      </div>
                     </div>
 
                     {/* View Details Button */}
@@ -385,6 +387,7 @@ export default function BatchDetailPage({
                       size="sm"
                       onClick={() => handleViewDetails(item)}
                       disabled={item.status !== 'COMPLETED'}
+                      className="w-full sm:w-auto"
                     >
                       <Eye className="h-4 w-4 mr-1" />
                       Details

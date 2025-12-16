@@ -90,7 +90,8 @@ const FactCheckContent = () => {
   console.log("[FactCheckPage] jobStatus:", jobStatus, "claims:", claims.length);
 
   return (
-    <div className="w-full flex flex-col gap-6 p-8">
+    <div className="w-full flex flex-col gap-6 p-4 sm:p-6 md:p-8 bg-gray-50">
+      <div className="w-full flex flex-col gap-6 p-4 sm:p-6 md:p-8 bg-white rounded-lg shadow-sm border border-gray-200">
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-medium text-gray-900 leading-9">
@@ -216,6 +217,7 @@ const FactCheckContent = () => {
             ))}
         </div>
       )}
+      </div>
     </div>
   );
 };

@@ -282,9 +282,9 @@ const Dashboard: FC<DashboardProps> = ({
   const inputId = useId();
 
   return (
-    <section className="flex flex-1 flex-col gap-4 py-4 px-8">
+    <section className="flex flex-1 flex-col gap-4 py-4 px-4 sm:px-6 md:px-8">
       <header className="flex-col items-start gap-1 flex">
-        <h1 className="text-2xl font-medium text-black leading-9">
+        <h1 className="text-responsive-2xl font-medium text-black leading-9">
           Dashboard Overview
         </h1>
         <p className="text-sm text-muted-foreground">
@@ -292,28 +292,27 @@ const Dashboard: FC<DashboardProps> = ({
         </p>
       </header>
 
-      <Card className="flex flex-col items-start gap-6 p-6 relative self-stretch w-full">
+      <Card className="flex flex-col items-start gap-4 sm:gap-6 p-4 sm:p-6 relative self-stretch w-full">
         <CardContent className="p-0 w-full">
-          <div className="inline-flex flex-col items-start gap-1 relative mb-6">
-            <h2 className="text-xl font-medium text-black leading-[30px]">
+          <div className="inline-flex flex-col items-start gap-1 relative mb-4 sm:mb-6">
+            <h2 className="text-responsive-xl font-medium text-black leading-[30px]">
               Start a New Analysis
             </h2>
             <p className="text-sm text-muted-foreground">
-              Paste links directly or upload images or videos to detect
-              deepfakes &amp; authenticity
+              Paste links or upload media to detect deepfakes
             </p>
           </div>
 
           <form
             onSubmit={analyzeSubmit}
-            className="flex items-center gap-0 bg-muted rounded-xl mb-6"
+            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-0 mb-4 sm:mb-6"
           >
-            <div className="flex items-center gap-3 flex-1 px-3">
-              <LinkIcon className="w-5 h-5 text-muted-foreground" />
+            <div className="flex items-center gap-3 flex-1 px-3 py-2 sm:py-0 bg-muted rounded-xl sm:rounded-r-none">
+              <LinkIcon className="w-5 h-5 text-muted-foreground flex-shrink-0" />
               <Input
                 aria-label="Media URL"
-                className="flex-1 border-0 bg-transparent p-0 focus-visible:ring-0"
-                placeholder="Paste a link to a video or image to start forensic analysis"
+                className="flex-1 border-0 bg-transparent p-0 focus-visible:ring-0 text-sm sm:text-base"
+                placeholder="Paste media URL..."
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 disabled={isBusy}
@@ -321,17 +320,20 @@ const Dashboard: FC<DashboardProps> = ({
             </div>
             <Button
               type="submit"
-              className="rounded-l-none cursor-pointer"
+              className="sm:rounded-l-none cursor-pointer w-full sm:w-auto"
               disabled={isBusy}
               onClick={handleUpload}
             >
               {isBusy ? (
                 <>
                   <Loader2 className="size-4 animate-spin" />
-                  Uploading...
+                  <span className="ml-2">Uploading...</span>
                 </>
               ) : (
-                'Upload Media'
+                <>
+                  <span className="hidden sm:inline">Upload Media</span>
+                  <span className="sm:hidden">Upload</span>
+                </>
               )}
             </Button>
           </form>
@@ -353,15 +355,17 @@ const Dashboard: FC<DashboardProps> = ({
           >
             <label
               htmlFor={inputId}
-              className="flex flex-col items-center gap-4 w-full py-6 cursor-pointer"
+              className="flex flex-col items-center gap-3 sm:gap-4 w-full py-4 sm:py-6 px-4 cursor-pointer"
             >
-              <UploadIcon className="w-10 h-10 text-muted-foreground" />
+              <UploadIcon className="w-8 h-8 sm:w-10 sm:h-10 text-muted-foreground" />
               <div className="flex flex-col items-center gap-1 w-full">
-                <p className="text-base text-center">
-                  Drag and drop to upload or click to browse files
+                <p className="text-sm sm:text-base text-center">
+                  <span className="hidden sm:inline">Drag and drop to upload or click to browse files</span>
+                  <span className="sm:hidden">Tap to select files or drag & drop</span>
                 </p>
-                <p className="text-sm text-primary text-center">
-                  Supports JPEG, PNG, MP4, MOV and common audio (Max 1GB)
+                <p className="text-xs sm:text-sm text-primary text-center">
+                  <span className="hidden sm:inline">Supports JPEG, PNG, MP4, MOV and common audio (Max 1GB)</span>
+                  <span className="sm:hidden">Images, videos, audio (Max 1GB)</span>
                 </p>
               </div>
 
@@ -423,8 +427,15 @@ const Dashboard: FC<DashboardProps> = ({
                 disabled={isBusy}
               />
 
-              <Button type="button" onClick={onBrowseClick} disabled={isBusy}>
-                {isBusy ? 'Please wait…' : 'Select Files to Upload'}
+              <Button type="button" onClick={onBrowseClick} disabled={isBusy} className="w-full sm:w-auto">
+                {isBusy ? (
+                  'Please wait…'
+                ) : (
+                  <>
+                    <span className="hidden sm:inline">Select Files to Upload</span>
+                    <span className="sm:hidden">Select Files</span>
+                  </>
+                )}
               </Button>
             </label>
           </section>

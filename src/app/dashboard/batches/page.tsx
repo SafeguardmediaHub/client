@@ -58,11 +58,12 @@ export default function BatchesPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="w-full flex flex-col gap-6 p-4 sm:p-6 md:p-8 bg-gray-50">
+      <div className="w-full flex flex-col gap-6 p-4 sm:p-6 md:p-8 bg-white rounded-lg shadow-sm border border-gray-200">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Batch Processing</h1>
+          <h1 className="text-responsive-3xl font-bold text-gray-900">Batch Processing</h1>
           <p className="text-gray-600 mt-1">
             Manage and process media files in bulk
           </p>
@@ -74,7 +75,7 @@ export default function BatchesPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
         {statsLoading ? (
           <>
             {[...Array(4)].map((_, i) => (
@@ -146,11 +147,12 @@ export default function BatchesPage() {
             />
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant={!filters.status ? 'default' : 'outline'}
               onClick={() => handleStatusFilter(undefined)}
               size="sm"
+              className="whitespace-nowrap"
             >
               All
             </Button>
@@ -158,6 +160,7 @@ export default function BatchesPage() {
               variant={filters.status === 'PROCESSING' ? 'default' : 'outline'}
               onClick={() => handleStatusFilter('PROCESSING')}
               size="sm"
+              className="whitespace-nowrap"
             >
               Processing
             </Button>
@@ -165,6 +168,7 @@ export default function BatchesPage() {
               variant={filters.status === 'COMPLETED' ? 'default' : 'outline'}
               onClick={() => handleStatusFilter('COMPLETED')}
               size="sm"
+              className="whitespace-nowrap"
             >
               Completed
             </Button>
@@ -172,6 +176,7 @@ export default function BatchesPage() {
               variant={filters.status === 'FAILED' ? 'default' : 'outline'}
               onClick={() => handleStatusFilter('FAILED')}
               size="sm"
+              className="whitespace-nowrap"
             >
               Failed
             </Button>
@@ -339,6 +344,7 @@ export default function BatchesPage() {
         open={uploadModalOpen}
         onOpenChange={setUploadModalOpen}
       />
+      </div>
     </div>
   );
 }

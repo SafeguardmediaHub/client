@@ -172,10 +172,16 @@ const uploadKeyframe = async ({
   return result;
 };
 
-export const useGetMedia = () => {
+export const useGetMedia = (params?: {
+  page?: number;
+  limit?: number;
+  sort?: string;
+  type?: string;
+  status?: string;
+}) => {
   return useQuery({
-    queryKey: ['userMedia'],
-    queryFn: () => fetchUserMedia(),
+    queryKey: ['userMedia', params],
+    queryFn: () => fetchUserMedia(params),
     staleTime: 5000,
     placeholderData: keepPreviousData,
   });

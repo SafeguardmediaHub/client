@@ -5,6 +5,7 @@ import {
   BookCheck,
   BookOpen,
   CalendarClock,
+  ChevronUp,
   Command,
   FileBarChart,
   FileText,
@@ -12,6 +13,7 @@ import {
   Layers,
   LayoutDashboard,
   LayoutGrid,
+  LogOut,
   MapPin,
   Scissors,
   Search,
@@ -22,17 +24,28 @@ import {
   ShieldCheck,
   ShieldIcon,
   Upload,
+  User2,
   Users,
 } from 'lucide-react';
 import type * as React from 'react';
+import { useAuth } from '@/context/AuthContext';
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { NavAuthenticity } from './nav-authenticity';
 import { NavDetectionTools } from './nav-detection';
 import { NavOverview } from './nav-overview';
@@ -175,6 +188,8 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user, logout } = useAuth();
+
   return (
     <Sidebar variant="inset" {...props} collapsible="offcanvas">
       <SidebarHeader>
@@ -202,6 +217,63 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavAuthenticity items={data.authenticity} />
         <NavReporting projects={data.reporting} />
       </SidebarContent>
+      <SidebarFooter className="sm:hidden">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton
+                  size="lg"
+                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                >
+                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-blue-600 text-white">
+                    <User2 className="size-4" />
+                  </div>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-semibold">
+                      {user?.firstName} {user?.lastName}
+                    </span>
+                    <span className="truncate text-xs text-gray-600">
+                      {user?.email}
+                    </span>
+                  </div>
+                  <ChevronUp className="ml-auto size-4" />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+                side="top"
+                align="end"
+                sideOffset={4}
+              >
+                <DropdownMenuLabel className="p-0 font-normal">
+                  <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                    <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-blue-600 text-white">
+                      <User2 className="size-4" />
+                    </div>
+                    <div className="grid flex-1 text-left text-sm leading-tight">
+                      <span className="truncate font-semibold">
+                        {user?.firstName} {user?.lastName}
+                      </span>
+                      <span className="truncate text-xs text-gray-600">
+                        {user?.email}
+                      </span>
+                    </div>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={logout}
+                  className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
+                >
+                  <LogOut className="size-4 mr-2" />
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }

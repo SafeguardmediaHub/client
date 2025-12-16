@@ -284,6 +284,193 @@ function TableSkeleton({ rows = 5 }: { rows?: number }) {
   );
 }
 
+function VerificationCard({
+  verification,
+  onViewDetails,
+  onRowClick,
+  onDelete,
+  index,
+}: {
+  verification: C2PAVerification;
+  onViewDetails: (id: string) => void;
+  onRowClick?: (v: C2PAVerification) => void;
+  onDelete?: (verificationId: string) => void;
+  index: number;
+}) {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const mediaId =
+    typeof verification.mediaId === 'string'
+      ? verification.mediaId
+      : verification.mediaId?._id || null;
+
+  const thumbnailUrl =
+    verification.mediaId &&
+    typeof verification.mediaId === 'object' &&
+    'thumbnailUrl' in verification.mediaId
+      ? verification.mediaId.thumbnailUrl
+      : verification.thumbnailUrl;
+
+  const fileName =
+    verification.mediaId &&
+    typeof verification.mediaId === 'object' &&
+    'originalFilename' in verification.mediaId
+      ? verification.mediaId.originalFilename
+      : verification.fileName;
+
+  const mimeType =
+    verification.mediaId &&
+    typeof verification.mediaId === 'object' &&
+    'mimeType' in verification.mediaId
+      ? verification.mediaId.mimeType
+      : undefined;
+
+  const mediaType =
+    verification.mediaType ||
+    (mimeType?.startsWith('image/')
+      ? 'image'
+      : mimeType?.startsWith('video/')
+      ? 'video'
+      : mimeType?.startsWith('audio/')
+      ? 'audio'
+      : 'document');
+
+  const MediaIcon = mediaTypeIcons[mediaType];
+
+  return (
+    <div
+      className={cn(
+        'border border-gray-200 rounded-lg p-4 space-y-3 hover:shadow-md transition-all cursor-pointer',
+        'animate-in fade-in slide-in-from-bottom-1'
+      )}
+      style={{ animationDelay: `${index * 30}ms` }}
+      onClick={() => onRowClick?.(verification)}
+    >
+      {/* Header: Thumbnail + File Info + Status */}
+      <div className="flex items-start gap-3">
+        <div className="size-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+          {thumbnailUrl ? (
+            <Image
+              src={thumbnailUrl}
+              alt={fileName || 'Media file'}
+              width={48}
+              height={48}
+              className="object-cover w-full h-full"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <MediaIcon className="size-6 text-gray-400" />
+            </div>
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-gray-900 truncate">
+            {fileName || 'Unknown file'}
+          </p>
+          <p className="text-xs text-gray-500 font-mono">
+            {mediaId ? `${mediaId.slice(0, 12)}...` : 'No media ID'}
+          </p>
+        </div>
+        <StatusBadge status={verification.status} size="sm" />
+      </div>
+
+      {/* Details Row: Media Type + Date */}
+      <div className="flex items-center justify-between text-sm">
+        <div className="flex items-center gap-1.5 text-gray-600">
+          <MediaIcon className="size-4" />
+          <span className="capitalize">{mediaType}</span>
+        </div>
+        <span className="text-gray-500">
+          {formatDate(verification.updatedAt || verification.createdAt)}
+        </span>
+      </div>
+
+      {/* Actions */}
+      {showDeleteConfirm ? (
+        <div className="flex gap-2 pt-2 border-t" onClick={(e) => e.stopPropagation()}>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete?.(verification.verificationId);
+              setShowDeleteConfirm(false);
+            }}
+            className="flex-1"
+          >
+            Confirm Delete
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowDeleteConfirm(false);
+            }}
+          >
+            <X className="size-4" />
+          </Button>
+        </div>
+      ) : (
+        <div className="flex gap-2 pt-2 border-t">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewDetails(verification.verificationId);
+            }}
+            className="flex-1"
+          >
+            <Eye className="size-4 mr-1" />
+            View
+          </Button>
+          {onDelete && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDeleteConfirm(true);
+              }}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CardSkeleton({ rows = 5 }: { rows?: number }) {
+  return (
+    <>
+      {Array.from({ length: rows }).map((_, i) => (
+        <div key={i} className="border border-gray-200 rounded-lg p-4 space-y-3 animate-pulse">
+          <div className="flex items-start gap-3">
+            <Skeleton className="size-12 rounded-lg" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-24" />
+            </div>
+            <Skeleton className="h-6 w-20 rounded-full" />
+          </div>
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-4 w-16" />
+          </div>
+          <div className="flex gap-2 pt-2 border-t">
+            <Skeleton className="h-8 flex-1" />
+            <Skeleton className="h-8 w-10" />
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
+
 export function VerificationTable({
   verifications,
   pagination,
@@ -336,8 +523,34 @@ export function VerificationTable({
     <div
       className={cn('bg-white rounded-xl border border-gray-200', className)}
     >
-      {/* Table */}
-      <div className="overflow-x-auto">
+      {/* Mobile Card View */}
+      <div className="block md:hidden p-4 space-y-3">
+        {isLoading ? (
+          <CardSkeleton rows={limit} />
+        ) : verifications.length === 0 ? (
+          <div className="py-12 text-center text-gray-500">
+            <FileImage className="size-12 mx-auto mb-3 text-gray-300" />
+            <p className="text-sm font-medium">No verifications found</p>
+            <p className="text-xs mt-1">
+              Try adjusting your filters or verify some media
+            </p>
+          </div>
+        ) : (
+          verifications.map((verification, index) => (
+            <VerificationCard
+              key={verification.verificationId}
+              verification={verification}
+              onViewDetails={onViewDetails}
+              onRowClick={onRowClick}
+              onDelete={onDelete}
+              index={index}
+            />
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-200 bg-gray-50">

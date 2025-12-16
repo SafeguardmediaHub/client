@@ -68,7 +68,9 @@ const AppNavbar = () => {
         </Breadcrumb>
       </div>
 
-      <SearchForm />
+      <div className="hidden md:block flex-1 max-w-md">
+        <SearchForm />
+      </div>
 
       <div className="hidden sm:inline-flex items-center justify-end gap-6 relative flex-[0_0_auto]">
         <BellIcon className="relative w-5 h-5 text-[#5c5c5c]" />

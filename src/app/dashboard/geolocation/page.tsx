@@ -232,7 +232,8 @@ const GeolocationVerificationPage = () => {
   };
 
   return (
-    <div className="w-full flex flex-col gap-6 p-8">
+    <div className="w-full flex flex-col gap-6 p-4 sm:p-6 md:p-8 bg-gray-50">
+      <div className="w-full flex flex-col gap-6 p-4 sm:p-6 md:p-8 bg-white rounded-lg shadow-sm border border-gray-200">
       {/* Back Button */}
       <div className="flex items-center gap-4">
         <Button
@@ -853,6 +854,7 @@ const GeolocationVerificationPage = () => {
             )}
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
