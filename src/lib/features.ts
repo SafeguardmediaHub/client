@@ -1,6 +1,10 @@
 import type { LucideIcon } from "lucide-react";
 
-export type FeatureStatus = "available" | "coming_soon" | "in_development" | "beta";
+export type FeatureStatus =
+  | "available"
+  | "coming_soon"
+  | "in_development"
+  | "beta";
 
 export interface FeatureMetadata {
   id: string;
@@ -9,7 +13,12 @@ export interface FeatureMetadata {
   status: FeatureStatus;
   url?: string;
   icon?: LucideIcon;
-  category: "detection" | "verification" | "reporting" | "overview" | "authenticity";
+  category:
+    | "detection"
+    | "verification"
+    | "reporting"
+    | "overview"
+    | "authenticity";
   estimatedRelease?: string; // e.g., "Q1 2025", "March 2025"
   benefits?: string[];
   comingSoonMessage?: string;
@@ -20,7 +29,8 @@ export const FEATURES: Record<string, FeatureMetadata> = {
   dashboard: {
     id: "dashboard",
     name: "Dashboard",
-    description: "Your central hub for media verification activities and insights.",
+    description:
+      "Your central hub for media verification activities and insights.",
     status: "available",
     url: "/dashboard",
     category: "overview",
@@ -102,6 +112,25 @@ export const FEATURES: Record<string, FeatureMetadata> = {
     ],
     comingSoonMessage:
       "Visual forensics is currently in development. Our team is implementing state-of-the-art forensic algorithms. Expected launch: March 2025.",
+  },
+  audio_forensics: {
+    id: "audio_forensics",
+    name: "Audio Forensics",
+    description:
+      "Advanced audio forensic analysis including noise profiling, authenticity verification, and manipulation detection.",
+    status: "in_development",
+    category: "detection",
+    estimatedRelease: "April 2025",
+    benefits: [
+      "ENF (Electric Network Frequency) analysis for timestamp/location verification",
+      "Background noise consistency and profiling",
+      "Compression artifact detection (MP3, AAC, etc.)",
+      "Audio tampering/splicing detection",
+      "Metadata extraction and validation",
+      "Voice activity and silence pattern analysis",
+    ],
+    comingSoonMessage:
+      "Audio forensics is currently in development. Our team is building robust algorithms for authenticity and manipulation detection. Expected launch: April 2025.",
   },
   tamper_detection: {
     id: "tamper_detection",
@@ -267,13 +296,13 @@ export const getFeatureById = (id: string): FeatureMetadata | undefined => {
 };
 
 export const getFeaturesByCategory = (
-  category: FeatureMetadata["category"],
+  category: FeatureMetadata["category"]
 ): FeatureMetadata[] => {
   return Object.values(FEATURES).filter((f) => f.category === category);
 };
 
 export const getFeaturesByStatus = (
-  status: FeatureStatus,
+  status: FeatureStatus
 ): FeatureMetadata[] => {
   return Object.values(FEATURES).filter((f) => f.status === status);
 };
