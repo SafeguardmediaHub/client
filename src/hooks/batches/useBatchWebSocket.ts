@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
-import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
+import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { useWebSocket } from '@/context/WebSocketContext';
 import type { Batch, BatchItem } from '@/types/batch';
 
@@ -45,15 +45,12 @@ export function useBatchWebSocket(batchId: string | undefined, enabled = true) {
       return;
     }
 
-    console.log('[Batch WebSocket] Subscribing to batch:', batchId);
-
     // Subscribe to batch updates
     socket.emit('batch:subscribe', { batchId });
 
     // Handle subscription confirmation
     const handleSubscribed = (data: { batchId: string }) => {
       if (data.batchId === batchId) {
-        console.log('[Batch WebSocket] Successfully subscribed to batch:', batchId);
         setIsSubscribed(true);
       }
     };
@@ -62,21 +59,23 @@ export function useBatchWebSocket(batchId: string | undefined, enabled = true) {
     const handleProgress = (data: BatchProgressData) => {
       if (data.batchId !== batchId) return;
 
-      console.log('[Batch WebSocket] Progress update:', data);
-
       // Update the batch in React Query cache
-      queryClient.setQueryData(['batch', batchId], (oldData: Batch | undefined) => {
-        if (!oldData) return oldData;
+      queryClient.setQueryData(
+        ['batch', batchId],
+        (oldData: Batch | undefined) => {
+          if (!oldData) return oldData;
 
-        return {
-          ...oldData,
-          progress: data.progress,
-          status: data.status as Batch['status'],
-          completedItems: data.completedItems,
-          failedItems: data.failedItems,
-          processingItems: data.totalItems - data.completedItems - data.failedItems,
-        };
-      });
+          return {
+            ...oldData,
+            progress: data.progress,
+            status: data.status as Batch['status'],
+            completedItems: data.completedItems,
+            failedItems: data.failedItems,
+            processingItems:
+              data.totalItems - data.completedItems - data.failedItems,
+          };
+        }
+      );
 
       // Also invalidate to ensure consistency
       if (data.progress === 100 || data.status === 'COMPLETED') {
@@ -88,56 +87,68 @@ export function useBatchWebSocket(batchId: string | undefined, enabled = true) {
     const handleItemCompleted = (data: BatchItemUpdate) => {
       if (data.batchId !== batchId) return;
 
-      console.log('[Batch WebSocket] Item completed:', data.filename);
-
       // Update specific item in cache
-      queryClient.setQueryData(['batch', batchId], (oldData: Batch | undefined) => {
-        if (!oldData) return oldData;
+      queryClient.setQueryData(
+        ['batch', batchId],
+        (oldData: Batch | undefined) => {
+          if (!oldData) return oldData;
 
-        const updatedItems = oldData.items.map((item) =>
-          item.itemId === data.itemId
-            ? { ...item, status: 'COMPLETED' as BatchItem['status'], progress: 100 }
-            : item,
-        );
+          const updatedItems = oldData.items.map((item) =>
+            item.itemId === data.itemId
+              ? {
+                  ...item,
+                  status: 'COMPLETED' as BatchItem['status'],
+                  progress: 100,
+                }
+              : item
+          );
 
-        return {
-          ...oldData,
-          items: updatedItems,
-        };
-      });
+          return {
+            ...oldData,
+            items: updatedItems,
+          };
+        }
+      );
     };
 
     // Handle individual item failure
     const handleItemFailed = (data: BatchItemUpdate) => {
       if (data.batchId !== batchId) return;
 
-      console.error('[Batch WebSocket] Item failed:', data.filename, data.error);
+      console.error(
+        '[Batch WebSocket] Item failed:',
+        data.filename,
+        data.error
+      );
 
       // Update specific item in cache
-      queryClient.setQueryData(['batch', batchId], (oldData: Batch | undefined) => {
-        if (!oldData) return oldData;
+      queryClient.setQueryData(
+        ['batch', batchId],
+        (oldData: Batch | undefined) => {
+          if (!oldData) return oldData;
 
-        const updatedItems = oldData.items.map((item) =>
-          item.itemId === data.itemId
-            ? {
-                ...item,
-                status: 'FAILED' as BatchItem['status'],
-                error: data.error
-                  ? {
-                      code: data.error.code,
-                      message: data.error.message,
-                      details: undefined,
-                    }
-                  : undefined,
-              }
-            : item,
-        );
+          const updatedItems = oldData.items.map((item) =>
+            item.itemId === data.itemId
+              ? {
+                  ...item,
+                  status: 'FAILED' as BatchItem['status'],
+                  error: data.error
+                    ? {
+                        code: data.error.code,
+                        message: data.error.message,
+                        details: undefined,
+                      }
+                    : undefined,
+                }
+              : item
+          );
 
-        return {
-          ...oldData,
-          items: updatedItems,
-        };
-      });
+          return {
+            ...oldData,
+            items: updatedItems,
+          };
+        }
+      );
 
       // Show toast for failed item
       toast.error(`Failed to process ${data.filename}`, {
@@ -149,21 +160,22 @@ export function useBatchWebSocket(batchId: string | undefined, enabled = true) {
     const handleCompleted = (data: BatchCompletionData) => {
       if (data.batchId !== batchId) return;
 
-      console.log('[Batch WebSocket] Batch completed:', data);
-
       // Update batch status
-      queryClient.setQueryData(['batch', batchId], (oldData: Batch | undefined) => {
-        if (!oldData) return oldData;
+      queryClient.setQueryData(
+        ['batch', batchId],
+        (oldData: Batch | undefined) => {
+          if (!oldData) return oldData;
 
-        return {
-          ...oldData,
-          status: 'COMPLETED' as Batch['status'],
-          progress: 100,
-          completedItems: data.completedItems,
-          failedItems: data.failedItems,
-          processingCompletedAt: new Date().toISOString(),
-        };
-      });
+          return {
+            ...oldData,
+            status: 'COMPLETED' as Batch['status'],
+            progress: 100,
+            completedItems: data.completedItems,
+            failedItems: data.failedItems,
+            processingCompletedAt: new Date().toISOString(),
+          };
+        }
+      );
 
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['batch', batchId] });
@@ -184,15 +196,18 @@ export function useBatchWebSocket(batchId: string | undefined, enabled = true) {
       console.error('[Batch WebSocket] Batch failed:', data);
 
       // Update batch status
-      queryClient.setQueryData(['batch', batchId], (oldData: Batch | undefined) => {
-        if (!oldData) return oldData;
+      queryClient.setQueryData(
+        ['batch', batchId],
+        (oldData: Batch | undefined) => {
+          if (!oldData) return oldData;
 
-        return {
-          ...oldData,
-          status: 'FAILED' as Batch['status'],
-          failedItems: data.failedItems,
-        };
-      });
+          return {
+            ...oldData,
+            status: 'FAILED' as Batch['status'],
+            failedItems: data.failedItems,
+          };
+        }
+      );
 
       // Invalidate queries
       queryClient.invalidateQueries({ queryKey: ['batch', batchId] });
@@ -214,7 +229,7 @@ export function useBatchWebSocket(batchId: string | undefined, enabled = true) {
 
     // Cleanup
     return () => {
-      console.log('[Batch WebSocket] Unsubscribing from batch:', batchId);
+      // console.log('[Batch WebSocket] Unsubscribing from batch:', batchId);
       socket.emit('batch:unsubscribe', { batchId });
       socket.off('batch:subscribed', handleSubscribed);
       socket.off('batch:progress', handleProgress);

@@ -57,7 +57,6 @@ export const confirmBatch = async (
   batchId: string,
   data: ConfirmBatchRequest
 ): Promise<{ success: boolean }> => {
-  console.log('this is data', data);
   const response = await api.post(`/api/media/batch/${batchId}/confirm`, data);
   return response.data;
 };
@@ -66,12 +65,10 @@ export const confirmBatch = async (
 export const getBatches = async (
   params?: BatchListParams
 ): Promise<BatchListResponse> => {
-  console.log('getBatches called with params:', params);
   const response = await api.get<BatchListResponse>('/api/media/batch', {
     params,
   });
 
-  console.log('getBatches response:', response.data);
   return response.data;
 };
 

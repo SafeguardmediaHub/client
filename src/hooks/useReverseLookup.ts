@@ -122,10 +122,7 @@ const reverseLookup = async ({
 const reverseLookupResult = async (
   jobId: string
 ): Promise<ReverseLookupResult> => {
-  console.log('fetching results for jobId', jobId);
   const response = await api.get(`/api/reverse-lookup/result/${jobId}`);
-
-  console.log('this is response', response.data);
 
   return response.data;
 };
@@ -133,7 +130,6 @@ const reverseLookupResult = async (
 const fetchUserReverseLookups = async (): Promise<UserReverseLookups> => {
   const response = await api.get('/api/reverse-lookup/search');
 
-  console.log('user reverse lookups response', response.data);
   return response.data;
 };
 

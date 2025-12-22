@@ -16,7 +16,6 @@ interface GeneralInfoViewProps {
 }
 
 export function GeneralInfoView({ media }: GeneralInfoViewProps) {
-  console.log('this is media', media);
   const formatDate = (date: Date | string) => {
     if (typeof date === 'string') {
       return new Date(date).toLocaleDateString('en-US', {

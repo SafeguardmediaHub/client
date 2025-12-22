@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { useJobStatus } from "@/hooks/useFactCheck";
-import { ErrorState } from "./ErrorState";
-import { JobProgress } from "./JobProgress";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { useJobStatus } from '@/hooks/useFactCheck';
+import { ErrorState } from './ErrorState';
+import { JobProgress } from './JobProgress';
 
 interface FactCheckProcessingProps {
   jobId: string;
@@ -14,7 +14,7 @@ interface FactCheckProcessingProps {
 export const FactCheckProcessing = ({ jobId }: FactCheckProcessingProps) => {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(
-    "Initializing fact-check analysis...",
+    'Initializing fact-check analysis...'
   );
   const { data, isLoading, error, refetch } = useJobStatus(jobId, {
     enabled: !!jobId,
@@ -25,21 +25,21 @@ export const FactCheckProcessing = ({ jobId }: FactCheckProcessingProps) => {
 
     const { progress, status } = data.data;
 
-    if (status === "prioritized") {
-      setCurrentStep("Job queued and prioritized...");
-    } else if (status === "processing") {
+    if (status === 'prioritized') {
+      setCurrentStep('Job queued and prioritized...');
+    } else if (status === 'processing') {
       if (progress !== undefined) {
         if (progress < 20) {
-          setCurrentStep("Extracting claims from content...");
+          setCurrentStep('Extracting claims from content...');
         } else if (progress < 50) {
-          setCurrentStep("Analyzing claim structure and entities...");
+          setCurrentStep('Analyzing claim structure and entities...');
         } else if (progress < 80) {
-          setCurrentStep("Querying fact-check databases...");
+          setCurrentStep('Querying fact-check databases...');
         } else {
-          setCurrentStep("Finalizing results...");
+          setCurrentStep('Finalizing results...');
         }
       } else {
-        setCurrentStep("Processing your request...");
+        setCurrentStep('Processing your request...');
       }
     }
   }, [data?.data]);
@@ -63,7 +63,7 @@ export const FactCheckProcessing = ({ jobId }: FactCheckProcessingProps) => {
         message={
           error instanceof Error
             ? error.message
-            : "Unable to retrieve fact-check job status. The job may have expired or been deleted."
+            : 'Unable to retrieve fact-check job status. The job may have expired or been deleted.'
         }
         onRetry={() => refetch()}
       />
@@ -91,9 +91,7 @@ export const FactCheckProcessing = ({ jobId }: FactCheckProcessingProps) => {
   // Set progress to 100% when completed
   // Ensure progress is a number, not an object
   const progressValue = typeof progress === 'number' ? progress : 0;
-  const displayProgress = status === "completed" ? 100 : progressValue;
-
-  console.log("[FactCheckProcessing] Rendering with status:", status, "progress:", progress, "displayProgress:", displayProgress, "claims:", claims?.length);
+  const displayProgress = status === 'completed' ? 100 : progressValue;
 
   return (
     <div className="space-y-6">
@@ -101,17 +99,17 @@ export const FactCheckProcessing = ({ jobId }: FactCheckProcessingProps) => {
         status={status}
         progress={displayProgress}
         estimatedRemainingSeconds={estimated_remaining_seconds}
-        currentStep={status === "processing" ? currentStep : undefined}
+        currentStep={status === 'processing' ? currentStep : undefined}
       />
 
-      {status === "completed" && summary && (
+      {status === 'completed' && summary && (
         <div className="p-6 bg-green-50 border border-green-200 rounded-lg">
           <h3 className="text-lg font-semibold text-green-900 mb-2">
             Analysis Complete!
           </h3>
           <p className="text-sm text-green-800 mb-4">
             Found {summary.total_claims} claim
-            {summary.total_claims !== 1 ? "s" : ""} in the provided content.
+            {summary.total_claims !== 1 ? 's' : ''} in the provided content.
           </p>
           {summary.total_claims > 0 && (
             <p className="text-sm text-gray-700 mb-4">
@@ -122,14 +120,14 @@ export const FactCheckProcessing = ({ jobId }: FactCheckProcessingProps) => {
         </div>
       )}
 
-      {status === "failed" && (
+      {status === 'failed' && (
         <ErrorState
           title="Fact-Check Failed"
           message={
             jobError ||
-            "The fact-check analysis failed to complete. This could be due to invalid content, service unavailability, or an internal error."
+            'The fact-check analysis failed to complete. This could be due to invalid content, service unavailability, or an internal error.'
           }
-          onRetry={() => router.push("/dashboard/fact-check")}
+          onRetry={() => router.push('/dashboard/fact-check')}
           retryLabel="Start New Analysis"
         />
       )}

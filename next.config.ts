@@ -2,13 +2,13 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   images: {
-    domains: [
-      'safeguardmedia-uploads-prod.s3.us-east-1.amazonaws.com',
-      'images.unsplash.com',
-      'images.pexels.com',
-      'png.pngtree.com',
-      'freesvg.org',
-      'ik.imagekit.io',
+    remotePatterns: [
+      { hostname: 'safeguardmedia-uploads-prod.s3.us-east-1.amazonaws.com' },
+      { hostname: 'images.unsplash.com' },
+      { hostname: 'images.pexels.com' },
+      { hostname: 'png.pngtree.com' },
+      { hostname: 'freesvg.org' },
+      { hostname: 'ik.imagekit.io' },
     ],
   },
 };

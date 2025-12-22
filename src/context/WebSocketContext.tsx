@@ -43,7 +43,6 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
     // Only connect if user is authenticated
     if (!user) {
       if (socket) {
-        console.log('[WebSocket] User logged out, disconnecting...');
         socket.disconnect();
         setSocket(null);
         setIsConnected(false);
@@ -57,8 +56,6 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
     // Fetch temporary WebSocket token from backend
     const connectWebSocket = async () => {
       try {
-        console.log('[WebSocket] Fetching temporary auth token...');
-
         // Get temporary WebSocket token from backend (protected by HTTP-only cookie)
         const response = await api.get('/api/auth/ws-token');
         const wsToken = response.data.data.wsToken;
@@ -70,8 +67,6 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
           toast.error('Failed to establish real-time connection');
           return;
         }
-
-        console.log('[WebSocket] Initializing connection...');
 
         // Initialize socket connection with temporary token
         const newSocket = io(
@@ -89,16 +84,12 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 
         // Connection events
         newSocket.on('connect', () => {
-          console.log('[WebSocket] Connected successfully');
           if (isMounted) setIsConnected(true);
         });
 
-        newSocket.on('connected', (data) => {
-          console.log('[WebSocket] Authenticated:', data);
-        });
+        newSocket.on('connected', (data) => {});
 
         newSocket.on('disconnect', (reason) => {
-          console.log('[WebSocket] Disconnected:', reason);
           if (isMounted) setIsConnected(false);
 
           if (reason === 'io server disconnect') {
@@ -123,12 +114,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
           console.error('[WebSocket] Error:', error);
         });
 
-        newSocket.on('reconnect', (attemptNumber) => {
-          console.log(
-            '[WebSocket] Reconnected after',
-            attemptNumber,
-            'attempts'
-          );
+        newSocket.on('reconnect', (_attemptNumber) => {
           toast.success('Connection restored');
         });
 
@@ -154,7 +140,6 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
     // Cleanup
     return () => {
       isMounted = false;
-      console.log('[WebSocket] Cleaning up connection');
       if (socket) {
         socket.removeAllListeners();
         socket.disconnect();

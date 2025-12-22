@@ -7,6 +7,7 @@ import type { CreateBatchRequest, UploadProgress } from '@/types/batch';
 interface UseCreateBatchOptions {
   onUploadProgress?: (progress: UploadProgress[]) => void;
   onSuccess?: (batchId: string) => void;
+  onError?: () => void;
 }
 
 export const useCreateBatch = (options?: UseCreateBatchOptions) => {
@@ -92,8 +93,6 @@ export const useCreateBatch = (options?: UseCreateBatchOptions) => {
 
       const uploadResults = await Promise.allSettled(uploadPromises);
 
-      console.log('this is upload results', uploadResults);
-
       // Collect successful uploads
       const successfulUploads = uploadResults
         .filter(
@@ -106,8 +105,6 @@ export const useCreateBatch = (options?: UseCreateBatchOptions) => {
           }> => result.status === 'fulfilled'
         )
         .map((result) => result.value);
-
-      console.log('successfulUploads', successfulUploads);
 
       // Step 3: Confirm batch to trigger processing
       if (successfulUploads.length > 0) {
@@ -143,10 +140,15 @@ export const useCreateBatch = (options?: UseCreateBatchOptions) => {
 
       options?.onSuccess?.(data.batchId);
     },
-    onError: (error) => {
-      toast.error(
-        error instanceof Error ? error.message : 'Failed to create batch'
-      );
+    onError: (error: any) => {
+      // Extract error message from backend response
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        'Failed to create batch';
+
+      toast.error(errorMessage);
+      options?.onError?.();
     },
   });
 };

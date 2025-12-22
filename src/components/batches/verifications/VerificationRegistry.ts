@@ -1,4 +1,4 @@
-import { LucideIcon, Shield, Clock, Globe, Brain, FileText, AlertTriangle, CheckCircle } from 'lucide-react';
+import { LucideIcon, Shield, Clock, Globe, Brain, FileText, AlertTriangle, CheckCircle, ShieldCheck } from 'lucide-react';
 import type { BatchItemDetails } from '@/types/batch';
 
 // Generic verification metadata
@@ -29,6 +29,39 @@ export interface VerificationData {
 
 // Registry of all verification types
 export const VERIFICATION_REGISTRY: Record<string, VerificationMeta> = {
+  integrityAnalysis: {
+    id: 'integrityAnalysis',
+    label: 'Integrity Analysis',
+    description: 'Comprehensive authenticity verification across metadata, C2PA, file integrity, and geolocation',
+    icon: ShieldCheck,
+    color: {
+      primary: 'indigo',
+      bg: 'bg-indigo-50',
+      text: 'text-indigo-700',
+    },
+    priority: 0,
+    isAvailable: (item) => !!(item.integrityAnalysis || item.integrityAnalysisFull),
+    extractData: (item) => {
+      if (!item.integrityAnalysis && !item.integrityAnalysisFull) return null;
+
+      const summary = item.integrityAnalysis;
+      const fullData = item.integrityAnalysisFull;
+
+      return {
+        status: summary?.status || fullData?.status || 'unknown',
+        score: summary?.integrityScore || fullData?.integrityScore,
+        summary: {
+          verdict: summary?.verdict || fullData?.verdict,
+          summary: summary?.summary || fullData?.summary,
+          flags: summary?.flags || fullData?.flags,
+          integrityScore: summary?.integrityScore || fullData?.integrityScore,
+        },
+        details: fullData?.fullReport,
+        fullData: fullData,
+      };
+    },
+  },
+
   c2pa: {
     id: 'c2pa',
     label: 'C2PA Verification',

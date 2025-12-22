@@ -52,6 +52,7 @@ export function BatchUploadModal({
       enableReverseSearch: false,
       enableDeepfake: true,
       enableGeolocation: false,
+      enableIntegrityAnalysis: false,
     },
   });
 
@@ -60,6 +61,10 @@ export function BatchUploadModal({
     onSuccess: (batchId) => {
       setCreatedBatchId(batchId);
       setStep("complete");
+    },
+    onError: () => {
+      // Close modal when error occurs
+      handleClose();
     },
   });
 
@@ -129,6 +134,7 @@ export function BatchUploadModal({
           enableReverseSearch: false,
           enableDeepfake: false,
           enableGeolocation: false,
+          enableIntegrityAnalysis: false,
         },
       });
     }, 300);
@@ -357,6 +363,32 @@ export function BatchUploadModal({
                     >
                       Enable Geolocation Verification
                     </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="integrityAnalysis"
+                      checked={formData.options.enableIntegrityAnalysis}
+                      onCheckedChange={(checked) =>
+                        setFormData({
+                          ...formData,
+                          options: {
+                            ...formData.options,
+                            enableIntegrityAnalysis: checked as boolean,
+                          },
+                        })
+                      }
+                    />
+                    <div className="flex-1">
+                      <label
+                        htmlFor="integrityAnalysis"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Enable Integrity Analysis (Authenticity Check)
+                      </label>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Analyze media authenticity and detect manipulation across metadata, C2PA, file integrity, and geolocation
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>

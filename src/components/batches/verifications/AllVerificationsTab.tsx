@@ -2,6 +2,7 @@ import type { BatchItemDetails } from '@/types/batch';
 import { VerificationSection } from './VerificationSection';
 import { getAvailableVerifications, getVerificationData } from './VerificationRegistry';
 import {
+  IntegrityAnalysisRenderer,
   C2PARenderer,
   TimelineRenderer,
   OCRRenderer,
@@ -16,6 +17,7 @@ interface AllVerificationsTabProps {
 
 // Map verification IDs to their renderer components
 const RENDERERS: Record<string, React.ComponentType<{ data: any }>> = {
+  integrityAnalysis: IntegrityAnalysisRenderer,
   c2pa: C2PARenderer,
   timeline: TimelineRenderer,
   ocr: OCRRenderer,

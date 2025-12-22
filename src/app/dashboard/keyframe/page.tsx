@@ -265,10 +265,8 @@ const Keyframe: FC<DashboardProps> = ({
   );
 
   const onBrowseClick = useCallback(() => {
-    console.log("Browse click");
     if (isBusy) return;
     fileInputRef.current?.click();
-    console.log("After click");
   }, [isBusy]);
 
   const analyzeSubmit = useCallback(

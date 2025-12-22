@@ -21,6 +21,7 @@ export interface BatchOptions {
   enableReverseSearch: boolean;
   enableDeepfake: boolean;
   enableGeolocation: boolean;
+  enableIntegrityAnalysis: boolean;
   priority: Priority;
 }
 
@@ -104,6 +105,7 @@ export interface CreateBatchRequest {
     enableReverseSearch?: boolean;
     enableDeepfake?: boolean;
     enableGeolocation?: boolean;
+    enableIntegrityAnalysis?: boolean;
   };
   webhookUrl?: string;
 }
@@ -446,6 +448,78 @@ export interface GeolocationFull {
   __v: number;
 }
 
+// Integrity Analysis Types
+export type IntegrityVerdict =
+  | 'authentic'
+  | 'likely_authentic'
+  | 'suspicious'
+  | 'likely_manipulated'
+  | 'manipulated';
+
+export type IntegrityAnalysisStatus =
+  | 'pending'
+  | 'processing'
+  | 'completed'
+  | 'failed'
+  | 'skipped';
+
+export interface IntegrityFinding {
+  type: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  impact: number;
+  explanation: string;
+  details?: unknown;
+}
+
+export interface IntegrityCategory {
+  name: string;
+  status: string;
+  score: number | null;
+  findings: IntegrityFinding[];
+}
+
+export interface IntegrityAnalysisSummary {
+  status: IntegrityAnalysisStatus;
+  integrityScore?: number;
+  verdict?: IntegrityVerdict;
+  summary?: string;
+  flags?: string[];
+}
+
+export interface IntegrityAnalysisFull {
+  _id?: string;
+  mediaId: string;
+  userId?: string;
+  status: IntegrityAnalysisStatus;
+  integrityScore?: number;
+  verdict?: IntegrityVerdict;
+  summary?: string;
+  flags?: string[];
+  recommendations?: string;
+  fullReport?: {
+    verdict: {
+      category: IntegrityVerdict;
+      score: number;
+      confidence: number;
+    };
+    categories: IntegrityCategory[];
+    rawData?: unknown;
+  };
+  processingTime?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface IntegritySummaryStats {
+  integrityAnalyzed: number;
+  authenticMedia: number;
+  likelyAuthenticMedia: number;
+  suspiciousMedia: number;
+  likelyManipulatedMedia: number;
+  manipulatedMedia: number;
+  averageIntegrityScore: number;
+}
+
 export interface BatchResultItem {
   itemId: string;
   filename: string;
@@ -467,6 +541,7 @@ export interface BatchResultItem {
   ocr?: OCRData;
   ocrText?: string;
   ocrConfidence?: number;
+  integrityAnalysis?: IntegrityAnalysisSummary;
   metadata?: {
     cameraMake?: string;
     cameraModel?: string;
@@ -490,6 +565,14 @@ export interface BatchResultsSummary {
   detectedDeepfakes?: number;
   c2paVerified?: number;
   metadataIssues?: number;
+  // Integrity Analysis Summary
+  integrityAnalyzed?: number;
+  authenticMedia?: number;
+  likelyAuthenticMedia?: number;
+  suspiciousMedia?: number;
+  likelyManipulatedMedia?: number;
+  manipulatedMedia?: number;
+  averageIntegrityScore?: number;
 }
 
 export interface BatchResultsPagination {
@@ -532,6 +615,7 @@ export interface BatchItemDetails extends BatchResultItem {
   geolocationFull?: GeolocationFull;
   deepfakeFull?: unknown;
   factCheckFull?: unknown;
+  integrityAnalysisFull?: IntegrityAnalysisFull;
 }
 
 export interface BatchItemDetailsResponse {

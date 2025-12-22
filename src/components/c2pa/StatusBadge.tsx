@@ -97,7 +97,6 @@ export function StatusBadge({
   className,
 }: StatusBadgeProps) {
   // Fallback config for unknown statuses
-  console.log('status', status);
   const config = statusConfig[status] || {
     label: status?.toString() || 'Unknown',
     icon: CircleDashed,

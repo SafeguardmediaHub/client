@@ -29,7 +29,6 @@ const MediaSelector = ({ onSelect }: MediaSelectorProps) => {
         item.filename.toLowerCase().includes(searchQuery.toLowerCase())
       );
 
-      console.log('Filtered Media:', filtered);
       setFilteredMedia(filtered);
     } else {
       setFilteredMedia(media);

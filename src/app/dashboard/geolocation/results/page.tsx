@@ -34,8 +34,6 @@ const GeolocationResultContent = () => {
     enabled: !!verificationId,
   });
 
-  console.log('verificationData', verificationData);
-
   const verificationStatus = verificationData?.data?.verification?.status;
 
   useEffect(() => {

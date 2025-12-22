@@ -84,7 +84,7 @@ const GeolocationVerificationPage = () => {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (v) =>
-          v.mediaId.originalFilename.toLowerCase().includes(query) ||
+          v.mediaId?.originalFilename?.toLowerCase().includes(query) ||
           v.claimedLocation.raw.toLowerCase().includes(query) ||
           v._id.toLowerCase().includes(query)
       );
@@ -719,7 +719,7 @@ const GeolocationVerificationPage = () => {
                       >
                         <td className="px-6 py-4">
                           <p className="text-sm font-medium text-gray-900">
-                            {verification.mediaId.originalFilename}
+                            {verification.mediaId?.originalFilename || 'Media deleted'}
                           </p>
                         </td>
                         <td className="px-6 py-4">

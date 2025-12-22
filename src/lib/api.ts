@@ -1,6 +1,6 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: <> */
-import axios from "axios";
-import { toast } from "sonner";
+import axios from 'axios';
+import { toast } from 'sonner';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BACKEND_BASE_URL,
@@ -28,16 +28,16 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     if (
-      originalRequest?.url?.includes("/api/auth/refresh") ||
-      originalRequest?.url?.includes("/api/auth/logout")
+      originalRequest?.url?.includes('/api/auth/refresh') ||
+      originalRequest?.url?.includes('/api/auth/logout')
     ) {
       return Promise.reject(error);
     }
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       const hasSession =
-        typeof window !== "undefined" &&
-        window.localStorage?.getItem("hasSession") === "true";
+        typeof window !== 'undefined' &&
+        window.localStorage?.getItem('hasSession') === 'true';
       if (!hasSession) {
         return Promise.reject(error);
       }
@@ -49,10 +49,6 @@ api.interceptors.response.use(
           failedQueue.push({ resolve, reject });
         })
           .then(() => {
-            console.log(
-              "[INTERCEPTOR] Retrying queued request:",
-              originalRequest?.url,
-            );
             return api(originalRequest);
           })
           .catch((err) => Promise.reject(err));
@@ -61,18 +57,18 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        await api.post("/api/auth/refresh", {}, { withCredentials: true });
+        await api.post('/api/auth/refresh', {}, { withCredentials: true });
 
         processQueue(null);
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
         try {
-          if (typeof window !== "undefined")
-            window.localStorage?.removeItem("hasSession");
+          if (typeof window !== 'undefined')
+            window.localStorage?.removeItem('hasSession');
         } catch {}
-        toast.error("Session expired. Please log in again.");
-        window.location.href = "/auth/login";
+        toast.error('Session expired. Please log in again.');
+        window.location.href = '/auth/login';
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
@@ -80,7 +76,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  },
+  }
 );
 
 export default api;

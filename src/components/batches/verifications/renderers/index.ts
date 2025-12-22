@@ -1,3 +1,4 @@
+export { IntegrityAnalysisRenderer } from './IntegrityAnalysisRenderer';
 export { C2PARenderer } from './C2PARenderer';
 export { TimelineRenderer } from './TimelineRenderer';
 export { OCRRenderer } from './OCRRenderer';

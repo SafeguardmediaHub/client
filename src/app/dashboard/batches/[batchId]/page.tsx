@@ -17,6 +17,8 @@ import { use, useState } from 'react';
 import { BatchItemDetailModal } from '@/components/batches/BatchItemDetailModal';
 import { BatchProgress } from '@/components/batches/BatchProgress';
 import { BatchStatusBadge } from '@/components/batches/BatchStatusBadge';
+import { IntegrityDisplay } from '@/components/batches/IntegrityBadges';
+import { IntegritySummaryCard } from '@/components/batches/IntegritySummaryCard';
 import { VerificationBadges } from '@/components/batches/VerificationBadges';
 import { VerificationScoresComponent } from '@/components/batches/VerificationScores';
 import { WebSocketStatus } from '@/components/batches/WebSocketStatus';
@@ -51,7 +53,7 @@ export default function BatchDetailPage({
   const [resultsParams, setResultsParams] = useState<BatchResultsParams>({
     page: 1,
     limit: 50,
-    detailed: false,
+    detailed: true,
     sortBy: 'createdAt',
     sortOrder: 'asc',
   });
@@ -249,6 +251,11 @@ export default function BatchDetailPage({
         <BatchProgress batch={batch} showDetails={true} />
       </Card>
 
+      {/* Integrity Analysis Summary */}
+      {batchResults?.data?.summary && (
+        <IntegritySummaryCard summary={batchResults.data.summary} />
+      )}
+
       {/* Processing Options */}
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-3">
@@ -288,6 +295,16 @@ export default function BatchDetailPage({
           {!batch.options?.enableGeolocation && (
             <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
               ✗ Geolocation Verification
+            </span>
+          )}
+          {batch.options?.enableIntegrityAnalysis && (
+            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+              ✓ Integrity Analysis
+            </span>
+          )}
+          {!batch.options?.enableIntegrityAnalysis && (
+            <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
+              ✗ Integrity Analysis
             </span>
           )}
         </div>
@@ -368,6 +385,17 @@ export default function BatchDetailPage({
                           <div className="mb-2">
                             <VerificationScoresComponent
                               scores={item.scores}
+                              compact={true}
+                            />
+                          </div>
+                        )}
+
+                        {/* Integrity Analysis */}
+                        {item.integrityAnalysis && item.integrityAnalysis.integrityScore !== undefined && (
+                          <div className="mb-2">
+                            <IntegrityDisplay
+                              score={item.integrityAnalysis.integrityScore}
+                              verdict={item.integrityAnalysis.verdict}
                               compact={true}
                             />
                           </div>

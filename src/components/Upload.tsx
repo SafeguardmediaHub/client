@@ -30,11 +30,7 @@ export function Upload() {
           }
         );
 
-        console.log('this is response', response.data);
-
         const { data } = response.data;
-
-        console.log(data);
 
         const { uploadUrl } = data.upload;
 
@@ -44,8 +40,6 @@ export function Upload() {
             { file },
             { headers: { 'Content-Type': encodeURI(file.type) } }
           );
-
-          console.log('this is result', result);
 
           if (result.status === 200) {
             setUploadStatus('Upload successful!');

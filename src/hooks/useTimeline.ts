@@ -97,7 +97,6 @@ const verifyTimeline = async ({
     }
   );
 
-  console.log('this is the response', response.data);
   return response.data;
 };
 

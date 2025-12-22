@@ -162,7 +162,6 @@ const Dashboard: FC<DashboardProps> = ({
         });
 
         const result = response.data;
-        console.log('Upload confirmed:', result);
         toast.success('File uploaded and confirmed successfully!');
         return result;
       } catch (error: unknown) {
