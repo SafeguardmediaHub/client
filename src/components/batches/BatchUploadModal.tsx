@@ -50,7 +50,7 @@ export function BatchUploadModal({
       enableC2PA: true,
       enableOCR: true,
       enableReverseSearch: false,
-      enableDeepfake: true,
+      enableDeepfake: false,
       enableGeolocation: false,
       enableIntegrityAnalysis: false,
     },
@@ -259,6 +259,34 @@ export function BatchUploadModal({
               <div className="space-y-3">
                 <Label>Processing Options</Label>
                 <div className="space-y-3">
+                  {/* Integrity Analysis - FIRST */}
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="integrityAnalysis"
+                      checked={formData.options.enableIntegrityAnalysis}
+                      onCheckedChange={(checked) =>
+                        setFormData({
+                          ...formData,
+                          options: {
+                            ...formData.options,
+                            enableIntegrityAnalysis: checked as boolean,
+                          },
+                        })
+                      }
+                    />
+                    <div className="flex-1">
+                      <label
+                        htmlFor="integrityAnalysis"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Enable Integrity Analysis (Authenticity Check)
+                      </label>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Analyze media authenticity and detect manipulation across metadata, C2PA, file integrity, and geolocation
+                      </p>
+                    </div>
+                  </div>
+
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="c2pa"
@@ -324,27 +352,6 @@ export function BatchUploadModal({
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox
-                      id="deepfake"
-                      checked={formData.options.enableDeepfake}
-                      onCheckedChange={(checked) =>
-                        setFormData({
-                          ...formData,
-                          options: {
-                            ...formData.options,
-                            enableDeepfake: checked as boolean,
-                          },
-                        })
-                      }
-                    />
-                    <label
-                      htmlFor="deepfake"
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      Enable Deepfake Detection
-                    </label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
                       id="geolocation"
                       checked={formData.options.enableGeolocation}
                       onCheckedChange={(checked) =>
@@ -364,29 +371,23 @@ export function BatchUploadModal({
                       Enable Geolocation Verification
                     </label>
                   </div>
-                  <div className="flex items-center space-x-2">
+
+                  {/* Deepfake - DISABLED */}
+                  <div className="flex items-center space-x-2 opacity-50">
                     <Checkbox
-                      id="integrityAnalysis"
-                      checked={formData.options.enableIntegrityAnalysis}
-                      onCheckedChange={(checked) =>
-                        setFormData({
-                          ...formData,
-                          options: {
-                            ...formData.options,
-                            enableIntegrityAnalysis: checked as boolean,
-                          },
-                        })
-                      }
+                      id="deepfake"
+                      checked={false}
+                      disabled
                     />
                     <div className="flex-1">
                       <label
-                        htmlFor="integrityAnalysis"
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        htmlFor="deepfake"
+                        className="text-sm font-medium leading-none cursor-not-allowed text-gray-400"
                       >
-                        Enable Integrity Analysis (Authenticity Check)
+                        Enable Deepfake Detection
                       </label>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Analyze media authenticity and detect manipulation across metadata, C2PA, file integrity, and geolocation
+                      <p className="text-xs text-gray-400 mt-1">
+                        Coming soon
                       </p>
                     </div>
                   </div>

@@ -31,7 +31,11 @@ export default function BatchesPage() {
   const { data: batchesData, isLoading } = useBatches(filters);
   const { data: stats, isLoading: statsLoading } = useBatchStats();
 
-  const batches = batchesData?.data?.batches || [];
+  // Client-side filtering since backend doesn't filter by status
+  const allBatches = batchesData?.data?.batches || [];
+  const batches = filters.status
+    ? allBatches.filter((batch) => batch.status === filters.status)
+    : allBatches;
   const pagination = batchesData?.data?.pagination;
 
   const handleSearch = (value: string) => {
@@ -44,11 +48,15 @@ export default function BatchesPage() {
   };
 
   const handleStatusFilter = (status?: BatchStatus) => {
-    setFilters((prev) => ({
-      ...prev,
-      status: status,
-      page: 1,
-    }));
+    setFilters((prev) => {
+      const { status: _, ...rest } = prev;
+
+      return {
+        ...rest,
+        page: 1,
+        ...(status && { status }),
+      };
+    });
   };
 
   return (
@@ -239,49 +247,53 @@ export default function BatchesPage() {
             batches.map((batch) => (
               <Card
                 key={batch.batchId}
-                className="p-5 hover:shadow-md transition-all cursor-pointer"
+                className="p-4 sm:p-5 hover:shadow-md transition-all cursor-pointer"
                 onClick={() =>
                   router.push(`/dashboard/batches/${batch.batchId}`)
                 }
               >
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900 truncate">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 break-words">
                         {batch.name || `Batch ${batch.batchId.slice(0, 8)}`}
                       </h3>
                       <BatchStatusBadge status={batch.status} />
                     </div>
 
-                    <p className="text-sm text-gray-600 mb-2">
+                    <p className="text-sm text-gray-600 mb-3 break-words">
                       {batch.description || 'No description'}
                     </p>
 
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
-                      <span>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+                      <span className="whitespace-nowrap">
                         {batch.totalItems} file
                         {batch.totalItems !== 1 ? 's' : ''}
                       </span>
-                      <span>•</span>
-                      <span>{batch.completedItems} completed</span>
+                      <span className="hidden sm:inline">•</span>
+                      <span className="whitespace-nowrap">
+                        {batch.completedItems} completed
+                      </span>
                       {batch.failedItems > 0 && (
                         <>
-                          <span>•</span>
-                          <span className="text-red-600">
+                          <span className="hidden sm:inline">•</span>
+                          <span className="text-red-600 whitespace-nowrap">
                             {batch.failedItems} failed
                           </span>
                         </>
                       )}
-                      <span>•</span>
-                      <span>{formatDate(batch.createdAt)}</span>
+                      <span className="hidden sm:inline">•</span>
+                      <span className="whitespace-nowrap">
+                        {formatDate(batch.createdAt)}
+                      </span>
                     </div>
 
                     {batch.tags && batch.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-2">
+                      <div className="flex flex-wrap gap-2 mt-3">
                         {batch.tags.slice(0, 3).map((tag) => (
                           <span
                             key={tag}
-                            className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs"
+                            className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs break-all"
                           >
                             {tag}
                           </span>
@@ -295,11 +307,16 @@ export default function BatchesPage() {
                     )}
                   </div>
 
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-gray-900">
-                      {Math.round(batch.progress)}%
+                  <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 sm:gap-0 pt-3 sm:pt-0 border-t sm:border-t-0 sm:text-right">
+                    <span className="text-xs text-gray-500 sm:hidden">Progress</span>
+                    <div className="flex flex-col items-end">
+                      <div className="text-2xl sm:text-3xl font-bold text-gray-900">
+                        {Math.round(batch.progress)}%
+                      </div>
+                      <div className="text-xs text-gray-500 hidden sm:block">
+                        progress
+                      </div>
                     </div>
-                    <div className="text-xs text-gray-500">progress</div>
                   </div>
                 </div>
               </Card>

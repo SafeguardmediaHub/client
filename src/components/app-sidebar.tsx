@@ -90,12 +90,12 @@ const data = {
       icon: ShieldIcon,
       featureId: 'deepfake_detection',
     },
-    {
-      name: 'Cheapfake Detection',
-      url: '#',
-      icon: Film,
-      featureId: 'cheapfake_detection',
-    },
+    // {
+    //   name: 'Cheapfake Detection',
+    //   url: '#',
+    //   icon: Film,
+    //   featureId: 'cheapfake_detection',
+    // },
     {
       name: 'Visual Forensics',
       url: '/dashboard/visual',

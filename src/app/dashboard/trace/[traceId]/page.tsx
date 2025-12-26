@@ -4,7 +4,11 @@ import {
   AlertCircle,
   ArrowLeft,
   CheckCircle,
+  CheckCircle2,
+  Download,
+  FileText,
   Loader2,
+  RefreshCw,
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
@@ -20,8 +24,10 @@ import { SuspiciousPatternsTab } from "@/components/trace/SuspiciousPatternsTab"
 import { TimelineTab } from "@/components/trace/TimelineTab";
 import { TraceProgress } from "@/components/trace/TraceProgress";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useReportGeneration } from "@/hooks/useReports";
 import { useTraceResult } from "@/hooks/useTrace";
 import type { TraceStatus } from "@/types/trace";
 
@@ -54,6 +60,39 @@ const TraceDetailContent = () => {
   const status = resultQuery.data?.data?.status;
   const progress = resultQuery.data?.data?.progress;
   const error = resultQuery.data?.data?.error;
+
+  // Report generation hook
+  const reportGeneration = useReportGeneration({
+    onCompleted: (report) => {
+      toast.success('Report generated successfully!');
+    },
+    onFailed: (error) => {
+      toast.error(error || 'Report generation failed');
+    },
+  });
+
+  const handleGenerateReport = async () => {
+    if (!mediaId) {
+      toast.error('Media ID not found');
+      return;
+    }
+
+    try {
+      await reportGeneration.generate({
+        type: 'media_analytics',
+        mediaId: mediaId,
+        verificationType: 'c2pa',
+        format: 'pdf',
+        title: `C2PA Trace Report - ${mediaId}`,
+      });
+    } catch (error) {
+      console.error('Failed to generate report:', error);
+    }
+  };
+
+  const handleDownloadReport = () => {
+    reportGeneration.downloadReport(`C2PA_Trace_Report_${mediaId}`);
+  };
 
   // Check for stale timeout
   useEffect(() => {
@@ -376,6 +415,106 @@ const TraceDetailContent = () => {
               </TabsContent>
             </div>
           </Tabs>
+
+          {/* Report Generation Section */}
+          <div className="mt-6 p-6 bg-white border border-gray-200 rounded-lg">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Generate Report
+            </h3>
+
+            {/* Report Generation Status */}
+            {reportGeneration.status && (
+              <div className="mb-4 bg-gray-50 rounded-lg p-4">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {reportGeneration.status === 'completed' ? (
+                        <CheckCircle2 className="w-5 h-5 text-green-600" />
+                      ) : reportGeneration.status === 'failed' ? (
+                        <AlertCircle className="w-5 h-5 text-red-600" />
+                      ) : (
+                        <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
+                      )}
+                      <div>
+                        <h4 className="font-semibold text-gray-900">
+                          {reportGeneration.status === 'pending'
+                            ? 'Report Queued'
+                            : reportGeneration.status === 'processing'
+                            ? 'Generating Report'
+                            : reportGeneration.status === 'completed'
+                            ? 'Report Ready'
+                            : 'Report Generation Failed'}
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          {reportGeneration.status === 'pending' &&
+                            'Your report is in the queue'}
+                          {reportGeneration.status === 'processing' &&
+                            'Creating your PDF report...'}
+                          {reportGeneration.status === 'completed' &&
+                            'Your report is ready to download'}
+                          {reportGeneration.status === 'failed' &&
+                            'An error occurred during generation'}
+                        </p>
+                      </div>
+                    </div>
+                    {reportGeneration.status === 'completed' && (
+                      <Button
+                        onClick={handleDownloadReport}
+                        className="cursor-pointer"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Download PDF
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Progress Bar */}
+                  {(reportGeneration.status === 'pending' ||
+                    reportGeneration.status === 'processing') && (
+                    <div className="space-y-2">
+                      <Progress value={reportGeneration.progress || 0} />
+                      <p className="text-xs text-gray-500 text-center">
+                        {reportGeneration.progress || 0}% complete
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex justify-center gap-4">
+              {!reportGeneration.status && (
+                <Button
+                  onClick={handleGenerateReport}
+                  disabled={reportGeneration.isGenerating}
+                  className="cursor-pointer"
+                >
+                  {reportGeneration.isGenerating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Starting...
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="w-4 h-4 mr-2" />
+                      Generate PDF Report
+                    </>
+                  )}
+                </Button>
+              )}
+              {reportGeneration.status === 'failed' && (
+                <Button
+                  onClick={handleGenerateReport}
+                  disabled={reportGeneration.isGenerating}
+                  className="cursor-pointer"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Retry
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
       )}
 

@@ -41,7 +41,7 @@ export default function RootLayout({
           </AuthProvider>
         </QueryProvider>
 
-        <Toaster richColors expand={true} />
+        <Toaster richColors expand={true} duration={5000} />
         <Analytics />
       </body>
     </html>

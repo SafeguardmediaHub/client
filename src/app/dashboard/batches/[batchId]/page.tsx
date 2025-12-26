@@ -167,33 +167,83 @@ export default function BatchDetailPage({
   return (
     <div className="container mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1">
+      <div className="space-y-4">
+        {/* Back Button & Actions Row */}
+        <div className="flex items-center justify-between">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => router.push('/dashboard/batches')}
-            className="mb-2 -ml-2"
+            className="-ml-2"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Batches
           </Button>
 
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-responsive-3xl font-bold text-gray-900">
+          <div className="flex gap-2">
+            {batch.failedItems > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRetry}
+                disabled={retryBatchMutation.isPending}
+              >
+                <RefreshCcw className="mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">Retry Failed</span>
+                <span className="sm:hidden">Retry</span>
+              </Button>
+            )}
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="px-3">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => handleDownload('csv')}>
+                  <Download className="mr-2 h-4 w-4" />
+                  Download CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleDownload('json')}>
+                  <Download className="mr-2 h-4 w-4" />
+                  Download JSON
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="text-red-600"
+                  onClick={handleDelete}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Batch
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+
+        {/* Title & Info */}
+        <div>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 break-words">
               {batch.name || `Batch ${batch.batchId.slice(0, 8)}`}
             </h1>
-            <BatchStatusBadge status={batch.status} />
-            <WebSocketStatus />
+            <div className="flex items-center gap-2">
+              <BatchStatusBadge status={batch.status} />
+              <WebSocketStatus />
+            </div>
           </div>
 
-          <p className="text-gray-600 mb-2">
+          <p className="text-xs sm:text-sm text-gray-500 mb-3 break-words">
             Created {formatDate(batch.createdAt)}
             {batch.createdBy?.email && ` by ${batch.createdBy.email}`}
           </p>
 
           {batch.description && (
-            <p className="text-gray-700 mb-2">{batch.description}</p>
+            <div className="bg-blue-50 border-l-4 border-blue-400 p-3 sm:p-4 rounded mb-3">
+              <p className="text-sm sm:text-base text-gray-800 break-words leading-relaxed">
+                {batch.description}
+              </p>
+            </div>
           )}
 
           {batch.tags && batch.tags.length > 0 && (
@@ -201,7 +251,7 @@ export default function BatchDetailPage({
               {batch.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm"
+                  className="px-2 sm:px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs sm:text-sm break-all"
                 >
                   {tag}
                 </span>
@@ -209,45 +259,10 @@ export default function BatchDetailPage({
             </div>
           )}
         </div>
-
-        <div className="flex gap-2">
-          {batch.failedItems > 0 && (
-            <Button
-              variant="outline"
-              onClick={handleRetry}
-              disabled={retryBatchMutation.isPending}
-            >
-              <RefreshCcw className="mr-2 h-4 w-4" />
-              Retry Failed
-            </Button>
-          )}
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => handleDownload('csv')}>
-                <Download className="mr-2 h-4 w-4" />
-                Download CSV
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleDownload('json')}>
-                <Download className="mr-2 h-4 w-4" />
-                Download JSON
-              </DropdownMenuItem>
-              <DropdownMenuItem className="text-red-600" onClick={handleDelete}>
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete Batch
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
       </div>
 
       {/* Progress Overview */}
-      <Card className="p-6">
+      <Card className="p-4 sm:p-6">
         <BatchProgress batch={batch} showDetails={true} />
       </Card>
 
@@ -257,83 +272,87 @@ export default function BatchDetailPage({
       )}
 
       {/* Processing Options */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-3">
+      <Card className="p-4 sm:p-6">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">
           Processing Options
         </h3>
         <div className="flex flex-wrap gap-2">
           {batch.options?.enableC2PA && (
-            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+            <span className="px-2 sm:px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs sm:text-sm">
               ✓ C2PA Verification
             </span>
           )}
           {batch.options?.enableOCR && (
-            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+            <span className="px-2 sm:px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs sm:text-sm">
               ✓ OCR Extraction
             </span>
           )}
           {batch.options?.enableDeepfake && (
-            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+            <span className="px-2 sm:px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs sm:text-sm">
               ✓ Deepfake Detection
             </span>
           )}
           {batch.options?.enableReverseSearch && (
-            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+            <span className="px-2 sm:px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs sm:text-sm">
               ✓ Reverse Search
             </span>
           )}
           {!batch.options?.enableReverseSearch && (
-            <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
+            <span className="px-2 sm:px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs sm:text-sm">
               ✗ Reverse Search
             </span>
           )}
           {batch.options?.enableGeolocation && (
-            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+            <span className="px-2 sm:px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs sm:text-sm">
               ✓ Geolocation Verification
             </span>
           )}
           {!batch.options?.enableGeolocation && (
-            <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
+            <span className="px-2 sm:px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs sm:text-sm">
               ✗ Geolocation Verification
             </span>
           )}
           {batch.options?.enableIntegrityAnalysis && (
-            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+            <span className="px-2 sm:px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs sm:text-sm">
               ✓ Integrity Analysis
             </span>
           )}
           {!batch.options?.enableIntegrityAnalysis && (
-            <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
+            <span className="px-2 sm:px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs sm:text-sm">
               ✗ Integrity Analysis
             </span>
           )}
         </div>
         {batch.webhookUrl && (
-          <p className="text-sm text-gray-600 mt-3">
+          <p className="text-xs sm:text-sm text-gray-600 mt-3 break-all">
             <strong>Webhook:</strong> {batch.webhookUrl}
           </p>
         )}
       </Card>
 
       {/* File Details */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+      <Card className="p-4 sm:p-6">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
           File Details
         </h3>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
-            <TabsTrigger value="all">All ({batch.totalItems})</TabsTrigger>
-            <TabsTrigger value="completed">
-              Completed ({batch.completedItems})
-            </TabsTrigger>
-            <TabsTrigger value="processing">
-              Processing ({batch.processingItems})
-            </TabsTrigger>
-            <TabsTrigger value="failed">
-              Failed ({batch.failedItems})
-            </TabsTrigger>
-          </TabsList>
+          <div className="w-full overflow-x-auto">
+            <TabsList className="inline-flex sm:grid sm:w-full sm:grid-cols-4 w-max sm:w-full">
+              <TabsTrigger value="all" className="text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4">
+                All ({batch.totalItems})
+              </TabsTrigger>
+              <TabsTrigger value="completed" className="text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4">
+                ✓ Completed ({batch.completedItems})
+              </TabsTrigger>
+              <TabsTrigger value="processing" className="text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4">
+                ⟳ Processing ({batch.processingItems})
+              </TabsTrigger>
+              <TabsTrigger value="failed" className="text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4">
+                ✕ Failed ({batch.failedItems})
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value={activeTab} className="mt-4">
             {resultsLoading ? (
@@ -360,52 +379,56 @@ export default function BatchDetailPage({
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-medium text-gray-900 truncate">
+                          <h4 className="text-sm sm:text-base font-medium text-gray-900 break-words line-clamp-2">
                             {item.originalFilename || item.filename}
                           </h4>
                           {getItemStatusIcon(item.status)}
                         </div>
 
-                        <p className="text-sm text-gray-600 mb-2">
+                        <p className="text-xs sm:text-sm text-gray-600 mb-4 break-words">
                           {formatFileSize(item.fileSize)} • {item.mimeType}
                         </p>
 
                         {/* Verification Badges */}
-                        {item.verifications && (
+                        {/* {item.verifications && (
                           <div className="mb-2">
                             <VerificationBadges
                               verifications={item.verifications}
                               showLabels={false}
                             />
                           </div>
-                        )}
+                        )} */}
 
                         {/* Verification Scores */}
-                        {item.scores && (
+                        {/* {item.scores && (
                           <div className="mb-2">
                             <VerificationScoresComponent
                               scores={item.scores}
                               compact={true}
                             />
                           </div>
-                        )}
+                        )} */}
 
                         {/* Integrity Analysis */}
-                        {item.integrityAnalysis && item.integrityAnalysis.integrityScore !== undefined && (
-                          <div className="mb-2">
-                            <IntegrityDisplay
-                              score={item.integrityAnalysis.integrityScore}
-                              verdict={item.integrityAnalysis.verdict}
-                              compact={true}
-                            />
-                          </div>
-                        )}
+                        {item.integrityAnalysis &&
+                          item.integrityAnalysis.integrityScore !==
+                            undefined && (
+                            <div className="mb-2">
+                              <IntegrityDisplay
+                                score={item.integrityAnalysis.integrityScore}
+                                verdict={item.integrityAnalysis.verdict}
+                                compact={true}
+                              />
+                            </div>
+                          )}
 
-                        {item.status === 'COMPLETED' && item.processingCompletedAt && (
-                          <p className="text-xs text-green-600 mt-1">
-                            ✓ Completed {formatDate(item.processingCompletedAt)}
-                          </p>
-                        )}
+                        {item.status === 'COMPLETED' &&
+                          item.processingCompletedAt && (
+                            <p className="text-xs text-green-600 mt-1">
+                              ✓ Completed{' '}
+                              {formatDate(item.processingCompletedAt)}
+                            </p>
+                          )}
                       </div>
                     </div>
 
@@ -427,13 +450,16 @@ export default function BatchDetailPage({
 
             {/* Pagination */}
             {pagination && pagination.totalPages > 1 && (
-              <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                <p className="text-sm text-gray-600">
-                  Page {pagination.page} of {pagination.totalPages} ({pagination.total}{' '}
-                  total items)
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mt-4 pt-4 border-t">
+                <p className="text-xs sm:text-sm text-gray-600">
+                  Page {pagination.page} of {pagination.totalPages}
+                  <span className="hidden sm:inline">
+                    {' '}
+                    ({pagination.total} total items)
+                  </span>
                 </p>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-full sm:w-auto">
                   <Button
                     variant="outline"
                     size="sm"
@@ -444,6 +470,7 @@ export default function BatchDetailPage({
                         page: (prev.page || 1) - 1,
                       }))
                     }
+                    className="flex-1 sm:flex-initial"
                   >
                     Previous
                   </Button>
@@ -457,6 +484,7 @@ export default function BatchDetailPage({
                         page: (prev.page || 1) + 1,
                       }))
                     }
+                    className="flex-1 sm:flex-initial"
                   >
                     Next
                   </Button>

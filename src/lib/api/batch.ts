@@ -65,8 +65,15 @@ export const confirmBatch = async (
 export const getBatches = async (
   params?: BatchListParams
 ): Promise<BatchListResponse> => {
+  // Remove undefined values from params to ensure clean query string
+  const cleanParams = params
+    ? Object.fromEntries(
+        Object.entries(params).filter(([_, value]) => value !== undefined)
+      )
+    : {};
+
   const response = await api.get<BatchListResponse>('/api/media/batch', {
-    params,
+    params: cleanParams,
   });
 
   return response.data;

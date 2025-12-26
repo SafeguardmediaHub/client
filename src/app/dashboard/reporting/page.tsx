@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useReports } from '@/hooks/useReports';
-import { handleDownload } from '@/lib/api/report';
+import { downloadReport } from '@/lib/api/report';
 import type { Report } from '@/types/report';
 
 const Reporting = () => {
@@ -350,7 +350,7 @@ const Reporting = () => {
                           className="h-8 px-3 border-[#d9d9d9] hover:bg-gray-50 cursor-pointer"
                           disabled={report.status !== 'completed'}
                           onClick={() =>
-                            handleDownload(report.id, report.title)
+                            downloadReport(report.id, report.title)
                           }
                         >
                           <DownloadIcon className="w-4 h-4 mr-1" />
