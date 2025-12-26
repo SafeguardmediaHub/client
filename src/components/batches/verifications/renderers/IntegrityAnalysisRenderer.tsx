@@ -42,33 +42,37 @@ function CategorySection({ category }: { category: IntegrityCategory }) {
     <div className="border border-gray-200 rounded-md overflow-hidden">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
+        className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gray-50 hover:bg-gray-100 transition-colors"
       >
-        <div className="flex items-center gap-3">
-          <span className="font-medium text-gray-900">{category.name}</span>
-          {category.score !== null && (
-            <span className={`font-bold ${getCategoryScoreColor(category.score)}`}>
-              {Math.round(category.score)}/100
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 w-full">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            <span className="font-medium text-gray-900 text-xs sm:text-sm break-words">
+              {category.name}
             </span>
-          )}
-          {category.score === null && (
-            <span className="text-sm text-gray-500">N/A</span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="text-xs">
-            {category.findings.length} finding{category.findings.length !== 1 ? "s" : ""}
-          </Badge>
-          {isExpanded ? (
-            <ChevronUp className="h-4 w-4 text-gray-600" />
-          ) : (
-            <ChevronDown className="h-4 w-4 text-gray-600" />
-          )}
+            {category.score !== null && (
+              <span className={`font-bold text-xs sm:text-sm ${getCategoryScoreColor(category.score)} whitespace-nowrap`}>
+                {Math.round(category.score)}/100
+              </span>
+            )}
+            {category.score === null && (
+              <span className="text-xs sm:text-sm text-gray-500">N/A</span>
+            )}
+          </div>
+          <div className="flex items-center gap-2 justify-between sm:justify-end">
+            <Badge variant="secondary" className="text-[10px] sm:text-xs whitespace-nowrap">
+              {category.findings.length} finding{category.findings.length !== 1 ? "s" : ""}
+            </Badge>
+            {isExpanded ? (
+              <ChevronUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-600 flex-shrink-0" />
+            ) : (
+              <ChevronDown className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-600 flex-shrink-0" />
+            )}
+          </div>
         </div>
       </button>
 
       {isExpanded && category.findings.length > 0 && (
-        <div className="p-4 space-y-3 bg-white">
+        <div className="p-3 sm:p-4 space-y-3 bg-white">
           {category.findings.map((finding, idx) => (
             <FindingItem key={idx} finding={finding} />
           ))}
@@ -76,7 +80,7 @@ function CategorySection({ category }: { category: IntegrityCategory }) {
       )}
 
       {isExpanded && category.findings.length === 0 && (
-        <div className="p-4 text-center text-sm text-gray-500">
+        <div className="p-3 sm:p-4 text-center text-xs sm:text-sm text-gray-500">
           No findings for this category
         </div>
       )}
@@ -89,25 +93,27 @@ function FindingItem({ finding }: { finding: IntegrityFinding }) {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-start gap-2">
-        <Badge className={getSeverityColor(finding.severity)} variant="secondary">
+      <div className="flex flex-col sm:flex-row sm:items-start gap-2">
+        <Badge className={`${getSeverityColor(finding.severity)} whitespace-nowrap text-[10px] sm:text-xs`} variant="secondary">
           {finding.severity.toUpperCase()}
         </Badge>
-        <div className="flex-1">
-          <p className="text-sm font-medium text-gray-900">{finding.type}</p>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs sm:text-sm font-medium text-gray-900 break-words">
+            {finding.type}
+          </p>
           {finding.impact !== undefined && (
-            <p className="text-xs text-gray-500">
+            <p className="text-[10px] sm:text-xs text-gray-500">
               Impact: {finding.impact > 0 ? `+${finding.impact}` : finding.impact} points
             </p>
           )}
         </div>
       </div>
-      <p className="text-sm text-gray-700 leading-relaxed pl-2 border-l-2 border-gray-300">
+      <p className="text-xs sm:text-sm text-gray-700 leading-relaxed pl-2 border-l-2 border-gray-300 break-words">
         {finding.explanation}
       </p>
       {hasDetails ? (
-        <div className="mt-2 p-2 bg-gray-50 rounded text-xs font-mono text-gray-600 overflow-x-auto">
-          <pre className="whitespace-pre-wrap">
+        <div className="mt-2 p-2 bg-gray-50 rounded text-[10px] sm:text-xs font-mono text-gray-600 overflow-x-auto">
+          <pre className="whitespace-pre-wrap break-words">
             {typeof finding.details === "string"
               ? finding.details
               : JSON.stringify(finding.details, null, 2)}
@@ -143,39 +149,41 @@ export function IntegrityAnalysisRenderer({ data }: IntegrityAnalysisRendererPro
   const categories = fullData?.fullReport?.categories || [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Overall Verdict & Score */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-700">Overall Verdict:</span>
+      <div className="space-y-2 sm:space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
+          <span className="text-xs sm:text-sm font-medium text-gray-700">Overall Verdict:</span>
           {verdict && <VerdictBadge verdict={verdict as any} />}
         </div>
 
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-700">Integrity Score:</span>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
+          <span className="text-xs sm:text-sm font-medium text-gray-700">Integrity Score:</span>
           <IntegrityScoreBadge score={integrityScore} />
         </div>
       </div>
 
       {/* Summary */}
       {summaryText && (
-        <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
-          <h4 className="text-sm font-semibold text-blue-900 mb-2">Summary</h4>
-          <p className="text-sm text-blue-800 leading-relaxed">{summaryText}</p>
+        <div className="p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-md">
+          <h4 className="text-xs sm:text-sm font-semibold text-blue-900 mb-2">Summary</h4>
+          <p className="text-xs sm:text-sm text-blue-800 leading-relaxed break-words">
+            {summaryText}
+          </p>
         </div>
       )}
 
       {/* Key Flags/Concerns */}
       {flags.length > 0 && (
         <div>
-          <h4 className="text-sm font-semibold text-gray-900 mb-2">
+          <h4 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2">
             Key Concerns ({flags.length})
           </h4>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2">
             {flags.map((flag, idx) => (
-              <Badge key={idx} variant="outline" className="bg-orange-50 text-orange-700 border-orange-300">
-                <AlertTriangle className="h-3 w-3 mr-1" />
-                {flag}
+              <Badge key={idx} variant="outline" className="bg-orange-50 text-orange-700 border-orange-300 text-[10px] sm:text-xs">
+                <AlertTriangle className="h-3 w-3 mr-1 flex-shrink-0" />
+                <span className="break-words">{flag}</span>
               </Badge>
             ))}
           </div>
@@ -185,7 +193,7 @@ export function IntegrityAnalysisRenderer({ data }: IntegrityAnalysisRendererPro
       {/* Category Analysis */}
       {categories.length > 0 && (
         <div>
-          <h4 className="text-sm font-semibold text-gray-900 mb-3">
+          <h4 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2 sm:mb-3">
             Category Analysis ({categories.length})
           </h4>
           <div className="space-y-2">
@@ -198,22 +206,26 @@ export function IntegrityAnalysisRenderer({ data }: IntegrityAnalysisRendererPro
 
       {/* Recommendations */}
       {recommendations && (
-        <div className="p-4 bg-amber-50 border border-amber-200 rounded-md">
-          <h4 className="text-sm font-semibold text-amber-900 mb-2">
+        <div className="p-3 sm:p-4 bg-amber-50 border border-amber-200 rounded-md">
+          <h4 className="text-xs sm:text-sm font-semibold text-amber-900 mb-2">
             Recommendations
           </h4>
-          <p className="text-sm text-amber-800 leading-relaxed">{recommendations}</p>
+          <p className="text-xs sm:text-sm text-amber-800 leading-relaxed break-words">
+            {recommendations}
+          </p>
         </div>
       )}
 
       {/* Raw Data (Debug) */}
       {fullData && (
-        <details className="text-xs">
+        <details className="text-[10px] sm:text-xs">
           <summary className="cursor-pointer text-gray-600 hover:text-gray-900 font-medium">
             View Raw Data (JSON)
           </summary>
-          <pre className="mt-2 p-3 bg-gray-900 text-gray-100 rounded overflow-x-auto">
-            {JSON.stringify(fullData, null, 2)}
+          <pre className="mt-2 p-2 sm:p-3 bg-gray-900 text-gray-100 rounded overflow-x-auto">
+            <code className="break-words whitespace-pre-wrap">
+              {JSON.stringify(fullData, null, 2)}
+            </code>
           </pre>
         </details>
       )}

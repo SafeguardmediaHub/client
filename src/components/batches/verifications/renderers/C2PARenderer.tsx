@@ -36,10 +36,10 @@ export function C2PARenderer({ data }: C2PARendererProps) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {/* Certificate Status */}
-      <div className="space-y-3 text-sm">
-        <div className="flex items-center justify-between">
+      <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
           <span className="text-gray-600">Manifest Present:</span>
           <div className="flex items-center gap-2">
             <StatusIcon valid={result.manifestPresent} />
@@ -51,7 +51,7 @@ export function C2PARenderer({ data }: C2PARendererProps) {
 
         {result.manifestPresent && (
           <>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
               <span className="text-gray-600">Signature Valid:</span>
               <div className="flex items-center gap-2">
                 <StatusIcon valid={result.signatureValid} />
@@ -61,7 +61,7 @@ export function C2PARenderer({ data }: C2PARendererProps) {
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
               <span className="text-gray-600">Certificate Chain:</span>
               <div className="flex items-center gap-2">
                 <StatusIcon valid={result.certificateChainValid} />
@@ -71,7 +71,7 @@ export function C2PARenderer({ data }: C2PARendererProps) {
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
               <span className="text-gray-600">Certificate Status:</span>
               <div className="flex items-center gap-2">
                 <StatusIcon valid={!result.certificateExpired} />
@@ -82,7 +82,7 @@ export function C2PARenderer({ data }: C2PARendererProps) {
             </div>
 
             {result.editedAfterSigning !== null && (
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
                 <span className="text-gray-600">Edited After Signing:</span>
                 <div className="flex items-center gap-2">
                   <StatusIcon valid={!result.editedAfterSigning} />
@@ -98,17 +98,21 @@ export function C2PARenderer({ data }: C2PARendererProps) {
 
       {/* Issuer Information */}
       {result.issuer && (
-        <Card className="p-3 bg-white">
-          <h4 className="text-xs font-semibold text-gray-900 mb-2">Issuer Information</h4>
-          <div className="space-y-2 text-sm">
+        <Card className="p-2 sm:p-3 bg-white">
+          <h4 className="text-[10px] sm:text-xs font-semibold text-gray-900 mb-2">
+            Issuer Information
+          </h4>
+          <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
             <div>
-              <span className="text-gray-600 text-xs">Issuer:</span>
-              <p className="font-medium text-gray-900">{result.issuer}</p>
+              <span className="text-gray-600 text-[10px] sm:text-xs">Issuer:</span>
+              <p className="font-medium text-gray-900 break-words">{result.issuer}</p>
             </div>
             {result.signedAt && (
               <div>
-                <span className="text-gray-600 text-xs">Signed At:</span>
-                <p className="font-medium text-gray-900">{formatDate(result.signedAt)}</p>
+                <span className="text-gray-600 text-[10px] sm:text-xs">Signed At:</span>
+                <p className="font-medium text-gray-900 break-words">
+                  {formatDate(result.signedAt)}
+                </p>
               </div>
             )}
           </div>
@@ -117,22 +121,22 @@ export function C2PARenderer({ data }: C2PARendererProps) {
 
       {/* Device & Software */}
       {(result.device || result.software) && (
-        <Card className="p-3 bg-white">
-          <h4 className="text-xs font-semibold text-gray-900 mb-2 flex items-center gap-2">
-            <Cpu className="h-3.5 w-3.5" />
+        <Card className="p-2 sm:p-3 bg-white">
+          <h4 className="text-[10px] sm:text-xs font-semibold text-gray-900 mb-2 flex items-center gap-2">
+            <Cpu className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             Device & Software
           </h4>
-          <div className="space-y-2 text-sm">
+          <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
             {result.device && (
               <div>
-                <span className="text-gray-600 text-xs">Device:</span>
-                <p className="font-medium text-gray-900">{result.device}</p>
+                <span className="text-gray-600 text-[10px] sm:text-xs">Device:</span>
+                <p className="font-medium text-gray-900 break-words">{result.device}</p>
               </div>
             )}
             {result.software && (
               <div>
-                <span className="text-gray-600 text-xs">Software:</span>
-                <p className="font-medium text-gray-900">{result.software}</p>
+                <span className="text-gray-600 text-[10px] sm:text-xs">Software:</span>
+                <p className="font-medium text-gray-900 break-words">{result.software}</p>
               </div>
             )}
           </div>
@@ -141,19 +145,23 @@ export function C2PARenderer({ data }: C2PARendererProps) {
 
       {/* Processing Info */}
       {result.processingInfo && (
-        <Card className="p-3 bg-white">
-          <h4 className="text-xs font-semibold text-gray-900 mb-2 flex items-center gap-2">
-            <Code className="h-3.5 w-3.5" />
+        <Card className="p-2 sm:p-3 bg-white">
+          <h4 className="text-[10px] sm:text-xs font-semibold text-gray-900 mb-2 flex items-center gap-2">
+            <Code className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             Processing Information
           </h4>
-          <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] sm:text-xs">
             <div>
               <span className="text-gray-600">Tool Version:</span>
-              <p className="font-medium text-gray-900">{result.processingInfo.toolVersion}</p>
+              <p className="font-medium text-gray-900 break-words">
+                {result.processingInfo.toolVersion}
+              </p>
             </div>
             <div>
               <span className="text-gray-600">Media Type:</span>
-              <p className="font-medium text-gray-900">{result.processingInfo.mediaType}</p>
+              <p className="font-medium text-gray-900 break-words">
+                {result.processingInfo.mediaType}
+              </p>
             </div>
           </div>
         </Card>

@@ -58,14 +58,14 @@ export function BatchItemDetailModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[calc(100vw-2rem)] sm:w-[calc(100vw-4rem)] md:max-w-3xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <span className="text-2xl">
+        <DialogHeader className="space-y-2 sm:space-y-3">
+          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <span className="text-xl sm:text-2xl flex-shrink-0">
               {getFileIcon(itemDetails?.mimeType || '')}
             </span>
             <span className="truncate">{filename}</span>
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs sm:text-sm">
             Detailed verification results and analysis
           </DialogDescription>
         </DialogHeader>
@@ -85,19 +85,27 @@ export function BatchItemDetailModal({
           </div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-1">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="verifications">
-                Verifications
-                {verificationsCount > 0 && (
-                  <Badge variant="secondary" className="ml-2 text-xs">
-                    {verificationsCount}
-                  </Badge>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="metadata">Metadata</TabsTrigger>
-              <TabsTrigger value="raw">Raw Data</TabsTrigger>
-            </TabsList>
+            <div className="w-full overflow-x-auto mb-4">
+              <TabsList className="inline-flex sm:grid sm:w-full sm:grid-cols-4 w-max sm:w-full">
+                <TabsTrigger value="overview" className="whitespace-nowrap">
+                  Overview
+                </TabsTrigger>
+                <TabsTrigger value="verifications" className="whitespace-nowrap">
+                  Verifications
+                  {verificationsCount > 0 && (
+                    <Badge variant="secondary" className="ml-2 text-xs">
+                      {verificationsCount}
+                    </Badge>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="metadata" className="whitespace-nowrap">
+                  Metadata
+                </TabsTrigger>
+                <TabsTrigger value="raw" className="whitespace-nowrap">
+                  Raw Data
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
             {/* OVERVIEW TAB */}
             <TabsContent value="overview" className="space-y-4">
