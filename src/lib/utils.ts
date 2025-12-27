@@ -71,3 +71,50 @@ export const getStatusColor = (status: Media["status"]) => {
       return "bg-gray-100 border-gray-400 text-gray-600";
   }
 };
+
+/**
+ * Validates password strength matching backend validation rules
+ * @param password - The password to validate
+ * @returns Object containing validation status and error messages
+ */
+export function validatePasswordStrength(password: string): {
+  isValid: boolean;
+  errors: string[];
+} {
+  const errors: string[] = [];
+
+  if (password.length < 8) {
+    errors.push('Password must be at least 8 characters long');
+  }
+
+  if (password.length > 128) {
+    errors.push('Password cannot exceed 128 characters');
+  }
+
+  if (!/[a-z]/.test(password)) {
+    errors.push('Password must contain at least one lowercase letter');
+  }
+
+  if (!/[A-Z]/.test(password)) {
+    errors.push('Password must contain at least one uppercase letter');
+  }
+
+  if (!/\d/.test(password)) {
+    errors.push('Password must contain at least one number');
+  }
+
+  // Check for repeated characters (3 or more)
+  if (/(.)\1{2,}/.test(password)) {
+    errors.push('Password cannot contain repeated characters');
+  }
+
+  // Check for common patterns
+  if (/123|abc|qwe|password|admin/i.test(password)) {
+    errors.push('Password cannot contain common patterns');
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  };
+}

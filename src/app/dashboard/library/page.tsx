@@ -55,21 +55,33 @@ const LibraryPage = () => {
   const limit = 20;
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const { data, isError, isLoading, refetch, isFetching } = useGetMedia({
-    page,
-    limit,
-    type: filterType === 'all' ? undefined : filterType,
-    sort: 'createdAt',
-  });
+  // Check if there are any processing items to enable smart polling
+  const [hasProcessingItems, setHasProcessingItems] = useState(false);
+
+  const { data, isError, isLoading, refetch, isFetching } = useGetMedia(
+    {
+      page,
+      limit,
+      type: filterType === 'all' ? undefined : filterType,
+      sort: 'createdAt',
+    },
+    {
+      // Enable polling only when there are items being processed
+      refetchInterval: hasProcessingItems ? 3000 : false,
+      refetchOnWindowFocus: true,
+    }
+  );
 
   const media = data?.media || [];
   const pagination = data?.pagination;
 
-  const deleteMedia = useDeleteMedia();
-
+  // Update processing status whenever media changes
   useEffect(() => {
-    void refetch();
-  }, [refetch]);
+    const processing = media.some((item) => item.status === 'processing');
+    setHasProcessingItems(processing);
+  }, [media]);
+
+  const deleteMedia = useDeleteMedia();
 
   // Keyboard navigation for pagination
   useEffect(() => {

@@ -172,18 +172,26 @@ const uploadKeyframe = async ({
   return result;
 };
 
-export const useGetMedia = (params?: {
-  page?: number;
-  limit?: number;
-  sort?: string;
-  type?: string;
-  status?: string;
-}) => {
+export const useGetMedia = (
+  params?: {
+    page?: number;
+    limit?: number;
+    sort?: string;
+    type?: string;
+    status?: string;
+  },
+  options?: {
+    refetchInterval?: number | false;
+    refetchOnWindowFocus?: boolean;
+  }
+) => {
   return useQuery({
     queryKey: ['userMedia', params],
     queryFn: () => fetchUserMedia(params),
-    staleTime: 5000,
+    staleTime: 1000,
     placeholderData: keepPreviousData,
+    refetchInterval: options?.refetchInterval,
+    refetchOnWindowFocus: options?.refetchOnWindowFocus ?? true,
   });
 };
 

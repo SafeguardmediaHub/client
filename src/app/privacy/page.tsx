@@ -1,0 +1,551 @@
+"use client";
+
+import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+
+export default function PrivacyPolicyPage() {
+  const router = useRouter();
+
+  const handleBack = () => {
+    // Check if there's history to go back to
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      // If opened in new tab with no history, go to homepage
+      router.push('/');
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="container mx-auto px-4 py-6 sm:py-8 md:py-12 max-w-5xl">
+        {/* Header */}
+        <div className="mb-6 sm:mb-8">
+          <Button
+            variant="ghost"
+            onClick={handleBack}
+            className="mb-4 text-sm sm:text-base cursor-pointer"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+          </Button>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+            Privacy Policy
+          </h1>
+          <p className="text-sm sm:text-base text-gray-600">
+            Last Updated: December 26, 2025
+          </p>
+        </div>
+
+        {/* Main Content */}
+        <Card className="p-4 sm:p-6 md:p-8 shadow-lg">
+          <div className="prose prose-sm sm:prose-base max-w-none space-y-6 sm:space-y-8">
+            {/* 1. Introduction */}
+            <section>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
+                1. Introduction
+              </h2>
+              <div className="space-y-3 sm:space-y-4 text-sm sm:text-base text-gray-700 leading-relaxed">
+                <p>
+                  SafeguardMedia ("we," "our," or "us") is committed to protecting your privacy and personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our media verification platform and related services (collectively, the "Services").
+                </p>
+                <p>
+                  By accessing or using our Services, you acknowledge that you have read, understood, and agree to be bound by this Privacy Policy. If you do not agree with this Privacy Policy, please do not use our Services.
+                </p>
+                <p>
+                  This Privacy Policy is designed to comply with the General Data Protection Regulation (GDPR), California Consumer Privacy Act (CCPA), and other applicable data protection laws.
+                </p>
+              </div>
+            </section>
+
+            {/* 2. Information We Collect */}
+            <section>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
+                2. Information We Collect
+              </h2>
+              <div className="space-y-3 sm:space-y-4 text-sm sm:text-base text-gray-700 leading-relaxed">
+                <h3 className="text-base sm:text-lg font-medium text-gray-800 mt-4">
+                  2.1 Information You Provide
+                </h3>
+                <p>We collect information that you voluntarily provide when using our Services:</p>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li><strong>Account Information:</strong> Name, email address, password, organization name, and contact details when you register for an account.</li>
+                  <li><strong>Payment Information:</strong> Billing address, payment method details (processed securely through our payment processors), and transaction history.</li>
+                  <li><strong>Profile Information:</strong> Additional information you choose to add to your profile, such as profile pictures, job title, and preferences.</li>
+                  <li><strong>Communications:</strong> Content of messages, feedback, support requests, and other communications you send to us.</li>
+                </ul>
+
+                <h3 className="text-base sm:text-lg font-medium text-gray-800 mt-4">
+                  2.2 Media Files and Content
+                </h3>
+                <p>When you use our verification services, we collect and process:</p>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li><strong>Uploaded Media:</strong> Images, videos, audio files, and documents you upload for analysis.</li>
+                  <li><strong>Extracted Metadata:</strong> EXIF data, geolocation information, timestamps, device information, and other embedded metadata from your media files.</li>
+                  <li><strong>C2PA Data:</strong> Content provenance and authenticity information embedded in media files.</li>
+                  <li><strong>Analysis Results:</strong> Integrity scores, authenticity assessments, manipulation detection results, OCR text extraction, timeline verification data, and other analysis outputs generated by our Services.</li>
+                  <li><strong>Batch Processing Data:</strong> Information about batch operations, processing status, and aggregated results.</li>
+                </ul>
+
+                <h3 className="text-base sm:text-lg font-medium text-gray-800 mt-4">
+                  2.3 Automatically Collected Information
+                </h3>
+                <p>We automatically collect certain information when you access our Services:</p>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li><strong>Usage Data:</strong> Pages visited, features used, time spent on pages, navigation paths, and interaction patterns.</li>
+                  <li><strong>Device Information:</strong> IP address, browser type and version, operating system, device type, unique device identifiers.</li>
+                  <li><strong>Log Data:</strong> Server logs, error reports, API requests, and system performance metrics.</li>
+                  <li><strong>Cookies and Tracking:</strong> Session cookies, authentication tokens, and analytics data (see Section 8 for details).</li>
+                </ul>
+
+                <h3 className="text-base sm:text-lg font-medium text-gray-800 mt-4">
+                  2.4 API Usage Data
+                </h3>
+                <p>If you use our API services, we collect:</p>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li>API keys and credentials</li>
+                  <li>API request logs and response times</li>
+                  <li>Rate limit and quota usage</li>
+                  <li>Integration metadata</li>
+                </ul>
+              </div>
+            </section>
+
+            {/* 3. How We Use Your Information */}
+            <section>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
+                3. How We Use Your Information
+              </h2>
+              <div className="space-y-3 sm:space-y-4 text-sm sm:text-base text-gray-700 leading-relaxed">
+                <p>We use the collected information for the following purposes:</p>
+
+                <h3 className="text-base sm:text-lg font-medium text-gray-800 mt-4">
+                  3.1 Service Provision
+                </h3>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li>Provide, operate, and maintain our media verification Services</li>
+                  <li>Process and analyze uploaded media files</li>
+                  <li>Generate authenticity reports and integrity assessments</li>
+                  <li>Store and manage your media library</li>
+                  <li>Execute batch processing operations</li>
+                  <li>Deliver timeline and geolocation verification results</li>
+                </ul>
+
+                <h3 className="text-base sm:text-lg font-medium text-gray-800 mt-4">
+                  3.2 Account Management
+                </h3>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li>Create and manage your account</li>
+                  <li>Authenticate your identity and maintain security</li>
+                  <li>Process payments and manage subscriptions</li>
+                  <li>Communicate account-related information</li>
+                </ul>
+
+                <h3 className="text-base sm:text-lg font-medium text-gray-800 mt-4">
+                  3.3 Service Improvement
+                </h3>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li>Analyze usage patterns to improve our algorithms and features</li>
+                  <li>Conduct research and development for new verification technologies</li>
+                  <li>Train and improve our AI and machine learning models</li>
+                  <li>Optimize system performance and reliability</li>
+                  <li>Debug and resolve technical issues</li>
+                </ul>
+
+                <h3 className="text-base sm:text-lg font-medium text-gray-800 mt-4">
+                  3.4 Communications
+                </h3>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li>Send service updates, security alerts, and administrative messages</li>
+                  <li>Respond to your inquiries and support requests</li>
+                  <li>Provide customer service and technical support</li>
+                  <li>Send marketing communications (with your consent, where required)</li>
+                </ul>
+
+                <h3 className="text-base sm:text-lg font-medium text-gray-800 mt-4">
+                  3.5 Legal and Security
+                </h3>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li>Comply with legal obligations and law enforcement requests</li>
+                  <li>Enforce our Terms and Conditions</li>
+                  <li>Detect, prevent, and address fraud and security issues</li>
+                  <li>Protect our rights, property, and safety</li>
+                </ul>
+
+                <h3 className="text-base sm:text-lg font-medium text-gray-800 mt-4">
+                  3.6 Analytics and Business Intelligence
+                </h3>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li>Generate aggregated, anonymized statistics and insights</li>
+                  <li>Understand user behavior and preferences</li>
+                  <li>Measure the effectiveness of our Services</li>
+                </ul>
+              </div>
+            </section>
+
+            {/* 4. Legal Basis for Processing (GDPR) */}
+            <section>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
+                4. Legal Basis for Processing (GDPR)
+              </h2>
+              <div className="space-y-3 sm:space-y-4 text-sm sm:text-base text-gray-700 leading-relaxed">
+                <p>For users in the European Economic Area (EEA), we process your personal data based on the following legal grounds:</p>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li><strong>Contractual Necessity:</strong> Processing is necessary to perform our contract with you (providing the Services).</li>
+                  <li><strong>Legitimate Interests:</strong> Processing is necessary for our legitimate interests in operating, improving, and securing our Services, provided these interests are not overridden by your privacy rights.</li>
+                  <li><strong>Consent:</strong> You have given explicit consent for specific processing activities (e.g., marketing communications).</li>
+                  <li><strong>Legal Obligation:</strong> Processing is necessary to comply with legal requirements.</li>
+                </ul>
+              </div>
+            </section>
+
+            {/* 5. Data Storage and Security */}
+            <section>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
+                5. Data Storage and Security
+              </h2>
+              <div className="space-y-3 sm:space-y-4 text-sm sm:text-base text-gray-700 leading-relaxed">
+                <h3 className="text-base sm:text-lg font-medium text-gray-800 mt-4">
+                  5.1 Data Storage
+                </h3>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li><strong>Cloud Infrastructure:</strong> Your data is stored on secure Amazon Web Services (AWS) infrastructure, primarily in the US East region (us-east-1).</li>
+                  <li><strong>Media Storage:</strong> Uploaded media files are stored in encrypted AWS S3 buckets with restricted access controls.</li>
+                  <li><strong>Database:</strong> Account information and analysis results are stored in secure, encrypted databases.</li>
+                  <li><strong>Backup:</strong> Regular backups are performed to ensure data availability and disaster recovery.</li>
+                </ul>
+
+                <h3 className="text-base sm:text-lg font-medium text-gray-800 mt-4">
+                  5.2 Security Measures
+                </h3>
+                <p>We implement industry-standard security measures to protect your data:</p>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li><strong>Encryption:</strong> Data is encrypted in transit using TLS/SSL and at rest using AES-256 encryption.</li>
+                  <li><strong>Access Controls:</strong> Strict access controls and authentication mechanisms (including JWT tokens with automatic refresh).</li>
+                  <li><strong>Monitoring:</strong> Continuous security monitoring and logging of system access and activities.</li>
+                  <li><strong>Security Audits:</strong> Regular security assessments and vulnerability testing.</li>
+                  <li><strong>Employee Training:</strong> Staff are trained on data protection and security best practices.</li>
+                  <li><strong>Incident Response:</strong> Documented procedures for responding to security incidents.</li>
+                </ul>
+
+                <h3 className="text-base sm:text-lg font-medium text-gray-800 mt-4">
+                  5.3 Data Retention
+                </h3>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li><strong>Active Accounts:</strong> Data is retained as long as your account is active.</li>
+                  <li><strong>Inactive Accounts:</strong> Accounts inactive for 24 months may be subject to deletion after notification.</li>
+                  <li><strong>Deleted Content:</strong> Deleted media files are permanently removed from our systems within 30 days.</li>
+                  <li><strong>Account Closure:</strong> Upon account deletion, your data is removed within 90 days, except where retention is required by law.</li>
+                  <li><strong>Legal Requirements:</strong> Some data may be retained longer to comply with legal, tax, or regulatory obligations.</li>
+                  <li><strong>Aggregated Data:</strong> Anonymized, aggregated data may be retained indefinitely for analytics and research.</li>
+                </ul>
+              </div>
+            </section>
+
+            {/* 6. Data Sharing and Disclosure */}
+            <section>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
+                6. Data Sharing and Disclosure
+              </h2>
+              <div className="space-y-3 sm:space-y-4 text-sm sm:text-base text-gray-700 leading-relaxed">
+                <p>We do not sell your personal information. We may share your information in the following limited circumstances:</p>
+
+                <h3 className="text-base sm:text-lg font-medium text-gray-800 mt-4">
+                  6.1 Service Providers
+                </h3>
+                <p>We share data with trusted third-party service providers who assist in operating our Services:</p>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li><strong>Cloud Hosting:</strong> Amazon Web Services (AWS) for infrastructure and storage</li>
+                  <li><strong>Payment Processing:</strong> Payment processors for subscription and billing management</li>
+                  <li><strong>Analytics:</strong> Analytics providers to understand usage patterns (with anonymization where possible)</li>
+                  <li><strong>Email Services:</strong> Email service providers for transactional and marketing communications</li>
+                  <li><strong>Customer Support:</strong> Support ticket and communication platforms</li>
+                </ul>
+                <p className="mt-2">All service providers are contractually obligated to protect your data and use it only for specified purposes.</p>
+
+                <h3 className="text-base sm:text-lg font-medium text-gray-800 mt-4">
+                  6.2 Legal Requirements
+                </h3>
+                <p>We may disclose your information if required to do so by law or in response to:</p>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li>Valid legal processes (subpoenas, court orders, warrants)</li>
+                  <li>Government or regulatory requests</li>
+                  <li>Legal claims or disputes</li>
+                  <li>Protection of our rights, property, or safety</li>
+                  <li>Prevention of fraud, security threats, or illegal activities</li>
+                </ul>
+
+                <h3 className="text-base sm:text-lg font-medium text-gray-800 mt-4">
+                  6.3 Business Transfers
+                </h3>
+                <p>
+                  In the event of a merger, acquisition, reorganization, or sale of assets, your information may be transferred to the acquiring entity. You will be notified of any such change and your options regarding your data.
+                </p>
+
+                <h3 className="text-base sm:text-lg font-medium text-gray-800 mt-4">
+                  6.4 With Your Consent
+                </h3>
+                <p>
+                  We may share your information for other purposes with your explicit consent.
+                </p>
+              </div>
+            </section>
+
+            {/* 7. Your Rights and Choices */}
+            <section>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
+                7. Your Rights and Choices
+              </h2>
+              <div className="space-y-3 sm:space-y-4 text-sm sm:text-base text-gray-700 leading-relaxed">
+                <p>You have the following rights regarding your personal information:</p>
+
+                <h3 className="text-base sm:text-lg font-medium text-gray-800 mt-4">
+                  7.1 Access and Portability
+                </h3>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li><strong>Right to Access:</strong> Request a copy of the personal information we hold about you.</li>
+                  <li><strong>Data Portability:</strong> Receive your data in a structured, machine-readable format and transfer it to another service provider.</li>
+                </ul>
+
+                <h3 className="text-base sm:text-lg font-medium text-gray-800 mt-4">
+                  7.2 Correction and Update
+                </h3>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li>Update your account information through your account settings.</li>
+                  <li>Request correction of inaccurate or incomplete data.</li>
+                </ul>
+
+                <h3 className="text-base sm:text-lg font-medium text-gray-800 mt-4">
+                  7.3 Deletion
+                </h3>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li><strong>Right to Erasure:</strong> Request deletion of your personal information, subject to legal retention requirements.</li>
+                  <li><strong>Account Deletion:</strong> Delete your account through account settings or by contacting support.</li>
+                  <li><strong>File Deletion:</strong> Delete individual uploaded files from your library at any time.</li>
+                </ul>
+
+                <h3 className="text-base sm:text-lg font-medium text-gray-800 mt-4">
+                  7.4 Restriction and Objection
+                </h3>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li><strong>Restrict Processing:</strong> Request limitation of how we process your data in certain circumstances.</li>
+                  <li><strong>Object to Processing:</strong> Object to processing based on legitimate interests or for direct marketing purposes.</li>
+                </ul>
+
+                <h3 className="text-base sm:text-lg font-medium text-gray-800 mt-4">
+                  7.5 Withdraw Consent
+                </h3>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li>Withdraw consent for marketing communications at any time.</li>
+                  <li>Opt out of non-essential cookies through your browser settings.</li>
+                </ul>
+
+                <h3 className="text-base sm:text-lg font-medium text-gray-800 mt-4">
+                  7.6 Exercising Your Rights
+                </h3>
+                <p>
+                  To exercise any of these rights, please contact us at <strong>privacy@safeguardmedia.com</strong>. We will respond to your request within 30 days (or as required by applicable law). You may also lodge a complaint with your local data protection authority.
+                </p>
+              </div>
+            </section>
+
+            {/* 8. Cookies and Tracking Technologies */}
+            <section>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
+                8. Cookies and Tracking Technologies
+              </h2>
+              <div className="space-y-3 sm:space-y-4 text-sm sm:text-base text-gray-700 leading-relaxed">
+                <h3 className="text-base sm:text-lg font-medium text-gray-800 mt-4">
+                  8.1 Types of Cookies We Use
+                </h3>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li><strong>Essential Cookies:</strong> Required for authentication, security, and basic functionality (e.g., session management, JWT tokens).</li>
+                  <li><strong>Functional Cookies:</strong> Remember your preferences and settings.</li>
+                  <li><strong>Analytics Cookies:</strong> Help us understand how you use our Services and improve performance.</li>
+                  <li><strong>Marketing Cookies:</strong> Track your interactions for advertising purposes (only with your consent).</li>
+                </ul>
+
+                <h3 className="text-base sm:text-lg font-medium text-gray-800 mt-4">
+                  8.2 Managing Cookies
+                </h3>
+                <p>
+                  You can control cookies through your browser settings. Note that blocking essential cookies may affect the functionality of our Services. Most browsers allow you to:
+                </p>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li>View and delete cookies</li>
+                  <li>Block third-party cookies</li>
+                  <li>Block all cookies</li>
+                  <li>Delete cookies when you close your browser</li>
+                </ul>
+
+                <h3 className="text-base sm:text-lg font-medium text-gray-800 mt-4">
+                  8.3 Local Storage
+                </h3>
+                <p>
+                  We use browser local storage to maintain session state and improve user experience. This includes storing authentication tokens and user preferences locally on your device.
+                </p>
+              </div>
+            </section>
+
+            {/* 9. International Data Transfers */}
+            <section>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
+                9. International Data Transfers
+              </h2>
+              <div className="space-y-3 sm:space-y-4 text-sm sm:text-base text-gray-700 leading-relaxed">
+                <p>
+                  Your information may be transferred to and processed in countries other than your country of residence, including the United States where our primary servers are located. These countries may have different data protection laws.
+                </p>
+                <p>
+                  When we transfer personal data from the EEA or UK to other countries, we implement appropriate safeguards such as:
+                </p>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li>Standard Contractual Clauses approved by the European Commission</li>
+                  <li>Adequacy decisions by the European Commission</li>
+                  <li>Other legally approved transfer mechanisms</li>
+                </ul>
+              </div>
+            </section>
+
+            {/* 10. Children's Privacy */}
+            <section>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
+                10. Children's Privacy
+              </h2>
+              <div className="space-y-3 sm:space-y-4 text-sm sm:text-base text-gray-700 leading-relaxed">
+                <p>
+                  Our Services are not intended for individuals under the age of 18. We do not knowingly collect personal information from children. If you believe we have inadvertently collected information from a child, please contact us immediately at <strong>privacy@safeguardmedia.com</strong>, and we will promptly delete such information.
+                </p>
+              </div>
+            </section>
+
+            {/* 11. Third-Party Links and Services */}
+            <section>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
+                11. Third-Party Links and Services
+              </h2>
+              <div className="space-y-3 sm:space-y-4 text-sm sm:text-base text-gray-700 leading-relaxed">
+                <p>
+                  Our Services may contain links to third-party websites, applications, or services that are not operated by us. We are not responsible for the privacy practices of these third parties. We encourage you to review the privacy policies of any third-party services you access.
+                </p>
+                <p>
+                  Our use of third-party service providers (such as AWS, payment processors, and analytics providers) is governed by our contracts with them and their respective privacy policies.
+                </p>
+              </div>
+            </section>
+
+            {/* 12. California Privacy Rights (CCPA) */}
+            <section>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
+                12. California Privacy Rights (CCPA)
+              </h2>
+              <div className="space-y-3 sm:space-y-4 text-sm sm:text-base text-gray-700 leading-relaxed">
+                <p>
+                  If you are a California resident, you have additional rights under the California Consumer Privacy Act (CCPA):
+                </p>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li><strong>Right to Know:</strong> Request disclosure of the categories and specific pieces of personal information we collect, use, and disclose.</li>
+                  <li><strong>Right to Delete:</strong> Request deletion of your personal information.</li>
+                  <li><strong>Right to Opt-Out:</strong> Opt out of the sale of personal information (note: we do not sell personal information).</li>
+                  <li><strong>Right to Non-Discrimination:</strong> We will not discriminate against you for exercising your CCPA rights.</li>
+                </ul>
+                <p>
+                  To exercise these rights, contact us at <strong>privacy@safeguardmedia.com</strong>. We will verify your identity before processing your request.
+                </p>
+              </div>
+            </section>
+
+            {/* 13. Data Breach Notification */}
+            <section>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
+                13. Data Breach Notification
+              </h2>
+              <div className="space-y-3 sm:space-y-4 text-sm sm:text-base text-gray-700 leading-relaxed">
+                <p>
+                  In the event of a data breach that affects your personal information, we will notify you and relevant authorities as required by applicable law. Notifications will include:
+                </p>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li>Nature of the breach</li>
+                  <li>Types of information affected</li>
+                  <li>Steps we are taking to address the breach</li>
+                  <li>Recommended actions you can take to protect yourself</li>
+                </ul>
+                <p>
+                  We maintain an incident response plan to quickly identify, contain, and remediate security incidents.
+                </p>
+              </div>
+            </section>
+
+            {/* 14. Changes to This Privacy Policy */}
+            <section>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
+                14. Changes to This Privacy Policy
+              </h2>
+              <div className="space-y-3 sm:space-y-4 text-sm sm:text-base text-gray-700 leading-relaxed">
+                <p>
+                  We may update this Privacy Policy from time to time to reflect changes in our practices, technology, legal requirements, or other operational needs. We will notify you of material changes by:
+                </p>
+                <ul className="list-disc pl-5 sm:pl-6 space-y-2">
+                  <li>Posting the updated Privacy Policy on our website with a new "Last Updated" date</li>
+                  <li>Sending an email notification to your registered email address</li>
+                  <li>Displaying a prominent notice within our Services</li>
+                </ul>
+                <p>
+                  Your continued use of the Services after such notification constitutes acceptance of the updated Privacy Policy. We encourage you to review this Privacy Policy periodically.
+                </p>
+              </div>
+            </section>
+
+            {/* 15. Contact Information */}
+            <section>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
+                15. Contact Information
+              </h2>
+              <div className="space-y-3 sm:space-y-4 text-sm sm:text-base text-gray-700 leading-relaxed">
+                <p>
+                  If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:
+                </p>
+                <div className="bg-gray-50 border border-gray-200 rounded-md p-4 mt-3">
+                  <p className="font-medium text-gray-900 mb-2">SafeguardMedia Privacy Team</p>
+                  <p className="text-gray-700">
+                    <strong>Email:</strong> privacy@safeguardmedia.com
+                  </p>
+                  <p className="text-gray-700 mt-2">
+                    <strong>General Support:</strong> support@safeguardmedia.com
+                  </p>
+                  <p className="text-gray-700 mt-2">
+                    <strong>Data Protection Officer:</strong> dpo@safeguardmedia.com
+                  </p>
+                </div>
+                <p className="mt-4">
+                  For GDPR-related inquiries, you may also contact your local data protection supervisory authority.
+                </p>
+              </div>
+            </section>
+
+            {/* 16. Acknowledgment */}
+            <section>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
+                16. Acknowledgment
+              </h2>
+              <div className="space-y-3 sm:space-y-4 text-sm sm:text-base text-gray-700 leading-relaxed">
+                <p>
+                  By using our Services, you acknowledge that you have read and understood this Privacy Policy and agree to the collection, use, and disclosure of your information as described herein.
+                </p>
+              </div>
+            </section>
+
+            {/* Footer Note */}
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <p className="text-xs sm:text-sm text-gray-500 text-center">
+                This Privacy Policy is effective as of the date stated above and supersedes all prior versions.
+              </p>
+            </div>
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}

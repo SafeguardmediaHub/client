@@ -546,10 +546,33 @@ export interface BatchResultItem {
     cameraMake?: string;
     cameraModel?: string;
     datetimeOriginal?: string;
+    extractedAt?: string;
     gps?: {
       lat: number;
       lon: number;
       altitude?: number;
+    };
+    general?: {
+      mimeType?: string;
+      format?: string;
+      size?: number;
+      [key: string]: unknown;
+    };
+    image?: {
+      width?: number;
+      height?: number;
+      [key: string]: unknown;
+    };
+    analysis?: {
+      integrityScore?: number;
+      completenessScore?: number;
+      authenticityScore?: number;
+      confidence?: number;
+      strippedMetadata?: boolean;
+      possibleTampering?: boolean;
+      reasons?: string[];
+      missingFields?: string[];
+      [key: string]: unknown;
     };
     [key: string]: unknown;
   };

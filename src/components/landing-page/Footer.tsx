@@ -12,9 +12,9 @@ export default function Footer() {
       { name: 'Cybersecurity & Fraud Prevention', href: '#' },
     ],
     legal: [
-      { name: 'Legal & Terms', href: '#' },
-      { name: 'Privacy Policy', href: '#' },
-      { name: 'Terms of Service', href: '#' },
+      { name: 'Legal & Terms', href: '/terms' },
+      { name: 'Privacy Policy', href: '/privacy' },
+      { name: 'Terms of Service', href: '/terms' },
       { name: 'Compliance (SOC2, GDPR, CCPA)', href: '#' },
     ],
   };
