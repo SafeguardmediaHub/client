@@ -35,17 +35,17 @@ export default function HeroSection() {
       <main className="overflow-hidden relative">
         {/* Animated Gradient Background Mesh */}
         <div className="absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob" />
-          <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-500/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000" />
-          <div className="absolute -bottom-8 left-1/2 w-96 h-96 bg-pink-500/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000" />
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob" />
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-cyan-500/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000" />
+          <div className="absolute -bottom-8 left-1/2 w-96 h-96 bg-sky-500/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000" />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/50 to-white" />
         </div>
 
         {/* Floating Particles */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-[10%] w-2 h-2 bg-purple-400 rounded-full animate-float" />
-          <div className="absolute top-40 right-[15%] w-3 h-3 bg-blue-400 rounded-full animate-float animation-delay-1000" />
-          <div className="absolute top-60 left-[20%] w-2 h-2 bg-pink-400 rounded-full animate-float animation-delay-2000" />
+          <div className="absolute top-20 left-[10%] w-2 h-2 bg-blue-400 rounded-full animate-float" />
+          <div className="absolute top-40 right-[15%] w-3 h-3 bg-cyan-400 rounded-full animate-float animation-delay-1000" />
+          <div className="absolute top-60 left-[20%] w-2 h-2 bg-sky-400 rounded-full animate-float animation-delay-2000" />
           <div className="absolute top-96 right-[25%] w-3 h-3 bg-indigo-400 rounded-full animate-float animation-delay-3000" />
         </div>
 
@@ -56,18 +56,18 @@ export default function HeroSection() {
                 <AnimatedGroup variants={transitionVariants}>
                   <Link
                     href="/dashboard/authenticity"
-                    className="hover:bg-white/80 dark:hover:border-t-border bg-white/60 backdrop-blur-sm group mx-auto flex w-fit items-center gap-4 rounded-full border border-purple-200 p-1 pl-4 shadow-lg shadow-purple-500/20 transition-all duration-300 hover:shadow-purple-500/30 hover:scale-105"
+                    className="hover:bg-white/80 dark:hover:border-t-border bg-white/60 backdrop-blur-sm group mx-auto flex w-fit items-center gap-4 rounded-full border border-blue-200 p-1 pl-4 shadow-lg shadow-blue-500/20 transition-all duration-300 hover:shadow-blue-500/30 hover:scale-105"
                   >
                     <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-purple-600 animate-pulse" />
-                      <span className="text-purple-600 text-sm font-semibold">
+                      <Sparkles className="w-4 h-4 text-blue-600 animate-pulse" />
+                      <span className="text-blue-600 text-sm font-semibold">
                         Introducing C2PA Verification
                       </span>
                     </div>
                     <span className="hidden sm:inline text-sm text-gray-600">— Now Live!</span>
-                    <span className="dark:border-background block h-4 w-0.5 border-l bg-purple-200"></span>
+                    <span className="dark:border-background block h-4 w-0.5 border-l bg-blue-200"></span>
 
-                    <div className="bg-purple-600 size-6 overflow-hidden rounded-full duration-500 flex items-center justify-center">
+                    <div className="bg-blue-600 size-6 overflow-hidden rounded-full duration-500 flex items-center justify-center">
                       <ArrowRight className="size-3 text-white" />
                     </div>
                   </Link>
@@ -112,11 +112,11 @@ export default function HeroSection() {
                     key={1}
                     className="relative group"
                   >
-                    <div className="absolute -inset-0.5 bg-purple-600 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-300 animate-pulse-slow" />
+                    <div className="absolute -inset-0.5 bg-blue-600 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-300 animate-pulse-slow" />
                     <Button
                       asChild
                       size="lg"
-                      className="relative rounded-xl px-8 py-6 text-base bg-purple-600 hover:bg-purple-700 text-white border-0 shadow-xl"
+                      className="relative rounded-xl px-8 py-6 text-base bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-xl"
                     >
                       <Link href="/auth/signup" className="flex items-center gap-2">
                         <Shield className="w-5 h-5" />
@@ -129,7 +129,7 @@ export default function HeroSection() {
                     asChild
                     size="lg"
                     variant="outline"
-                    className="h-12 rounded-xl px-8 border-2 border-gray-300 hover:border-purple-600 hover:bg-purple-50 transition-all duration-300"
+                    className="h-12 rounded-xl px-8 border-2 border-gray-300 hover:border-blue-600 hover:bg-blue-50 transition-all duration-300"
                   >
                     <Link href="/about" className="flex items-center gap-2">
                       <span className="text-nowrap">Watch Demo</span>
@@ -144,7 +144,7 @@ export default function HeroSection() {
                   className="mt-16 flex items-center justify-center gap-8 flex-wrap"
                 >
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-purple-600">
+                    <div className="text-3xl font-bold text-blue-600">
                       98%
                     </div>
                     <div className="text-sm text-gray-600 mt-1">Accuracy Rate</div>
@@ -181,9 +181,9 @@ export default function HeroSection() {
               }}
             >
               <div className="mask-b-from-55% relative -mr-56 mt-16 overflow-hidden px-2 sm:mr-0 sm:mt-20 md:mt-24">
-                <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl border-2 border-purple-200/50 p-4 shadow-2xl shadow-purple-500/20 bg-gradient-to-br from-white via-purple-50/30 to-blue-50/30 backdrop-blur-sm">
-                  <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-400/20 rounded-full blur-3xl" />
-                  <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl" />
+                <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl border-2 border-blue-200/50 p-4 shadow-2xl shadow-blue-500/20 bg-gradient-to-br from-white via-blue-50/30 to-cyan-50/30 backdrop-blur-sm">
+                  <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl" />
+                  <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-cyan-400/20 rounded-full blur-3xl" />
                   <Image
                     className="relative rounded-2xl border border-gray-200/50 shadow-xl"
                     src="https://images.unsplash.com/photo-1685391896546-9abaf50bfc99?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"

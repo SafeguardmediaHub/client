@@ -11,8 +11,8 @@ export default function FlagshipSolution() {
       icon: Eye,
       title: 'Multimodal Analysis',
       description: 'Detect fake across video, audio, and images with our unified engine.',
-      gradient: 'from-purple-500 to-pink-500',
-      bgGradient: 'from-purple-50 to-pink-50',
+      gradient: 'from-blue-500 to-cyan-500',
+      bgGradient: 'from-blue-50 to-cyan-50',
     },
     {
       icon: Zap,
@@ -32,25 +32,25 @@ export default function FlagshipSolution() {
   ];
 
   return (
-    <section className="relative py-32 bg-gradient-to-b from-white via-purple-50/30 to-white overflow-hidden">
+    <section className="relative py-32 bg-gradient-to-b from-white via-blue-50/30 to-white overflow-hidden">
       {/* Background decorations */}
-      <div className="absolute top-20 right-10 w-72 h-72 bg-purple-200/30 rounded-full mix-blend-multiply filter blur-3xl opacity-50" />
-      <div className="absolute bottom-20 left-10 w-72 h-72 bg-blue-200/30 rounded-full mix-blend-multiply filter blur-3xl opacity-50" />
+      <div className="absolute top-20 right-10 w-72 h-72 bg-blue-200/30 rounded-full mix-blend-multiply filter blur-3xl opacity-50" />
+      <div className="absolute bottom-20 left-10 w-72 h-72 bg-cyan-200/30 rounded-full mix-blend-multiply filter blur-3xl opacity-50" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Left Content */}
           <div className="space-y-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 rounded-full">
-              <Sparkles className="w-4 h-4 text-purple-600" />
-              <span className="text-sm font-semibold text-purple-600">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 rounded-full">
+              <Sparkles className="w-4 h-4 text-blue-600" />
+              <span className="text-sm font-semibold text-blue-600">
                 Flagship Solution
               </span>
             </div>
 
             <h2 className="text-5xl md:text-6xl font-bold text-gray-900 leading-tight">
               AI Deepfake{' '}
-              <span className="text-purple-600">
+              <span className="text-blue-600">
                 Detection.
               </span>
             </h2>
@@ -63,7 +63,7 @@ export default function FlagshipSolution() {
             <div className="flex gap-4">
               <button
                 type="button"
-                className="px-8 py-4 rounded-xl font-semibold bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 flex items-center gap-2"
+                className="px-8 py-4 rounded-xl font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 flex items-center gap-2"
               >
                 Try DF Detector
                 <Brain className="w-5 h-5" />
@@ -72,8 +72,8 @@ export default function FlagshipSolution() {
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-6 pt-8">
-              <div className="text-center p-4 rounded-2xl bg-white/50 backdrop-blur-sm border border-purple-100">
-                <div className="text-3xl font-bold text-purple-600">
+              <div className="text-center p-4 rounded-2xl bg-white/50 backdrop-blur-sm border border-blue-100">
+                <div className="text-3xl font-bold text-blue-600">
                   <span className="animate-pulse">98%</span>
                 </div>
                 <div className="text-sm text-gray-600 mt-1">Accuracy</div>
@@ -148,7 +148,7 @@ export default function FlagshipSolution() {
 
                       {/* Content */}
                       <div className="flex-1">
-                        <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:bg-gradient-to-r group-hover:from-purple-600 group-hover:to-blue-600 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">
+                        <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-cyan-600 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">
                           {feature.title}
                         </h3>
                         <p className="text-gray-600 leading-relaxed">

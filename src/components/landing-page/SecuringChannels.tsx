@@ -25,7 +25,7 @@ export default function SecuringChannels() {
       image:
         'https://images.pexels.com/photos/5380664/pexels-photo-5380664.jpeg?auto=compress&cs=tinysrgb&w=400',
       icon: CheckCircle,
-      gradient: 'from-purple-500 to-pink-500',
+      gradient: 'from-blue-500 to-indigo-500',
       stats: '99.9% Fraud Detection Rate',
     },
     {
@@ -45,7 +45,7 @@ export default function SecuringChannels() {
       {/* Background Elements */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]" />
       <div className="absolute top-20 left-10 w-96 h-96 bg-blue-200/20 rounded-full mix-blend-multiply filter blur-3xl" />
-      <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-200/20 rounded-full mix-blend-multiply filter blur-3xl" />
+      <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-200/20 rounded-full mix-blend-multiply filter blur-3xl" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}

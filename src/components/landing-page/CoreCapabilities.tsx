@@ -19,9 +19,10 @@ export default function CoreCapabilities() {
       description:
         'Rapidly comprehend faces by training advanced facial expressions, and AI-generated content across multiple media formats.',
       icon: Shield,
-      gradient: 'from-violet-500 via-purple-500 to-fuchsia-500',
-      bgGradient: 'from-violet-50 to-fuchsia-50',
-      shadowColor: 'shadow-violet-500/50',
+      gradient: 'from-blue-500 via-cyan-500 to-sky-500',
+      bgGradient: 'from-blue-50 to-sky-50',
+      shadowColor: 'shadow-blue-500/50',
+      glowColor: '59, 130, 246', // blue-500 RGB
     },
     {
       title: 'Real-Time Fact-Checking',
@@ -31,6 +32,7 @@ export default function CoreCapabilities() {
       gradient: 'from-blue-500 via-cyan-500 to-teal-500',
       bgGradient: 'from-blue-50 to-teal-50',
       shadowColor: 'shadow-blue-500/50',
+      glowColor: '6, 182, 212', // cyan-500 RGB
     },
     {
       title: 'Visual Authenticity Reports',
@@ -40,6 +42,7 @@ export default function CoreCapabilities() {
       gradient: 'from-emerald-500 via-green-500 to-lime-500',
       bgGradient: 'from-emerald-50 to-lime-50',
       shadowColor: 'shadow-emerald-500/50',
+      glowColor: '16, 185, 129', // emerald-500 RGB
     },
     {
       title: 'Cheapfakes & Shallowfake Detection',
@@ -49,15 +52,17 @@ export default function CoreCapabilities() {
       gradient: 'from-orange-500 via-amber-500 to-yellow-500',
       bgGradient: 'from-orange-50 to-yellow-50',
       shadowColor: 'shadow-orange-500/50',
+      glowColor: '249, 115, 22', // orange-500 RGB
     },
     {
       title: 'Crowdsourced Verification Portal',
       description:
         'Allow verified journalists, fact-checkers, and media professionals to annotate or debunk, and verify content through our platform.',
       icon: CheckCircle,
-      gradient: 'from-pink-500 via-rose-500 to-red-500',
-      bgGradient: 'from-pink-50 to-red-50',
-      shadowColor: 'shadow-pink-500/50',
+      gradient: 'from-blue-500 via-indigo-500 to-cyan-500',
+      bgGradient: 'from-blue-50 to-cyan-50',
+      shadowColor: 'shadow-blue-500/50',
+      glowColor: '99, 102, 241', // indigo-500 RGB
     },
     {
       title: 'Live Detection Tool',
@@ -67,15 +72,17 @@ export default function CoreCapabilities() {
       gradient: 'from-indigo-500 via-blue-500 to-sky-500',
       bgGradient: 'from-indigo-50 to-sky-50',
       shadowColor: 'shadow-indigo-500/50',
+      glowColor: '99, 102, 241', // indigo-500 RGB
     },
     {
       title: 'Metadata and Geolocation Analysis',
       description:
         'Forensics and evidence validation as a CSI-level deep media files to determine the original source and authenticity.',
       icon: BarChart3,
-      gradient: 'from-purple-500 via-violet-500 to-indigo-500',
-      bgGradient: 'from-purple-50 to-indigo-50',
-      shadowColor: 'shadow-purple-500/50',
+      gradient: 'from-blue-500 via-indigo-500 to-sky-500',
+      bgGradient: 'from-blue-50 to-indigo-50',
+      shadowColor: 'shadow-blue-500/50',
+      glowColor: '59, 130, 246', // blue-500 RGB
     },
     {
       title: 'Risk Scoring System',
@@ -85,6 +92,7 @@ export default function CoreCapabilities() {
       gradient: 'from-cyan-500 via-blue-500 to-indigo-500',
       bgGradient: 'from-cyan-50 to-indigo-50',
       shadowColor: 'shadow-cyan-500/50',
+      glowColor: '6, 182, 212', // cyan-500 RGB
     },
   ];
 
@@ -92,13 +100,13 @@ export default function CoreCapabilities() {
     <section className="relative py-32 bg-white overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]" />
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-200/20 rounded-full mix-blend-multiply filter blur-3xl" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-200/20 rounded-full mix-blend-multiply filter blur-3xl" />
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-200/20 rounded-full mix-blend-multiply filter blur-3xl" />
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-200/20 rounded-full mix-blend-multiply filter blur-3xl" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-20">
-          <div className="inline-flex items-center justify-center px-4 py-2 bg-purple-100 rounded-full mb-6">
-            <span className="text-sm font-semibold text-purple-600">
+          <div className="inline-flex items-center justify-center px-4 py-2 bg-blue-100 rounded-full mb-6">
+            <span className="text-sm font-semibold text-blue-600">
               Core Capabilities
             </span>
           </div>
@@ -167,7 +175,7 @@ export default function CoreCapabilities() {
                             }`}
                             style={{
                               filter: isHovered
-                                ? 'drop-shadow(0 0 8px rgba(139, 92, 246, 0.6))'
+                                ? `drop-shadow(0 0 8px rgba(${capability.glowColor}, 0.6))`
                                 : 'none',
                             }}
                           />
@@ -202,13 +210,13 @@ export default function CoreCapabilities() {
 
         {/* Trust Badge */}
         <div className="mt-20 text-center">
-          <div className="inline-flex items-center gap-8 px-8 py-6 bg-purple-50 rounded-2xl border-2 border-purple-100/50">
+          <div className="inline-flex items-center gap-8 px-8 py-6 bg-blue-50 rounded-2xl border-2 border-blue-100/50">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center">
                 <Shield className="w-6 h-6 text-white" />
               </div>
               <div className="text-left">
-                <div className="text-2xl font-bold text-purple-600">
+                <div className="text-2xl font-bold text-blue-600">
                   Trusted by 500+ Organizations
                 </div>
                 <div className="text-sm text-gray-600">

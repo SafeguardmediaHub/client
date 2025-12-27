@@ -25,11 +25,14 @@ export default function Footer() {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Logo and Description */}
           <div className="lg:col-span-1">
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">S</span>
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
+                <div className="relative w-10 h-10 bg-gradient-to-br from-blue-500 via-blue-600 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/50 transform transition-transform duration-300 group-hover:scale-110">
+                  <span className="text-white font-bold text-lg drop-shadow-lg">S</span>
+                </div>
               </div>
-              <span className="text-white font-semibold text-lg">
+              <span className="text-white font-bold text-xl tracking-tight">
                 SafeguardMedia
               </span>
             </div>
