@@ -634,7 +634,7 @@ const GeolocationVerificationPage = () => {
           </div>
 
           <div className="mt-4">
-            <div className="flex items-center gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-6">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
@@ -645,46 +645,49 @@ const GeolocationVerificationPage = () => {
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:bg-white"
                 />
               </div>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-              >
-                <option value="newest">Newest to Oldest</option>
-                <option value="oldest">Oldest to Newest</option>
-              </select>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-              >
-                <option value="all">All status</option>
-                <option value="verified">Verified</option>
-                <option value="pending">Processing</option>
-                <option value="failed">Failed</option>
-              </select>
+              <div className="flex gap-3 sm:gap-4">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="flex-1 sm:flex-initial px-3 sm:px-4 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-sm"
+                >
+                  <option value="newest">Newest to Oldest</option>
+                  <option value="oldest">Oldest to Newest</option>
+                </select>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="flex-1 sm:flex-initial px-3 sm:px-4 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-sm"
+                >
+                  <option value="all">All status</option>
+                  <option value="verified">Verified</option>
+                  <option value="pending">Processing</option>
+                  <option value="failed">Failed</option>
+                </select>
+              </div>
             </div>
 
             <div className="border border-gray-200 rounded-lg overflow-hidden">
-              <table className="w-full">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[800px]">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                       File name
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                       Claimed Location
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                       Confidence
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                       Verified Date
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -694,7 +697,7 @@ const GeolocationVerificationPage = () => {
                     <tr>
                       <td
                         colSpan={6}
-                        className="px-6 py-12 text-center text-gray-500"
+                        className="px-3 sm:px-6 py-12 text-center text-gray-500 text-sm"
                       >
                         Loading verifications...
                       </td>
@@ -703,7 +706,7 @@ const GeolocationVerificationPage = () => {
                     <tr>
                       <td
                         colSpan={6}
-                        className="px-6 py-12 text-center text-gray-500"
+                        className="px-3 sm:px-6 py-12 text-center text-gray-500 text-sm"
                       >
                         {searchQuery || statusFilter !== 'all'
                           ? 'No verifications match your filters'
@@ -717,13 +720,13 @@ const GeolocationVerificationPage = () => {
                         className="hover:bg-gray-50 transition-colors cursor-pointer"
                         onClick={() => handleViewVerification(verification._id)}
                       >
-                        <td className="px-6 py-4">
-                          <p className="text-sm font-medium text-gray-900">
+                        <td className="px-3 sm:px-6 py-4">
+                          <p className="text-xs sm:text-sm font-medium text-gray-900">
                             {verification.mediaId?.originalFilename || 'Media deleted'}
                           </p>
                         </td>
-                        <td className="px-6 py-4">
-                          <p className="text-sm text-gray-900 max-w-xs truncate">
+                        <td className="px-3 sm:px-6 py-4">
+                          <p className="text-xs sm:text-sm text-gray-900 max-w-xs truncate">
                             {verification.claimedLocation.raw}
                           </p>
                           {verification.claimedLocation.parsed && (
@@ -733,10 +736,10 @@ const GeolocationVerificationPage = () => {
                             </p>
                           )}
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-3 sm:px-6 py-4">
                           {getStatusBadge(verification)}
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-3 sm:px-6 py-4">
                           {verification.verification?.status === 'completed' ||
                           verification.verification?.status === 'partial' ? (
                             <div className="flex items-center gap-2">
@@ -767,12 +770,12 @@ const GeolocationVerificationPage = () => {
                             <span className="text-sm text-gray-500">-</span>
                           )}
                         </td>
-                        <td className="px-6 py-4">
-                          <p className="text-sm text-gray-600">
+                        <td className="px-3 sm:px-6 py-4">
+                          <p className="text-xs sm:text-sm text-gray-600">
                             {formatDate(verification.createdAt)}
                           </p>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-3 sm:px-6 py-4">
                           {deletingId === verification._id ? (
                             <div
                               className="flex items-center gap-2"
@@ -836,6 +839,7 @@ const GeolocationVerificationPage = () => {
                   )}
                 </tbody>
               </table>
+              </div>
             </div>
 
             {verificationsData?.data?.pagination?.hasNextPage && (

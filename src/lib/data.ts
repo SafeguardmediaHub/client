@@ -1,6 +1,7 @@
 import type { Analysis } from "@/types/analysis";
 import type { MediaFile } from "@/types/media";
 import type { Report } from "@/types/report";
+import type { DashboardOverviewData } from "@/types/dashboard";
 
 export const chartData = [
   { label: "1000", value: "1000" },
@@ -170,3 +171,222 @@ export const mediaFiles: MediaFile[] = [
     tags: ["document", "error", "failed-analysis"],
   },
 ];
+
+// Mock Dashboard Data
+export const mockDashboardData: DashboardOverviewData = {
+  uploadQuota: {
+    used: 5368709120, // 5 GB in bytes
+    limit: 107374182400, // 100 GB in bytes
+    usedGB: 5,
+    limitGB: 100,
+    percentage: 5,
+    fileCount: 247,
+    maxFiles: 1000,
+    fileCountPercentage: 24.7,
+  },
+  monthlyUsage: {
+    currentMonthFiles: 84,
+    monthlyFileLimit: 500,
+    filesPercentage: 16.8,
+    currentMonthBatches: 12,
+    monthlyBatchLimit: 50,
+    batchesPercentage: 24,
+    daysUntilReset: 4,
+    resetDate: new Date(
+      Date.now() + 4 * 24 * 60 * 60 * 1000
+    ).toISOString(),
+  },
+  processingSummary: {
+    totalFiles: 247,
+    pending: 3,
+    processing: 5,
+    completed: 230,
+    failed: 9,
+    successRate: 96.2,
+    averageProcessingTime: 3.45, // minutes
+  },
+  integrityBreakdown: {
+    totalAnalyzed: 247,
+    authentic: 145,
+    likelyAuthentic: 52,
+    suspicious: 28,
+    likelyManipulated: 15,
+    manipulated: 7,
+    averageIntegrityScore: 78.5,
+    tamperingDetected: 22,
+    metadataMissing: 34,
+    c2paVerified: 89,
+  },
+  recentActivity: [
+    {
+      mediaId: 'media_001',
+      filename: 'press_conference_2024.mp4',
+      uploadedAt: new Date(Date.now() - 2 * 60 * 1000).toISOString(), // 2 minutes ago
+      status: 'processed',
+      integrityScore: 92.5,
+      verdict: 'authentic',
+      mimeType: 'video/mp4',
+      fileSize: 45234567,
+    },
+    {
+      mediaId: 'media_002',
+      filename: 'suspicious_edit.jpg',
+      uploadedAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(), // 15 minutes ago
+      status: 'processed',
+      integrityScore: 45.2,
+      verdict: 'suspicious',
+      mimeType: 'image/jpeg',
+      fileSize: 2345678,
+    },
+    {
+      mediaId: 'media_003',
+      filename: 'analyzing_audio.mp3',
+      uploadedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 minutes ago
+      status: 'processing',
+      mimeType: 'audio/mp3',
+      fileSize: 8234567,
+    },
+    {
+      mediaId: 'media_004',
+      filename: 'verified_document.pdf',
+      uploadedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), // 1 hour ago
+      status: 'processed',
+      integrityScore: 88.9,
+      verdict: 'likely_authentic',
+      mimeType: 'application/pdf',
+      fileSize: 1234567,
+    },
+    {
+      mediaId: 'media_005',
+      filename: 'deepfake_detected.mp4',
+      uploadedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
+      status: 'processed',
+      integrityScore: 15.3,
+      verdict: 'manipulated',
+      mimeType: 'video/mp4',
+      fileSize: 67234567,
+    },
+  ],
+  trends: {
+    uploadsOverTime: [
+      {
+        date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+        count: 12,
+      },
+      {
+        date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+        count: 18,
+      },
+      {
+        date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+        count: 15,
+      },
+      {
+        date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        count: 22,
+      },
+      {
+        date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        count: 19,
+      },
+      {
+        date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        count: 25,
+      },
+      { date: new Date().toISOString(), count: 14 },
+    ],
+    filesProcessedOverTime: [
+      {
+        date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+        count: 11,
+      },
+      {
+        date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+        count: 17,
+      },
+      {
+        date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+        count: 14,
+      },
+      {
+        date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        count: 21,
+      },
+      {
+        date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        count: 18,
+      },
+      {
+        date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        count: 24,
+      },
+      { date: new Date().toISOString(), count: 13 },
+    ],
+    integrityScoreTrend: [
+      {
+        date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+        averageScore: 79.2,
+      },
+      {
+        date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+        averageScore: 81.5,
+      },
+      {
+        date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+        averageScore: 77.8,
+      },
+      {
+        date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        averageScore: 80.3,
+      },
+      {
+        date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        averageScore: 82.1,
+      },
+      {
+        date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        averageScore: 78.9,
+      },
+      { date: new Date().toISOString(), averageScore: 79.7 },
+    ],
+    tamperingDetectionTrend: [
+      {
+        date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+        count: 2,
+      },
+      {
+        date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+        count: 1,
+      },
+      {
+        date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+        count: 3,
+      },
+      {
+        date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        count: 0,
+      },
+      {
+        date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        count: 2,
+      },
+      {
+        date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        count: 1,
+      },
+      { date: new Date().toISOString(), count: 0 },
+    ],
+    totalUploadsLast30Days: 425,
+    percentageChangeFromPrevious30Days: 23.5,
+    mostCommonFileType: 'image',
+    mostCommonVerdict: 'authentic',
+  },
+  subscription: {
+    tier: 'premium',
+    status: 'active',
+    expiresAt: new Date(
+      Date.now() + 365 * 24 * 60 * 60 * 1000
+    ).toISOString(), // 1 year from now
+    autoRenew: true,
+  },
+};

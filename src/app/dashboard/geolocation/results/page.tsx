@@ -105,8 +105,8 @@ const GeolocationResultContent = () => {
     const errorStatus = (error as any)?.response?.status;
 
     return (
-      <div className="w-full flex flex-col items-center justify-center gap-6 p-8 bg-gray-50 min-h-screen">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+      <div className="w-full flex flex-col items-center justify-center gap-6 p-4 sm:p-6 md:p-8 bg-gray-50 min-h-screen">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-sm border border-gray-200 p-6 sm:p-8">
           <div className="flex flex-col items-center text-center gap-4">
             <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
               <AlertCircle className="w-8 h-8 text-red-600" />
@@ -144,8 +144,8 @@ const GeolocationResultContent = () => {
 
   if (!verificationId) {
     return (
-      <div className="w-full flex flex-col items-center justify-center gap-6 p-8 bg-gray-50 min-h-screen">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+      <div className="w-full flex flex-col items-center justify-center gap-6 p-4 sm:p-6 md:p-8 bg-gray-50 min-h-screen">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-sm border border-gray-200 p-6 sm:p-8">
           <div className="flex flex-col items-center text-center gap-4">
             <div className="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center">
               <AlertCircle className="w-8 h-8 text-yellow-600" />
@@ -170,8 +170,8 @@ const GeolocationResultContent = () => {
 
   if (isLoading) {
     return (
-      <div className="w-full flex flex-col items-center justify-center gap-6 p-8 bg-gray-50 min-h-screen">
-        <div className="max-w-2xl w-full bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+      <div className="w-full flex flex-col items-center justify-center gap-6 p-4 sm:p-6 md:p-8 bg-gray-50 min-h-screen">
+        <div className="max-w-2xl w-full bg-white rounded-lg shadow-sm border border-gray-200 p-6 sm:p-8">
           <div className="flex flex-col items-center text-center gap-4">
             <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
             <h2 className="text-xl font-semibold text-gray-900">
@@ -192,16 +192,16 @@ const GeolocationResultContent = () => {
       : null;
 
     return (
-      <div className="w-full flex flex-col gap-6 p-8 bg-gray-50 min-h-screen">
+      <div className="w-full flex flex-col gap-6 p-4 sm:p-6 md:p-8 bg-gray-50 min-h-screen">
         <div className="max-w-2xl mx-auto w-full">
           {/* Header */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex-1">
+                <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-1 sm:mb-2">
                   Geolocation Verification
                 </h1>
-                <p className="text-sm text-gray-600">
+                <p className="text-xs sm:text-sm text-gray-600 break-all">
                   Verification ID: {verificationId}
                 </p>
               </div>
@@ -209,7 +209,7 @@ const GeolocationResultContent = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleBackToVerification}
-                className="cursor-pointer"
+                className="cursor-pointer w-full sm:w-auto"
               >
                 Back
               </Button>
@@ -217,7 +217,7 @@ const GeolocationResultContent = () => {
           </div>
 
           {/* Processing Status Card */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sm:p-8">
             <div className="flex flex-col items-center text-center gap-6">
               <div className="relative">
                 <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center">
@@ -298,16 +298,16 @@ const GeolocationResultContent = () => {
 
   if (verificationStatus === 'failed') {
     return (
-      <div className="w-full flex flex-col gap-6 p-8 bg-gray-50 min-h-screen">
+      <div className="w-full flex flex-col gap-6 p-4 sm:p-6 md:p-8 bg-gray-50 min-h-screen">
         <div className="max-w-2xl mx-auto w-full">
           {/* Header */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex-1">
+                <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-1 sm:mb-2">
                   Geolocation Verification
                 </h1>
-                <p className="text-sm text-gray-600">
+                <p className="text-xs sm:text-sm text-gray-600 break-all">
                   Verification ID: {verificationId}
                 </p>
               </div>
@@ -315,7 +315,7 @@ const GeolocationResultContent = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleBackToVerification}
-                className="cursor-pointer"
+                className="cursor-pointer w-full sm:w-auto"
               >
                 Back
               </Button>
@@ -323,7 +323,7 @@ const GeolocationResultContent = () => {
           </div>
 
           {/* Failed Status Card */}
-          <div className="bg-white rounded-lg shadow-sm border border-red-200 p-8">
+          <div className="bg-white rounded-lg shadow-sm border border-red-200 p-6 sm:p-8">
             <div className="flex flex-col items-center text-center gap-6">
               <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center">
                 <AlertCircle className="w-10 h-10 text-red-600" />
@@ -369,35 +369,35 @@ const GeolocationResultContent = () => {
     const result = verificationData.data;
 
     return (
-      <div className="w-full flex flex-col gap-6 p-8 bg-gray-100 min-h-screen">
+      <div className="w-full flex flex-col gap-6 p-4 sm:p-6 md:p-8 bg-gray-100 min-h-screen">
         <div className="max-w-8xl mx-auto w-full">
           {/* Header */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex-1">
+                <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
                   Geolocation Verification Results
                 </h1>
-                <p className="text-sm text-gray-600">
+                <p className="text-xs sm:text-sm text-gray-600">
                   Verification completed at{' '}
                   {new Date(result.createdAt).toLocaleString()}
                 </p>
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-2 sm:gap-3">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleManualRefresh}
-                  className="cursor-pointer"
+                  className="cursor-pointer flex-1 sm:flex-initial"
                 >
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Refresh
+                  <RefreshCw className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Refresh</span>
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleBackToVerification}
-                  className="cursor-pointer"
+                  className="cursor-pointer flex-1 sm:flex-initial"
                 >
                   Back
                 </Button>
@@ -406,11 +406,11 @@ const GeolocationResultContent = () => {
           </div>
 
           {/* Success Banner and Map - Side by Side */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
             {/* Interactive Map - 2/3 width */}
             {result.mapData && (
-              <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
                   Interactive Map
                 </h3>
                 <GeolocationMap mapData={result.mapData} />
@@ -418,13 +418,13 @@ const GeolocationResultContent = () => {
             )}
             {/* Success Banner - 1/3 width */}
             <div
-              className={`rounded-lg p-6 ${
+              className={`rounded-lg p-4 sm:p-6 ${
                 result.verification.match
                   ? 'bg-green-50 border border-green-200'
                   : 'bg-yellow-50 border border-yellow-200'
               }`}
             >
-              <h2 className="text-lg font-bold text-gray-900 mb-8">
+              <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-6 sm:mb-8">
                 {result.verification.match
                   ? 'Location Verified'
                   : 'Location Mismatch'}
@@ -536,12 +536,12 @@ const GeolocationResultContent = () => {
           </div> */}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Left Column */}
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-4 sm:gap-6">
               {/* Media Information */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
                   Media Information
                 </h3>
                 <div className="space-y-3">
@@ -569,9 +569,9 @@ const GeolocationResultContent = () => {
               </div>
 
               {/* Claimed Location */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-blue-600" />
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2">
+                  <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                   Claimed Location
                 </h3>
                 <div className="space-y-3">
@@ -616,10 +616,10 @@ const GeolocationResultContent = () => {
             </div>
 
             {/* Right Column */}
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-4 sm:gap-6">
               {/* Verification Details */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
                   Verification Analysis
                 </h3>
                 <div className="space-y-4">
@@ -686,8 +686,8 @@ const GeolocationResultContent = () => {
               </div>
 
               {/* Processing Metadata */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
                   Processing Details
                 </h3>
                 <div className="space-y-3">
@@ -713,10 +713,10 @@ const GeolocationResultContent = () => {
           </div>
 
           {/* Actions */}
-          <div className="mt-6 flex flex-col gap-4">
+          <div className="mt-4 sm:mt-6 flex flex-col gap-4">
             {/* Report Generation Status */}
             {reportGeneration.status && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -775,11 +775,11 @@ const GeolocationResultContent = () => {
             )}
 
             {/* Action Buttons */}
-            <div className="flex justify-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
               <Button
                 variant="outline"
                 onClick={handleBackToVerification}
-                className="cursor-pointer"
+                className="cursor-pointer w-full sm:w-auto"
               >
                 New Verification
               </Button>
@@ -787,7 +787,7 @@ const GeolocationResultContent = () => {
                 <Button
                   onClick={handleGenerateReport}
                   disabled={reportGeneration.isGenerating}
-                  className="cursor-pointer"
+                  className="cursor-pointer w-full sm:w-auto"
                 >
                   {reportGeneration.isGenerating ? (
                     <>
@@ -806,7 +806,7 @@ const GeolocationResultContent = () => {
                 <Button
                   onClick={handleGenerateReport}
                   disabled={reportGeneration.isGenerating}
-                  className="cursor-pointer"
+                  className="cursor-pointer w-full sm:w-auto"
                 >
                   <RefreshCw className="w-4 h-4 mr-2" />
                   Retry

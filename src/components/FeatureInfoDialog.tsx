@@ -55,46 +55,46 @@ export function FeatureInfoDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto px-5 py-4 sm:px-8 sm:py-6">
         <DialogHeader>
-          <div className="flex items-start gap-4 mb-2">
+          <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 mb-2">
             <div
-              className={`flex-shrink-0 size-14 rounded-xl ${featureInfo.iconBgColor} flex items-center justify-center`}
+              className={`flex-shrink-0 size-12 sm:size-14 rounded-xl ${featureInfo.iconBgColor} flex items-center justify-center`}
             >
               <div className={featureInfo.iconColor}>{featureInfo.icon}</div>
             </div>
-            <div className="flex-1">
-              <DialogTitle className="text-2xl mb-2">
+            <div className="flex-1 min-w-0">
+              <DialogTitle className="text-xl sm:text-2xl mb-1 sm:mb-2">
                 {featureInfo.title}
               </DialogTitle>
-              <DialogDescription className="text-base">
+              <DialogDescription className="text-sm sm:text-base">
                 {featureInfo.description}
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="space-y-4 sm:space-y-6 py-3 sm:py-4">
           {/* Supported Media */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <FileImage className="size-4" />
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2 sm:mb-3 flex items-center gap-2">
+              <FileImage className="size-3.5 sm:size-4" />
               Supported Media Types
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {featureInfo.supportedMedia.map((media, index) => (
                 <div
                   key={index}
-                  className="p-3 bg-blue-50 border border-blue-200 rounded-lg"
+                  className="p-2.5 sm:p-3 bg-blue-50 border border-blue-200 rounded-lg"
                 >
-                  <p className="text-sm font-medium text-blue-900 mb-2">
+                  <p className="text-xs sm:text-sm font-medium text-blue-900 mb-1.5 sm:mb-2">
                     {media.label}
                   </p>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
                     {media.formats.map((format, idx) => (
                       <span
                         key={idx}
-                        className="px-2 py-1 bg-blue-200/50 text-blue-900 text-xs font-medium rounded"
+                        className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-blue-200/50 text-blue-900 text-xs font-medium rounded"
                       >
                         {format}
                       </span>
@@ -107,20 +107,20 @@ export function FeatureInfoDialog({
 
           {/* How It Works */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <CheckCircle className="size-4" />
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2 sm:mb-3 flex items-center gap-2">
+              <CheckCircle className="size-3.5 sm:size-4" />
               How It Works
             </h3>
             <ol className="space-y-2">
               {featureInfo.howItWorks.map((step, index) => (
                 <li
                   key={index}
-                  className="flex items-start gap-3 text-sm text-gray-700"
+                  className="flex items-start gap-2 sm:gap-3 text-xs sm:text-sm text-gray-700"
                 >
-                  <span className="flex-shrink-0 size-6 rounded-full bg-blue-100 text-blue-700 font-semibold flex items-center justify-center text-xs">
+                  <span className="flex-shrink-0 size-5 sm:size-6 rounded-full bg-blue-100 text-blue-700 font-semibold flex items-center justify-center text-xs">
                     {index + 1}
                   </span>
-                  <span className="pt-0.5">{step}</span>
+                  <span className="pt-0.5 leading-relaxed">{step}</span>
                 </li>
               ))}
             </ol>
@@ -128,18 +128,18 @@ export function FeatureInfoDialog({
 
           {/* Use Cases */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <FileText className="size-4" />
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2 sm:mb-3 flex items-center gap-2">
+              <FileText className="size-3.5 sm:size-4" />
               Use Cases
             </h3>
             <ul className="space-y-2">
               {featureInfo.useCases.map((useCase, index) => (
                 <li
                   key={index}
-                  className="flex items-start gap-2 text-sm text-gray-700"
+                  className="flex items-start gap-2 text-xs sm:text-sm text-gray-700"
                 >
-                  <CheckCircle className="size-4 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span>{useCase}</span>
+                  <CheckCircle className="size-3.5 sm:size-4 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="leading-relaxed">{useCase}</span>
                 </li>
               ))}
             </ul>
@@ -147,14 +147,14 @@ export function FeatureInfoDialog({
 
           {/* Tips */}
           {featureInfo.tips && featureInfo.tips.length > 0 && (
-            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-              <h3 className="text-sm font-semibold text-amber-900 mb-2 flex items-center gap-2">
-                <AlertCircle className="size-4" />
+            <div className="p-3 sm:p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <h3 className="text-xs sm:text-sm font-semibold text-amber-900 mb-2 flex items-center gap-2">
+                <AlertCircle className="size-3.5 sm:size-4" />
                 Pro Tips
               </h3>
               <ul className="space-y-1">
                 {featureInfo.tips.map((tip, index) => (
-                  <li key={index} className="text-sm text-amber-800 pl-4">
+                  <li key={index} className="text-xs sm:text-sm text-amber-800 pl-3 sm:pl-4 leading-relaxed">
                     • {tip}
                   </li>
                 ))}
@@ -163,16 +163,16 @@ export function FeatureInfoDialog({
           )}
         </div>
 
-        <DialogFooter className="sm:justify-between">
+        <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0 sm:justify-between pt-4">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="cursor-pointer"
+            className="cursor-pointer w-full sm:w-auto"
           >
             Close
           </Button>
           {onGetStarted && (
-            <Button onClick={handleGetStarted} className="cursor-pointer">
+            <Button onClick={handleGetStarted} className="cursor-pointer w-full sm:w-auto">
               Get Started
             </Button>
           )}
@@ -189,8 +189,8 @@ export const FEATURE_INFO: Record<string, FeatureInfo> = {
     description:
       "Intelligently extract the most important frames from videos for focused analysis and verification.",
     icon: <Film className="size-7" />,
-    iconBgColor: "bg-purple-50",
-    iconColor: "text-purple-600",
+    iconBgColor: "bg-blue-50",
+    iconColor: "text-blue-600",
     supportedMedia: [
       {
         label: "Video Files",
@@ -236,8 +236,8 @@ export const FEATURE_INFO: Record<string, FeatureInfo> = {
     description:
       "Trace the origin and history of images across the internet to find original sources and detect manipulations.",
     icon: <ImageIcon className="size-7" />,
-    iconBgColor: "bg-purple-50",
-    iconColor: "text-purple-600",
+    iconBgColor: "bg-blue-50",
+    iconColor: "text-blue-600",
     supportedMedia: [
       {
         label: "Image Files Only",

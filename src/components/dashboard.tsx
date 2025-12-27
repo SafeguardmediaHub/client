@@ -17,6 +17,13 @@ import {
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Input } from './ui/input';
+import { DashboardOverview } from './dashboard/overview/DashboardOverview';
+import { Badge } from './ui/badge';
+import { useDashboardOverview } from '@/hooks/useDashboard';
+import {
+  formatSubscriptionTier,
+  getSubscriptionBadgeColor,
+} from '@/lib/dashboard-utils';
 
 type UploadPhase =
   | 'idle'
@@ -280,38 +287,47 @@ const Dashboard: FC<DashboardProps> = ({
   );
   const inputId = useId();
 
+  const { data: dashboardData } = useDashboardOverview();
+
   return (
     <section className="flex flex-1 flex-col gap-4 py-4 px-4 sm:px-6 md:px-8">
-      <header className="flex-col items-start gap-1 flex">
-        <h1 className="text-responsive-2xl font-medium text-black leading-9">
-          Dashboard Overview
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Hello, {userName}! Ready to verify some media?
-        </p>
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex-col items-start gap-1 flex">
+          <h1 className="text-responsive-2xl font-medium text-black leading-9">
+            Dashboard Overview
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Hello, {userName}! Ready to verify some media?
+          </p>
+        </div>
+        {dashboardData?.subscription && (
+          <Badge
+            className={`${getSubscriptionBadgeColor(dashboardData.subscription.tier)} w-fit`}
+          >
+            {formatSubscriptionTier(dashboardData.subscription.tier)}
+          </Badge>
+        )}
       </header>
 
-      <Card className="flex flex-col items-start gap-4 sm:gap-6 p-4 sm:p-6 relative self-stretch w-full">
-        <CardContent className="p-0 w-full">
-          <div className="inline-flex flex-col items-start gap-1 relative mb-4 sm:mb-6">
-            <h2 className="text-responsive-xl font-medium text-black leading-[30px]">
+      <Card className="p-4 sm:p-6">
+        <CardContent className="p-0 w-full space-y-6">
+          <div>
+            <h2 className="text-lg sm:text-xl font-semibold text-black">
               Start a New Analysis
             </h2>
-            <p className="text-sm text-muted-foreground">
-              Paste links or upload media to detect deepfakes
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+              Upload media to verify authenticity
             </p>
           </div>
 
-          <form
-            onSubmit={analyzeSubmit}
-            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-0 mb-4 sm:mb-6"
-          >
-            <div className="flex items-center gap-3 flex-1 px-3 py-2 sm:py-0 bg-muted rounded-xl sm:rounded-r-none">
-              <LinkIcon className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+          {/* URL Upload Form */}
+          <form onSubmit={analyzeSubmit} className="space-y-3">
+            <div className="flex items-center gap-2 px-4 py-3 bg-muted/50 rounded-lg border border-muted-foreground/20">
+              <LinkIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
               <Input
                 aria-label="Media URL"
-                className="flex-1 border-0 bg-transparent p-0 focus-visible:ring-0 text-sm sm:text-base"
-                placeholder="Paste media URL..."
+                className="flex-1 border-0 bg-transparent p-0 focus-visible:ring-0 text-sm placeholder:text-muted-foreground/60"
+                placeholder="Paste media URL here..."
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 disabled={isBusy}
@@ -319,26 +335,34 @@ const Dashboard: FC<DashboardProps> = ({
             </div>
             <Button
               type="submit"
-              className="sm:rounded-l-none cursor-pointer w-full sm:w-auto"
+              className="cursor-pointer w-full sm:w-auto sm:min-w-[140px]"
               disabled={isBusy}
               onClick={handleUpload}
             >
               {isBusy ? (
                 <>
-                  <Loader2 className="size-4 animate-spin" />
-                  <span className="ml-2">Uploading...</span>
+                  <Loader2 className="size-4 animate-spin mr-2" />
+                  Uploading...
                 </>
               ) : (
-                <>
-                  <span className="hidden sm:inline">Upload Media</span>
-                  <span className="sm:hidden">Upload</span>
-                </>
+                'Upload from URL'
               )}
             </Button>
           </form>
 
+          {/* Divider */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-muted-foreground/20" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-muted-foreground">Or</span>
+            </div>
+          </div>
+
+          {/* File Upload Dropzone */}
           <section
-            className="relative w-full rounded-lg border border-dashed bg-muted"
+            className="relative w-full rounded-lg border-2 border-dashed border-muted-foreground/30 bg-muted/30 hover:bg-muted/50 hover:border-primary/50 transition-all"
             aria-label="Upload dropzone"
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
@@ -354,58 +378,67 @@ const Dashboard: FC<DashboardProps> = ({
           >
             <label
               htmlFor={inputId}
-              className="flex flex-col items-center gap-3 sm:gap-4 w-full py-4 sm:py-6 px-4 cursor-pointer"
+              className="flex flex-col items-center gap-4 w-full py-8 sm:py-10 px-4 cursor-pointer"
             >
-              <UploadIcon className="w-8 h-8 sm:w-10 sm:h-10 text-muted-foreground" />
-              <div className="flex flex-col items-center gap-1 w-full">
-                <p className="text-sm sm:text-base text-center">
+              <div className="p-3 rounded-full bg-primary/10">
+                <UploadIcon className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+              </div>
+
+              <div className="flex flex-col items-center gap-2 w-full">
+                <p className="text-sm sm:text-base font-medium text-center text-foreground">
                   <span className="hidden sm:inline">
-                    Drag and drop to upload or click to browse files
+                    Drop files here or click to browse
                   </span>
                   <span className="sm:hidden">
-                    Tap to select files or drag & drop
+                    Tap to select files
                   </span>
                 </p>
-                <p className="text-xs sm:text-sm text-primary text-center">
-                  <span className="hidden sm:inline">
-                    Supports JPEG, PNG, MP4, MOV and common audio (Max 1GB)
-                  </span>
-                  <span className="sm:hidden">
-                    Images, videos, audio (Max 1GB)
-                  </span>
+                <p className="text-xs text-muted-foreground text-center max-w-xs">
+                  JPEG, PNG, MP4, MOV, MP3, WAV (Max 1GB)
                 </p>
               </div>
 
               {uploadPhase === 'uploading' && (
-                <div className="w-full max-w-xl">
-                  <div className="h-2 w-full rounded bg-background/50 overflow-hidden">
+                <div className="w-full max-w-sm space-y-2">
+                  <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
                     <div
-                      className="h-2 bg-primary transition-all"
+                      className="h-full bg-primary transition-all rounded-full"
                       style={{ width: `${progress}%` }}
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2 text-center">
+                  <p className="text-xs text-muted-foreground text-center">
                     Uploading... {progress}%
                   </p>
                 </div>
               )}
 
               {uploadPhase === 'confirming' && (
-                <div className="w-full max-w-xl">
-                  <div className="h-2 w-full rounded bg-background/50 overflow-hidden">
-                    <div className="h-2 bg-primary transition-all animate-pulse" />
+                <div className="w-full max-w-sm space-y-2">
+                  <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                    <div className="h-full bg-primary transition-all animate-pulse rounded-full" style={{ width: '100%' }} />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2 text-center">
+                  <p className="text-xs text-muted-foreground text-center">
                     Confirming upload...
                   </p>
                 </div>
               )}
 
               {uploadPhase === 'success' && uploadedKey && (
-                <p className="text-sm text-green-600">Uploaded successfully.</p>
+                <div className="flex items-center gap-2 text-green-600">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <p className="text-sm font-medium">Uploaded successfully!</p>
+                </div>
               )}
+
               {uploadPhase === 'error' && uploadError && (
-                <p className="text-sm text-red-600">{uploadError}</p>
+                <div className="flex items-center gap-2 text-red-600 max-w-sm">
+                  <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <p className="text-sm">{uploadError}</p>
+                </div>
               )}
 
               <input
@@ -433,179 +466,13 @@ const Dashboard: FC<DashboardProps> = ({
                 ].join(',')}
                 disabled={isBusy}
               />
-
-              <Button
-                type="button"
-                onClick={onBrowseClick}
-                disabled={isBusy}
-                className="w-full sm:w-auto"
-              >
-                {isBusy ? (
-                  'Please wait…'
-                ) : (
-                  <>
-                    <span className="hidden sm:inline">
-                      Select Files to Upload
-                    </span>
-                    <span className="sm:hidden">Select Files</span>
-                  </>
-                )}
-              </Button>
             </label>
           </section>
         </CardContent>
       </Card>
 
-      {/* charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
-        <Card className="p-6">
-          <CardContent className="p-0 space-y-4">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <h3 className="text-xl font-medium">Detection Ratio</h3>
-                <p className="text-sm text-muted-foreground">
-                  Total media files uploaded over a month:{' '}
-                  <span className="font-semibold text-foreground">842</span>
-                </p>
-              </div>
-              <select className="h-9 rounded-md border bg-background px-3 text-sm">
-                <option>1 Month</option>
-                <option>3 Months</option>
-                <option>6 Months</option>
-              </select>
-            </div>
-
-            <div className="rounded-lg border bg-accent/30 p-4">
-              <div className="grid grid-cols-3 gap-4">
-                {chartCategories.map((category) => (
-                  <div
-                    key={category.label}
-                    className="text-center text-xs text-muted-foreground"
-                  >
-                    {category.label}
-                  </div>
-                ))}
-              </div>
-              <div className="mt-4 grid grid-rows-6 gap-2">
-                {chartData.map((item) => (
-                  <div key={item.value} className="flex items-center gap-2">
-                    <span className="w-10 text-right text-xs text-muted-foreground">
-                      {item.value}
-                    </span>
-                    <div className="h-px w-full bg-border" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="p-6">
-          <CardContent className="p-0 space-y-6">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <h3 className="text-xl font-medium">Statistics</h3>
-                <p className="text-sm text-muted-foreground">
-                  Total files processed across system features:{' '}
-                  <span className="font-semibold text-foreground">2,247</span>
-                </p>
-              </div>
-              <select className="h-9 rounded-md border bg-background px-3 text-sm">
-                <option>1 Month</option>
-                <option>3 Months</option>
-                <option>6 Months</option>
-              </select>
-            </div>
-            <div className="space-y-4">
-              {statisticsData.map((stat) => (
-                <div key={stat.label} className="space-y-2">
-                  <div className="text-sm font-medium">{stat.label}</div>
-                  <div className="h-3 w-full rounded-lg bg-primary/10">
-                    <div
-                      className="h-3 rounded-lg bg-primary"
-                      style={{ width: `${stat.percent}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
-        <Card className="p-6">
-          <CardContent className="p-0 space-y-4">
-            <h3 className="text-xl font-medium">Recent Activities</h3>
-            <div className="divide-y rounded-xl border">
-              {recentActivities.map((activity) => (
-                <div
-                  key={activity.title + activity.time}
-                  className="flex items-center gap-3 px-4 py-3"
-                >
-                  <img src={activity.icon} alt="" className="size-10 rounded" />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h4 className="text-sm font-semibold leading-none">
-                        {activity.title}
-                      </h4>
-                      {activity.status && (
-                        <span
-                          className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs"
-                          style={{
-                            background: activity.statusColor.match(
-                              /bg-\[(.*)\]/
-                            )?.[1]
-                              ? undefined
-                              : undefined,
-                          }}
-                        >
-                          <span className="inline-block size-1.5 rounded-full" />
-                          {activity.status}
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
-                      <span>{activity.description}</span>
-                      <span className="h-3 w-px bg-border" />
-                      <span>{activity.time}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="p-6">
-          <CardContent className="p-0 space-y-6">
-            <div>
-              <h3 className="text-xl font-medium">Batch Files Processing</h3>
-              <p className="text-sm text-muted-foreground">
-                List of files currently being analyzed
-              </p>
-            </div>
-            <div className="space-y-4">
-              {batchProcessingData.map((item) => (
-                <div key={item.title} className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium">{item.title}</span>
-                    <span className="text-muted-foreground">{item.time}</span>
-                  </div>
-                  <div className="h-3 w-full rounded-lg bg-primary/10">
-                    <div
-                      className="h-3 rounded-lg bg-primary"
-                      style={{ width: `${item.percent}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div> */}
-
-      <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min" />
+      {/* Dashboard Overview */}
+      <DashboardOverview />
     </section>
   );
 };

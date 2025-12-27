@@ -368,34 +368,34 @@ const ReverseLookupResultContent = () => {
   // Completed state - show results
   if (lookupStatus === 'completed' && resultData?.data) {
     return (
-      <div className="w-full flex flex-col gap-6 p-8 bg-gray-100 min-h-screen">
+      <div className="w-full flex flex-col gap-6 p-4 md:p-6 lg:p-8 bg-gray-100 min-h-screen">
         <div className="max-w-8xl mx-auto w-full">
           {/* Header */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex-1">
+                <h1 className="text-xl md:text-2xl font-semibold text-gray-900 mb-2">
                   Reverse Lookup Results
                 </h1>
                 <p className="text-sm text-gray-600">
                   Found {results.length} matches across search engines
                 </p>
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-2 sm:gap-3">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleManualRefresh}
-                  className="cursor-pointer"
+                  className="cursor-pointer flex-1 sm:flex-initial"
                 >
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Refresh
+                  <RefreshCw className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Refresh</span>
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleBack}
-                  className="cursor-pointer"
+                  className="cursor-pointer flex-1 sm:flex-initial"
                 >
                   Back
                 </Button>
@@ -406,27 +406,29 @@ const ReverseLookupResultContent = () => {
           {/* Success Banner and Media Info - Side by Side */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             {/* Media Info - 2/3 width */}
-            <div className="lg:col-span-2 bg-white rounded-lg border border-gray-200 p-6">
-              <div className="flex gap-6">
-                <img
-                  src={selectedMedia.thumbnailUrl}
-                  alt={selectedMedia.filename}
-                  className="w-64 h-48 object-cover rounded-lg"
-                />
-                <div className="flex-1">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            <div className="lg:col-span-2 bg-white rounded-lg border border-gray-200 p-4 md:p-6">
+              <div className="flex flex-col sm:flex-row gap-4 md:gap-6">
+                <div className="w-full sm:w-auto sm:flex-shrink-0">
+                  <img
+                    src={selectedMedia.thumbnailUrl}
+                    alt={selectedMedia.filename}
+                    className="w-full sm:w-48 md:w-64 h-48 object-cover rounded-lg"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6">
                     Original Source
                   </h2>
-                  <div className="space-y-4">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">First Published</span>
-                      <span className="text-gray-900 font-medium">
+                  <div className="space-y-3 md:space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
+                      <span className="text-sm md:text-base text-gray-600">First Published</span>
+                      <span className="text-sm md:text-base text-gray-900 font-medium">
                         {formatDate(selectedMedia.uploadedAt, 'dd-MMM-yyyy')}
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Source</span>
-                      <span className="text-gray-900 font-medium">
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
+                      <span className="text-sm md:text-base text-gray-600">Source</span>
+                      <span className="text-sm md:text-base text-gray-900 font-medium">
                         User Library
                       </span>
                     </div>
@@ -436,19 +438,19 @@ const ReverseLookupResultContent = () => {
             </div>
 
             {/* Success Banner - 1/3 width */}
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-              <div className="flex flex-col items-center text-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                  <CheckCircle2 className="w-8 h-8 text-green-600" />
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 md:p-6">
+              <div className="flex flex-col items-center text-center gap-3 md:gap-4">
+                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle2 className="w-6 h-6 md:w-8 md:h-8 text-green-600" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-green-900 mb-2">
+                  <h3 className="text-base md:text-lg font-semibold text-green-900 mb-1 md:mb-2">
                     Search Completed
                   </h3>
-                  <p className="text-sm text-green-800">
+                  <p className="text-xs md:text-sm text-green-800">
                     Found {results.length} matches across search engines
                   </p>
-                  <div className="mt-3">
+                  <div className="mt-2 md:mt-3">
                     <span className="text-xs font-medium text-green-900">
                       Progress: {resultData.data.progress || 100}%
                     </span>
@@ -459,11 +461,11 @@ const ReverseLookupResultContent = () => {
           </div>
 
           {/* Search Coverage */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6 mb-6">
+            <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">
               Search Coverage
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
               {searchEngines.map((engine) => (
                 <div key={engine.name} className="flex items-center gap-2">
                   <div className="w-5 h-5 bg-blue-600 rounded flex items-center justify-center flex-shrink-0">
@@ -477,11 +479,11 @@ const ReverseLookupResultContent = () => {
 
           {/* Search Results */}
 
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
               Search Results
             </h2>
-            <p className="text-gray-600 text-sm mb-6">
+            <p className="text-gray-600 text-xs md:text-sm mb-4 md:mb-6">
               {results.length} matches found across search engines
             </p>
 
