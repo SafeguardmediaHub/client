@@ -1,14 +1,12 @@
 import { UserCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLogout } from '@/hooks/useAuth';
+
 import { Button } from './ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 
@@ -37,14 +35,14 @@ export function NavDropdown({ name }: { name?: string }) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="start">
-        <DropdownMenuLabel>My Account</DropdownMenuLabel>
-        <DropdownMenuGroup>
+        {/* <DropdownMenuLabel>My Account</DropdownMenuLabel> */}
+        {/* <DropdownMenuGroup>
           <DropdownMenuItem>Profile</DropdownMenuItem>
           <DropdownMenuItem>Billing</DropdownMenuItem>
           <DropdownMenuItem>Settings</DropdownMenuItem>
-        </DropdownMenuGroup>
+        </DropdownMenuGroup> */}
 
-        <DropdownMenuSeparator />
+        {/* <DropdownMenuSeparator /> */}
 
         <DropdownMenuItem variant="destructive" onSelect={handleLogout}>
           Log out

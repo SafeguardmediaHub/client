@@ -1,11 +1,9 @@
 'use client';
 
-import { BellIcon } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 
 import { NavDropdown } from './nav-dropdown';
-import { SearchForm } from './search-form';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -68,12 +66,12 @@ const AppNavbar = () => {
         </Breadcrumb>
       </div>
 
-      <div className="hidden md:block flex-1 max-w-md">
+      {/* <div className="hidden md:block flex-1 max-w-md">
         <SearchForm />
-      </div>
+      </div> */}
 
       <div className="hidden sm:inline-flex items-center justify-end gap-6 relative flex-[0_0_auto]">
-        <BellIcon className="relative w-5 h-5 text-[#5c5c5c]" />
+        {/* <BellIcon className="relative w-5 h-5 text-[#5c5c5c]" /> */}
 
         <div className="inline-flex items-center justify-end gap-2 relative flex-[0_0_auto]">
           <NavDropdown name={user?.firstName} />
