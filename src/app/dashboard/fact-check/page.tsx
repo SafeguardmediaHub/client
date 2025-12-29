@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertCircle, FileText, Info } from 'lucide-react';
+import { AlertCircle, ArrowLeft, FileText, Info } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -53,18 +53,18 @@ const FactCheckContent = () => {
           // Update URL with job ID
           router.push(`/dashboard/fact-check?jobId=${jobId}`);
 
-          toast.success('Fact-check analysis started successfully!', {
+          toast.success(response.message || 'Fact-check analysis started successfully!', {
             description: `Estimated completion: ~${response.data.estimated_completion_seconds}s`,
           });
         }
       },
-      onError: (error) => {
+      onError: (error: any) => {
         console.error('Failed to start fact-check:', error);
-        toast.error(
-          `Failed to start fact-check: ${
-            error instanceof Error ? error.message : 'Unknown error'
-          }`
-        );
+        const errorMessage =
+          error?.response?.data?.message ||
+          error?.response?.data?.error ||
+          (error instanceof Error ? error.message : 'Unknown error');
+        toast.error(`Failed to start fact-check: ${errorMessage}`);
       },
     });
   };
@@ -103,12 +103,21 @@ const FactCheckContent = () => {
               fact-checking sources
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.back()}
+              className="cursor-pointer w-full sm:w-auto"
+            >
+              <ArrowLeft className="size-4 mr-2" />
+              Back
+            </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setShowInfoDialog(true)}
-              className="cursor-pointer"
+              className="cursor-pointer w-full sm:w-auto"
             >
               <Info className="size-4 mr-2" />
               How it works
@@ -116,7 +125,7 @@ const FactCheckContent = () => {
             {currentJobId && (
               <Button
                 onClick={handleStartNew}
-                className="h-10 px-6 bg-blue-600 hover:bg-blue-500 rounded-xl flex-shrink-0 cursor-pointer"
+                className="h-10 px-6 bg-blue-600 hover:bg-blue-500 rounded-xl flex-shrink-0 cursor-pointer w-full sm:w-auto"
               >
                 <FileText className="w-4 h-4 mr-2" />
                 <span className="text-base font-medium text-white whitespace-nowrap">

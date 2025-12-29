@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useJobStatus } from '@/hooks/useFactCheck';
 import { ErrorState } from './ErrorState';
@@ -19,6 +20,8 @@ export const FactCheckProcessing = ({ jobId }: FactCheckProcessingProps) => {
   const { data, isLoading, error, refetch } = useJobStatus(jobId, {
     enabled: !!jobId,
   });
+  const hasShownCompletionToast = useRef(false);
+  const hasShownFailureToast = useRef(false);
 
   useEffect(() => {
     if (!data?.data) return;
@@ -41,6 +44,31 @@ export const FactCheckProcessing = ({ jobId }: FactCheckProcessingProps) => {
       } else {
         setCurrentStep('Processing your request...');
       }
+    }
+  }, [data?.data]);
+
+  // Show toast notifications for completion and failure
+  useEffect(() => {
+    if (!data?.data) return;
+
+    const { status, summary, error: jobError } = data.data;
+
+    // Show success toast when job completes
+    if (status === 'completed' && !hasShownCompletionToast.current) {
+      hasShownCompletionToast.current = true;
+      toast.success('Fact-check analysis completed!', {
+        description: summary?.total_claims
+          ? `Found ${summary.total_claims} claim${summary.total_claims !== 1 ? 's' : ''}`
+          : 'Analysis finished successfully',
+      });
+    }
+
+    // Show error toast when job fails
+    if (status === 'failed' && !hasShownFailureToast.current) {
+      hasShownFailureToast.current = true;
+      toast.error('Fact-check analysis failed', {
+        description: jobError || 'The analysis could not be completed',
+      });
     }
   }, [data?.data]);
 

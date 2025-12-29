@@ -23,7 +23,7 @@ export const ClaimList = ({ claims, onViewDetails }: ClaimListProps) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
         <h3 className="text-lg font-semibold text-gray-900">
           Extracted Claims ({claims.length})
         </h3>

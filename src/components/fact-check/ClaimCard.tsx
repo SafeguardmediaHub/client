@@ -28,21 +28,21 @@ export const ClaimCard = ({ claim, onViewDetails }: ClaimCardProps) => {
   };
 
   return (
-    <div className="p-6 border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all bg-white">
-      <div className="flex items-start justify-between gap-4 mb-4">
+    <div className="p-4 sm:p-6 border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all bg-white">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
         <div className="flex-1">
           <p className="text-base text-gray-900 leading-relaxed">
             {claim.text}
           </p>
         </div>
         <div
-          className={`px-3 py-1 rounded-full text-xs font-semibold border ${getConfidenceColor(confidenceScore)}`}
+          className={`px-3 py-1 rounded-full text-xs font-semibold border ${getConfidenceColor(confidenceScore)} self-start whitespace-nowrap`}
         >
           {claim.confidence} Confidence
         </div>
       </div>
 
-      <div className="flex items-center gap-4 mb-4">
+      <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-4">
         <div className="flex items-center gap-1 text-xs text-gray-600">
           <Tag className="w-3 h-3" />
           <span className="font-medium">Verdict:</span>
@@ -57,15 +57,15 @@ export const ClaimCard = ({ claim, onViewDetails }: ClaimCardProps) => {
         )}
       </div>
 
-      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-        <span className="text-xs text-gray-500">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-4 border-t border-gray-100">
+        <span className="text-xs text-gray-500 truncate">
           Claim ID: {claim.claim_id.replace("claim_", "")}
         </span>
         <Button
           onClick={() => onViewDetails(claim.claim_id)}
           variant="outline"
           size="sm"
-          className="cursor-pointer hover:bg-blue-50 hover:border-blue-300"
+          className="cursor-pointer hover:bg-blue-50 hover:border-blue-300 w-full sm:w-auto"
         >
           View Fact-Check
           <ChevronRight className="w-4 h-4 ml-1" />

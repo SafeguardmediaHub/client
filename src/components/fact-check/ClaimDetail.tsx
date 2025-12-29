@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useClaimDetail } from "@/hooks/useFactCheck";
 import { EmptyState } from "./EmptyState";
@@ -15,6 +17,21 @@ interface ClaimDetailProps {
 
 export const ClaimDetail = ({ claimId, onBack }: ClaimDetailProps) => {
   const { data, isLoading, error, refetch } = useClaimDetail(claimId);
+  const hasShownErrorToast = useRef(false);
+
+  // Show error toast when claim details fail to load
+  useEffect(() => {
+    if (error && !hasShownErrorToast.current) {
+      hasShownErrorToast.current = true;
+      const errorMessage =
+        (error as any)?.response?.data?.message ||
+        (error as any)?.response?.data?.error ||
+        (error instanceof Error ? error.message : 'Unable to retrieve claim');
+      toast.error('Failed to load claim details', {
+        description: errorMessage,
+      });
+    }
+  }, [error]);
 
   if (isLoading) {
     return <LoadingState message="Loading claim details..." />;
