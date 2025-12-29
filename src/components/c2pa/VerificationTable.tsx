@@ -609,8 +609,8 @@ export function VerificationTable({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
-          <p className="text-sm text-gray-500">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 py-3 border-t border-gray-200">
+          <p className="text-sm text-gray-500 text-center sm:text-left">
             Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)}{' '}
             of {total} results
           </p>

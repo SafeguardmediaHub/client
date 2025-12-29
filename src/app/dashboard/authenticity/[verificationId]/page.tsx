@@ -258,24 +258,26 @@ export default function VerificationDetailsPage() {
   };
 
   return (
-    <div className="w-full flex flex-col gap-6 p-8">
+    <div className="w-full flex flex-col gap-6 p-4 sm:p-6 md:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 flex-shrink-0">
           <Button variant="ghost" size="sm" onClick={handleBack}>
             <ArrowLeft className="size-4 mr-1" />
             Back
           </Button>
-          <StatusBadge status={details.status} size="lg" />
+          <div className="hidden sm:block">
+            <StatusBadge status={details.status} size="lg" />
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleRefresh}>
-            <RefreshCw className="size-4 mr-1" />
-            Refresh
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+          <Button variant="outline" size="sm" onClick={handleRefresh} className="flex-shrink-0">
+            <RefreshCw className="size-4" />
+            <span className="ml-1 hidden sm:inline">Refresh</span>
           </Button>
-          <Button variant="outline" size="sm" onClick={handleDownloadReport}>
-            <Download className="size-4 mr-1" />
-            Download Report
+          <Button variant="outline" size="sm" onClick={handleDownloadReport} className="flex-shrink-0">
+            <Download className="size-4" />
+            <span className="ml-1 hidden sm:inline">Download</span>
           </Button>
           {showDeleteConfirm ? (
             <>
@@ -284,13 +286,15 @@ export default function VerificationDetailsPage() {
                 size="sm"
                 onClick={handleDelete}
                 disabled={deleteMutation.isPending}
+                className="flex-shrink-0"
               >
-                {deleteMutation.isPending ? 'Deleting...' : 'Confirm Delete'}
+                {deleteMutation.isPending ? 'Deleting...' : 'Confirm'}
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowDeleteConfirm(false)}
+                className="flex-shrink-0"
               >
                 Cancel
               </Button>
@@ -300,10 +304,10 @@ export default function VerificationDetailsPage() {
               variant="ghost"
               size="sm"
               onClick={() => setShowDeleteConfirm(true)}
-              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              className="text-red-600 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
             >
-              <Trash2 className="size-4 mr-1" />
-              Delete
+              <Trash2 className="size-4" />
+              <span className="ml-1 hidden sm:inline">Delete</span>
             </Button>
           )}
         </div>
@@ -347,12 +351,12 @@ export default function VerificationDetailsPage() {
       {!isProcessing && (
         <>
         <Tabs defaultValue="summary" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-6">
-            <TabsTrigger value="summary">Summary</TabsTrigger>
-            <TabsTrigger value="manifest">Manifest</TabsTrigger>
-            <TabsTrigger value="certificates">Certificates</TabsTrigger>
-            <TabsTrigger value="metadata">Metadata</TabsTrigger>
-            <TabsTrigger value="timeline">Timeline</TabsTrigger>
+          <TabsList className="w-full mb-6 h-auto flex-wrap justify-start">
+            <TabsTrigger value="summary" className="flex-shrink-0">Summary</TabsTrigger>
+            <TabsTrigger value="manifest" className="flex-shrink-0">Manifest</TabsTrigger>
+            <TabsTrigger value="certificates" className="flex-shrink-0">Certificates</TabsTrigger>
+            <TabsTrigger value="metadata" className="flex-shrink-0">Metadata</TabsTrigger>
+            <TabsTrigger value="timeline" className="flex-shrink-0">Timeline</TabsTrigger>
           </TabsList>
 
           {/* Summary Tab */}
@@ -845,7 +849,7 @@ function VerificationStartingState({
   onBack: () => void;
 }) {
   return (
-    <div className="w-full flex flex-col gap-6 p-8">
+    <div className="w-full flex flex-col gap-6 p-4 sm:p-6 md:p-8">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="sm" onClick={onBack}>
@@ -905,16 +909,17 @@ function VerificationStartingState({
 
 function DetailsLoadingState() {
   return (
-    <div className="w-full flex flex-col gap-6 p-8">
+    <div className="w-full flex flex-col gap-6 p-4 sm:p-6 md:p-8">
       {/* Header skeleton */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
           <Skeleton className="h-8 w-20" />
-          <Skeleton className="h-8 w-28 rounded-full" />
+          <Skeleton className="h-8 w-28 rounded-full hidden sm:block" />
         </div>
         <div className="flex items-center gap-2">
-          <Skeleton className="h-9 w-24" />
-          <Skeleton className="h-9 w-36" />
+          <Skeleton className="h-9 w-10 sm:w-24" />
+          <Skeleton className="h-9 w-10 sm:w-32" />
+          <Skeleton className="h-9 w-10 sm:w-20" />
         </div>
       </div>
 

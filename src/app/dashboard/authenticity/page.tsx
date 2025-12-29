@@ -127,7 +127,7 @@ function OverviewContent() {
   };
 
   return (
-    <div className="w-full flex flex-col gap-6 p-8">
+    <div className="w-full flex flex-col gap-6 p-4 sm:p-6 md:p-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
         <div className="flex flex-col gap-1">
@@ -140,7 +140,7 @@ function OverviewContent() {
         </div>
         <Button
           onClick={() => router.push('/dashboard/authenticity/verify')}
-          className="h-10 px-6 bg-blue-600 hover:bg-blue-500 rounded-xl flex-shrink-0"
+          className="h-10 px-6 bg-blue-600 hover:bg-blue-500 rounded-xl flex-shrink-0 w-full md:w-auto"
         >
           <Upload className="w-4 h-4 mr-2" />
           <span className="text-base font-medium text-white whitespace-nowrap">
@@ -284,10 +284,10 @@ function OverviewContent() {
 
 function LoadingState() {
   return (
-    <div className="w-full flex flex-col gap-6 p-8">
+    <div className="w-full flex flex-col gap-6 p-4 sm:p-6 md:p-8">
       <div className="flex flex-col gap-1">
         <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-5 w-96" />
+        <Skeleton className="h-5 w-96 max-w-full" />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <StatsCardSkeleton />
