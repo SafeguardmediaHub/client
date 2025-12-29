@@ -21,7 +21,8 @@ type VerificationState =
   | 'success'
   | 'error'
   | 'no-token'
-  | 'request-email';
+  | 'request-email'
+  | 'awaiting-verification';
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
@@ -37,6 +38,17 @@ function VerifyEmailContent() {
 
   useEffect(() => {
     const token = searchParams.get('token');
+    const registered = searchParams.get('registered');
+    const userEmail = searchParams.get('email');
+
+    // Check if user just registered
+    if (registered === 'true') {
+      setVerificationState('awaiting-verification');
+      if (userEmail) {
+        setEmail(userEmail);
+      }
+      return;
+    }
 
     if (!token) {
       setVerificationState('no-token');
@@ -285,6 +297,53 @@ function VerifyEmailContent() {
                     className="w-full cursor-pointer"
                   >
                     Back to Login
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Awaiting Verification State (Just Registered) */}
+            {verificationState === 'awaiting-verification' && (
+              <div className="flex flex-col gap-6 text-center">
+                <div className="flex justify-center">
+                  <div className="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-full">
+                    <Mail className="size-12 text-blue-600 dark:text-blue-400" />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h1 className="text-2xl font-bold tracking-tight">
+                    Check Your Email
+                  </h1>
+                  <p className="text-muted-foreground text-balance">
+                    We've sent a verification link to{' '}
+                    <span className="font-semibold text-foreground">
+                      {email || 'your email address'}
+                    </span>
+                    . Please check your inbox and click the link to verify your
+                    account.
+                  </p>
+                  <p className="text-sm text-muted-foreground pt-2">
+                    Didn't receive the email? Check your spam folder or request a
+                    new verification link below.
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-3 pt-2">
+                  <Button
+                    onClick={handleResendVerification}
+                    variant="outline"
+                    className="w-full cursor-pointer"
+                  >
+                    <Mail className="size-4" />
+                    Resend Verification Email
+                  </Button>
+                  <Button
+                    onClick={handleNavigateToLogin}
+                    variant="ghost"
+                    className="w-full cursor-pointer"
+                  >
+                    Continue to Login
                   </Button>
                 </div>
               </div>

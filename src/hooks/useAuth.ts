@@ -137,11 +137,11 @@ export const useRegister = () => {
       firstName: string;
       lastName: string;
     }) => register(email, password, firstName, lastName),
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       queryClient.setQueryData(["user"], data);
-      toast.success("Registration successful. Please verify your email.");
-      // navigate to login
-      window.location.href = "/auth/login";
+      toast.success("Registration successful! Please check your email to verify your account.");
+      // Navigate to verify-email page with registered flag and email
+      window.location.href = `/auth/verify-email?registered=true&email=${encodeURIComponent(variables.email)}`;
     },
     onError: (error: any) => {
       console.error("Registration error:", error);
