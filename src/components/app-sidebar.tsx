@@ -151,7 +151,7 @@ const data = {
 
   reporting: [
     {
-      name: 'Reports Generation',
+      name: 'Reports',
       url: '/dashboard/reporting',
       icon: FileBarChart,
       featureId: 'reports_generation',

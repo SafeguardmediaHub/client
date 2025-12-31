@@ -116,6 +116,11 @@ export async function downloadReport(reportId: string, title?: string) {
   window.URL.revokeObjectURL(url);
 }
 
+export async function deleteReport(reportId: string) {
+  const response = await api.delete(`/api/reports/${reportId}`);
+  return response.data;
+}
+
 // Legacy function for backward compatibility
 export async function generateReport(payload: {
   analysisId: string;

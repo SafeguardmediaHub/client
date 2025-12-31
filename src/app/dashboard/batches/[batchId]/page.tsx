@@ -292,16 +292,6 @@ export default function BatchDetailPage({
               ✓ Deepfake Detection
             </span>
           )}
-          {batch.options?.enableReverseSearch && (
-            <span className="px-2 sm:px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs sm:text-sm">
-              ✓ Reverse Search
-            </span>
-          )}
-          {!batch.options?.enableReverseSearch && (
-            <span className="px-2 sm:px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs sm:text-sm">
-              ✗ Reverse Search
-            </span>
-          )}
           {batch.options?.enableGeolocation && (
             <span className="px-2 sm:px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs sm:text-sm">
               ✓ Geolocation Verification

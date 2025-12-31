@@ -47,9 +47,8 @@ export function BatchUploadModal({
     tagInput: "",
     webhookUrl: "",
     options: {
-      enableC2PA: true,
-      enableOCR: true,
-      enableReverseSearch: false,
+      enableC2PA: false,
+      enableOCR: false,
       enableDeepfake: false,
       enableGeolocation: false,
       enableIntegrityAnalysis: false,
@@ -129,9 +128,8 @@ export function BatchUploadModal({
         tagInput: "",
         webhookUrl: "",
         options: {
-          enableC2PA: true,
-          enableOCR: true,
-          enableReverseSearch: false,
+          enableC2PA: false,
+          enableOCR: false,
           enableDeepfake: false,
           enableGeolocation: false,
           enableIntegrityAnalysis: false,
@@ -140,25 +138,25 @@ export function BatchUploadModal({
     }, 300);
   };
 
-  const renderStepIndicator = () => (
-    <div className="flex items-center gap-2 mb-6">
-      {["details", "files", "uploading"].map((s, idx) => (
-        <div key={s} className="flex items-center gap-2">
-          <div
-            className={`h-2 w-2 rounded-full ${
-              step === s
-                ? "bg-blue-600"
-                : ["details", "files"].indexOf(step as string) >
-                    ["details", "files"].indexOf(s)
-                  ? "bg-blue-600"
-                  : "bg-gray-300"
-            }`}
-          />
-          {idx < 2 && <div className="h-0.5 w-8 bg-gray-300" />}
-        </div>
-      ))}
-    </div>
-  );
+  const renderStepIndicator = () => {
+    const steps = ["details", "files", "uploading"];
+    const currentStepIndex = steps.indexOf(step);
+
+    return (
+      <div className="flex items-center gap-2 mb-6">
+        {steps.map((s, idx) => (
+          <div key={s} className="flex items-center gap-2">
+            <div
+              className={`h-2 w-2 rounded-full ${
+                idx <= currentStepIndex ? "bg-blue-600" : "bg-gray-300"
+              }`}
+            />
+            {idx < 2 && <div className="h-0.5 w-8 bg-gray-300" />}
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -301,12 +299,17 @@ export function BatchUploadModal({
                         })
                       }
                     />
-                    <label
-                      htmlFor="c2pa"
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      Enable C2PA Verification
-                    </label>
+                    <div className="flex-1">
+                      <label
+                        htmlFor="c2pa"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Enable C2PA Verification
+                      </label>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Verify digital signatures and content credentials to confirm media authenticity and origin
+                      </p>
+                    </div>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox
@@ -322,33 +325,17 @@ export function BatchUploadModal({
                         })
                       }
                     />
-                    <label
-                      htmlFor="ocr"
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      Enable OCR Text Extraction
-                    </label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="reverse"
-                      checked={formData.options.enableReverseSearch}
-                      onCheckedChange={(checked) =>
-                        setFormData({
-                          ...formData,
-                          options: {
-                            ...formData.options,
-                            enableReverseSearch: checked as boolean,
-                          },
-                        })
-                      }
-                    />
-                    <label
-                      htmlFor="reverse"
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      Enable Reverse Image Search
-                    </label>
+                    <div className="flex-1">
+                      <label
+                        htmlFor="ocr"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Enable OCR Text Extraction
+                      </label>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Extract and analyze text content from images and documents for verification purposes
+                      </p>
+                    </div>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox
@@ -364,12 +351,17 @@ export function BatchUploadModal({
                         })
                       }
                     />
-                    <label
-                      htmlFor="geolocation"
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      Enable Geolocation Verification
-                    </label>
+                    <div className="flex-1">
+                      <label
+                        htmlFor="geolocation"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Enable Geolocation Verification
+                      </label>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Verify location metadata and GPS coordinates to confirm where media was captured
+                      </p>
+                    </div>
                   </div>
 
                   {/* Deepfake - DISABLED */}
@@ -395,7 +387,7 @@ export function BatchUploadModal({
               </div>
 
               {/* Webhook URL */}
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label htmlFor="webhook">Webhook URL (optional)</Label>
                 <Input
                   id="webhook"
@@ -406,7 +398,7 @@ export function BatchUploadModal({
                     setFormData({ ...formData, webhookUrl: e.target.value })
                   }
                 />
-              </div>
+              </div> */}
             </div>
 
             <DialogFooter>
