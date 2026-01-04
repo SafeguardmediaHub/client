@@ -149,20 +149,18 @@ export function GeneralInfoView({ media }: GeneralInfoViewProps) {
       )}
 
       {/* Extracted Text (OCR) */}
-      {media.extractedText && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base font-semibold">
-              Extracted Text (OCR)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-sm text-gray-700 whitespace-pre-wrap break-words max-h-96 overflow-y-auto">
-              {media.extractedText}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base font-semibold">
+            Extracted Text (OCR)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-sm text-gray-700 whitespace-pre-wrap break-words max-h-96 overflow-y-auto">
+            {media.extractedText || 'No text available'}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
-import { Lock } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { FeaturePreviewModal } from '@/components/feature-preview-modal';
@@ -31,7 +31,7 @@ export function NavVerificationTools({
   const handleItemClick = (
     e: React.MouseEvent,
     url: string,
-    featureId?: string,
+    featureId?: string
   ) => {
     if (url === '#' && featureId) {
       e.preventDefault();
@@ -45,8 +45,11 @@ export function NavVerificationTools({
 
   return (
     <>
-      <SidebarGroup className="group-data-[collapsible=icon]:hidden" suppressHydrationWarning>
-        <SidebarGroupLabel>Verification Tools</SidebarGroupLabel>
+      <SidebarGroup
+        className="group-data-[collapsible=icon]:hidden"
+        suppressHydrationWarning
+      >
+        <SidebarGroupLabel>Verification</SidebarGroupLabel>
         <SidebarMenu>
           {projects.map((item) => {
             const isLocked = item.url === '#';
@@ -59,7 +62,7 @@ export function NavVerificationTools({
                       handleItemClick(e, item.url, item.featureId)
                     }
                     className={cn(
-                      'opacity-60 cursor-pointer hover:opacity-80 transition-opacity',
+                      'opacity-60 cursor-pointer hover:opacity-80 transition-opacity'
                     )}
                   >
                     <item.icon className="text-primary" />

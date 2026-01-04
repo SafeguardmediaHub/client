@@ -1,7 +1,7 @@
 'use client';
 
-import { Lock } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { useState } from 'react';
 import { FeaturePreviewModal } from '@/components/feature-preview-modal';
 import {
@@ -29,7 +29,7 @@ export function NavDetectionTools({
   const handleItemClick = (
     e: React.MouseEvent,
     url: string,
-    featureId?: string,
+    featureId?: string
   ) => {
     if (url === '#' && featureId) {
       e.preventDefault();
@@ -44,13 +44,13 @@ export function NavDetectionTools({
   return (
     <>
       <SidebarGroup suppressHydrationWarning>
-        <SidebarGroupLabel>AI-Detection Tools</SidebarGroupLabel>
+        <SidebarGroupLabel>Authenticity</SidebarGroupLabel>
         <SidebarMenu>
           {projects.map((item) => {
             const isLocked = item.url === '#';
-            const feature = item.featureId
-              ? getFeatureById(item.featureId)
-              : null;
+            // const feature = item.featureId
+            //   ? getFeatureById(item.featureId)
+            //   : null;
 
             return (
               <SidebarMenuItem key={item.name}>
@@ -60,7 +60,7 @@ export function NavDetectionTools({
                       handleItemClick(e, item.url, item.featureId)
                     }
                     className={cn(
-                      'opacity-60 cursor-pointer hover:opacity-80 transition-opacity',
+                      'opacity-60 cursor-pointer hover:opacity-80 transition-opacity'
                     )}
                   >
                     <item.icon className="text-primary" />

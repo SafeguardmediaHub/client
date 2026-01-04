@@ -52,8 +52,11 @@ export function NavAuthenticity({
   const MainIcon = items[0]?.icon;
 
   return (
-    <SidebarGroup className="group-data-[collapsible=icon]:hidden" suppressHydrationWarning>
-      <SidebarGroupLabel>Authenticity</SidebarGroupLabel>
+    <SidebarGroup
+      className="group-data-[collapsible=icon]:hidden"
+      suppressHydrationWarning
+    >
+      <SidebarGroupLabel>Provenance & Authenticity</SidebarGroupLabel>
       <SidebarMenu>
         <Collapsible
           asChild
@@ -65,7 +68,8 @@ export function NavAuthenticity({
               <SidebarMenuButton
                 tooltip="Authenticity"
                 className={cn(
-                  isAuthenticityActive && 'bg-sidebar-accent text-sidebar-accent-foreground'
+                  isAuthenticityActive &&
+                    'bg-sidebar-accent text-sidebar-accent-foreground'
                 )}
               >
                 {MainIcon && <MainIcon className="text-primary" />}

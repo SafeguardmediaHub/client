@@ -8,19 +8,14 @@ import {
   ChevronUp,
   Command,
   FileBarChart,
-  FileText,
-  Film,
   Layers,
   LayoutDashboard,
-  LayoutGrid,
   LogOut,
   MapPin,
   Scissors,
   Search,
   SearchCheck,
-  Settings,
   Share2,
-  ShieldAlert,
   ShieldCheck,
   ShieldIcon,
   Upload,
@@ -28,7 +23,14 @@ import {
   Users,
 } from 'lucide-react';
 import type * as React from 'react';
-import { useAuth } from '@/context/AuthContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Sidebar,
   SidebarContent,
@@ -38,14 +40,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { useAuth } from '@/context/AuthContext';
 import { NavAuthenticity } from './nav-authenticity';
 import { NavDetectionTools } from './nav-detection';
 import { NavOverview } from './nav-overview';
@@ -98,13 +93,13 @@ const data = {
     // },
     {
       name: 'Visual Forensics',
-      url: '/dashboard/visual',
+      url: '#', // '/dashboard/visual',
       icon: Search,
       featureId: 'visual_forensics',
     },
-        {
+    {
       name: 'Audio Forensics',
-      url: '/dashboard/audio',
+      url: '#', // '/dashboard/audio',
       icon: Search,
       featureId: 'audio_forensics',
     },
