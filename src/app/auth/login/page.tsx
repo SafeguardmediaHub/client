@@ -1,7 +1,26 @@
+'use client';
+
 import { GalleryVerticalEnd } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useMemo } from 'react';
+import { toast } from 'sonner';
 import { LoginForm } from '@/components/login-form';
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
+  const isAccountExistsError = useMemo(
+    () => searchParams.get('error') === 'account_exists',
+    [searchParams]
+  );
+
+  useEffect(() => {
+    if (isAccountExistsError) {
+      toast.error(
+        'An account with this email already exists. Please sign in with your email and password.'
+      );
+    }
+  }, [isAccountExistsError]);
+
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10">
@@ -15,7 +34,7 @@ export default function LoginPage() {
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-xs">
-            <LoginForm />
+            <LoginForm isAccountExistsError={isAccountExistsError} />
           </div>
         </div>
       </div>
