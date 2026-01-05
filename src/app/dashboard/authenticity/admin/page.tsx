@@ -4,7 +4,6 @@ import {
   Activity,
   AlertTriangle,
   ArrowLeft,
-  CheckCircle,
   Clock,
   Database,
   HardDrive,
@@ -13,20 +12,12 @@ import {
   Server,
   Settings,
   Trash2,
-  TrendingUp,
   Users,
-  XCircle,
-  Zap,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import {
-  StatsCard,
-  StatsCardSkeleton,
-  VerificationFilters,
-  VerificationTable,
-} from '@/components/c2pa';
+import { VerificationFilters, VerificationTable } from '@/components/c2pa';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -38,6 +29,7 @@ import {
   useClearAdminCache,
 } from '@/hooks/useC2PA';
 import { cn } from '@/lib/utils';
+
 import type { AdminVerificationsParams } from '@/types/c2pa';
 
 export default function AdminDashboardPage() {
