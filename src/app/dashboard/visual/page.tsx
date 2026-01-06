@@ -592,14 +592,14 @@ const VisualForensics: FC<DashboardProps> = ({
                                             </div>
 
                                             {uploadingFiles[0].status === "completed" && (
-                                                <div className="flex gap-3">
+                                                <div className="flex flex-col sm:flex-row gap-3">
                                                     <Button onClick={handleAnalyzeImage} className="flex-1" disabled={isAnalyzing}>
                                                         {isAnalyzing ? "Analyzing..." : "Analyze Image"}
                                                     </Button>
-                                                    <Button variant="outline" onClick={() => { setUploadingFiles([]); setImagePreview(null); }} disabled={isAnalyzing}>
+                                                    <Button variant="outline" className="flex-1" onClick={() => { setUploadingFiles([]); setImagePreview(null); }} disabled={isAnalyzing}>
                                                         Upload another file
                                                     </Button>
-                                                    <Button variant="outline" onClick={() => { setUploadingFiles([]); setImagePreview(null); }} disabled={isAnalyzing}>
+                                                    <Button variant="outline" className="flex-1" onClick={() => { setUploadingFiles([]); setImagePreview(null); }} disabled={isAnalyzing}>
                                                         Clear all
                                                     </Button>
                                                 </div>
@@ -701,13 +701,13 @@ const VisualForensics: FC<DashboardProps> = ({
                     <CardContent className="p-0 space-y-6">
                         {/* Header */}
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div className="flex items-center gap-2">
-                                <button className="text-sm text-muted-foreground hover:text-foreground">
-                                    ← Go back
-                                </button>
-                            </div>
-                            <Button variant="outline" size="sm">
-                                Re-analyze
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={resetAnalysis}
+                                disabled={isAnalyzing}
+                            >
+                                {isAnalyzing ? "Analyzing..." : "Re-analyze"}
                             </Button>
                         </div>
 

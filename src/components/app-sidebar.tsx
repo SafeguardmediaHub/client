@@ -5,32 +5,23 @@ import {
   BookCheck,
   BookOpen,
   CalendarClock,
-  ChevronUp,
   Command,
   FileBarChart,
   Layers,
   LayoutDashboard,
-  LogOut,
+  LifeBuoy,
   MapPin,
   Scissors,
   Search,
   SearchCheck,
+  Send,
   Share2,
   ShieldCheck,
   ShieldIcon,
   Upload,
-  User2,
   Users,
 } from 'lucide-react';
 import type * as React from 'react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
   Sidebar,
   SidebarContent,
@@ -45,11 +36,12 @@ import { NavAuthenticity } from './nav-authenticity';
 import { NavDetectionTools } from './nav-detection';
 import { NavOverview } from './nav-overview';
 import { NavReporting } from './nav-reporting';
+import { NavUser } from './nav-user';
 import { NavVerificationTools } from './nav-verification';
 
 const data = {
   user: {
-    name: 'shadcn',
+    name: 'John Doe',
     email: 'm@example.com',
     avatar: '/avatars/shadcn.jpg',
   },
@@ -186,10 +178,22 @@ const data = {
     //   adminOnly: true,
     // },
   ],
+  navSecondary: [
+    {
+      name: 'Feedback',
+      url: '/dashboard/feedback',
+      icon: Send,
+    },
+    {
+      name: 'Support',
+      url: '#',
+      icon: LifeBuoy,
+    },
+  ],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   return (
     <Sidebar variant="inset" {...props} collapsible="offcanvas">
@@ -217,8 +221,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavVerificationTools projects={data.verification} />
         <NavAuthenticity items={data.authenticity} />
         <NavReporting projects={data.reporting} />
+        <NavOverview projects={data.navSecondary} />
       </SidebarContent>
-      <SidebarFooter className="sm:hidden">
+      {/* <SidebarFooter className="sm:hidden">
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
@@ -274,6 +279,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </DropdownMenu>
           </SidebarMenuItem>
         </SidebarMenu>
+      </SidebarFooter> */}
+      <SidebarFooter>
+        <NavUser
+          user={
+            user
+              ? {
+                  name: user.firstName,
+                  email: user.email,
+                  avatar: '/avatars/shadcn.jpg',
+                }
+              : data.user
+          }
+        />
       </SidebarFooter>
     </Sidebar>
   );

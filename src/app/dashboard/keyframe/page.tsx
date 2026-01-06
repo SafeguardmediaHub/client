@@ -667,18 +667,17 @@ const Keyframe: FC<DashboardProps> = ({
                       </div>
 
                       {uploadingFiles[0].status === "completed" && (
-                        <div className="flex gap-3">
+                        <div className="flex flex-col sm:flex-row gap-3">
                           <Button
                             onClick={handleExtractKeyframes}
                             className="flex-1"
                             disabled={isExtracting}
                           >
-                            {isExtracting
-                              ? "Extracting..."
-                              : "Extract Keyframes"}
+                            {isExtracting ? "Extracting..." : "Extract Keyframes"}
                           </Button>
                           <Button
                             variant="outline"
+                            className="flex-1"
                             onClick={() => setUploadingFiles([])}
                             disabled={isExtracting}
                           >
@@ -686,6 +685,7 @@ const Keyframe: FC<DashboardProps> = ({
                           </Button>
                           <Button
                             variant="outline"
+                            className="flex-1"
                             onClick={() => setUploadingFiles([])}
                             disabled={isExtracting}
                           >
