@@ -193,7 +193,7 @@ const Keyframe: FC<DashboardProps> = ({
       }, 500);
 
       const response = await fetch(
-        "https://mirackchuks-keyframeextractor.hf.space/extract",
+        "https://safeguardmedia-keyframeextractor.hf.space/extract",
         {
           method: "POST",
           body: formData,

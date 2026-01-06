@@ -229,7 +229,7 @@ const VisualForensics: FC<DashboardProps> = ({
             }, 500);
 
             const response = await fetch(
-                "https://mirackchuks-visualforensics.hf.space/analyze",
+                "https://safeguardmedia-visualforensics.hf.space/analyze",
                 {
                     method: "POST",
                     body: formData,
@@ -410,7 +410,7 @@ const VisualForensics: FC<DashboardProps> = ({
                         <CardContent className="p-0 w-full">
                             {uploadingFiles.length === 0 ? (
                                 <>
-                                    <form
+                                    {/* <form
                                         onSubmit={analyzeSubmit}
                                         className="flex items-center gap-0 bg-muted rounded-xl mb-6"
                                     >
@@ -432,7 +432,7 @@ const VisualForensics: FC<DashboardProps> = ({
                                         >
                                             Upload Image
                                         </Button>
-                                    </form>
+                                    </form> */}
 
                                     <section
                                         className="relative w-full rounded-lg border border-dashed bg-muted"

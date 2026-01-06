@@ -183,7 +183,7 @@ const AudioForensics: FC<DashboardProps> = ({
       }, 500);
 
       const response = await fetch(
-        'https://mirackchuks-audioforensics.hf.space/analyze',
+        'https://safeguardmedia-audioforensics.hf.space/analyze',
         {
           method: 'POST',
           body: formData,
@@ -327,7 +327,7 @@ const AudioForensics: FC<DashboardProps> = ({
             <CardContent className="p-0 w-full">
               {uploadingFiles.length === 0 ? (
                 <>
-                  <form
+                  {/* <form
                     onSubmit={analyzeSubmit}
                     className="flex items-center gap-0 bg-muted rounded-xl mb-6"
                   >
@@ -349,7 +349,7 @@ const AudioForensics: FC<DashboardProps> = ({
                     >
                       Upload Audio
                     </Button>
-                  </form>
+                  </form> */}
 
                   <section
                     className="relative w-full rounded-lg border border-dashed bg-muted"
