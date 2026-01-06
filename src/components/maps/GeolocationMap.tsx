@@ -1,14 +1,17 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useState } from "react";
-import { AlertCircle, ExternalLink, Loader2 } from "lucide-react";
+import L from 'leaflet';
+import { ExternalLink, Loader2 } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 
 interface Coordinates {
   lat: number;
   lng: number;
 }
 
-interface Marker {
+interface MapMarker {
   type: string;
   coordinates: Coordinates;
   label: string;
@@ -17,7 +20,7 @@ interface Marker {
 interface MapData {
   centerCoordinates: Coordinates;
   zoom: number;
-  markers: Marker[];
+  markers: MapMarker[];
 }
 
 interface GeolocationMapProps {
@@ -25,202 +28,99 @@ interface GeolocationMapProps {
   className?: string;
 }
 
-// Declare google as a global variable for TypeScript
-declare global {
-  interface Window {
-    google: any;
-    initGoogleMaps: () => void;
-  }
-}
+// Fix for default marker icons in Leaflet
+// biome-ignore lint/suspicious/noExplicitAny: Leaflet's internal property access
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+  iconUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+  shadowUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+});
 
-const GeolocationMap = ({ mapData, className = "" }: GeolocationMapProps) => {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const googleMapRef = useRef<any>(null);
-  const markersRef = useRef<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+// Component to handle fit bounds when markers change
+function MapBounds({ markers }: { markers: MapMarker[] }) {
+  const map = useMap();
 
   useEffect(() => {
-    // Check if API key exists
-    if (!apiKey) {
-      setError("Google Maps API key not configured");
-      setIsLoading(false);
-      return;
+    if (markers.length > 1) {
+      const bounds = L.latLngBounds(
+        markers.map((marker) => [
+          marker.coordinates.lat,
+          marker.coordinates.lng,
+        ])
+      );
+      map.fitBounds(bounds, { padding: [20, 20] });
     }
+  }, [map, markers]);
 
-    // Check if Google Maps API is already loaded
-    if (window.google && window.google.maps) {
-      initializeMap();
-      return;
-    }
+  return null;
+}
 
-    // Load Google Maps API
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-    script.async = true;
-    script.defer = true;
-    script.onload = () => {
-      initializeMap();
-    };
-    script.onerror = () => {
-      setError("Failed to load Google Maps");
-      setIsLoading(false);
-    };
+// Create custom marker icon
+const createCustomIcon = (type: string, label: string) => {
+  const color =
+    type === 'claimed'
+      ? '#3B82F6' // Blue for claimed
+      : type === 'gps'
+      ? '#EF4444' // Red for GPS
+      : '#10B981'; // Green for others
 
-    document.head.appendChild(script);
-
-    return () => {
-      // Cleanup markers
-      markersRef.current.forEach((marker) => {
-        if (marker.setMap) {
-          marker.setMap(null);
-        }
-      });
-      markersRef.current = [];
-    };
-  }, [apiKey, mapData]);
-
-  const initializeMap = () => {
-    if (!mapRef.current || !window.google) return;
-
-    try {
-      // Create map instance
-      const map = new window.google.maps.Map(mapRef.current, {
-        center: mapData.centerCoordinates,
-        zoom: mapData.zoom || 12,
-        mapTypeControl: true,
-        streetViewControl: true,
-        fullscreenControl: true,
-        zoomControl: true,
-      });
-
-      googleMapRef.current = map;
-
-      // Clear existing markers
-      markersRef.current.forEach((marker) => marker.setMap(null));
-      markersRef.current = [];
-
-      // Add markers
-      mapData.markers.forEach((markerData) => {
-        const marker = new window.google.maps.Marker({
-          position: markerData.coordinates,
-          map: map,
-          title: markerData.label,
-          icon: {
-            path: window.google.maps.SymbolPath.CIRCLE,
-            scale: 8,
-            fillColor:
-              markerData.type === "claimed"
-                ? "#3B82F6" // Blue for claimed
-                : markerData.type === "gps"
-                  ? "#EF4444" // Red for GPS
-                  : "#10B981", // Green for others
-            fillOpacity: 1,
-            strokeColor: "#FFFFFF",
-            strokeWeight: 2,
-          },
-          label: {
-            text:
-              markerData.type === "claimed"
-                ? "C"
-                : markerData.type === "gps"
-                  ? "G"
-                  : "M",
-            color: "#FFFFFF",
-            fontSize: "12px",
-            fontWeight: "bold",
-          },
-        });
-
-        // Add info window
-        const infoWindow = new window.google.maps.InfoWindow({
-          content: `
-            <div style="padding: 8px; font-family: system-ui, -apple-system, sans-serif;">
-              <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #111827;">
-                ${markerData.label}
-              </h3>
-              <p style="margin: 0; font-size: 12px; color: #6B7280;">
-                Lat: ${markerData.coordinates.lat.toFixed(6)}<br/>
-                Lng: ${markerData.coordinates.lng.toFixed(6)}
-              </p>
-            </div>
-          `,
-        });
-
-        marker.addListener("click", () => {
-          // Close all other info windows
-          markersRef.current.forEach((m) => {
-            if (m.infoWindow) {
-              m.infoWindow.close();
-            }
-          });
-          infoWindow.open(map, marker);
-        });
-
-        marker.infoWindow = infoWindow;
-        markersRef.current.push(marker);
-      });
-
-      // Fit bounds to show all markers if there are multiple
-      if (mapData.markers.length > 1) {
-        const bounds = new window.google.maps.LatLngBounds();
-        mapData.markers.forEach((marker) => {
-          bounds.extend(marker.coordinates);
-        });
-        map.fitBounds(bounds);
-
-        // Add some padding
-        const listener = window.google.maps.event.addListener(
-          map,
-          "idle",
-          () => {
-            if (map.getZoom() > mapData.zoom) {
-              map.setZoom(mapData.zoom);
-            }
-            window.google.maps.event.removeListener(listener);
-          },
-        );
-      }
-
-      setIsLoading(false);
-    } catch (err) {
-      console.error("Error initializing map:", err);
-      setError("Failed to initialize map");
-      setIsLoading(false);
-    }
-  };
-
-  const handleOpenInGoogleMaps = () => {
-    const { lat, lng } = mapData.centerCoordinates;
-    const url = `https://www.google.com/maps?q=${lat},${lng}&z=${mapData.zoom}`;
-    window.open(url, "_blank");
-  };
-
-  if (error) {
-    return (
-      <div
-        className={`flex flex-col items-center justify-center bg-gray-50 rounded-lg p-8 ${className}`}
-      >
-        <div className="flex flex-col items-center text-center gap-3">
-          <AlertCircle className="w-12 h-12 text-red-500" />
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-1">
-              Map Unavailable
-            </h3>
-            <p className="text-xs text-gray-600">{error}</p>
-            {!apiKey && (
-              <p className="text-xs text-gray-500 mt-2">
-                Please add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to your environment
-                variables
-              </p>
-            )}
-          </div>
-        </div>
+  return L.divIcon({
+    className: 'custom-marker',
+    html: `
+      <div style="
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background-color: ${color};
+        border: 2px solid #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        font-size: 10px;
+        font-weight: bold;
+        color: #FFFFFF;
+      ">
+        ${label}
       </div>
-    );
-  }
+    `,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -12],
+  });
+};
+
+const GeolocationMap = ({ mapData, className = '' }: GeolocationMapProps) => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading time for consistency
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Create marker icons
+  const markerIcons = useMemo(() => {
+    return mapData.markers.map((marker) => {
+      const label =
+        marker.type === 'claimed' ? 'C' : marker.type === 'gps' ? 'G' : 'M';
+      return createCustomIcon(marker.type, label);
+    });
+  }, [mapData.markers]);
+
+  const handleOpenInMaps = () => {
+    const { lat, lng } = mapData.centerCoordinates;
+    // Open in OpenStreetMap
+    const url = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}&zoom=${mapData.zoom}`;
+    window.open(url, '_blank');
+  };
 
   return (
     <div className={`relative ${className}`}>
@@ -232,14 +132,65 @@ const GeolocationMap = ({ mapData, className = "" }: GeolocationMapProps) => {
           </div>
         </div>
       )}
-      <div ref={mapRef} className="w-full h-96 rounded-lg" />
+      <div className="w-full h-96 rounded-lg overflow-hidden">
+        <MapContainer
+          center={[
+            mapData.centerCoordinates.lat,
+            mapData.centerCoordinates.lng,
+          ]}
+          zoom={mapData.zoom || 12}
+          scrollWheelZoom={true}
+          style={{ height: '100%', width: '100%' }}
+          className="rounded-lg"
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          {mapData.markers.length > 1 && (
+            <MapBounds markers={mapData.markers} />
+          )}
+          {mapData.markers.map((marker, index) => (
+            <Marker
+              key={`${marker.coordinates.lat}-${marker.coordinates.lng}-${index}`}
+              position={[marker.coordinates.lat, marker.coordinates.lng]}
+              icon={markerIcons[index]}
+            >
+              <Popup>
+                <div
+                  style={{
+                    padding: '8px',
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                  }}
+                >
+                  <h3
+                    style={{
+                      margin: '0 0 8px 0',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      color: '#111827',
+                    }}
+                  >
+                    {marker.label}
+                  </h3>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>
+                    Lat: {marker.coordinates.lat.toFixed(6)}
+                    <br />
+                    Lng: {marker.coordinates.lng.toFixed(6)}
+                  </p>
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+      </div>
       <button
         type="button"
-        onClick={handleOpenInGoogleMaps}
-        className="absolute bottom-3 left-3 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2 shadow-sm"
+        onClick={handleOpenInMaps}
+        className="absolute bottom-3 left-3 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2 shadow-sm z-[1000]"
       >
         <ExternalLink className="w-3.5 h-3.5" />
-        Open in Google Maps
+        Open in OpenStreetMap
       </button>
     </div>
   );
