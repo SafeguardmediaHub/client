@@ -7,10 +7,10 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const menuItems = [
-  { name: 'Features', href: '#link' },
-  { name: 'Solution', href: '#link' },
-  { name: 'Pricing', href: '#link' },
-  { name: 'About', href: '#link' },
+  { name: 'Features', href: '#features' },
+  { name: 'Solutions', href: '#solutions' },
+  { name: 'Use Cases', href: '#use-cases' },
+  { name: 'About', href: '/about' },
 ];
 
 export const HeroHeader = () => {
@@ -47,7 +47,9 @@ export const HeroHeader = () => {
                 <div className="relative">
                   <div className="absolute -inset-0.5 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-lg blur opacity-50 group-hover:opacity-75 transition duration-300"></div>
                   <div className="relative w-8 h-8 bg-gradient-to-br from-blue-500 via-blue-600 to-cyan-600 rounded-lg flex items-center justify-center shadow-md shadow-blue-500/30 transform transition-transform duration-300 group-hover:scale-110">
-                    <span className="text-white font-bold text-sm drop-shadow-md">S</span>
+                    <span className="text-white font-bold text-sm drop-shadow-md">
+                      S
+                    </span>
                   </div>
                 </div>
                 <p className="font-bold text-gray-900">SafeguardMedia</p>

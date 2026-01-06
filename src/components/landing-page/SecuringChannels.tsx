@@ -41,7 +41,10 @@ export default function SecuringChannels() {
   ];
 
   return (
-    <section className="relative py-32 bg-gradient-to-b from-white via-gray-50 to-white overflow-hidden">
+    <section
+      id="use-cases"
+      className="relative py-32 bg-gradient-to-b from-white via-gray-50 to-white overflow-hidden"
+    >
       {/* Background Elements */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]" />
       <div className="absolute top-20 left-10 w-96 h-96 bg-blue-200/20 rounded-full mix-blend-multiply filter blur-3xl" />
@@ -58,9 +61,7 @@ export default function SecuringChannels() {
               </span>
             </div>
             <h2 className="text-5xl md:text-6xl font-bold leading-tight">
-              <span className="text-gray-900">
-                Securing the Channels
-              </span>
+              <span className="text-gray-900">Securing the Channels</span>
               <br />
               <span className="text-gray-900">You Trust</span>
             </h2>
@@ -97,7 +98,9 @@ export default function SecuringChannels() {
                     {/* Icon & Number */}
                     <div className="flex items-center gap-4">
                       <div
-                        className={`relative w-16 h-16 rounded-2xl bg-gradient-to-br ${channel.gradient} p-0.5 transition-transform duration-500 ${
+                        className={`relative w-16 h-16 rounded-2xl bg-gradient-to-br ${
+                          channel.gradient
+                        } p-0.5 transition-transform duration-500 ${
                           isHovered ? 'scale-110 rotate-6' : ''
                         }`}
                       >
@@ -143,7 +146,11 @@ export default function SecuringChannels() {
                 </div>
 
                 {/* Image */}
-                <div className={`relative group ${isReversed ? 'lg:col-start-1' : ''}`}>
+                <div
+                  className={`relative group ${
+                    isReversed ? 'lg:col-start-1' : ''
+                  }`}
+                >
                   {/* Glow */}
                   <div
                     className={`absolute -inset-1 bg-gradient-to-r ${channel.gradient} rounded-3xl blur-lg opacity-0 group-hover:opacity-50 transition duration-500`}
