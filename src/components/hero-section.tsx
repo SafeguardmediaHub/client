@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { AnimatedGroup } from '@/components/ui/animated-group';
 import { Button } from '@/components/ui/button';
 import { TextEffect } from '@/components/ui/text-effect';
+import { useAuth } from '@/context/AuthContext';
 import { HeroHeader } from './header';
 
 const transitionVariants = {
@@ -29,6 +30,8 @@ const transitionVariants = {
 };
 
 export default function HeroSection() {
+  const { isAuthenticated } = useAuth();
+
   return (
     <>
       <HeroHeader />
@@ -55,7 +58,11 @@ export default function HeroSection() {
               <div className="text-center sm:mx-auto lg:mr-auto lg:mt-0">
                 <AnimatedGroup variants={transitionVariants}>
                   <Link
-                    href="/dashboard/authenticity"
+                    href={
+                      isAuthenticated
+                        ? '/dashboard/authenticity'
+                        : '/auth/login'
+                    }
                     className="hover:bg-white/80 dark:hover:border-t-border bg-white/60 backdrop-blur-sm group mx-auto flex w-fit items-center gap-4 rounded-full border border-blue-200 p-1 pl-4 shadow-lg shadow-blue-500/20 transition-all duration-300 hover:shadow-blue-500/30 hover:scale-105"
                   >
                     <div className="flex items-center gap-2">
@@ -64,7 +71,9 @@ export default function HeroSection() {
                         Introducing C2PA Verification
                       </span>
                     </div>
-                    <span className="hidden sm:inline text-sm text-gray-600">— Now Live!</span>
+                    <span className="hidden sm:inline text-sm text-gray-600">
+                      — Now Live!
+                    </span>
                     <span className="dark:border-background block h-4 w-0.5 border-l bg-blue-200"></span>
 
                     <div className="bg-blue-600 size-6 overflow-hidden rounded-full duration-500 flex items-center justify-center">
@@ -108,19 +117,21 @@ export default function HeroSection() {
                   }}
                   className="mt-12 flex flex-col items-center justify-center gap-4 md:flex-row"
                 >
-                  <div
-                    key={1}
-                    className="relative group"
-                  >
+                  <div key={1} className="relative group">
                     <div className="absolute -inset-0.5 bg-blue-600 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-300 animate-pulse-slow" />
                     <Button
                       asChild
                       size="lg"
                       className="relative rounded-xl px-8 py-6 text-base bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-xl"
                     >
-                      <Link href="/auth/signup" className="flex items-center gap-2">
+                      <Link
+                        href="/auth/signup"
+                        className="flex items-center gap-2"
+                      >
                         <Shield className="w-5 h-5" />
-                        <span className="text-nowrap font-semibold">Get Started Free</span>
+                        <span className="text-nowrap font-semibold">
+                          Get Started Free
+                        </span>
                       </Link>
                     </Button>
                   </div>
@@ -144,24 +155,26 @@ export default function HeroSection() {
                   className="mt-16 flex items-center justify-center gap-8 flex-wrap"
                 >
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-blue-600">
-                      98%
+                    <div className="text-3xl font-bold text-blue-600">98%</div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      Accuracy Rate
                     </div>
-                    <div className="text-sm text-gray-600 mt-1">Accuracy Rate</div>
                   </div>
                   <div className="h-12 w-px bg-gray-300" />
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-blue-600">
-                      1M+
+                    <div className="text-3xl font-bold text-blue-600">1M+</div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      Media Verified
                     </div>
-                    <div className="text-sm text-gray-600 mt-1">Media Verified</div>
                   </div>
                   <div className="h-12 w-px bg-gray-300" />
                   <div className="text-center">
                     <div className="text-3xl font-bold text-emerald-600">
                       500+
                     </div>
-                    <div className="text-sm text-gray-600 mt-1">Organizations</div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      Organizations
+                    </div>
                   </div>
                 </AnimatedGroup>
               </div>
@@ -215,7 +228,8 @@ export default function HeroSection() {
         }
 
         @keyframes float {
-          0%, 100% {
+          0%,
+          100% {
             transform: translateY(0px);
           }
           50% {
@@ -224,7 +238,8 @@ export default function HeroSection() {
         }
 
         @keyframes pulse-slow {
-          0%, 100% {
+          0%,
+          100% {
             opacity: 0.75;
           }
           50% {
