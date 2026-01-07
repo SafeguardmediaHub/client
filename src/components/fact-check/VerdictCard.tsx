@@ -59,49 +59,73 @@ export const VerdictCard = ({ verdict }: VerdictCardProps) => {
 
   const credibilityConfig = getCredibilityConfig(verdict.publisher_credibility);
   const CredibilityIcon = credibilityConfig.icon;
+  const reviewDate = verdict.reviewed_at
+    ? new Date(verdict.reviewed_at).toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : null;
 
   return (
-    <div className="p-5 border border-gray-200 rounded-lg bg-white hover:shadow-md transition-shadow">
+    <div className="h-full flex flex-col p-5 border border-gray-200 rounded-xl bg-white hover:shadow-lg transition-all duration-300 hover:border-blue-200">
+      {/* Header with Source and Rating */}
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="flex-1">
-          <h4 className="text-base font-semibold text-gray-900 mb-1">
-            {verdict.source}
-          </h4>
+          <div className="flex items-center gap-2 mb-1">
+             <h4 className="text-base font-bold text-gray-900 line-clamp-1">
+               {verdict.source}
+             </h4>
+             {reviewDate && (
+               <span className="text-xs text-gray-400 font-normal whitespace-nowrap">
+                 • {reviewDate}
+               </span>
+             )}
+          </div>
           <div
-            className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium border ${credibilityConfig.color} ${credibilityConfig.bgColor} ${credibilityConfig.borderColor}`}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${credibilityConfig.color} ${credibilityConfig.bgColor} ${credibilityConfig.borderColor}`}
           >
             <CredibilityIcon className="w-3 h-3" />
             {credibilityConfig.label}
           </div>
         </div>
-        <div
-          className={`px-3 py-1.5 rounded-md text-sm font-semibold border ${getRatingColor(verdict.rating)}`}
+        {/* <div
+          className={`flex-shrink-0 px-3 py-1 rounded-lg text-sm font-bold border shadow-sm ${getRatingColor(verdict.rating)}`}
         >
           {verdict.textual_rating || verdict.rating}
-        </div>
+        </div> */}
       </div>
 
+      {/* Claim Title / Context */}
       {verdict.api_response?.title && (
-        <p className="text-sm text-gray-700 mb-3 line-clamp-2">
+        <p className="text-sm text-gray-700 mb-4 line-clamp-3 leading-relaxed flex-grow">
           {verdict.api_response.title}
         </p>
       )}
 
-      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-        <div className="flex items-center gap-4">
-          <span className="text-xs text-gray-500">
-            Score: {verdict.weighted_score > 0 ? "+" : ""}
-            {verdict.weighted_score}
-          </span>
-        </div>
+      {verdict.textual_rating && (
+        <p className="text-sm text-gray-700 mb-4 line-clamp-3 leading-relaxed flex-grow">
+          {verdict.textual_rating}
+        </p>
+      )}
+
+      {/* Footer */}
+      <div className="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between">
+         <div className="flex items-center gap-2" title="Impact on credibility score">
+           <div className={`w-2 h-2 rounded-full ${verdict.weighted_score >= 0 ? 'bg-green-500' : 'bg-red-500'}`} />
+           <span className="text-xs font-medium text-gray-500">
+             Impact: {verdict.weighted_score > 0 ? '+' : ''}{verdict.weighted_score.toFixed(2)}
+           </span>
+         </div>
+
         {verdict.review_url && (
           <a
             href={verdict.review_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors"
           >
-            Read Full Review
+            Full Report
             <ExternalLink className="w-3 h-3" />
           </a>
         )}

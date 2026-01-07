@@ -89,6 +89,7 @@ const FactCheckContent = () => {
 
   const jobStatus = jobStatusQuery.data?.data.status;
   const claims = jobStatusQuery.data?.data.claims || [];
+  const summary = jobStatusQuery.data?.data.summary;
 
   return (
     <div className="w-full flex flex-col gap-6 p-4 sm:p-6 md:p-8 bg-gray-50">
@@ -182,49 +183,10 @@ const FactCheckContent = () => {
           <ClaimDetail claimId={selectedClaimId} onBack={handleBackToClaims} />
         ) : (
           <div className="space-y-6">
-            <FactCheckProcessing jobId={currentJobId} />
-
-            {jobStatus === 'completed' &&
-              (claims.length === 0 ? (
-                <div className="p-8 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <div className="flex items-start gap-4">
-                    <AlertCircle className="w-6 h-6 text-yellow-600 flex-shrink-0 mt-1" />
-                    <div>
-                      <h3 className="text-lg font-semibold text-yellow-900 mb-2">
-                        No Claims Detected
-                      </h3>
-                      <p className="text-sm text-yellow-800 mb-4">
-                        The analysis completed successfully, but no verifiable
-                        claims were detected in the provided content. This could
-                        be because:
-                      </p>
-                      <ul className="text-sm text-yellow-800 space-y-1 list-disc list-inside">
-                        <li>
-                          The text contains opinions rather than factual claims
-                        </li>
-                        <li>Claims are too vague or general to fact-check</li>
-                        <li>
-                          The content is too short or lacks specific assertions
-                        </li>
-                      </ul>
-                      <Button
-                        onClick={handleStartNew}
-                        variant="outline"
-                        className="mt-4 cursor-pointer border-yellow-300 hover:bg-yellow-100"
-                      >
-                        Try Different Content
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="p-6 bg-white border border-gray-200 rounded-lg">
-                  <ClaimList
-                    claims={claims}
-                    onViewDetails={handleViewClaimDetail}
-                  />
-                </div>
-              ))}
+            <FactCheckProcessing
+              jobId={currentJobId}
+              onViewDetails={handleViewClaimDetail}
+            />
           </div>
         )}
       </div>

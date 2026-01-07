@@ -7,12 +7,17 @@ import { Button } from '@/components/ui/button';
 import { useJobStatus } from '@/hooks/useFactCheck';
 import { ErrorState } from './ErrorState';
 import { JobProgress } from './JobProgress';
+import { ClaimList } from './ClaimList';
 
 interface FactCheckProcessingProps {
   jobId: string;
+  onViewDetails?: (claimId: string) => void;
 }
 
-export const FactCheckProcessing = ({ jobId }: FactCheckProcessingProps) => {
+export const FactCheckProcessing = ({
+  jobId,
+  onViewDetails,
+}: FactCheckProcessingProps) => {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(
     'Initializing fact-check analysis...'
@@ -130,22 +135,18 @@ export const FactCheckProcessing = ({ jobId }: FactCheckProcessingProps) => {
         currentStep={status === 'processing' ? currentStep : undefined}
       />
 
-      {status === 'completed' && summary && (
-        <div className="p-6 bg-green-50 border border-green-200 rounded-lg">
-          <h3 className="text-lg font-semibold text-green-900 mb-2">
-            Analysis Complete!
-          </h3>
-          <p className="text-sm text-green-800 mb-4">
-            Found {summary.total_claims} claim
-            {summary.total_claims !== 1 ? 's' : ''} in the provided content.
-          </p>
-          {summary.total_claims > 0 && (
-            <p className="text-sm text-gray-700 mb-4">
-              Review the extracted claims below to see fact-check verdicts from
-              trusted sources.
-            </p>
-          )}
-        </div>
+      {status === 'completed' && (
+        <ClaimList
+          claims={claims || []}
+          summary={summary as any}
+          onViewDetails={(claimId) => {
+            if (onViewDetails) {
+              onViewDetails(claimId);
+            } else {
+              router.push(`/dashboard/fact-check/claim/${claimId}`);
+            }
+          }}
+        />
       )}
 
       {status === 'failed' && (
