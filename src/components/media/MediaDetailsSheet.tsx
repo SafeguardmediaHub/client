@@ -12,6 +12,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Media } from "@/hooks/useMedia";
 import { AnalysisView } from "./AnalysisView";
+import { C2PAVerificationView } from "./C2PAVerificationView";
 import { GeneralInfoView } from "./GeneralInfoView";
 import { MediaPreview } from "./MediaPreview";
 import { MetadataView } from "./MetadataView";
@@ -89,10 +90,11 @@ export function MediaDetailsSheet({
             onValueChange={setActiveTab}
             className="w-full"
           >
-            <TabsList className="grid grid-cols-3 w-full">
+            <TabsList className="grid grid-cols-4 w-full">
               <TabsTrigger value="general">General</TabsTrigger>
               <TabsTrigger value="metadata">Metadata</TabsTrigger>
               <TabsTrigger value="analysis">Analysis</TabsTrigger>
+              <TabsTrigger value="c2pa">C2PA</TabsTrigger>
             </TabsList>
 
             <div className="mt-4">
@@ -132,6 +134,19 @@ export function MediaDetailsSheet({
                   transition={{ duration: 0.2 }}
                 >
                   <AnalysisView analysis={media.metadata.analysis} />
+                </motion.div>
+              </TabsContent>
+
+              <TabsContent value="c2pa">
+                <motion.div
+                  key="c2pa"
+                  variants={tabVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  transition={{ duration: 0.2 }}
+                >
+                  <C2PAVerificationView c2paVerification={media.c2paVerification} />
                 </motion.div>
               </TabsContent>
             </div>
