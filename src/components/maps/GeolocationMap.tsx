@@ -46,7 +46,11 @@ function createMapBoundsComponent(
             marker.coordinates.lng,
           ])
         );
-        map.fitBounds(bounds, { padding: [20, 20] });
+        // Add more padding and set max zoom to ensure both markers are visible
+        map.fitBounds(bounds, {
+          padding: [50, 50], // Increased padding (top/bottom, left/right)
+          maxZoom: 15, // Limit max zoom level
+        });
       }
     }, [map, markers, L]);
 
@@ -188,7 +192,11 @@ const GeolocationMapInner = ({
             mapData.centerCoordinates.lat,
             mapData.centerCoordinates.lng,
           ]}
-          zoom={mapData.zoom || 12}
+          zoom={
+            mapData.markers.length > 1
+              ? Math.min(mapData.zoom || 12, 10)
+              : mapData.zoom || 12
+          }
           scrollWheelZoom={true}
           style={{ height: '100%', width: '100%' }}
           className="rounded-lg"

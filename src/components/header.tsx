@@ -4,18 +4,20 @@ import { Menu, X } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 
 const menuItems = [
-  { name: 'Features', href: '#link' },
-  { name: 'Solution', href: '#link' },
-  { name: 'Pricing', href: '#link' },
-  { name: 'About', href: '#link' },
+  { name: 'Features', href: '#features' },
+  { name: 'Solutions', href: '#solutions' },
+  { name: 'Use Cases', href: '#use-cases' },
+  { name: 'About', href: '/about' },
 ];
 
 export const HeroHeader = () => {
   const [menuState, setMenuState] = React.useState(false);
   const [isScrolled, setIsScrolled] = React.useState(false);
+  const { isAuthenticated } = useAuth();
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -47,7 +49,9 @@ export const HeroHeader = () => {
                 <div className="relative">
                   <div className="absolute -inset-0.5 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-lg blur opacity-50 group-hover:opacity-75 transition duration-300"></div>
                   <div className="relative w-8 h-8 bg-gradient-to-br from-blue-500 via-blue-600 to-cyan-600 rounded-lg flex items-center justify-center shadow-md shadow-blue-500/30 transform transition-transform duration-300 group-hover:scale-110">
-                    <span className="text-white font-bold text-sm drop-shadow-md">S</span>
+                    <span className="text-white font-bold text-sm drop-shadow-md">
+                      S
+                    </span>
                   </div>
                 </div>
                 <p className="font-bold text-gray-900">SafeguardMedia</p>
@@ -94,36 +98,53 @@ export const HeroHeader = () => {
                   ))}
                 </ul>
               </div>
-              <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
-                <Button
-                  asChild
-                  variant="outline"
-                  size="sm"
-                  className={cn(isScrolled && 'lg:hidden')}
-                >
-                  <Link href="/auth/login">
-                    <span>Login</span>
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  size="sm"
-                  className={cn(isScrolled && 'lg:hidden')}
-                >
-                  <Link href="/auth/signup">
-                    <span>Sign Up</span>
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  size="sm"
-                  className={cn(isScrolled ? 'lg:inline-flex' : 'hidden')}
-                >
-                  <Link href="#">
-                    <span>Get Started</span>
-                  </Link>
-                </Button>
-              </div>
+              {!isAuthenticated && (
+                <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className={cn(isScrolled && 'lg:hidden')}
+                  >
+                    <Link href="/auth/login">
+                      <span>Login</span>
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    size="sm"
+                    className={cn(isScrolled && 'lg:hidden')}
+                  >
+                    <Link href="/auth/signup">
+                      <span>Sign Up</span>
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    size="sm"
+                    className={cn(isScrolled ? 'lg:inline-flex' : 'hidden')}
+                  >
+                    <Link href="/auth/signup">
+                      <span>Get Started</span>
+                    </Link>
+                  </Button>
+                </div>
+              )}
+              {isAuthenticated && (
+                <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
+                  <Button
+                    asChild
+                    size="sm"
+                    className={cn(
+                      isScrolled ? 'lg:inline-flex' : 'lg:inline-flex'
+                    )}
+                  >
+                    <Link href="/dashboard">
+                      <span>Dashboard</span>
+                    </Link>
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>

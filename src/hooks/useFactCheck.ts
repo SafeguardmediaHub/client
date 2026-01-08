@@ -25,7 +25,7 @@ export const useJobStatus = (
     enabled?: boolean;
   }
 ) => {
-  const pollingInterval = options?.pollingInterval ?? 4000; // 4 seconds default
+  const pollingInterval = options?.pollingInterval ?? 3000; // 3 seconds default
 
   return useQuery({
     queryKey: ['factCheckJob', jobId],
@@ -40,15 +40,34 @@ export const useJobStatus = (
         return pollingInterval;
       }
 
-      const status = data.data.status;
+      const { status, claims } = data.data;
 
-      // Stop polling ONLY when status is completed or failed
-      if (status === 'completed' || status === 'failed') {
+      // Stop if failed
+      if (status === 'failed') {
         return false;
       }
 
-      // Continue polling for all other statuses (prioritized, processing, etc.)
+      // If job is "completed", we check for pending claims (Agentic Verification)
+      if (status === 'completed') {
+        if (!claims || claims.length === 0) {
+          return false; // Done, no claims
+        }
 
+        // Check if ANY claim is still pending or processing
+        const hasPendingClaims = claims.some(
+          (c) => c.status === 'pending' || c.status === 'processing'
+        );
+
+        if (hasPendingClaims) {
+          // Keep polling, maybe slower? Keeping same speed for responsiveness
+          return pollingInterval;
+        }
+
+        // All claims have a terminal status (completed/failed)
+        return false;
+      }
+
+      // Continue polling for all other statuses (prioritized, processing)
       return pollingInterval;
     },
     retry: (failureCount, error) => {

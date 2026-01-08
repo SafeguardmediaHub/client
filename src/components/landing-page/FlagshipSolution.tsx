@@ -10,7 +10,8 @@ export default function FlagshipSolution() {
     {
       icon: Eye,
       title: 'Multimodal Analysis',
-      description: 'Detect fake across video, audio, and images with our unified engine.',
+      description:
+        'Detect fake across video, audio, and images with our unified engine.',
       gradient: 'from-blue-500 to-cyan-500',
       bgGradient: 'from-blue-50 to-cyan-50',
     },
@@ -32,7 +33,10 @@ export default function FlagshipSolution() {
   ];
 
   return (
-    <section className="relative py-32 bg-gradient-to-b from-white via-blue-50/30 to-white overflow-hidden">
+    <section
+      id="solutions"
+      className="relative py-32 bg-gradient-to-b from-white via-blue-50/30 to-white overflow-hidden"
+    >
       {/* Background decorations */}
       <div className="absolute top-20 right-10 w-72 h-72 bg-blue-200/30 rounded-full mix-blend-multiply filter blur-3xl opacity-50" />
       <div className="absolute bottom-20 left-10 w-72 h-72 bg-cyan-200/30 rounded-full mix-blend-multiply filter blur-3xl opacity-50" />
@@ -49,10 +53,7 @@ export default function FlagshipSolution() {
             </div>
 
             <h2 className="text-5xl md:text-6xl font-bold text-gray-900 leading-tight">
-              AI Deepfake{' '}
-              <span className="text-blue-600">
-                Detection.
-              </span>
+              AI Deepfake <span className="text-blue-600">Detection.</span>
             </h2>
 
             <p className="text-xl text-gray-600 leading-relaxed">
@@ -79,15 +80,11 @@ export default function FlagshipSolution() {
                 <div className="text-sm text-gray-600 mt-1">Accuracy</div>
               </div>
               <div className="text-center p-4 rounded-2xl bg-white/50 backdrop-blur-sm border border-blue-100">
-                <div className="text-3xl font-bold text-blue-600">
-                  &lt;1s
-                </div>
+                <div className="text-3xl font-bold text-blue-600">&lt;1s</div>
                 <div className="text-sm text-gray-600 mt-1">Response</div>
               </div>
               <div className="text-center p-4 rounded-2xl bg-white/50 backdrop-blur-sm border border-emerald-100">
-                <div className="text-3xl font-bold text-emerald-600">
-                  24/7
-                </div>
+                <div className="text-3xl font-bold text-emerald-600">24/7</div>
                 <div className="text-sm text-gray-600 mt-1">Available</div>
               </div>
             </div>
@@ -135,7 +132,9 @@ export default function FlagshipSolution() {
                           className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} rounded-2xl opacity-20`}
                         />
                         <IconComponent
-                          className={`relative w-8 h-8 bg-gradient-to-br ${feature.gradient} bg-clip-text text-transparent transition-transform duration-500 ${
+                          className={`relative w-8 h-8 bg-gradient-to-br ${
+                            feature.gradient
+                          } bg-clip-text text-transparent transition-transform duration-500 ${
                             isHovered ? 'scale-110' : ''
                           }`}
                           style={{

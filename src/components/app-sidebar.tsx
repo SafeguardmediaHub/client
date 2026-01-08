@@ -219,7 +219,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavOverview projects={data.overview} />
         <NavDetectionTools projects={data.detection} />
         <NavVerificationTools projects={data.verification} />
-        <NavAuthenticity items={data.authenticity} />
+        {/* <NavAuthenticity items={data.authenticity} /> */}
         <NavReporting projects={data.reporting} />
         <NavOverview projects={data.navSecondary} />
       </SidebarContent>

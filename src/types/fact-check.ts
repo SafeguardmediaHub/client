@@ -21,6 +21,10 @@ export interface AnalyzeContentResponse {
     job_id: string;
     status: JobStatus;
     estimated_completion_seconds: number;
+    // job_id might be directly in data in some versions, but keeping consistent with prev code unless API changed structure significantly. 
+    // Integration guide says: data.data.job_id which implies typical wrapper. 
+    // Checking file 20: const { data } = await api.post... return data.
+    // So the response type matches the AXIOS response.data.
   };
 }
 
@@ -29,25 +33,62 @@ export interface Entity {
   type?: string;
 }
 
+export interface VerifiableElement {
+  element: string;
+  type: string;
+  canBeVerified: boolean;
+  verificationMethod: string;
+}
+
+export interface AIAnalysis {
+  specificity?: {
+    level: string;
+    score: number;
+    reasoning: string;
+  };
+  reasoning?: string; // Added shorthand if full specificity obj isn't there
+  verifiableElements?: VerifiableElement[];
+  redFlags?: Array<{
+    type: string;
+    description: string;
+    severity: string;
+  }>;
+  logicalConsistency?: {
+    isConsistent: boolean;
+    issues: string[];
+    reasoning: string;
+  };
+  missingInformation?: string[];
+  verificationGuide?: {
+    suggestedSources: string[];
+    keyQuestionsToAsk: string[];
+    searchTerms: string[];
+    expertDomains: string[];
+  };
+  summary: string;
+  confidence?: number;
+  analyzedAt?: string;
+}
+
 export interface Claim {
   claim_id: string;
   text: string;
   context?: string;
-  credibility_score: number;
-  reliability_index: number;
-  verdict: string;
-  confidence: string;
-  verdicts: Array<{
+  status: "pending" | "processing" | "completed" | "failed"; // explicit status for claim
+  credibility_score?: number;
+  reliability_index?: number;
+  verdict?: "True" | "False" | "Mixed" | "Unknown";
+  confidence?: "High" | "Medium" | "Low";
+  
+  // Explanation / Sources
+  ai_analysis?: AIAnalysis;
+  verdicts?: Array<{
     source: string;
-    rating: string;
-    textual_rating: string;
-    review_url: string;
-    reviewed_at: string;
-    publisher_credibility: PublisherCredibility;
-    recency_days: number;
-    credibility_multiplier: number;
-    recency_multiplier: number;
-    weighted_score: number;
+    review_url?: string;
+    rating?: string;
+    textual_rating?: string;
+    publisher_credibility?: PublisherCredibility;
+    weighted_score?: number;
   }>;
 }
 
@@ -95,7 +136,29 @@ export interface Verdict {
   review_url: string;
   publisher_credibility: PublisherCredibility;
   weighted_score: number;
+  reviewed_at?: string;
+  recency_days?: number;
   api_response: VerdictApiResponse;
+}
+
+export interface Consensus {
+  agreement_rate: number;
+  interpretation: string;
+}
+
+export interface ScoreBreakdown {
+  total_sources: number;
+  ifcn_certified: number;
+  avg_recency_days?: number;
+}
+
+export interface ClaimScore {
+  consensus?: Consensus;
+  breakdown?: ScoreBreakdown;
+  credibility_score: number;
+  reliability_index: number;
+  verdict: string;
+  confidence: string;
 }
 
 export interface ClaimDetailResponse {
@@ -104,18 +167,16 @@ export interface ClaimDetailResponse {
   data: {
     claim: Claim;
     verdicts: Verdict[];
-    overall_status:
-      | "verified_true"
-      | "verified_false"
-      | "mixed"
-      | "inconclusive"
-      | "no_verdict";
+    score?: ClaimScore; // New field from backend
+    // specialized fields for backward compatibility if needed, but per json they are in score
+    overall_status?: string; 
     confidence_score?: number;
   };
 }
 
 export interface VerifyClaimRequest {
-  claim_text: string;
+  claim_id?: string; // Changed to support refetching by claim_id
+  claim_text?: string; // Backward compatibility or manual text
 }
 
 export interface VerifyClaimResponse {

@@ -33,6 +33,21 @@ export interface Media {
     name: string;
   };
   extractedText?: string;
+  c2paVerification?: {
+    result: {
+      c2paStatus: string;
+      manifestPresent: boolean;
+      issuer: string | null;
+      signedAt: string | null;
+      signatureValid: boolean;
+      integrity: string | null;
+    };
+    status: string;
+    attempts: number;
+    queuedAt: string;
+    completedAt: string;
+    error: string | null;
+  };
 }
 
 interface Pagination {

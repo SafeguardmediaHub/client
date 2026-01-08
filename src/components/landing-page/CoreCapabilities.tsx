@@ -97,7 +97,7 @@ export default function CoreCapabilities() {
   ];
 
   return (
-    <section className="relative py-32 bg-white overflow-hidden">
+    <section id="features" className="relative py-32 bg-white overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]" />
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-200/20 rounded-full mix-blend-multiply filter blur-3xl" />
@@ -111,9 +111,7 @@ export default function CoreCapabilities() {
             </span>
           </div>
           <h2 className="text-5xl md:text-6xl font-bold mb-6">
-            <span className="text-gray-900">
-              Powerful Features
-            </span>
+            <span className="text-gray-900">Powerful Features</span>
             <br />
             <span className="text-gray-900">at a Glance</span>
           </h2>
@@ -170,7 +168,9 @@ export default function CoreCapabilities() {
                       >
                         <div className="w-full h-full bg-white rounded-2xl flex items-center justify-center">
                           <IconComponent
-                            className={`w-10 h-10 bg-gradient-to-br ${capability.gradient} bg-clip-text text-transparent transition-transform duration-500 ${
+                            className={`w-10 h-10 bg-gradient-to-br ${
+                              capability.gradient
+                            } bg-clip-text text-transparent transition-transform duration-500 ${
                               isHovered ? 'scale-110' : ''
                             }`}
                             style={{
