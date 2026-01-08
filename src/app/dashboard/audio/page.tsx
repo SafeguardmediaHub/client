@@ -183,7 +183,7 @@ const AudioForensics: FC<DashboardProps> = ({
       }, 500);
 
       const response = await fetch(
-        'https://mirackchuks-audioforensics.hf.space/analyze',
+        'https://safeguardmedia-audioforensics.hf.space/analyze',
         {
           method: 'POST',
           body: formData,
@@ -300,6 +300,15 @@ const AudioForensics: FC<DashboardProps> = ({
     if (score >= 40) return 'bg-yellow-50 border-yellow-200';
     return 'bg-red-50 border-red-200';
   };
+
+  const resetAnalysis = () => {
+    setAnalysisResult(null);
+    setSpectrogramImage(null);
+    setVoiceActivityImage(null);
+    setUploadingFiles([]);
+    setActualFile(null);
+  };
+
   return (
     <section className="flex flex-1 flex-col gap-4 py-4 px-8">
       <header className="flex-col items-start gap-1 flex">
@@ -318,7 +327,7 @@ const AudioForensics: FC<DashboardProps> = ({
             <CardContent className="p-0 w-full">
               {uploadingFiles.length === 0 ? (
                 <>
-                  <form
+                  {/* <form
                     onSubmit={analyzeSubmit}
                     className="flex items-center gap-0 bg-muted rounded-xl mb-6"
                   >
@@ -340,7 +349,7 @@ const AudioForensics: FC<DashboardProps> = ({
                     >
                       Upload Audio
                     </Button>
-                  </form>
+                  </form> */}
 
                   <section
                     className="relative w-full rounded-lg border border-dashed bg-muted"
@@ -530,17 +539,18 @@ const AudioForensics: FC<DashboardProps> = ({
                         )}
                       </div>
 
-                      {uploadingFiles[0].status === 'completed' && (
-                        <div className="flex gap-3">
+                      {uploadingFiles[0].status === "completed" && (
+                        <div className="flex flex-col sm:flex-row gap-3">
                           <Button
                             onClick={handleAnalyzeAudio}
                             className="flex-1"
                             disabled={isAnalyzing}
                           >
-                            {isAnalyzing ? 'Analyzing...' : 'Analyze Audio'}
+                            {isAnalyzing ? "Analyzing..." : "Analyze Audio"}
                           </Button>
                           <Button
                             variant="outline"
+                            className="flex-1"
                             onClick={() => setUploadingFiles([])}
                             disabled={isAnalyzing}
                           >
@@ -548,6 +558,7 @@ const AudioForensics: FC<DashboardProps> = ({
                           </Button>
                           <Button
                             variant="outline"
+                            className="flex-1"
                             onClick={() => setUploadingFiles([])}
                             disabled={isAnalyzing}
                           >
@@ -708,13 +719,13 @@ const AudioForensics: FC<DashboardProps> = ({
           <CardContent className="p-0 space-y-6">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <button className="text-sm text-muted-foreground hover:text-foreground">
-                  ← Go back
-                </button>
-              </div>
-              <Button variant="outline" size="sm">
-                Re-analyze
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={resetAnalysis}
+                disabled={isAnalyzing}
+              >
+                {isAnalyzing ? "Analyzing..." : "Re-analyze"}
               </Button>
             </div>
 
@@ -786,29 +797,27 @@ const AudioForensics: FC<DashboardProps> = ({
                             .authenticity_score >= 70
                             ? '#22c55e'
                             : analysisResult.user_friendly_summary
-                                .authenticity_score >= 40
-                            ? '#eab308'
-                            : '#ef4444'
+                              .authenticity_score >= 40
+                              ? '#eab308'
+                              : '#ef4444'
                         }
                         strokeWidth="8"
                         strokeLinecap="round"
-                        strokeDasharray={`${
-                          analysisResult.user_friendly_summary
-                            .authenticity_score * 2.51
-                        } 251`}
+                        strokeDasharray={`${analysisResult.user_friendly_summary
+                          .authenticity_score * 2.51
+                          } 251`}
                       />
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                       <span
-                        className={`text-3xl font-bold ${
-                          analysisResult.user_friendly_summary
-                            .authenticity_score >= 70
-                            ? 'text-green-500'
-                            : analysisResult.user_friendly_summary
-                                .authenticity_score >= 40
+                        className={`text-3xl font-bold ${analysisResult.user_friendly_summary
+                          .authenticity_score >= 70
+                          ? 'text-green-500'
+                          : analysisResult.user_friendly_summary
+                            .authenticity_score >= 40
                             ? 'text-yellow-500'
                             : 'text-red-500'
-                        }`}
+                          }`}
                       >
                         {
                           analysisResult.user_friendly_summary
