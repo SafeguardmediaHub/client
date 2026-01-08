@@ -18,6 +18,8 @@ import {
 import { Button } from "../../../components/ui/button";
 import { Card, CardContent } from "../../../components/ui/card";
 import { Input } from "../../../components/ui/input";
+import MediaSelector from '@/components/media/MediaSelector';
+import { type Media, useGetMedia } from '@/hooks/useMedia';
 
 type DashboardProps = {
   userName?: string;
@@ -87,6 +89,24 @@ const Keyframe: FC<DashboardProps> = ({
   });
   const uploadKeyframeMutation = useUploadKeyframe();
   const [showInfoDialog, setShowInfoDialog] = useState(false);
+  const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
+  const { data } = useGetMedia();
+  const media = data?.media || [];
+
+  const handleMediaSelection = (mediaFile: Media) => {
+    const selectedFile = media.find((file) => file.id === mediaFile.id);
+
+    if (selectedFile) {
+      const isVideo = selectedFile.mimeType.startsWith('video/');
+
+      if (!isVideo) {
+        toast.error('Please select a video file. Images are not supported for keyframe extraction.');
+        return;
+      }
+
+      setSelectedMedia(selectedFile);
+    }
+  };
 
   // Show dialog on first visit
   useEffect(() => {
@@ -174,19 +194,24 @@ const Keyframe: FC<DashboardProps> = ({
   );
 
   const handleExtractKeyframes = useCallback(async () => {
-    const file = uploadingFiles[0];
-    if (!file || !file.key || !actualFile) {
-      toast.error("File not found");
+    if (!selectedMedia) {
+      toast.error("No video selected");
       return;
     }
 
     setIsExtracting(true);
-    setUploadingFiles([{ ...file, status: "extracting" }]);
     setExtractionProgress(0);
 
     try {
+      // Fetch the video file from the media URL
+      const videoResponse = await fetch(selectedMedia.publicUrl);
+      if (!videoResponse.ok) throw new Error("Failed to fetch video");
+
+      const videoBlob = await videoResponse.blob();
+      const videoFile = new File([videoBlob], selectedMedia.filename, { type: selectedMedia.mimeType });
+
       const formData = new FormData();
-      formData.append("video", actualFile);
+      formData.append("video", videoFile);
 
       const progressInterval = setInterval(() => {
         setExtractionProgress((prev) => Math.min(prev + 5, 90));
@@ -227,8 +252,8 @@ const Keyframe: FC<DashboardProps> = ({
       // Add to mockExtractions
       const newExtraction = {
         id: mockExtractions.length + 1,
-        fileName: actualFile.name,
-        videoLength: "00:00", // You can calculate actual duration if needed
+        fileName: selectedMedia.filename,
+        videoLength: "00:00",
         framesExtracted: images.length,
         uploadDate: new Date().toLocaleString("en-US", {
           month: "short",
@@ -241,17 +266,13 @@ const Keyframe: FC<DashboardProps> = ({
       };
       setMockExtractions([newExtraction, ...mockExtractions]);
 
-      setUploadingFiles([]);
-      setActualFile(null);
       toast.success(`Extracted ${images.length} keyframes!`);
     } catch (error) {
       console.error(error);
       toast.error("Failed to extract keyframes");
       setIsExtracting(false);
-      setUploadingFiles([]);
-      setActualFile(null);
     }
-  }, [uploadingFiles, actualFile, mockExtractions]);
+  }, [selectedMedia, mockExtractions]);
 
   const onDrop = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
@@ -293,7 +314,8 @@ const Keyframe: FC<DashboardProps> = ({
       if (uploadingFrames.has(index) || uploadedFrames.has(index)) return;
 
       const blobUrl = extractedKeyframes[index];
-      const sourceFileName = actualFile?.name || uploadingFiles[0]?.name || "video";
+      // const sourceFileName = actualFile?.name || uploadingFiles[0]?.name || "video";
+      const sourceFileName = selectedMedia?.filename || "video";
       const fileName = `${sourceFileName.replace(/\.[^/.]+$/, "")}_keyframe_${String(index + 1).padStart(3, "0")}.jpg`;
       const timestamp = `00:${String(Math.floor((index * 17) / 60)).padStart(2, "0")}:${String((index * 17) % 60).padStart(2, "0")}`;
 
@@ -360,7 +382,8 @@ const Keyframe: FC<DashboardProps> = ({
     for (let i = 0; i < framesToUpload.length; i++) {
       const index = framesToUpload[i];
       const blobUrl = extractedKeyframes[index];
-      const sourceFileName = actualFile?.name || uploadingFiles[0]?.name || "video";
+      const sourceFileName = selectedMedia?.filename || "video";
+      // const sourceFileName = actualFile?.name || uploadingFiles[0]?.name || "video";
       const fileName = `${sourceFileName.replace(/\.[^/.]+$/, "")}_keyframe_${String(index + 1).padStart(3, "0")}.jpg`;
       const timestamp = `00:${String(Math.floor((index * 17) / 60)).padStart(2, "0")}:${String((index * 17) % 60).padStart(2, "0")}`;
 
@@ -451,250 +474,95 @@ const Keyframe: FC<DashboardProps> = ({
         <>
           <Card className="flex flex-col items-start gap-6 p-6 relative self-stretch w-full">
             <CardContent className="p-0 w-full">
-              {uploadingFiles.length === 0 ? (
-                <>
-                  <form
-                    onSubmit={analyzeSubmit}
-                    className="flex items-center gap-0 bg-muted rounded-xl mb-6"
-                  >
-                    <div className="flex items-center gap-3 flex-1 px-3">
-                      <LinkIcon className="w-5 h-5 text-muted-foreground" />
-                      <Input
-                        aria-label="Media URL"
-                        className="flex-1 border-0 bg-transparent p-0 focus-visible:ring-0"
-                        placeholder="Paste a link to a video or image to start forensic analysis"
-                        value={url}
-                        onChange={(e) => setUrl(e.target.value)}
-                        disabled={isBusy}
-                      />
+              {!selectedMedia ? (
+                <div className="space-y-6">
+                  {/* Media Selector */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Select a video from your library
+                    </label>
+                    <MediaSelector
+                      onSelect={handleMediaSelection}
+                      // filterType="video"
+                    />
+                  </div>
+
+                  {/* Info Card */}
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-800">
+                      <span className="font-medium">Supported formats:</span> MP4, AVI, MOV, MKV, WebM, FLV, OGV, WMV, 3GP, MPG, MPEG, F4V (up to 500MB)
+                    </p>
+                  </div>
+                </div>
+              ) : isExtracting ? (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 py-2">
+                    <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <span className="text-sm font-medium">{selectedMedia.filename}</span>
+                  </div>
+                  <div className="text-center py-12 space-y-4">
+                    <Loader2 className="w-16 h-16 mx-auto animate-spin text-primary" />
+                    <div>
+                      <p className="text-lg font-semibold">Extracting Keyframes...</p>
+                      <p className="text-sm text-muted-foreground">Analyzing video for significant visual changes</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2 bg-muted/50 rounded-lg p-4">
+                    <div className="flex justify-between text-sm">
+                      <span className="font-medium">Processing Video Frames</span>
+                      <span className="text-muted-foreground">{extractionProgress}%</span>
+                    </div>
+                    <div className="h-2 w-full rounded-full bg-background">
+                      <div className="h-2 rounded-full bg-primary transition-all" style={{ width: `${extractionProgress}%` }} />
                     </div>
                     <Button
-                      type="button"
-                      className="rounded-l-none cursor-pointer"
-                      disabled={true}
+                      variant="outline"
+                      size="sm"
+                      className="w-full mt-2"
+                      onClick={() => {
+                        setIsExtracting(false);
+                        setSelectedMedia(null);
+                        toast.info("Extraction cancelled");
+                      }}
                     >
-                      Upload Media
+                      Cancel Extraction
                     </Button>
-                  </form>
-
-                  <section
-                    className="relative w-full rounded-lg border border-dashed bg-muted"
-                    aria-label="Upload dropzone"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        onBrowseClick();
-                      }
-                    }}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                    }}
-                    onDrop={onDrop}
-                  >
-                    <label
-                      htmlFor={inputId}
-                      className="flex flex-col items-center gap-4 w-full py-6 cursor-pointer"
-                    >
-                      <UploadIcon className="w-10 h-10 text-muted-foreground" />
-                      <div className="flex flex-col items-center gap-1 w-full">
-                        <p className="text-base text-center">
-                          Drag and drop to upload or click to browse files
-                        </p>
-                        <p className="text-sm text-primary text-center">
-                          Supports MP4, AVI, MOV, OGV, WMV, 3GP, MPG, MPEG, F4V,
-                          MKV, WebM, FLV (500 MB)
-                        </p>
-                      </div>
-
-                      <input
-                        id={inputId}
-                        ref={fileInputRef}
-                        type="file"
-                        className="sr-only"
-                        onChange={(e) => handleFiles(e.target.files)}
-                        accept=".mp4,.avi,.mov,.ogv,.wmv,.3gp,.mpg,.mpeg,.f4v,.mkv,.webm,.flv,video/*"
-                        disabled={isBusy}
-                      />
-
-                      <Button
-                        type="button"
-                        onClick={onBrowseClick}
-                        disabled={isBusy}
-                      >
-                        {isBusy ? "Please wait…" : "Select Files to Upload"}
-                      </Button>
-                    </label>
-                  </section>
-                </>
+                  </div>
+                </div>
               ) : (
                 <div className="space-y-4">
-                  {uploadingFiles[0].status === "extracting" ? (
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3 py-2">
-                        <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center">
-                          <svg
-                            className="w-6 h-6 text-primary"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                            />
-                          </svg>
-                        </div>
-                        <span className="text-sm font-medium">
-                          {uploadingFiles[0].name} (1 file)
-                        </span>
+                  {/* Selected video preview */}
+                  <div className="flex items-center justify-between py-2">
+                    <h3 className="text-sm font-medium">Selected Video</h3>
+                    <span className="text-xs text-green-600 font-medium">Ready</span>
+                  </div>
+
+                  <div className="border rounded-lg p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-16 h-16 rounded bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
                       </div>
-                      <div className="text-center py-12 space-y-4">
-                        <Loader2 className="w-16 h-16 mx-auto animate-spin text-primary" />
-                        <div>
-                          <p className="text-lg font-semibold">
-                            Extracting Keyframes...
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            Analyzing video for significant visual changes
-                          </p>
-                        </div>
-                      </div>
-                      <div className="space-y-2 bg-muted/50 rounded-lg p-4">
-                        <div className="flex justify-between text-sm">
-                          <span className="font-medium">
-                            Processing Video Frames
-                          </span>
-                          <span className="text-muted-foreground">
-                            Processing...
-                          </span>
-                        </div>
-                        <div className="h-2 w-full rounded-full bg-background">
-                          <div
-                            className="h-2 rounded-full bg-primary transition-all"
-                            style={{ width: `${extractionProgress}%` }}
-                          />
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full mt-2"
-                          onClick={() => {
-                            setIsExtracting(false);
-                            setUploadingFiles([]);
-                            setActualFile(null);
-                            toast.info("Extraction cancelled");
-                          }}
-                        >
-                          Cancel Extraction
-                        </Button>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{selectedMedia.filename}</p>
+                        <p className="text-xs text-muted-foreground">{selectedMedia.mimeType}</p>
                       </div>
                     </div>
-                  ) : (
-                    <>
-                      <div className="flex items-center justify-between py-2">
-                        <h3 className="text-sm font-medium">Upload progress</h3>
-                        <span className="text-xs text-green-600 font-medium">
-                          {uploadingFiles[0].status === "completed"
-                            ? "1/1 Completed"
-                            : "0/1 Completed"}
-                        </span>
-                      </div>
+                  </div>
 
-                      <div className="border rounded-lg">
-                        <div className="flex items-center justify-between p-4">
-                          <div className="flex items-center gap-3 flex-1">
-                            <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center">
-                              <svg
-                                className="w-6 h-6 text-primary"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                                />
-                              </svg>
-                            </div>
-                            <div className="flex-1">
-                              <p className="text-sm font-medium">
-                                {uploadingFiles[0].name}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                +
-                                {(
-                                  uploadingFiles[0].size /
-                                  (1024 * 1024)
-                                ).toFixed(2)}{" "}
-                                MB
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            {uploadingFiles[0].status === "completed" && (
-                              <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
-                                <span className="text-green-600 text-xs">
-                                  ✓
-                                </span>
-                              </div>
-                            )}
-                            <button
-                              onClick={() => setUploadingFiles([])}
-                              className="text-muted-foreground hover:text-foreground"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        </div>
-
-                        {uploadingFiles[0].status === "uploading" && (
-                          <div className="px-4 pb-4">
-                            <div className="h-1.5 w-full rounded-full bg-muted">
-                              <div
-                                className="h-1.5 rounded-full bg-primary transition-all"
-                                style={{
-                                  width: `${uploadingFiles[0].progress}%`,
-                                }}
-                              />
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {uploadingFiles[0].status === "completed" && (
-                        <div className="flex flex-col sm:flex-row gap-3">
-                          <Button
-                            onClick={handleExtractKeyframes}
-                            className="flex-1"
-                            disabled={isExtracting}
-                          >
-                            {isExtracting ? "Extracting..." : "Extract Keyframes"}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            className="flex-1"
-                            onClick={() => setUploadingFiles([])}
-                            disabled={isExtracting}
-                          >
-                            Upload another file
-                          </Button>
-                          <Button
-                            variant="outline"
-                            className="flex-1"
-                            onClick={() => setUploadingFiles([])}
-                            disabled={isExtracting}
-                          >
-                            Clear all
-                          </Button>
-                        </div>
-                      )}
-                    </>
-                  )}
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Button onClick={handleExtractKeyframes} className="flex-1">
+                      Extract Keyframes
+                    </Button>
+                    <Button variant="outline" className="flex-1" onClick={() => setSelectedMedia(null)}>
+                      Select Different Video
+                    </Button>
+                  </div>
                 </div>
               )}
             </CardContent>
@@ -894,7 +762,7 @@ const Keyframe: FC<DashboardProps> = ({
                   size="sm"
                   onClick={() => {
                     setExtractedKeyframes([]);
-                    setUploadingFiles([]);
+                    setSelectedMedia(null);
                     setUploadedFrames(new Set());
                     setUploadingFrames(new Set());
                   }}
@@ -909,7 +777,8 @@ const Keyframe: FC<DashboardProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {extractedKeyframes.map((frame, index) => {
                 const sourceFileName =
-                  actualFile?.name || uploadingFiles[0]?.name || "video";
+                  // actualFile?.name || uploadingFiles[0]?.name || "video";
+                  selectedMedia?.filename || "video";
                 const keyframeFileName = `${sourceFileName.replace(/\.[^/.]+$/, "")}_keyframe_${String(index + 1).padStart(3, "0")}.jpg`;
 
                 return (
