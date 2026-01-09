@@ -130,7 +130,7 @@ const data = {
     },
     {
       name: 'SM Source Tracing',
-      url: '#', // '/dashboard/trace',
+      url:'/dashboard/trace',
       icon: Share2,
       featureId: 'social_media_tracing',
     },

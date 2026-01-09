@@ -7,9 +7,11 @@ import {
   MessageCircle,
   Share2,
   Eye,
-  Globe,
-  Users,
   Calendar,
+  Zap,
+  ShieldCheck,
+  Search,
+  Globe,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -193,15 +195,52 @@ export const PostsListTab = ({ platformAppearances }: PostsListTabProps) => {
                   </div>
                 </div>
               </div>
-              <a
-                href={post.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:text-blue-700"
-              >
-                <ExternalLink className="w-5 h-5" />
-              </a>
+              <div className="flex flex-col items-end gap-2">
+                <a
+                  href={post.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-700"
+                >
+                  <ExternalLink className="w-5 h-5" />
+                </a>
+                {post.discoveryMethod && (
+                  <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-wider bg-gray-50 text-gray-500">
+                    {post.discoveryMethod}
+                  </Badge>
+                )}
+              </div>
             </div>
+
+            {/* Visual Match Info */}
+            {post.visualMatch && (post.discoveryMethod === "visual" || post.discoveryMethod === "hybrid") && (
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Zap className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold text-blue-900 flex items-center gap-2">
+                      Visual Match Detected
+                      <Badge className="bg-blue-600 text-white text-[10px]">
+                        {(post.visualMatch.similarityScore * 100).toFixed(1)}% Score
+                      </Badge>
+                    </div>
+                    {post.visualMatch.transformations && post.visualMatch.transformations.length > 0 && (
+                      <div className="text-xs text-blue-700 mt-1">
+                        Detected changes: {post.visualMatch.transformations.join(", ")}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {post.visualMatch.verified && (
+                  <div className="flex items-center gap-1 text-green-600 text-xs font-bold">
+                    <ShieldCheck className="w-4 h-4" />
+                    VERIFIED
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Post Content */}
             {post.caption && (

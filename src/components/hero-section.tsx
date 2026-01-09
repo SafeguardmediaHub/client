@@ -88,7 +88,7 @@ export default function HeroSection() {
                   as="h1"
                   className="mx-auto mt-8 max-w-4xl text-balance text-5xl font-bold max-md:font-semibold md:text-7xl lg:mt-16 xl:text-[5.25rem] text-gray-900"
                 >
-                  The Standard for Digital Trust
+                  The Standard for Media Trust
                 </TextEffect>
                 <TextEffect
                   per="line"
@@ -99,8 +99,9 @@ export default function HeroSection() {
                   className="mx-auto mt-8 max-w-2xl text-balance text-lg text-gray-600"
                 >
                   Arm your organization with the industry's most comprehensive
-                  AI suite to instantly detect deepfakes, verify multimedia
-                  content, and protect your assets from digital fraud.
+                  AI suite to instantly detect AI-Generated Images, verify
+                  multimedia content, and protect your assets from digital
+                  fraud.
                 </TextEffect>
 
                 <AnimatedGroup

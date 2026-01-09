@@ -10,8 +10,9 @@ import { TraceInitiatePanel } from '@/components/trace/TraceInitiatePanel';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Media } from '@/hooks/useMedia';
-import { useInitiateTrace, useMediaTraces } from '@/hooks/useTrace';
-import type { InitiateTraceRequest } from '@/types/trace';
+import { useInitiateTrace, useMediaTraces, useUserTraces } from '@/hooks/useTrace';
+import { cn } from '@/lib/utils';
+import type { InitiateTraceRequest, TraceListItem } from '@/types/trace';
 
 const LoadingState = ({ message }: { message: string }) => {
   return (
@@ -98,7 +99,18 @@ const TraceContent = () => {
     toast.info('Retry functionality will be implemented in Sprint 2');
   };
 
-  const traces = mediaTracesQuery.data?.data?.traces || [];
+  const [viewMode, setViewMode] = useState<'media' | 'global'>('media');
+  const userTracesQuery = useUserTraces({ limit: 20 }, {
+    enabled: viewMode === 'global',
+  });
+
+  const traces = viewMode === 'media' 
+    ? (mediaTracesQuery.data?.data?.traces || [])
+    : (userTracesQuery.data?.data?.traces || []);
+
+  const isLoading = viewMode === 'media' ? mediaTracesQuery.isLoading : userTracesQuery.isLoading;
+  const isError = viewMode === 'media' ? mediaTracesQuery.isError : userTracesQuery.isError;
+  const refetch = viewMode === 'media' ? mediaTracesQuery.refetch : userTracesQuery.refetch;
 
   return (
     <div className="w-full flex flex-col gap-6 p-8">
@@ -112,21 +124,43 @@ const TraceContent = () => {
             Track and analyze the spread of your media across social platforms
           </p>
         </div>
-        {selectedMedia && (
-          <Button
-            onClick={() => setShowInitiatePanel(!showInitiatePanel)}
-            className="h-10 px-6 bg-blue-600 hover:bg-blue-500 rounded-xl flex-shrink-0 cursor-pointer"
-          >
-            <Search className="w-4 h-4 mr-2" />
-            <span className="text-base font-medium text-white whitespace-nowrap">
-              {showInitiatePanel ? 'Cancel' : 'New Trace'}
-            </span>
-          </Button>
-        )}
+        <div className="flex items-center gap-3">
+          <div className="flex bg-gray-100 p-1 rounded-xl border border-gray-200">
+            <button
+              onClick={() => setViewMode('media')}
+              className={cn(
+                "px-4 py-1.5 text-xs font-medium rounded-lg transition-all",
+                viewMode === 'media' ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
+              )}
+            >
+              Media Traces
+            </button>
+            <button
+              onClick={() => setViewMode('global')}
+              className={cn(
+                "px-4 py-1.5 text-xs font-medium rounded-lg transition-all",
+                viewMode === 'global' ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
+              )}
+            >
+              My History
+            </button>
+          </div>
+          {selectedMedia && (
+            <Button
+              onClick={() => setShowInitiatePanel(!showInitiatePanel)}
+              className="h-10 px-6 bg-blue-600 hover:bg-blue-500 rounded-xl flex-shrink-0 cursor-pointer"
+            >
+              <Search className="w-4 h-4 mr-2" />
+              <span className="text-base font-medium text-white whitespace-nowrap">
+                {showInitiatePanel ? 'Cancel' : 'New Trace'}
+              </span>
+            </Button>
+          )}
+        </div>
       </div>
 
-      {/* Media Selection */}
-      {!selectedMedia ? (
+      {/* Media Selection (only in media mode when no media selected) */}
+      {viewMode === 'media' && !selectedMedia ? (
         <div className="p-8 bg-white border border-gray-200 rounded-lg">
           <div className="mb-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-2">
@@ -160,40 +194,42 @@ const TraceContent = () => {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Selected Media Info */}
-          <div className="p-6 bg-white border border-gray-200 rounded-lg">
-            <div className="flex items-center gap-4">
-              <div className="flex-shrink-0 w-20 h-20 rounded-md overflow-hidden bg-gray-100 border border-gray-200">
-                <img
-                  src={selectedMedia.thumbnailUrl}
-                  alt={selectedMedia.filename}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-medium text-gray-900 mb-1">
-                  {selectedMedia.filename}
-                </h3>
-                <p className="text-sm text-gray-600">
-                  Type: {selectedMedia.mimeType} | Size:{' '}
-                  {selectedMedia.fileSize}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedMedia(null);
-                    setShowInitiatePanel(false);
-                  }}
-                  className="text-xs text-blue-600 hover:text-blue-700 mt-2"
-                >
-                  Change Media
-                </button>
+          {/* Selected Media Info (only in media mode) */}
+          {viewMode === 'media' && selectedMedia && (
+            <div className="p-6 bg-white border border-gray-200 rounded-lg">
+              <div className="flex items-center gap-4">
+                <div className="flex-shrink-0 w-20 h-20 rounded-md overflow-hidden bg-gray-100 border border-gray-200">
+                  <img
+                    src={selectedMedia.thumbnailUrl}
+                    alt={selectedMedia.filename}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-medium text-gray-900 mb-1">
+                    {selectedMedia.filename}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Type: {selectedMedia.mimeType} | Size:{' '}
+                    {selectedMedia.fileSize}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedMedia(null);
+                      setShowInitiatePanel(false);
+                    }}
+                    className="text-xs text-blue-600 hover:text-blue-700 mt-2"
+                  >
+                    Change Media
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Initiate Panel */}
-          {showInitiatePanel && (
+          {/* Initiate Panel (only in media mode) */}
+          {viewMode === 'media' && selectedMedia && showInitiatePanel && (
             <div className="p-8 bg-white border border-gray-200 rounded-lg">
               <div className="mb-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-2">
@@ -217,16 +253,18 @@ const TraceContent = () => {
           <div className="p-6 bg-white border border-gray-200 rounded-lg">
             <div className="mb-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-2">
-                Recent Traces
+                {viewMode === 'media' ? 'Recent Media Traces' : 'Global Trace History'}
               </h2>
               <p className="text-sm text-gray-600">
-                View and manage traces for this media file.
+                {viewMode === 'media' 
+                  ? 'View and manage traces for this media file.'
+                  : 'All social media traces performed by your account.'}
               </p>
             </div>
 
-            {mediaTracesQuery.isLoading ? (
+            {isLoading ? (
               <TraceListSkeleton />
-            ) : mediaTracesQuery.isError ? (
+            ) : isError ? (
               <div className="p-8 bg-red-50 border border-red-200 rounded-lg">
                 <div className="flex items-start gap-4">
                   <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-1" />
@@ -235,11 +273,11 @@ const TraceContent = () => {
                       Failed to Load Traces
                     </h3>
                     <p className="text-sm text-red-800 mb-4">
-                      There was an error loading traces for this media file.
+                      There was an error loading the traces.
                       Please try again.
                     </p>
                     <Button
-                      onClick={() => mediaTracesQuery.refetch()}
+                      onClick={() => refetch()}
                       variant="outline"
                       className="cursor-pointer border-red-300 hover:bg-red-100"
                     >
@@ -252,23 +290,26 @@ const TraceContent = () => {
               <div className="p-8 bg-gray-50 border border-gray-200 rounded-lg text-center">
                 <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  No Traces Yet
+                  No Traces Found
                 </h3>
                 <p className="text-sm text-gray-600 mb-4">
-                  Start your first trace to track this media across social
-                  platforms.
+                  {viewMode === 'media' 
+                    ? 'Start your first trace to track this media across social platforms.'
+                    : 'No traces have been initiated yet.'}
                 </p>
-                <Button
-                  onClick={() => setShowInitiatePanel(true)}
-                  className="cursor-pointer bg-blue-600 hover:bg-blue-500"
-                >
-                  <Search className="w-4 h-4 mr-2" />
-                  Start New Trace
-                </Button>
+                {viewMode === 'media' && selectedMedia && (
+                  <Button
+                    onClick={() => setShowInitiatePanel(true)}
+                    className="cursor-pointer bg-blue-600 hover:bg-blue-500"
+                  >
+                    <Search className="w-4 h-4 mr-2" />
+                    Start New Trace
+                  </Button>
+                )}
               </div>
             ) : (
               <div className="space-y-4">
-                {traces.map((trace) => (
+                {traces.map((trace: TraceListItem) => (
                   <TraceCardLive
                     key={trace.traceId}
                     trace={trace}
@@ -283,6 +324,7 @@ const TraceContent = () => {
             )}
           </div>
         </div>
+
       )}
     </div>
   );

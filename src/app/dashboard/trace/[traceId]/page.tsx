@@ -28,7 +28,7 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useReportGeneration } from "@/hooks/useReports";
-import { useTraceResult } from "@/hooks/useTrace";
+import { useTraceDistribution, useTraceResult, useTraceTimeline } from "@/hooks/useTrace";
 import type { TraceStatus } from "@/types/trace";
 
 const LoadingState = ({ message }: { message: string }) => {
@@ -56,10 +56,17 @@ const TraceDetailContent = () => {
 
   // Poll trace result (handles status + data in one query)
   const resultQuery = useTraceResult(mediaId, traceId);
+  const distributionQuery = useTraceDistribution(traceId, {
+    enabled: resultQuery.data?.data?.status === 'completed',
+  });
+  const timelineQuery = useTraceTimeline(traceId, {
+    enabled: resultQuery.data?.data?.status === 'completed',
+  });
 
   const status = resultQuery.data?.data?.status;
   const progress = resultQuery.data?.data?.progress;
   const error = resultQuery.data?.data?.error;
+
 
   // Report generation hook
   const reportGeneration = useReportGeneration({
@@ -81,9 +88,9 @@ const TraceDetailContent = () => {
       await reportGeneration.generate({
         type: 'media_analytics',
         mediaId: mediaId,
-        verificationType: 'c2pa',
+        verificationType: 'sm_trace',
         format: 'pdf',
-        title: `C2PA Trace Report - ${mediaId}`,
+        title: `Social Media Trace Report - ${mediaId}`,
       });
     } catch (error) {
       console.error('Failed to generate report:', error);
@@ -91,7 +98,7 @@ const TraceDetailContent = () => {
   };
 
   const handleDownloadReport = () => {
-    reportGeneration.downloadReport(`C2PA_Trace_Report_${mediaId}`);
+    reportGeneration.downloadReport(`SM_Trace_Report_${mediaId}`);
   };
 
   // Check for stale timeout
@@ -380,17 +387,38 @@ const TraceDetailContent = () => {
               </TabsContent>
 
               <TabsContent value="timeline" className="mt-0">
-                <TimelineTab
-                  distributionGraph={resultQuery.data.data.distributionGraph}
-                  platformAppearances={resultQuery.data.data.platformAppearances}
-                />
+                {timelineQuery.isLoading ? (
+                  <LoadingState message="Fetching chronological timeline..." />
+                ) : timelineQuery.isError ? (
+                  <div className="p-12 text-center text-red-600">
+                    <AlertCircle className="w-12 h-12 mx-auto mb-4" />
+                    <p>Failed to load timeline data.</p>
+                  </div>
+                ) : (
+                  <TimelineTab
+                    distributionGraph={resultQuery.data.data.distributionGraph}
+                    platformAppearances={resultQuery.data.data.platformAppearances}
+                    timelineData={timelineQuery.data?.data?.timeline}
+                  />
+                )}
               </TabsContent>
 
               <TabsContent value="distribution" className="mt-0">
-                <DistributionGraphTab
-                  graph={resultQuery.data.data.distributionGraph}
-                />
+                {distributionQuery.isLoading ? (
+                  <LoadingState message="Analyzing distribution network..." />
+                ) : distributionQuery.isError ? (
+                  <div className="p-12 text-center text-red-600">
+                    <AlertCircle className="w-12 h-12 mx-auto mb-4" />
+                    <p>Failed to load distribution data.</p>
+                  </div>
+                ) : (
+                  <DistributionGraphTab
+                    graph={resultQuery.data.data.distributionGraph}
+                    networkData={distributionQuery.data?.data}
+                  />
+                )}
               </TabsContent>
+
 
               <TabsContent value="posts" className="mt-0">
                 <PostsListTab
@@ -407,6 +435,7 @@ const TraceDetailContent = () => {
               <TabsContent value="forensics" className="mt-0">
                 <ForensicAnalysisTab
                   analysis={resultQuery.data.data.forensicAnalysis}
+                  searchConfig={resultQuery.data.data.searchConfig}
                 />
               </TabsContent>
 

@@ -17,7 +17,9 @@ import type { DistributionGraph, Platform, PlatformAppearance } from "@/types/tr
 interface TimelineTabProps {
   distributionGraph: DistributionGraph;
   platformAppearances: PlatformAppearance[];
+  timelineData?: any[];
 }
+
 
 type TimelineEventType =
   | "original_post"
@@ -114,9 +116,26 @@ const formatNumber = (num: number) => {
 export const TimelineTab = ({
   distributionGraph,
   platformAppearances,
+  timelineData,
 }: TimelineTabProps) => {
   // Generate timeline events from distribution data
   const events = useMemo(() => {
+    if (timelineData && Array.isArray(timelineData) && timelineData.length > 0) {
+      return timelineData.map((event, idx) => ({
+        id: (event as any).id || `event-${idx}`,
+        timestamp: event.timestamp,
+        type: (event.eventType || (event as any).type) as TimelineEventType,
+        platform: event.platform as Platform,
+        description: event.description,
+        metadata: {
+          ...(event as any).metadata,
+          url: event.postUrl,
+          username: event.username,
+          ...(event.engagement || {}),
+        },
+      }));
+    }
+
     const timelineEvents: TimelineEvent[] = [];
 
     // Add original post event
@@ -209,7 +228,7 @@ export const TimelineTab = ({
     }
 
     return timelineEvents;
-  }, [distributionGraph, platformAppearances]);
+  }, [distributionGraph, platformAppearances, timelineData]);
 
   const sortedEvents = [...events].sort(
     (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),

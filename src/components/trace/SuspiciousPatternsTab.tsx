@@ -43,13 +43,24 @@ const getRiskConfig = (risk: "low" | "medium" | "high") => {
 export const SuspiciousPatternsTab = ({
   patterns,
 }: SuspiciousPatternsTabProps) => {
-  const riskConfig = getRiskConfig(patterns.riskLevel);
+  // Resolve data from Mongoose wrapper if present
+  const data = (patterns as any)?._doc || patterns;
+
+  if (!data || !data.riskLevel) {
+    return (
+      <div className="p-12 text-center text-gray-500">
+        No patterns data available.
+      </div>
+    );
+  }
+
+  const riskConfig = getRiskConfig(data.riskLevel);
   const RiskIcon = riskConfig.icon;
 
   const hasAnyDetection =
-    patterns.coordinatedBehavior.detected ||
-    patterns.botAmplification.detected ||
-    patterns.rapidSpread.detected;
+    data.coordinatedBehavior?.detected ||
+    data.botAmplification?.detected ||
+    data.rapidSpread?.detected;
 
   if (!hasAnyDetection && patterns.flags.length === 0) {
     return (
@@ -89,28 +100,28 @@ export const SuspiciousPatternsTab = ({
               <div
                 className={cn(
                   "h-full rounded-full transition-all",
-                  patterns.overallSuspicionScore >= 0.7
+                  (data.overallSuspicionScore || 0) >= 0.7
                     ? "bg-red-600"
-                    : patterns.overallSuspicionScore >= 0.4
+                    : (data.overallSuspicionScore || 0) >= 0.4
                       ? "bg-yellow-600"
                       : "bg-green-600"
                 )}
                 style={{
-                  width: `${patterns.overallSuspicionScore * 100}%`,
+                  width: `${(data.overallSuspicionScore || 0) * 100}%`,
                 }}
               />
             </div>
           </div>
           <div className="text-2xl font-bold text-gray-900">
-            {(patterns.overallSuspicionScore * 100).toFixed(1)}%
+            {((data.overallSuspicionScore || 0) * 100).toFixed(1)}%
           </div>
         </div>
 
-        {patterns.flags && patterns.flags.length > 0 && (
+        {data.flags && data.flags.length > 0 && (
           <div className="mt-4">
             <div className="text-sm font-medium text-gray-700 mb-2">Flags:</div>
             <div className="flex flex-wrap gap-2">
-              {patterns.flags.map((flag, index) => (
+              {data.flags.map((flag: string, index: number) => (
                 <Badge
                   key={index}
                   variant="outline"
@@ -144,12 +155,12 @@ export const SuspiciousPatternsTab = ({
             variant="outline"
             className={cn(
               "border",
-              patterns.coordinatedBehavior.detected
+              data.coordinatedBehavior?.detected
                 ? "bg-red-50 text-red-700 border-red-200"
                 : "bg-green-50 text-green-700 border-green-200"
             )}
           >
-            {patterns.coordinatedBehavior.detected ? "Detected" : "Not Detected"}
+            {data.coordinatedBehavior?.detected ? "Detected" : "Not Detected"}
           </Badge>
         </div>
 
@@ -157,25 +168,25 @@ export const SuspiciousPatternsTab = ({
           <div className="flex items-center justify-between py-2 border-b border-gray-100">
             <span className="text-sm text-gray-600">Detection Score</span>
             <span className="font-medium text-gray-900">
-              {(patterns.coordinatedBehavior.score * 100).toFixed(1)}%
+              {((data.coordinatedBehavior?.score || 0) * 100).toFixed(1)}%
             </span>
           </div>
           <div className="flex items-center justify-between py-2 border-b border-gray-100">
             <span className="text-sm text-gray-600">Accounts Involved</span>
             <span className="font-medium text-gray-900">
-              {patterns.coordinatedBehavior.accountsInvolved?.length ?? 0}
+              {data.coordinatedBehavior?.accountsInvolved?.length ?? 0}
             </span>
           </div>
           <div className="flex items-center justify-between py-2 border-b border-gray-100">
             <span className="text-sm text-gray-600">Timing Clusters</span>
             <span className="font-medium text-gray-900">
-              {patterns.coordinatedBehavior.timingClusters?.length ?? 0}
+              {data.coordinatedBehavior?.timingClusters?.length ?? 0}
             </span>
           </div>
           <div className="flex items-center justify-between py-2">
             <span className="text-sm text-gray-600">Similarity Score</span>
             <span className="font-medium text-gray-900">
-              {((patterns.coordinatedBehavior.similarityScore ?? 0) * 100).toFixed(1)}%
+              {((data.coordinatedBehavior?.similarityScore ?? 0) * 100).toFixed(1)}%
             </span>
           </div>
         </div>
@@ -201,12 +212,12 @@ export const SuspiciousPatternsTab = ({
             variant="outline"
             className={cn(
               "border",
-              patterns.botAmplification.detected
+              data.botAmplification?.detected
                 ? "bg-red-50 text-red-700 border-red-200"
                 : "bg-green-50 text-green-700 border-green-200"
             )}
           >
-            {patterns.botAmplification.detected ? "Detected" : "Not Detected"}
+            {data.botAmplification?.detected ? "Detected" : "Not Detected"}
           </Badge>
         </div>
 
@@ -214,25 +225,25 @@ export const SuspiciousPatternsTab = ({
           <div className="flex items-center justify-between py-2 border-b border-gray-100">
             <span className="text-sm text-gray-600">Detection Score</span>
             <span className="font-medium text-gray-900">
-              {(patterns.botAmplification.score * 100).toFixed(1)}%
+              {((data.botAmplification?.score || 0) * 100).toFixed(1)}%
             </span>
           </div>
           <div className="flex items-center justify-between py-2 border-b border-gray-100">
             <span className="text-sm text-gray-600">Suspicious Accounts</span>
             <span className="font-medium text-gray-900">
-              {patterns.botAmplification.suspiciousAccounts?.length ?? 0}
+              {data.botAmplification?.suspiciousAccounts?.length ?? 0}
             </span>
           </div>
           <div className="flex items-center justify-between py-2 border-b border-gray-100">
             <span className="text-sm text-gray-600">Bot Probability</span>
             <span className="font-medium text-gray-900">
-              {((patterns.botAmplification.botProbability ?? 0) * 100).toFixed(1)}%
+              {((data.botAmplification?.botProbability ?? 0) * 100).toFixed(1)}%
             </span>
           </div>
           <div className="flex items-center justify-between py-2">
             <span className="text-sm text-gray-600">Indicators Found</span>
             <span className="font-medium text-gray-900">
-              {patterns.botAmplification.indicators?.length ?? 0}
+              {data.botAmplification?.indicators?.length ?? 0}
             </span>
           </div>
         </div>
@@ -258,12 +269,12 @@ export const SuspiciousPatternsTab = ({
             variant="outline"
             className={cn(
               "border",
-              patterns.rapidSpread.detected
+              data.rapidSpread?.detected
                 ? "bg-red-50 text-red-700 border-red-200"
                 : "bg-green-50 text-green-700 border-green-200"
             )}
           >
-            {patterns.rapidSpread.detected ? "Detected" : "Not Detected"}
+            {data.rapidSpread?.detected ? "Detected" : "Not Detected"}
           </Badge>
         </div>
 
@@ -271,39 +282,39 @@ export const SuspiciousPatternsTab = ({
           <div className="flex items-center justify-between py-2 border-b border-gray-100">
             <span className="text-sm text-gray-600">Spread Rate</span>
             <span className="font-medium text-gray-900">
-              {(patterns.rapidSpread.spreadRate ?? 0).toFixed(2)} posts/hour
+              {(data.rapidSpread?.spreadRate ?? 0).toFixed(2)} posts/hour
             </span>
           </div>
           <div className="flex items-center justify-between py-2 border-b border-gray-100">
             <span className="text-sm text-gray-600">Detection Score</span>
             <span className="font-medium text-gray-900">
-              {(patterns.rapidSpread.score * 100).toFixed(1)}%
+              {((data.rapidSpread?.score || 0) * 100).toFixed(1)}%
             </span>
           </div>
           <div className="flex items-center justify-between py-2 border-b border-gray-100">
             <span className="text-sm text-gray-600">Organic Likelihood</span>
             <span className="font-medium text-gray-900">
-              {((patterns.rapidSpread.organicLikelihood ?? 0) * 100).toFixed(1)}%
+              {((data.rapidSpread?.organicLikelihood ?? 0) * 100).toFixed(1)}%
             </span>
           </div>
           <div className="flex items-center justify-between py-2">
             <span className="text-sm text-gray-600">Acceleration Points</span>
             <span className="font-medium text-gray-900">
-              {patterns.rapidSpread.accelerationPoints?.length ?? 0}
+              {data.rapidSpread?.accelerationPoints?.length ?? 0}
             </span>
           </div>
         </div>
 
-        {patterns.rapidSpread.timeline && patterns.rapidSpread.timeline.length > 0 && (
+        {data.rapidSpread?.timeline && data.rapidSpread.timeline.length > 0 && (
           <div className="mt-4 p-4 bg-gray-50 rounded-lg">
             <div className="text-sm font-medium text-gray-700 mb-2">
-              Spread Timeline ({patterns.rapidSpread.timeline.length} hours tracked)
+              Spread Timeline ({data.rapidSpread.timeline.length} hours tracked)
             </div>
             <div className="text-xs text-gray-600">
-              Peak activity at hour {patterns.rapidSpread.timeline.reduce((max, curr) =>
+              Peak activity at hour {data.rapidSpread.timeline.reduce((max: any, curr: any) =>
                 curr.postCount > max.postCount ? curr : max,
-                patterns.rapidSpread.timeline[0]
-              )?.hour || 0} with {patterns.rapidSpread.timeline.reduce((max, curr) =>
+                data.rapidSpread.timeline[0]
+              )?.hour || 0} with {data.rapidSpread.timeline.reduce((max: number, curr: any) =>
                 Math.max(max, curr.postCount),
                 0
               )} posts

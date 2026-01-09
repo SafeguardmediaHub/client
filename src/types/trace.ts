@@ -27,11 +27,14 @@ export interface InitiateTraceRequest {
   searchDepth?: 1 | 2 | 3; // Backend expects numeric values: 1=shallow, 2=moderate, 3=deep
   maxResults?: number;
   includeDeleted?: boolean;
+  enableVisualSearch?: boolean;
+  visualVerificationThreshold?: number;
   timeRange?: {
     start?: string;
     end?: string;
   };
 }
+
 
 // Initiate trace response
 export interface InitiateTraceResponse {
@@ -80,6 +83,14 @@ export interface EngagementMetrics {
   reactions?: number;
 }
 
+export interface VisualMatch {
+  verified: boolean;
+  similarityScore: number;
+  matchType: "text-only" | "visual-only" | "hybrid";
+  verifiedAt: string;
+  transformations: string[];
+}
+
 // Individual post data
 export interface PlatformPost {
   postId: string;
@@ -95,6 +106,8 @@ export interface PlatformPost {
   caption?: string;
   isVerified: boolean;
   spreadType: string;
+  discoveryMethod?: "text" | "visual" | "hybrid";
+  visualMatch?: VisualMatch;
 }
 
 // Platform appearance grouping
@@ -154,6 +167,27 @@ export interface PlatformBreakdown {
   percentage?: number;
 }
 
+export interface VisualizationNode {
+  id: string;
+  label: string;
+  platform: Platform;
+  type: "original" | "spreader" | "influencer";
+  size: number;
+  timestamp: string;
+  verified: boolean;
+}
+
+export interface VisualizationEdge {
+  source: string;
+  target: string;
+  type: string;
+}
+
+export interface VisualizationData {
+  nodes: VisualizationNode[];
+  edges: VisualizationEdge[];
+}
+
 // Distribution graph
 export interface DistributionGraph {
   originalPoster: OriginalPoster;
@@ -164,6 +198,7 @@ export interface DistributionGraph {
   spreadDurationHours: number;
   peakVelocity: number;
   platformBreakdown: PlatformBreakdown[];
+  visualizationData?: VisualizationData;
 }
 
 // Coordinated behavior pattern
@@ -273,7 +308,36 @@ export interface ListTracesResponse {
   };
   timestamp: string;
 }
+export interface TimelineEventData {
+  timestamp: string;
+  platform: Platform;
+  eventType: string;
+  description: string;
+  postUrl?: string;
+  username?: string;
+  engagement?: EngagementMetrics;
+}
 
+export interface TimelineResponse {
+  success: boolean;
+  message: string;
+  data: {
+    mediaId: string;
+    timeline: TimelineEventData[];
+  };
+  timestamp: string;
+}
+
+export interface DistributionResponse {
+  success: boolean;
+  message: string;
+  data: {
+    mediaId: string;
+    graph: DistributionGraph;
+    visualizationData?: VisualizationData;
+  };
+  timestamp: string;
+}
 
 // Client-side state types
 export type TraceUIState =

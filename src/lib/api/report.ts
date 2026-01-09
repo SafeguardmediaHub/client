@@ -5,7 +5,7 @@ export type ReportType = "media_analytics" | "system" | "user_activity";
 export type ReportFormat = "pdf" | "csv" | "json";
 export type ReportPriority = "low" | "normal" | "high";
 export type ReportStatus = "pending" | "processing" | "completed" | "failed";
-export type VerificationType = "timeline" | "c2pa" | "geolocation" | "authenticity";
+export type VerificationType = "timeline" | "c2pa" | "geolocation" | "authenticity" | "sm_trace";
 
 export interface CreateReportPayload {
   type: ReportType;

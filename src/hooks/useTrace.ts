@@ -1,11 +1,13 @@
-/** biome-ignore-all lint/suspicious/noExplicitAny: <> */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
+  getTraceDistribution,
   getTraceResult,
   getTraceStatus,
+  getTraceTimeline,
   initiateTrace,
   listMediaTraces,
+  listUserTraces,
 } from '@/lib/api/trace';
 import type { InitiateTraceRequest } from '@/types/trace';
 
@@ -110,6 +112,28 @@ export const useTraceResult = (
   });
 };
 
+export const useTraceDistribution = (
+  traceId: string,
+  options?: { enabled?: boolean }
+) => {
+  return useQuery({
+    queryKey: ['traceDistribution', traceId],
+    queryFn: () => getTraceDistribution(traceId),
+    enabled: options?.enabled ?? !!traceId,
+  });
+};
+
+export const useTraceTimeline = (
+  traceId: string,
+  options?: { enabled?: boolean }
+) => {
+  return useQuery({
+    queryKey: ['traceTimeline', traceId],
+    queryFn: () => getTraceTimeline(traceId),
+    enabled: options?.enabled ?? !!traceId,
+  });
+};
+
 export const useMediaTraces = (
   mediaId: string,
   options?: { enabled?: boolean }
@@ -121,3 +145,15 @@ export const useMediaTraces = (
     staleTime: 5000,
   });
 };
+
+export const useUserTraces = (
+  params?: { limit?: number; skip?: number; status?: string },
+  options?: { enabled?: boolean }
+) => {
+  return useQuery({
+    queryKey: ['userTraces', params],
+    queryFn: () => listUserTraces(params),
+    enabled: options?.enabled ?? true,
+  });
+};
+

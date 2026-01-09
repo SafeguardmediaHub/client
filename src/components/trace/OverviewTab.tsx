@@ -88,19 +88,29 @@ export const OverviewTab = ({ result }: OverviewTabProps) => {
         }, allPosts[0])
       : null;
 
+    const visualMatches = allPosts.filter(p => 
+      p.discoveryMethod === 'visual' || p.discoveryMethod === 'hybrid'
+    );
+
+    const maxSimilarity = visualMatches.length > 0
+      ? Math.max(...visualMatches.map(p => p.visualMatch?.similarityScore || 0))
+      : 0;
+
     return {
       totalPosts: allPosts.length,
       platforms,
       dateRange: { earliest, latest },
       topPost,
       totalEngagement,
+      visualMatches: visualMatches.length,
+      maxSimilarity,
     };
   }, [result.platformAppearances]);
 
   return (
     <div className="space-y-6">
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="p-4 bg-white border border-gray-200 rounded-lg">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-blue-50 rounded-lg">
@@ -127,6 +137,20 @@ export const OverviewTab = ({ result }: OverviewTabProps) => {
 
         <div className="p-4 bg-white border border-gray-200 rounded-lg">
           <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-red-50 rounded-lg">
+              <AlertTriangle className="w-5 h-5 text-red-600" />
+            </div>
+            <div className="text-sm text-gray-600">Risk Level</div>
+          </div>
+          <div className="text-3xl font-bold text-gray-900 capitalize">
+            {result.suspiciousPatterns?.riskLevel || "Low"}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="p-4 bg-white border border-gray-200 rounded-lg">
+          <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-green-50 rounded-lg">
               <TrendingUp className="w-5 h-5 text-green-600" />
             </div>
@@ -139,13 +163,25 @@ export const OverviewTab = ({ result }: OverviewTabProps) => {
 
         <div className="p-4 bg-white border border-gray-200 rounded-lg">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-red-50 rounded-lg">
-              <AlertTriangle className="w-5 h-5 text-red-600" />
+            <div className="p-2 bg-amber-50 rounded-lg">
+              <Activity className="w-5 h-5 text-amber-600" />
             </div>
-            <div className="text-sm text-gray-600">Risk Level</div>
+            <div className="text-sm text-gray-600">Visual Matches</div>
           </div>
-          <div className="text-3xl font-bold text-gray-900 capitalize">
-            {result.suspiciousPatterns?.riskLevel || "Low"}
+          <div className="text-3xl font-bold text-gray-900">
+            {summary.visualMatches}
+          </div>
+        </div>
+
+        <div className="p-4 bg-white border border-gray-200 rounded-lg">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-cyan-50 rounded-lg">
+              <Activity className="w-5 h-5 text-cyan-600" />
+            </div>
+            <div className="text-sm text-gray-600">Max Similarity</div>
+          </div>
+          <div className="text-3xl font-bold text-gray-900">
+            {(summary.maxSimilarity * 100).toFixed(1)}%
           </div>
         </div>
       </div>

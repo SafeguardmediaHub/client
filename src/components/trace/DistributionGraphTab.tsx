@@ -12,11 +12,13 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { DistributionGraph, Platform } from "@/types/trace";
+import type { DistributionGraph, EarlySpreader, Platform, PlatformBreakdown, ViralMoment } from "@/types/trace";
 
 interface DistributionGraphTabProps {
   graph: DistributionGraph;
+  networkData?: any;
 }
+
 
 const getPlatformColor = (platform: Platform) => {
   const colors: Record<Platform, string> = {
@@ -55,8 +57,14 @@ const formatDuration = (hours: number) => {
   return `${remainingHours}h`;
 };
 
-export const DistributionGraphTab = ({ graph }: DistributionGraphTabProps) => {
-  if (!graph || !graph.originalPoster) {
+export const DistributionGraphTab = ({ graph, networkData }: DistributionGraphTabProps) => {
+  // Prefer networkData if available, otherwise fallback to graph
+  // Note: networkData is the 'data' part of the response which contains { graph, visualizationData }
+  const data = networkData?.graph 
+    ? { ...networkData.graph, visualizationData: networkData.visualizationData || networkData.graph.visualizationData } 
+    : graph;
+
+  if (!data || !data.originalPoster) {
     return (
       <div className="p-12 text-center">
         <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -70,6 +78,9 @@ export const DistributionGraphTab = ({ graph }: DistributionGraphTabProps) => {
     );
   }
 
+  // Use 'data' instead of 'graph' for the rest of the component
+  const { totalPosts, totalEngagement, spreadDurationHours, peakVelocity, originalPoster, earlySpreaders, viralMoments, platformBreakdown } = data;
+
   return (
     <div className="space-y-6">
       {/* Overall Stats */}
@@ -80,7 +91,7 @@ export const DistributionGraphTab = ({ graph }: DistributionGraphTabProps) => {
             <div className="text-sm text-gray-600">Total Posts</div>
           </div>
           <div className="text-3xl font-bold text-gray-900">
-            {formatNumber(graph.totalPosts)}
+            {formatNumber(totalPosts)}
           </div>
         </div>
 
@@ -90,7 +101,7 @@ export const DistributionGraphTab = ({ graph }: DistributionGraphTabProps) => {
             <div className="text-sm text-gray-600">Total Engagement</div>
           </div>
           <div className="text-3xl font-bold text-gray-900">
-            {formatNumber(graph.totalEngagement)}
+            {formatNumber(totalEngagement)}
           </div>
         </div>
 
@@ -100,7 +111,7 @@ export const DistributionGraphTab = ({ graph }: DistributionGraphTabProps) => {
             <div className="text-sm text-gray-600">Spread Duration</div>
           </div>
           <div className="text-3xl font-bold text-gray-900">
-            {formatDuration(graph.spreadDurationHours)}
+            {formatDuration(spreadDurationHours)}
           </div>
         </div>
 
@@ -110,7 +121,7 @@ export const DistributionGraphTab = ({ graph }: DistributionGraphTabProps) => {
             <div className="text-sm text-gray-600">Peak Velocity</div>
           </div>
           <div className="text-3xl font-bold text-gray-900">
-            {formatNumber(graph.peakVelocity)}
+            {formatNumber(peakVelocity)}
             <span className="text-sm text-gray-600 ml-1">posts/hr</span>
           </div>
         </div>
@@ -131,22 +142,22 @@ export const DistributionGraphTab = ({ graph }: DistributionGraphTabProps) => {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-gray-900">
-                    {graph.originalPoster.displayName}
+                    {originalPoster.displayName}
                   </span>
-                  {graph.originalPoster.verified && (
+                  {originalPoster.verified && (
                     <BadgeCheck className="w-4 h-4 text-blue-600" />
                   )}
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <span>@{graph.originalPoster.username}</span>
+                  <span>@{originalPoster.username}</span>
                   <span>•</span>
                   <Badge
                     className={cn(
                       "capitalize text-xs",
-                      getPlatformColor(graph.originalPoster.platform)
+                      getPlatformColor(originalPoster.platform)
                     )}
                   >
-                    {graph.originalPoster.platform}
+                    {originalPoster.platform}
                   </Badge>
                 </div>
               </div>
@@ -157,25 +168,61 @@ export const DistributionGraphTab = ({ graph }: DistributionGraphTabProps) => {
             </div>
           </div>
           <div className="text-sm text-gray-600 mb-2">
-            Posted: {formatDate(graph.originalPoster.timestamp)}
+            Posted: {formatDate(originalPoster.timestamp)}
           </div>
           <div className="flex gap-4 text-sm text-gray-700">
-            <span>{formatNumber(graph.originalPoster.engagement.likes)} likes</span>
-            <span>{formatNumber(graph.originalPoster.engagement.shares)} shares</span>
-            <span>{formatNumber(graph.originalPoster.engagement.comments)} comments</span>
-            <span>{formatNumber(graph.originalPoster.engagement.views)} views</span>
+            <span>{formatNumber(originalPoster.engagement.likes)} likes</span>
+            <span>{formatNumber(originalPoster.engagement.shares)} shares</span>
+            <span>{formatNumber(originalPoster.engagement.comments)} comments</span>
+            <span>{formatNumber(originalPoster.engagement.views)} views</span>
           </div>
         </div>
       </div>
 
+      {/* Network Visualization Data */}
+      {data.visualizationData && data.visualizationData.nodes && data.visualizationData.nodes.length > 0 && (
+        <div className="p-6 bg-white border border-gray-200 rounded-lg">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <Users className="w-5 h-5 text-blue-600" />
+            Network Participants ({data.visualizationData.nodes.length})
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {data.visualizationData.nodes.map((node: any) => (
+              <div key={node.id} className="p-3 bg-gray-50 border border-gray-100 rounded-lg flex items-center gap-3">
+                <div className={cn(
+                  "w-10 h-10 rounded-full flex items-center justify-center text-white font-bold",
+                  getPlatformColor(node.platform)
+                )}>
+                  {node.label.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-gray-900 flex items-center gap-1">
+                    {node.label}
+                    {node.verified && <BadgeCheck className="w-3 h-3 text-blue-600" />}
+                  </div>
+                  <div className="flex gap-2">
+                    <Badge variant="outline" className="text-[10px] uppercase">
+                      {node.type}
+                    </Badge>
+                    <span className="text-[10px] text-gray-500">
+                      {new Date(node.timestamp).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Early Spreaders */}
-      {graph.earlySpreaders && graph.earlySpreaders.length > 0 && (
+      {earlySpreaders && earlySpreaders.length > 0 && (
         <div className="p-6 bg-white border border-gray-200 rounded-lg">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Early Spreaders
           </h3>
           <div className="space-y-3">
-            {graph.earlySpreaders.slice(0, 10).map((spreader, index) => {
+            {earlySpreaders.slice(0, 10).map((spreader: EarlySpreader, index: number) => {
               const totalEngagement =
                 spreader.engagement.likes +
                 spreader.engagement.shares +
@@ -239,14 +286,14 @@ export const DistributionGraphTab = ({ graph }: DistributionGraphTabProps) => {
       )}
 
       {/* Viral Moments */}
-      {graph.viralMoments && graph.viralMoments.length > 0 && (
+      {viralMoments && viralMoments.length > 0 && (
         <div className="p-6 bg-white border border-gray-200 rounded-lg">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <Zap className="w-5 h-5 text-yellow-600" />
             Viral Moments
           </h3>
           <div className="space-y-3">
-            {graph.viralMoments.map((moment, index) => (
+            {viralMoments.map((moment: ViralMoment, index: number) => (
               <div
                 key={index}
                 className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg"
@@ -283,14 +330,14 @@ export const DistributionGraphTab = ({ graph }: DistributionGraphTabProps) => {
       )}
 
       {/* Platform Breakdown */}
-      {graph.platformBreakdown && graph.platformBreakdown.length > 0 && (
+      {platformBreakdown && platformBreakdown.length > 0 && (
         <div className="p-6 bg-white border border-gray-200 rounded-lg">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Platform Breakdown
           </h3>
           <div className="space-y-3">
-            {graph.platformBreakdown.map((platform) => {
-              const percentage = ((platform.postCount / graph.totalPosts) * 100).toFixed(1);
+            {platformBreakdown.map((platform: PlatformBreakdown) => {
+              const percentage = ((platform.postCount / totalPosts) * 100).toFixed(1);
 
               return (
                 <div key={platform.platform} className="space-y-2">
@@ -330,6 +377,7 @@ export const DistributionGraphTab = ({ graph }: DistributionGraphTabProps) => {
           </div>
         </div>
       )}
+
     </div>
   );
 };
