@@ -163,7 +163,7 @@ export const ClaimDetail = ({ claimId, onBack }: ClaimDetailProps) => {
       </div>
 
       {/* Consensus Interpretation */}
-      {score?.consensus?.interpretation && (
+      {/* {score?.consensus?.interpretation && (
         <div className="mb-8 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl flex items-center gap-3 text-blue-900">
           <div className="p-2 bg-white/50 rounded-full">
             <TrendingUp className="w-5 h-5 text-blue-600" />
@@ -173,7 +173,7 @@ export const ClaimDetail = ({ claimId, onBack }: ClaimDetailProps) => {
             {score.consensus.interpretation}
           </p>
         </div>
-      )}
+      )} */}
 
       {/* Verdicts List */}
       <div className="space-y-6">

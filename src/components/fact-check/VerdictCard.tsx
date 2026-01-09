@@ -89,11 +89,11 @@ export const VerdictCard = ({ verdict }: VerdictCardProps) => {
             {credibilityConfig.label}
           </div>
         </div>
-        {/* <div
+        <div
           className={`flex-shrink-0 px-3 py-1 rounded-lg text-sm font-bold border shadow-sm ${getRatingColor(verdict.rating)}`}
         >
-          {verdict.textual_rating || verdict.rating}
-        </div> */}
+          {verdict.rating || verdict.textual_rating}
+        </div>
       </div>
 
       {/* Claim Title / Context */}
@@ -103,9 +103,15 @@ export const VerdictCard = ({ verdict }: VerdictCardProps) => {
         </p>
       )}
 
-      {verdict.textual_rating && (
+{verdict.textual_rating && (
         <p className="text-sm text-gray-700 mb-4 line-clamp-3 leading-relaxed flex-grow">
           {verdict.textual_rating}
+        </p>
+      )}
+     
+      {verdict.publisher_credibility && ( 
+        <p className="text-sm text-gray-700 mb-4 line-clamp-3 leading-relaxed flex-grow ">
+          Publisher Credibility: <span className="font-bold capitalize">{verdict.publisher_credibility}</span>
         </p>
       )}
 

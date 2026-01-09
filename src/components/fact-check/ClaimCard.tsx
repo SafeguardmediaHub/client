@@ -136,11 +136,11 @@ export const ClaimCard = ({ claim, onViewDetails }: ClaimCardProps) => {
               )}
             </div>
             <div className="flex flex-col gap-2">
-              <div
+              {/* <div
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${getConfidenceColor(confidenceScore)} whitespace-nowrap`}
               >
                 {claim.confidence || "Unknown"} Confidence
-              </div>
+              </div> */}
               <div
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${getVerdictColor(claim.verdict)} whitespace-nowrap text-center`}
               >

@@ -105,7 +105,7 @@ const FactCheckContent = () => {
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-            <Button
+            {/* <Button
               variant="outline"
               size="sm"
               onClick={() => router.back()}
@@ -113,8 +113,8 @@ const FactCheckContent = () => {
             >
               <ArrowLeft className="size-4 mr-2" />
               Back
-            </Button>
-            <Button
+            </Button> */}
+            {/* <Button
               variant="outline"
               size="sm"
               onClick={() => setShowInfoDialog(true)}
@@ -122,7 +122,7 @@ const FactCheckContent = () => {
             >
               <Info className="size-4 mr-2" />
               How it works
-            </Button>
+            </Button> */}
             {currentJobId && (
               <Button
                 onClick={handleStartNew}
