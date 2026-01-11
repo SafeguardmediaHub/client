@@ -66,10 +66,10 @@ export const AssistantPanel = () => {
             isThinking={isThinking} 
           />
           <ConversationView messages={messages} isThinking={isThinking} />
-          <SuggestionChips 
+          {/* <SuggestionChips 
             onSuggestionClick={(suggestion) => sendMessage(suggestion)}
             show={messages.length <= 3}
-          />
+          /> */}
           <InputBox
             onSend={sendMessage}
             disabled={isThinking}

@@ -5,17 +5,24 @@ import { format } from 'date-fns';
 interface AssistantMessageProps {
   content: string;
   timestamp: Date;
+  isStreaming?: boolean;
 }
 
 export const AssistantMessage = ({
   content,
   timestamp,
+  isStreaming,
 }: AssistantMessageProps) => {
   return (
     <div className="flex justify-start mb-4">
       <div className="max-w-[80%]">
         <div className="bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-2xl rounded-tl-sm px-4 py-2.5">
-          <p className="text-sm leading-relaxed">{content}</p>
+          <p className="text-sm leading-relaxed whitespace-pre-wrap">
+            {content}
+            {isStreaming && (
+              <span className="inline-block w-1.5 h-4 ml-0.5 align-middle bg-indigo-500 animate-pulse" />
+            )}
+          </p>
         </div>
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
           {format(timestamp, 'HH:mm')}

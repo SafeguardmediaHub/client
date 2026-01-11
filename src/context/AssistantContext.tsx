@@ -10,12 +10,14 @@ import {
   type ReactNode,
 } from 'react';
 import { toast } from 'sonner';
-import { analyzeIntent } from '@/lib/api/assistant';
+import { flushSync } from 'react-dom';
+import { useAssistantStream } from '@/hooks/useAssistantStream';
 import {
   generateSessionId,
   getLastSessionId,
   loadSessionFromStorage,
   saveSessionToStorage,
+  transformBackendWorkflow,
 } from '@/lib/assistant-utils';
 import type {
   AssistantState,
@@ -141,6 +143,128 @@ export const AssistantProvider = ({ children }: { children: ReactNode }) => {
     setMediaContextState({});
   }, []);
 
+
+
+  // Stream handlers
+  const handleWorkflowReceived = useCallback((workflow: WorkflowRecommendation) => {
+    // Transform backend format to frontend format
+    const transformedWorkflow = transformBackendWorkflow(workflow);
+    
+    // Store the workflow for reference, but don't display it as a card
+    // The assistant provides recommendations via text explanation (chunks), not executable workflows
+    setCurrentWorkflow(transformedWorkflow);
+    
+    // Don't add a workflow message - the explanation comes via text chunks
+  }, []);
+
+  // Typewriter effect state
+  const typewriterBufferRef = useRef<string>('');
+  const typewriterTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isTypingRef = useRef<boolean>(false);
+
+  const handleChunkReceived = useCallback((text: string) => {
+    // Add incoming text to buffer
+    typewriterBufferRef.current += text;
+    
+    // Start typewriter if not already running
+    if (!isTypingRef.current) {
+      isTypingRef.current = true;
+      
+      const typeNextChar = () => {
+        if (typewriterBufferRef.current.length === 0) {
+          // Buffer empty, stop typing
+          isTypingRef.current = false;
+          if (typewriterTimerRef.current) {
+            clearTimeout(typewriterTimerRef.current);
+            typewriterTimerRef.current = null;
+          }
+          return;
+        }
+        
+        // Take next 3 characters from buffer (or whatever is left)
+        const charsToAdd = typewriterBufferRef.current.slice(0, 3);
+        typewriterBufferRef.current = typewriterBufferRef.current.slice(3);
+        
+        // Add characters to message
+        flushSync(() => {
+          setMessages((prev) => {
+            const lastMessage = prev[prev.length - 1];
+            
+            if (lastMessage && lastMessage.role === 'assistant' && lastMessage.type === 'text') {
+              return [
+                ...prev.slice(0, -1),
+                { ...lastMessage, content: (lastMessage.content as string) + charsToAdd }
+              ];
+            }
+            
+            return [
+              ...prev,
+              {
+                role: 'assistant',
+                type: 'text',
+                content: charsToAdd,
+                timestamp: new Date(),
+              },
+            ];
+          });
+        });
+        
+        // Schedule next batch (3 chars every 5ms = ~600 chars/sec)
+        typewriterTimerRef.current = setTimeout(typeNextChar, 5);
+      };
+      
+      typeNextChar();
+    }
+  }, []);
+
+  const handleInstantResponse = useCallback((explanation: string, source: 'keyword_match' | 'llm') => {
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: 'assistant',
+        type: 'text',
+        content: explanation,
+        timestamp: new Date(),
+      },
+    ]);
+  }, []);
+
+  const handleStreamComplete = useCallback(() => {
+    setIsThinking(false);
+  }, []);
+
+  const handleStreamError = useCallback((error: string) => {
+    setIsThinking(false);
+    toast.error(error);
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: 'assistant',
+        type: 'text',
+        content: "I'm having trouble connecting. Please check your connection and try again.",
+        timestamp: new Date(),
+      },
+    ]);
+  }, []);
+
+  // Initialize streaming hook
+  const { startStream } = useAssistantStream({
+    onWorkflowReceived: handleWorkflowReceived,
+    onChunkReceived: handleChunkReceived,
+    onInstantResponse: handleInstantResponse,
+    onComplete: handleStreamComplete,
+    onError: handleStreamError,
+  });
+
+  // Cleanup typewriter timer on unmount
+  useEffect(() => {
+    return () => {
+      if (typewriterTimerRef.current) {
+        clearTimeout(typewriterTimerRef.current);
+      }
+    };
+  }, []);
+
   const sendMessage = useCallback(
     async (message: string) => {
       if (!message.trim() || !sessionId) return;
@@ -154,60 +278,17 @@ export const AssistantProvider = ({ children }: { children: ReactNode }) => {
       setMessages((prev) => [...prev, userMessage]);
 
       setIsThinking(true);
-
-      try {
-        const response = await analyzeIntent({
-          message,
-          media_id: mediaContext.mediaId,
-          session_id: sessionId,
-        });
-
-        // Update session ID if it changed
-        if (response.session_id !== sessionId) {
-          setSessionId(response.session_id);
-        }
-
-        // Add assistant response
-        const assistantMessage: Message = {
-          role: 'assistant',
-          type: response.response.type,
-          content: response.response.content as string | WorkflowRecommendation,
-          timestamp: new Date(),
-        } as Message;
-
-        setMessages((prev) => [...prev, assistantMessage]);
-
-        // If it's a workflow recommendation, set it as current
-        if (response.response.type === 'workflow') {
-          setCurrentWorkflow(
-            response.response.content as WorkflowRecommendation
-          );
-        }
-
-        // Clear attached media after successful send
-        if (attachedMedia) {
-          removeAttachedMedia();
-        }
-      } catch (error) {
-        console.error('Failed to send message:', error);
-        toast.error(
-          "I'm having trouble connecting. Please check your connection and try again."
-        );
-
-        // Add error message
-        const errorMessage: Message = {
-          role: 'assistant',
-          type: 'text',
-          content:
-            "I'm having trouble connecting. Please check your connection and try again.",
-          timestamp: new Date(),
-        };
-        setMessages((prev) => [...prev, errorMessage]);
-      } finally {
-        setIsThinking(false);
+      
+      // Clear attached media immediately so UI updates
+      if (attachedMedia) {
+        removeAttachedMedia();
       }
+
+      // Start streaming
+      // Note: We use the session ID from state. The stream will handle Auth token internally.
+      startStream(message, mediaContext.mediaId, sessionId);
     },
-    [sessionId, mediaContext.mediaId, attachedMedia, removeAttachedMedia]
+    [sessionId, mediaContext.mediaId, attachedMedia, removeAttachedMedia, startStream]
   );
 
   // Reset conversation

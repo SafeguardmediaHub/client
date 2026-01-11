@@ -20,9 +20,16 @@ export const ConversationView = ({
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom on new messages
+  // Smart auto-scroll
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    const container = scrollRef.current;
+    if (!container) return;
+
+    // Check if user is near bottom (within 100px)
+    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+
+    if (isNearBottom) {
+      container.scrollTop = container.scrollHeight;
     }
   }, [messages, isThinking]);
 
@@ -98,6 +105,7 @@ export const ConversationView = ({
               key={index}
               content={message.content as string}
               timestamp={message.timestamp}
+              isStreaming={isThinking && index === messages.length - 1}
             />
           );
         }
@@ -125,7 +133,9 @@ export const ConversationView = ({
         return null;
       })}
 
-      {isThinking && <ThinkingIndicator />}
+      {isThinking && messages[messages.length - 1]?.role !== 'assistant' && (
+        <ThinkingIndicator />
+      )}
     </div>
   );
 };
