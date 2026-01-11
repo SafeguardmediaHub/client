@@ -64,10 +64,10 @@ export const ConversationView = ({
             </p>
             <div className="space-y-2">
               {[
-                'Check if a photo is recent',
-                'Verify the location',
-                'See if the image was edited',
-                'Find the original source',
+                'I want to verify if an image is authentic',
+                'How can I check where this photo was taken?',
+                'Is there a way to detect photo manipulation?',
+                'How can you help me find where a video originally came from',
               ].map((suggestion, idx) => (
                 <div
                   key={idx}

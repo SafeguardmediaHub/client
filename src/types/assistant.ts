@@ -113,3 +113,12 @@ export interface SessionResponse {
   created_at: string;
   updated_at: string;
 }
+
+// New types for media attachment feature
+export interface AttachedMedia {
+  id: string;
+  type: 'image' | 'video' | 'audio';
+  thumbnailUrl: string;
+  filename: string;
+  mimeType: string;
+}

@@ -19,6 +19,7 @@ import {
 } from '@/lib/assistant-utils';
 import type {
   AssistantState,
+  AttachedMedia,
   Message,
   WorkflowRecommendation,
 } from '@/types/assistant';
@@ -31,6 +32,10 @@ interface AssistantContextType extends AssistantState {
   setMediaContext: (mediaId?: string, mediaType?: 'image' | 'video' | 'audio') => void;
   clearMessages: () => void;
   setCurrentWorkflow: (workflow: WorkflowRecommendation | null) => void;
+  attachedMedia: AttachedMedia | null;
+  attachMedia: (media: AttachedMedia) => void;
+  removeAttachedMedia: () => void;
+  resetConversation: () => void;
 }
 
 const AssistantContext = createContext<AssistantContextType | undefined>(
@@ -48,6 +53,7 @@ export const AssistantProvider = ({ children }: { children: ReactNode }) => {
     mediaId?: string;
     mediaType?: 'image' | 'video' | 'audio';
   }>({});
+  const [attachedMedia, setAttachedMedia] = useState<AttachedMedia | null>(null);
 
   const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -117,6 +123,24 @@ export const AssistantProvider = ({ children }: { children: ReactNode }) => {
     setSessionId(newSessionId);
   }, []);
 
+  const attachMedia = useCallback((media: AttachedMedia) => {
+    setAttachedMedia(media);
+    // Also update mediaContext for backward compatibility
+    setMediaContextState({
+      mediaId: media.id,
+      mediaType: media.type,
+    });
+    // Open assistant if not already open
+    if (!isOpen) {
+      setIsOpen(true);
+    }
+  }, [isOpen]);
+
+  const removeAttachedMedia = useCallback(() => {
+    setAttachedMedia(null);
+    setMediaContextState({});
+  }, []);
+
   const sendMessage = useCallback(
     async (message: string) => {
       if (!message.trim() || !sessionId) return;
@@ -159,6 +183,11 @@ export const AssistantProvider = ({ children }: { children: ReactNode }) => {
             response.response.content as WorkflowRecommendation
           );
         }
+
+        // Clear attached media after successful send
+        if (attachedMedia) {
+          removeAttachedMedia();
+        }
       } catch (error) {
         console.error('Failed to send message:', error);
         toast.error(
@@ -178,8 +207,35 @@ export const AssistantProvider = ({ children }: { children: ReactNode }) => {
         setIsThinking(false);
       }
     },
-    [sessionId, mediaContext.mediaId]
+    [sessionId, mediaContext.mediaId, attachedMedia, removeAttachedMedia]
   );
+
+  // Reset conversation
+  const resetConversation = useCallback(() => {
+    // Clear all messages
+    setMessages([]);
+    
+    // Generate new session ID
+    const newSessionId = generateSessionId();
+    setSessionId(newSessionId);
+    
+    // Clear workflow
+    setCurrentWorkflow(null);
+    
+    // Remove attached media
+    removeAttachedMedia();
+    
+    // Clear media context
+    setMediaContextState({});
+    
+    // Clear storage
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('assistant_session');
+    }
+    
+    // Show success message
+    toast.success('New conversation started');
+  }, [removeAttachedMedia]);
 
   // Idle timer for gentle reminder
   useEffect(() => {
@@ -222,6 +278,10 @@ export const AssistantProvider = ({ children }: { children: ReactNode }) => {
     setMediaContext,
     clearMessages,
     setCurrentWorkflow,
+    attachedMedia,
+    attachMedia,
+    removeAttachedMedia,
+    resetConversation,
   };
 
   return (

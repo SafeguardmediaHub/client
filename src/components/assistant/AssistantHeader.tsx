@@ -1,19 +1,21 @@
 'use client';
 
-import { X } from 'lucide-react';
+import { X, RotateCcw } from 'lucide-react';
 import { Button } from '../ui/button';
 
 interface AssistantHeaderProps {
   onClose: () => void;
+  onReset: () => void;
   isThinking: boolean;
 }
 
 export const AssistantHeader = ({
   onClose,
+  onReset,
   isThinking,
 }: AssistantHeaderProps) => {
   return (
-    <header className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-slate-800 dark:to-slate-900">
+    <header className="flex items-center justify-between px-4 py-3 border-b border-white/20 dark:border-slate-700/50 backdrop-blur-xl bg-gradient-to-r from-indigo-50/80 to-purple-50/80 dark:from-slate-800/80 dark:to-slate-900/80">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center">
           <svg
@@ -49,15 +51,27 @@ export const AssistantHeader = ({
           </div>
         </div>
       </div>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={onClose}
-        className="h-8 w-8"
-        aria-label="Close assistant"
-      >
-        <X className="h-4 w-4" />
-      </Button>
+      <div className="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onReset}
+          className="h-8 w-8 cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900/30"
+          aria-label="New conversation"
+          title="Start new conversation"
+        >
+          <RotateCcw className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          className="h-8 w-8 cursor-pointer"
+          aria-label="Close assistant"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
     </header>
   );
 };
