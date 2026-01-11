@@ -6,6 +6,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
+import GoogleTranslate from './GoogleTranslate';
 
 const menuItems = [
   { name: 'Features', href: '#features' },
@@ -98,6 +99,7 @@ export const HeroHeader = () => {
                   ))}
                 </ul>
               </div>
+              <GoogleTranslate className="w-full justify-start lg:w-auto lg:justify-center" />
               {!isAuthenticated && (
                 <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
                   <Button

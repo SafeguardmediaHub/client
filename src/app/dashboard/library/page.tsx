@@ -11,6 +11,7 @@ import {
   List,
   RefreshCwIcon,
   SearchIcon,
+  Sparkles,
   Trash2,
   UploadIcon,
   X,
@@ -42,6 +43,8 @@ import {
 } from '@/components/ui/select';
 import { type Media, useDeleteMedia, useGetMedia } from '@/hooks/useMedia';
 import { cn, getStatusColor, shortenFilename, timeAgo } from '@/lib/utils';
+import { useAssistant } from '@/context/AssistantContext';
+import type { AttachedMedia } from '@/types/assistant';
 
 const LibraryPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -82,6 +85,7 @@ const LibraryPage = () => {
   }, [media]);
 
   const deleteMedia = useDeleteMedia();
+  const { attachMedia } = useAssistant();
 
   // Keyboard navigation for pagination
   useEffect(() => {
@@ -125,6 +129,24 @@ const LibraryPage = () => {
     setSearchQuery('');
     setFilterType('all');
     setPage(1);
+  };
+
+  const handleAskAI = (media: Media) => {
+    // Convert Media to AttachedMedia
+    const attachedMedia: AttachedMedia = {
+      id: media.id,
+      type: media.mimeType.startsWith('image/')
+        ? 'image'
+        : media.mimeType.startsWith('video/')
+        ? 'video'
+        : 'audio',
+      thumbnailUrl: media.thumbnailUrl,
+      filename: media.filename,
+      mimeType: media.mimeType,
+    };
+
+    // Attach media and open assistant
+    attachMedia(attachedMedia);
   };
 
   const hasActiveFilters = searchQuery || filterType !== 'all';
@@ -425,6 +447,14 @@ const LibraryPage = () => {
                     </p>
                     <div className="flex gap-1.5 flex-shrink-0">
                       <button
+                        onClick={() => handleAskAI(file)}
+                        className="p-1.5 rounded-md text-purple-600 hover:bg-purple-50 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                        aria-label="Ask AI Assistant"
+                        title="Verify with AI"
+                      >
+                        <Sparkles className="w-4 h-4" />
+                      </button>
+                      <button
                         onClick={() => handleMediaClick(file)}
                         className="p-1.5 rounded-md text-blue-600 hover:bg-blue-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                         aria-label="View details"
@@ -519,6 +549,14 @@ const LibraryPage = () => {
                 </div>
 
                 <div className="flex gap-2 flex-shrink-0">
+                  <button
+                    onClick={() => handleAskAI(file)}
+                    className="p-2 rounded-md text-purple-600 hover:bg-purple-50 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                    aria-label="Ask AI Assistant"
+                    title="Verify with AI"
+                  >
+                    <Sparkles className="w-5 h-5" />
+                  </button>
                   <button
                     onClick={() => handleMediaClick(file)}
                     className="p-2 rounded-md text-blue-600 hover:bg-blue-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"

@@ -24,6 +24,8 @@ import {
   formatSubscriptionTier,
   getSubscriptionBadgeColor,
 } from '@/lib/dashboard-utils';
+import { AssistantPanel, AssistantErrorBoundary } from './assistant';
+import { useAssistant } from '@/context/AssistantContext';
 
 type UploadPhase =
   | 'idle'
@@ -71,6 +73,7 @@ const Dashboard: FC<DashboardProps> = ({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const urlUploadMutation = useUrlUpload();
+  const { openAssistant, setMediaContext } = useAssistant();
 
   const handleUpload = () => {
     if (!url) {
@@ -244,6 +247,11 @@ const Dashboard: FC<DashboardProps> = ({
         setUploadPhase('success');
         setUploadedKey(key);
         onUploadSuccess?.(key);
+        
+        // Auto-open assistant and set media context
+        setMediaContext(key, uploadType === 'general_image' ? 'image' : uploadType);
+        openAssistant();
+        
         router.push('/dashboard/library');
       } catch (err: unknown) {
         setUploadPhase('error');
@@ -473,6 +481,11 @@ const Dashboard: FC<DashboardProps> = ({
 
       {/* Dashboard Overview */}
       <DashboardOverview />
+      
+      {/* AI Intent Assistant */}
+      <AssistantErrorBoundary>
+        <AssistantPanel />
+      </AssistantErrorBoundary>
     </section>
   );
 };
