@@ -71,6 +71,8 @@ export const ConversationView = ({
             </p>
             <div className="space-y-2">
               {[
+                'What can you do?',
+                "How do i check if an image is AI-Generated",
                 'I want to verify if an image is authentic',
                 'How can I check where this photo was taken?',
                 'Is there a way to detect photo manipulation?',
