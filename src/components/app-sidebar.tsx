@@ -85,13 +85,13 @@ const data = {
     // },
     {
       name: 'Visual Forensics',
-      url: '#', // '/dashboard/visual',
+      url:  '/dashboard/visual',
       icon: Search,
       featureId: 'visual_forensics',
     },
     {
       name: 'Audio Forensics',
-      url: '#', // '/dashboard/audio',
+      url:  '/dashboard/audio',
       icon: Search,
       featureId: 'audio_forensics',
     },
