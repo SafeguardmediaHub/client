@@ -59,7 +59,7 @@ export const ConversationView = ({
             </svg>
           </div>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-            Welcome to the Verification Assistant
+            Welcome to the AI Assistant
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 max-w-sm">
             Tell me what you're trying to verify and I'll pick the right tools

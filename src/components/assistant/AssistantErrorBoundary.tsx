@@ -54,7 +54,7 @@ export class AssistantErrorBoundary extends Component<Props, State> {
                 Assistant Error
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                The verification assistant encountered an unexpected error. Don't
+                The AI assistant encountered an unexpected error. Don't
                 worry, your work is safe.
               </p>
               {process.env.NODE_ENV === 'development' && this.state.error && (

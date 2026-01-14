@@ -34,7 +34,7 @@ export const AssistantHeader = ({
         </div>
         <div>
           <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
-            Verification Assistant
+            AI Assistant
           </h2>
           <div className="flex items-center gap-2">
             {isThinking ? (

@@ -450,7 +450,7 @@ const LibraryPage = () => {
                         onClick={() => handleAskAI(file)}
                         className="p-1.5 rounded-md text-purple-600 hover:bg-purple-50 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
                         aria-label="Ask AI Assistant"
-                        title="Verify with AI"
+                        title="Ask AI Assistant"
                       >
                         <Sparkles className="w-4 h-4" />
                       </button>
@@ -553,7 +553,7 @@ const LibraryPage = () => {
                     onClick={() => handleAskAI(file)}
                     className="p-2 rounded-md text-purple-600 hover:bg-purple-50 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
                     aria-label="Ask AI Assistant"
-                    title="Verify with AI"
+                    title="Ask AI Assistant"
                   >
                     <Sparkles className="w-5 h-5" />
                   </button>
