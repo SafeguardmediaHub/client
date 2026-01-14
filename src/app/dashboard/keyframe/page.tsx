@@ -483,7 +483,7 @@ const Keyframe: FC<DashboardProps> = ({
                     </label>
                     <MediaSelector
                       onSelect={handleMediaSelection}
-                      // filterType="video"
+                      filterType="video"
                     />
                   </div>
 
