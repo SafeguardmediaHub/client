@@ -175,6 +175,7 @@ export const transformBackendWorkflow = (backendWorkflow: any): any => {
       estimatedTime: step.estimated_time || step.estimatedTime || 0,
       cost: step.cost || 0,
       order: step.order !== undefined ? step.order : index,
+      frontendLink: step.frontend_link || step.frontendLink || undefined,
     })),
     blindSpots: backendWorkflow.blind_spots || backendWorkflow.blindSpots || [],
   };

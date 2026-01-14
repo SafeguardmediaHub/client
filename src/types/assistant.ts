@@ -11,7 +11,7 @@ export interface AssistantState {
 }
 
 export type MessageRole = 'user' | 'assistant';
-export type MessageType = 'text' | 'workflow' | 'question';
+export type MessageType = 'text' | 'workflow' | 'question' | 'acknowledgment';
 
 export type Message =
   | {
@@ -36,6 +36,12 @@ export type Message =
       type: 'question';
       content: ClarifyingQuestion;
       timestamp: Date;
+    }
+  | {
+      role: 'assistant';
+      type: 'acknowledgment';
+      content: AcknowledgmentContent;
+      timestamp: Date;
     };
 
 export interface WorkflowRecommendation {
@@ -56,12 +62,18 @@ export interface StepCard {
   estimatedTime: number; // in seconds
   cost: number;
   order: number;
+  frontendLink?: string;
 }
 
 export interface ClarifyingQuestion {
   question: string;
   options: string[];
   context?: string;
+}
+
+export interface AcknowledgmentContent {
+  message: string;
+  helpful_features?: string[];
 }
 
 export interface AssistantSession {
@@ -81,8 +93,8 @@ export interface IntentAnalysisRequest {
 export interface IntentAnalysisResponse {
   session_id: string;
   response: {
-    type: 'text' | 'workflow' | 'question';
-    content: string | WorkflowRecommendation | ClarifyingQuestion;
+    type: 'text' | 'workflow' | 'question' | 'acknowledgment';
+    content: string | WorkflowRecommendation | ClarifyingQuestion | AcknowledgmentContent;
   };
 }
 
