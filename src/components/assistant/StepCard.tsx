@@ -1,6 +1,7 @@
 'use client';
 
-import { ArrowDown } from 'lucide-react';
+import { ArrowDown, ExternalLink } from 'lucide-react';
+import Link from 'next/link';
 import { formatCost, formatTime, getToolIcon } from '@/lib/assistant-utils';
 import type { StepCard as StepCardType } from '@/types/assistant';
 
@@ -20,9 +21,20 @@ export const StepCard = ({ step, isLast }: StepCardProps) => {
             <Icon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
-              {step.name}
-            </h4>
+            <div className="flex items-center gap-2">
+              <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                {step.name}
+              </h4>
+              {step.frontendLink && (
+                <Link 
+                  href={step.frontendLink}
+                  className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
+                  title="Go to tool"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </Link>
+              )}
+            </div>
             <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
               <span className="font-medium">Why:</span> {step.why}
             </p>

@@ -62,6 +62,7 @@ export interface StepCard {
   estimatedTime: number; // in seconds
   cost: number;
   order: number;
+  frontendLink?: string;
 }
 
 export interface ClarifyingQuestion {
