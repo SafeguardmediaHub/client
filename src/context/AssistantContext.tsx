@@ -24,6 +24,8 @@ import type {
   AttachedMedia,
   Message,
   WorkflowRecommendation,
+  AcknowledgmentContent,
+  ClarifyingQuestion,
 } from '@/types/assistant';
 
 interface AssistantContextType extends AssistantState {
@@ -217,13 +219,37 @@ export const AssistantProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  const handleInstantResponse = useCallback((explanation: string, source: 'keyword_match' | 'llm') => {
+  const handleInstantResponse = useCallback((explanation: string, source: 'keyword_match' | 'llm' | 'cache') => {
     setMessages((prev) => [
       ...prev,
       {
         role: 'assistant',
         type: 'text',
         content: explanation,
+        timestamp: new Date(),
+      },
+    ]);
+  }, []);
+
+  const handleAcknowledgmentReceived = useCallback((content: AcknowledgmentContent) => {
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: 'assistant',
+        type: 'acknowledgment',
+        content: content,
+        timestamp: new Date(),
+      },
+    ]);
+  }, []);
+
+  const handleQuestionReceived = useCallback((question: ClarifyingQuestion) => {
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: 'assistant',
+        type: 'question',
+        content: question,
         timestamp: new Date(),
       },
     ]);
@@ -252,6 +278,8 @@ export const AssistantProvider = ({ children }: { children: ReactNode }) => {
     onWorkflowReceived: handleWorkflowReceived,
     onChunkReceived: handleChunkReceived,
     onInstantResponse: handleInstantResponse,
+    onAcknowledgmentReceived: handleAcknowledgmentReceived,
+    onQuestionReceived: handleQuestionReceived,
     onComplete: handleStreamComplete,
     onError: handleStreamError,
   });

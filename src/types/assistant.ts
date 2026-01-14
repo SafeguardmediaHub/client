@@ -11,7 +11,7 @@ export interface AssistantState {
 }
 
 export type MessageRole = 'user' | 'assistant';
-export type MessageType = 'text' | 'workflow' | 'question';
+export type MessageType = 'text' | 'workflow' | 'question' | 'acknowledgment';
 
 export type Message =
   | {
@@ -35,6 +35,12 @@ export type Message =
       role: 'assistant';
       type: 'question';
       content: ClarifyingQuestion;
+      timestamp: Date;
+    }
+  | {
+      role: 'assistant';
+      type: 'acknowledgment';
+      content: AcknowledgmentContent;
       timestamp: Date;
     };
 
@@ -64,6 +70,11 @@ export interface ClarifyingQuestion {
   context?: string;
 }
 
+export interface AcknowledgmentContent {
+  message: string;
+  helpful_features?: string[];
+}
+
 export interface AssistantSession {
   sessionId: string;
   messages: Message[];
@@ -81,8 +92,8 @@ export interface IntentAnalysisRequest {
 export interface IntentAnalysisResponse {
   session_id: string;
   response: {
-    type: 'text' | 'workflow' | 'question';
-    content: string | WorkflowRecommendation | ClarifyingQuestion;
+    type: 'text' | 'workflow' | 'question' | 'acknowledgment';
+    content: string | WorkflowRecommendation | ClarifyingQuestion | AcknowledgmentContent;
   };
 }
 

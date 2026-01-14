@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { streamWithRetry } from '@/lib/api/stream-client';
-import type { WorkflowRecommendation } from '@/types/assistant';
+import type { WorkflowRecommendation, AcknowledgmentContent, ClarifyingQuestion } from '@/types/assistant';
 
 interface StreamState {
   isStreaming: boolean;
@@ -10,7 +10,9 @@ interface StreamState {
 interface UseAssistantStreamProps {
   onWorkflowReceived: (workflow: WorkflowRecommendation) => void;
   onChunkReceived: (text: string) => void;
-  onInstantResponse: (explanation: string, source: 'keyword_match' | 'llm') => void;
+  onInstantResponse: (explanation: string, source: 'keyword_match' | 'llm' | 'cache') => void;
+  onAcknowledgmentReceived: (content: AcknowledgmentContent) => void;
+  onQuestionReceived: (question: ClarifyingQuestion) => void;
   onComplete: () => void;
   onError: (error: string) => void;
 }
@@ -19,6 +21,8 @@ export function useAssistantStream({
   onWorkflowReceived,
   onChunkReceived,
   onInstantResponse,
+  onAcknowledgmentReceived,
+  onQuestionReceived,
   onComplete,
   onError,
 }: UseAssistantStreamProps) {
@@ -64,7 +68,14 @@ export function useAssistantStream({
         onMessage: (event, data) => {
           switch (event) {
             case 'structure':
-              onWorkflowReceived(data);
+              // Handle different structure types
+              if (data.type === 'workflow') {
+                onWorkflowReceived(data.content);
+              } else if (data.type === 'acknowledgment') {
+                onAcknowledgmentReceived(data.content);
+              } else if (data.type === 'question') {
+                onQuestionReceived(data.content);
+              }
               break;
             case 'chunk':
               if (data.text) {
@@ -103,7 +114,7 @@ export function useAssistantStream({
       setState({ isStreaming: false, error: msg });
       onError(msg);
     }
-  }, [onWorkflowReceived, onChunkReceived, onInstantResponse, onComplete, onError]);
+  }, [onWorkflowReceived, onChunkReceived, onInstantResponse, onAcknowledgmentReceived, onQuestionReceived, onComplete, onError]);
 
   const stopStream = useCallback(() => {
     if (abortControllerRef.current) {

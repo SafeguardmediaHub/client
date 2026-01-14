@@ -132,6 +132,16 @@ export const ConversationView = ({
           );
         }
 
+        if (message.type === 'acknowledgment') {
+          return (
+            <AssistantMessage
+              key={index}
+              content={message.content.message}
+              timestamp={message.timestamp}
+            />
+          );
+        }
+
         return null;
       })}
 
