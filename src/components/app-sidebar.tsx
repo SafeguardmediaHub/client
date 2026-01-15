@@ -18,6 +18,7 @@ import {
   Share2,
   ShieldCheck,
   ShieldIcon,
+  Sparkles,
   Upload,
   Users,
 } from 'lucide-react';
@@ -128,11 +129,17 @@ const data = {
       icon: BookCheck,
       featureId: 'fact_checking',
     },
+    // {
+    //   name: 'SM Source Tracing',
+    //   url:'/dashboard/trace',
+    //   icon: Share2,
+    //   featureId: 'social_media_tracing',
+    // },
     {
-      name: 'SM Source Tracing',
-      url:'/dashboard/trace',
-      icon: Share2,
-      featureId: 'social_media_tracing',
+      name: 'Claim Research',
+      url: '/dashboard/claim-research',
+      icon: Sparkles,
+      featureId: 'claim_research',
     },
   ],
 
