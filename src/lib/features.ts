@@ -1,4 +1,4 @@
-import type { LucideIcon } from "lucide-react";
+import type {LucideIcon} from "lucide-react";
 
 export type FeatureStatus =
   | "available"
@@ -14,11 +14,11 @@ export interface FeatureMetadata {
   url?: string;
   icon?: LucideIcon;
   category:
-    | "detection"
-    | "verification"
-    | "reporting"
-    | "overview"
-    | "authenticity";
+  | "detection"
+  | "verification"
+  | "reporting"
+  | "overview"
+  | "authenticity";
   estimatedRelease?: string; // e.g., "Q1 2025", "March 2025"
   benefits?: string[];
   comingSoonMessage?: string;
@@ -137,17 +137,15 @@ export const FEATURES: Record<string, FeatureMetadata> = {
     name: "Tamper Detection",
     description:
       "Detect image splicing, copy-paste manipulation, and content-aware editing using forensic signatures.",
-    status: "in_development",
-    category: "detection",
-    estimatedRelease: "March 2025",
+    status: "available",
+    url: "/dashboard/tamper-detection",
+    category: "verification",
     benefits: [
       "Image splicing and composition detection",
       "Copy-paste manipulation identification",
       "Content-aware fill detection",
       "Forensic signature analysis",
     ],
-    comingSoonMessage:
-      "Tamper detection uses cutting-edge forensic analysis. In active development for March 2025 release.",
   },
   keyframe_extraction: {
     id: "keyframe_extraction",

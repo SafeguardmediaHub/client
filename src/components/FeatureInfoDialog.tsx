@@ -1,13 +1,14 @@
+/** biome-ignore-all lint/suspicious/noArrayIndexKey: <> */
 "use client";
 
 import {
   AlertCircle,
   CheckCircle,
   FileImage,
-  Film,
   FileText,
-  Video,
+  Film,
   Image as ImageIcon,
+  Video,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
@@ -154,7 +155,10 @@ export function FeatureInfoDialog({
               </h3>
               <ul className="space-y-1">
                 {featureInfo.tips.map((tip, index) => (
-                  <li key={index} className="text-xs sm:text-sm text-amber-800 pl-3 sm:pl-4 leading-relaxed">
+                  <li
+                    key={index}
+                    className="text-xs sm:text-sm text-amber-800 pl-3 sm:pl-4 leading-relaxed"
+                  >
                     • {tip}
                   </li>
                 ))}
@@ -172,7 +176,10 @@ export function FeatureInfoDialog({
             Close
           </Button>
           {onGetStarted && (
-            <Button onClick={handleGetStarted} className="cursor-pointer w-full sm:w-auto">
+            <Button
+              onClick={handleGetStarted}
+              className="cursor-pointer w-full sm:w-auto"
+            >
               Get Started
             </Button>
           )}
@@ -378,6 +385,40 @@ export const FEATURE_INFO: Record<string, FeatureInfo> = {
       "Not all media files contain C2PA metadata",
       "C2PA adoption is growing among professional creators",
       "Check the certificate issuer for source credibility",
+    ],
+  },
+  tamperDetection: {
+    title: "Tamper Detection",
+    description:
+      "Analyze media files for signs of manipulation, metadata tampering, and integrity issues using forensic analysis.",
+    icon: <FileImage className="size-7" />,
+    iconBgColor: "bg-red-50",
+    iconColor: "text-red-600",
+    supportedMedia: [
+      {
+        label: "All Media Types",
+        formats: ["Images", "Videos", "Audio"],
+      },
+    ],
+    howItWorks: [
+      "Select any media file from your library",
+      "View automatically generated tamper detection analysis",
+      "Review metadata integrity and completeness",
+      "Check for signs of manipulation or tampering",
+      "Examine detailed findings and suspicious indicators",
+    ],
+    useCases: [
+      "Verify media file integrity and authenticity",
+      "Detect metadata stripping or manipulation",
+      "Identify missing or suspicious metadata fields",
+      "Validate media before publishing or sharing",
+      "Investigate potential content manipulation",
+    ],
+    tips: [
+      "Analysis is performed automatically when media is uploaded",
+      "Results are instant - no processing time required",
+      "Works with all media types including images, videos, and audio",
+      "Check the detailed reasons for any tampering flags",
     ],
   },
 };
