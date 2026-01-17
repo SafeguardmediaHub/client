@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/a11y/noStaticElementInteractions: <> */
 'use client';
 
 import { Brain, Eye, Sparkles, Zap } from 'lucide-react';
@@ -11,7 +12,7 @@ export default function FlagshipSolution() {
       icon: Eye,
       title: 'Multimodal Analysis',
       description:
-        'Detect fake across video, audio, and images with our unified engine.',
+        'Detect AI-generated content across video, audio, and images with our unified engine.',
       gradient: 'from-blue-500 to-cyan-500',
       bgGradient: 'from-blue-50 to-cyan-50',
     },
@@ -53,12 +54,11 @@ export default function FlagshipSolution() {
             </div>
 
             <h2 className="text-5xl md:text-6xl font-bold text-gray-900 leading-tight">
-              AI Deepfake <span className="text-blue-600">Detection.</span>
+              AI-Generated Media <span className="text-blue-600">Detection.</span>
             </h2>
 
             <p className="text-xl text-gray-600 leading-relaxed">
-              Our model instantly verify your media and protect you from digital
-              deception with cutting-edge AI technology.
+              Our flagship feature instantly detects AI-generated content across video, audio, and images—protecting you from synthetic media with cutting-edge AI technology.
             </p>
 
             <div className="flex gap-4">
@@ -66,7 +66,7 @@ export default function FlagshipSolution() {
                 type="button"
                 className="px-8 py-4 rounded-xl font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 flex items-center gap-2"
               >
-                Try DF Detector
+                Try AI Media Detector
                 <Brain className="w-5 h-5" />
               </button>
             </div>

@@ -24,11 +24,11 @@ export const metadata: Metadata = {
     template: '%s | SafeguardMedia',
   },
   description:
-    'Advanced AI-powered platform for detecting misinformation, deepfakes, and manipulated media. Features include fact-checking, social media tracing, forensic analysis, and C2PA verification.',
+    'Advanced AI-powered platform for detecting misinformation, AI-generated media, and manipulated content. Features include fact-checking, social media tracing, forensic analysis, and C2PA verification.',
   keywords: [
     'misinformation detection',
     'fact checking',
-    'deepfake detection',
+    'AI-generated media detection',
     'media verification',
     'AI fact checker',
     'social media tracing',
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     siteName: 'SafeguardMedia',
     title: 'SafeguardMedia - AI-Powered Misinformation Detection',
     description:
-      'Advanced AI-powered platform for detecting misinformation, deepfakes, and manipulated media. Features include fact-checking, social media tracing, forensic analysis, and C2PA verification.',
+      'Advanced AI-powered platform for detecting misinformation, AI-generated media, and manipulated content. Features include fact-checking, social media tracing, forensic analysis, and C2PA verification.',
     images: [
       {
         url: '/og-image.png',
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'SafeguardMedia - AI-Powered Misinformation Detection',
     description:
-      'Advanced AI-powered platform for detecting misinformation, deepfakes, and manipulated media.',
+      'Advanced AI-powered platform for detecting misinformation, AI-generated media, and manipulated content.',
     images: ['/og-image.png'],
     creator: '@safeguardmedia',
   },

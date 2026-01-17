@@ -72,10 +72,10 @@ const data = {
 
   detection: [
     {
-      name: 'Deepfake Detection',
+      name: 'AI-Generated Media Detection',
       url: '#',
       icon: ShieldIcon,
-      featureId: 'deepfake_detection',
+      featureId: 'ai_generated_media_detection',
     },
     // {
     //   name: 'Cheapfake Detection',

@@ -61,22 +61,22 @@ export const FEATURES: Record<string, FeatureMetadata> = {
   },
 
   // Detection Tools
-  deepfake_detection: {
-    id: "deepfake_detection",
-    name: "Deepfake Detection",
+  ai_generated_media_detection: {
+    id: "ai_generated_media_detection",
+    name: "AI-Generated Media Detection",
     description:
       "Detect AI-generated faces, voice cloning, and manipulated videos using advanced neural network analysis.",
     status: "coming_soon",
     category: "detection",
     estimatedRelease: "Q2 2025",
     benefits: [
-      "Detect AI-generated faces and deepfake videos",
-      "Identify voice cloning and audio manipulation",
+      "Detect AI-generated faces, voices, and synthetic videos",
+      "Identify AI-generated images and manipulated content",
       "Advanced neural network-based analysis",
-      "Frame-by-frame deepfake probability scoring",
+      "Frame-by-frame AI-generation probability scoring",
     ],
     comingSoonMessage:
-      "Our AI research team is training advanced models to detect the latest deepfake techniques. This feature will launch in Q2 2025.",
+      "Our AI research team is training advanced models to detect the latest AI-generated media techniques. This feature will launch in Q2 2025.",
   },
   cheapfake_detection: {
     id: "cheapfake_detection",

@@ -10,7 +10,7 @@ export const login = async (
   email: string,
   password: string,
 ): Promise<LoginResponse> => {
-  const { data } = await api.post("/api/auth/login", {
+  const {data} = await api.post("/api/auth/login", {
     email,
     password,
     rememberMe: true,
@@ -24,12 +24,14 @@ export const register = async (
   password: string,
   firstName: string,
   lastName: string,
+  userType?: string
 ): Promise<RegisterResponse> => {
-  const { data } = await api.post("/api/auth/register", {
+  const {data} = await api.post("/api/auth/register", {
     email,
     password,
     firstName,
     lastName,
+    ...(userType && {userType}),
     agreedToTerms: true,
   });
 
@@ -42,10 +44,10 @@ export const logout = async () => {
 };
 
 export const refreshToken = async () => {
-  const { data } = await api.post(
+  const {data} = await api.post(
     "/api/auth/refresh",
     {},
-    { withCredentials: true },
+    {withCredentials: true},
   );
   return data;
 };
@@ -58,7 +60,7 @@ export const verifyEmail = async (
     {
       token,
     },
-    { headers: { "Content-Type": "application/json" } },
+    {headers: {"Content-Type": "application/json"}},
   );
 
   return response.data as verifyEmailSuccessResponse;
@@ -69,28 +71,28 @@ export const requestVerificationEmail = async (
 ): Promise<ResendEmailVerificationResponse> => {
   const response = await api.post(
     "/api/auth/resend-verification",
-    { email },
-    { headers: { "Content-Type": "application/json" } },
+    {email},
+    {headers: {"Content-Type": "application/json"}},
   );
 
   return response.data as ResendEmailVerificationResponse;
 };
 
-export const forgotPassword = async (email: string): Promise<{ success: boolean; message: string }> => {
+export const forgotPassword = async (email: string): Promise<{success: boolean; message: string}> => {
   const response = await api.post(
     "/api/auth/forgot-password",
-    { email },
-    { headers: { "Content-Type": "application/json" } },
+    {email},
+    {headers: {"Content-Type": "application/json"}},
   );
 
   return response.data;
 };
 
-export const resetPassword = async (token: string, password: string): Promise<{ success: boolean; message: string }> => {
+export const resetPassword = async (token: string, password: string): Promise<{success: boolean; message: string}> => {
   const response = await api.post(
     "/api/auth/reset-password",
-    { token, password },
-    { headers: { "Content-Type": "application/json" } },
+    {token, password},
+    {headers: {"Content-Type": "application/json"}},
   );
 
   return response.data;

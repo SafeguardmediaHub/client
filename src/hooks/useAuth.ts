@@ -1,15 +1,14 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: <> */
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { use } from "react";
-import { toast } from "sonner";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
+import {toast} from "sonner";
 import {
+  forgotPassword,
   login,
   logout,
   register,
   requestVerificationEmail,
-  verifyEmail,
-  forgotPassword,
   resetPassword,
+  verifyEmail,
 } from "@/lib/api/auth";
 
 export interface User {
@@ -18,13 +17,14 @@ export interface User {
   firstName: string;
   lastName: string;
   displayName: string;
+  userType?: string;
   role: "user" | "admin";
   accountStatus:
-    | "active"
-    | "inactive"
-    | "suspended"
-    | "banned"
-    | "pending_verfication";
+  | "active"
+  | "inactive"
+  | "suspended"
+  | "banned"
+  | "pending_verfication";
   emailVerfied: boolean;
   profilePicture: string | null;
   lastLoginAt: Date;
@@ -49,12 +49,13 @@ export type RegisterResponse = {
   email: string;
   firstName: string;
   lastName: string;
+  userType?: string;
   accountStatus:
-    | "active"
-    | "inactive"
-    | "suspended"
-    | "banned"
-    | "pending_verfication";
+  | "active"
+  | "inactive"
+  | "suspended"
+  | "banned"
+  | "pending_verfication";
   emailverfied: boolean;
 };
 
@@ -67,11 +68,11 @@ export type verifyEmailSuccessResponse = {
       email: string;
       emailVerified: boolean;
       accountStatus:
-        | "active"
-        | "inactive"
-        | "suspended"
-        | "banned"
-        | "pending_verfication";
+      | "active"
+      | "inactive"
+      | "suspended"
+      | "banned"
+      | "pending_verfication";
     };
   };
 };
@@ -85,14 +86,14 @@ export const useLogin = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ email, password }: { email: string; password: string }) =>
+    mutationFn: ({email, password}: {email: string; password: string}) =>
       login(email, password),
     onSuccess: (response) => {
       queryClient.setQueryData(["user"], response.data.user);
       try {
         if (typeof window !== "undefined")
           window.localStorage?.setItem("hasSession", "true");
-      } catch {}
+      } catch { }
       toast.success("Login successful");
     },
     onError: (error: any) => {
@@ -108,11 +109,11 @@ export const useLogout = () => {
   return useMutation({
     mutationFn: async () => logout(),
     onSuccess: () => {
-      queryClient.removeQueries({ queryKey: ["user"] });
+      queryClient.removeQueries({queryKey: ["user"]});
       try {
         if (typeof window !== "undefined")
           window.localStorage?.removeItem("hasSession");
-      } catch {}
+      } catch { }
       toast.success("Logout successful");
     },
     onError: (error: any) => {
@@ -131,15 +132,19 @@ export const useRegister = () => {
       password,
       firstName,
       lastName,
+      userType,
     }: {
       email: string;
       password: string;
       firstName: string;
       lastName: string;
-    }) => register(email, password, firstName, lastName),
+      userType?: string;
+    }) => register(email, password, firstName, lastName, userType),
     onSuccess: (data, variables) => {
       queryClient.setQueryData(["user"], data);
-      toast.success("Registration successful! Please check your email to verify your account.");
+      toast.success(
+        "Registration successful! Please check your email to verify your account.",
+      );
       // Navigate to verify-email page with registered flag and email
       window.location.href = `/auth/verify-email?registered=true&email=${encodeURIComponent(variables.email)}`;
     },
@@ -156,7 +161,7 @@ export const useVerifyEmail = () => {
   return useMutation({
     mutationFn: (token: string) => verifyEmail(token),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["user"] });
+      queryClient.invalidateQueries({queryKey: ["user"]});
       toast.success("Email verified successfully. You can now log in.");
       return data;
     },
@@ -178,7 +183,7 @@ export const useResendVerificationEmail = () => {
   return useMutation({
     mutationFn: (email: string) => requestVerificationEmail(email),
     onSuccess: (data) => {
-      qeryClient.invalidateQueries({ queryKey: ["user"] });
+      qeryClient.invalidateQueries({queryKey: ["user"]});
       toast.success(data.message || "Verification email sent successfully.");
       return data;
     },
@@ -198,7 +203,10 @@ export const useForgotPassword = () => {
   return useMutation({
     mutationFn: (email: string) => forgotPassword(email),
     onSuccess: (data) => {
-      toast.success(data.message || "If an account with that email exists, a password reset link has been sent");
+      toast.success(
+        data.message ||
+        "If an account with that email exists, a password reset link has been sent",
+      );
       return data;
     },
     onError: (error: any) => {
@@ -215,10 +223,13 @@ export const useForgotPassword = () => {
 
 export const useResetPassword = () => {
   return useMutation({
-    mutationFn: ({ token, password }: { token: string; password: string }) =>
+    mutationFn: ({token, password}: {token: string; password: string}) =>
       resetPassword(token, password),
     onSuccess: (data) => {
-      toast.success(data.message || "Password reset successful. Please login with your new password");
+      toast.success(
+        data.message ||
+        "Password reset successful. Please login with your new password",
+      );
       return data;
     },
     onError: (error: any) => {

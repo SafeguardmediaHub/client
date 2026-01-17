@@ -99,7 +99,7 @@ export default function HeroSection() {
                   className="mx-auto mt-8 max-w-2xl text-balance text-lg text-gray-600"
                 >
                   Arm your organization with the industry's most comprehensive
-                  AI suite to instantly detect AI-Generated Images, verify
+                  AI suite to instantly detect AI-Generated Media, verify
                   multimedia content, and protect your assets from digital
                   fraud.
                 </TextEffect>
