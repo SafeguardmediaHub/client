@@ -15,7 +15,7 @@ import {
   Search,
   SearchCheck,
   Send,
-  Share2,
+  Shield,
   ShieldCheck,
   ShieldIcon,
   Sparkles,
@@ -33,7 +33,6 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { useAuth } from '@/context/AuthContext';
-import { NavAuthenticity } from './nav-authenticity';
 import { NavDetectionTools } from './nav-detection';
 import { NavOverview } from './nav-overview';
 import { NavReporting } from './nav-reporting';
@@ -122,6 +121,12 @@ const data = {
       url: '/dashboard/timeline',
       icon: CalendarClock,
       featureId: 'timeline_verification',
+    },
+    {
+      name: 'Tamper Detection',
+      url: '/dashboard/tamper-detection',
+      icon: Shield,
+      featureId: 'tamper_detection',
     },
     {
       name: 'Fact Checking',

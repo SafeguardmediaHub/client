@@ -1,12 +1,13 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: <> */
+/** biome-ignore-all lint/style/noNonNullAssertion: <> */
 
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { getIntegrityReport } from "@/lib/api/integrity";
+import {useMutation, useQuery} from "@tanstack/react-query";
+import {getIntegrityReport} from "@/lib/api/integrity";
 
 export const useIntegrityReport = (
 	mediaId: string | undefined,
 	detail: "simple" | "full" = "simple",
-	options?: { enabled?: boolean },
+	options?: {enabled?: boolean},
 ) => {
 	return useQuery({
 		queryKey: ["integrityReport", mediaId, detail],
