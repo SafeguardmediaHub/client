@@ -1,5 +1,19 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: <> */
 'use client';
 
+import { formatDistanceToNow } from 'date-fns';
+import {
+  AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  FileText,
+  Loader2,
+  MoreHorizontal,
+  Trash2,
+} from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,26 +31,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ConfidencePill } from './ConfidencePill';
 import {
   useDeleteResearch,
   useResearchHistory,
 } from '@/hooks/useClaimResearch';
 import type { ClaimResearchHistoryItem } from '@/types/claim-research';
-import { formatDistanceToNow } from 'date-fns';
-import {
-  AlertTriangle,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  Eye,
-  FileText,
-  Loader2,
-  MoreHorizontal,
-  Trash2,
-} from 'lucide-react';
-import { useState } from 'react';
-import { toast } from 'sonner';
+import { ConfidencePill } from './ConfidencePill';
 
 interface ResearchHistoryProps {
   onSelectJob: (jobId: string) => void;
@@ -55,7 +55,7 @@ export function ResearchHistory({ onSelectJob }: ResearchHistoryProps) {
     try {
       await deleteResearch.mutateAsync(jobId);
       toast.success('Investigation deleted');
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to delete investigation');
     }
   };
