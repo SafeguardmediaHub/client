@@ -1,18 +1,20 @@
 import HeroSection from '@/components/hero-section';
 import CoreCapabilities from '@/components/landing-page/CoreCapabilities';
-import FlagshipSolution from '@/components/landing-page/FlagshipSolution';
 import Footer from '@/components/landing-page/Footer';
-// import FutureSection from '@/components/landing-page/FutureSection';
+import HowItWorks from '@/components/landing-page/HowItWorks';
 import SecuringChannels from '@/components/landing-page/SecuringChannels';
+import V2FeaturesCarousel from '@/components/landing-page/V2FeaturesCarousel';
+import WaitlistForm from '@/components/landing-page/WaitlistForm';
 
 export default function Home() {
   return (
     <div>
       <HeroSection />
-      <FlagshipSolution />
+      <HowItWorks />
       <CoreCapabilities />
       <SecuringChannels />
-      {/* <FutureSection /> */}
+      <V2FeaturesCarousel />
+      <WaitlistForm />
       <Footer />
     </div>
   );

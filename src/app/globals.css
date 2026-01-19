@@ -116,6 +116,18 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-crimson-pro), serif;
+  }
+
+  /* Typography System - Retro-Futuristic */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-space-grotesk), sans-serif;
+    font-weight: 700;
   }
 }
 

@@ -37,7 +37,7 @@ export const HeroHeader = () => {
           className={cn(
             'mx-auto mt-2 max-w-6xl px-6 transition-all duration-300 lg:px-12',
             isScrolled &&
-              'bg-background/50 max-w-4xl rounded-2xl border backdrop-blur-lg lg:px-5'
+              'bg-background/50 max-w-4xl rounded-2xl border backdrop-blur-lg lg:px-5',
           )}
         >
           <div className="relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4">
@@ -115,19 +115,25 @@ export const HeroHeader = () => {
                   <Button
                     asChild
                     size="sm"
-                    className={cn(isScrolled && 'lg:hidden')}
+                    className={cn(
+                      'bg-blue-600 hover:bg-blue-700 text-white',
+                      isScrolled && 'lg:hidden',
+                    )}
                   >
                     <Link href="/auth/signup">
-                      <span>Sign Up</span>
+                      <span>Join Beta</span>
                     </Link>
                   </Button>
                   <Button
                     asChild
                     size="sm"
-                    className={cn(isScrolled ? 'lg:inline-flex' : 'hidden')}
+                    className={cn(
+                      'bg-blue-600 hover:bg-blue-700 text-white',
+                      isScrolled ? 'lg:inline-flex' : 'hidden',
+                    )}
                   >
                     <Link href="/auth/signup">
-                      <span>Get Started</span>
+                      <span>Join Beta</span>
                     </Link>
                   </Button>
                 </div>
@@ -138,7 +144,7 @@ export const HeroHeader = () => {
                     asChild
                     size="sm"
                     className={cn(
-                      isScrolled ? 'lg:inline-flex' : 'lg:inline-flex'
+                      isScrolled ? 'lg:inline-flex' : 'lg:inline-flex',
                     )}
                   >
                     <Link href="/dashboard">

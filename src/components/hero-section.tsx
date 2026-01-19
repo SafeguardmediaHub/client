@@ -131,7 +131,7 @@ export default function HeroSection() {
                       >
                         <Shield className="w-5 h-5" />
                         <span className="text-nowrap font-semibold">
-                          Get Started Free
+                          Join Beta Waitlist
                         </span>
                       </Link>
                     </Button>
@@ -144,7 +144,7 @@ export default function HeroSection() {
                     className="h-12 rounded-xl px-8 border-2 border-gray-300 hover:border-blue-600 hover:bg-blue-50 transition-all duration-300"
                   >
                     <Link href="/about" className="flex items-center gap-2">
-                      <span className="text-nowrap">Watch Demo</span>
+                      <span className="text-nowrap">About Us</span>
                       <ArrowRight className="w-4 h-4" />
                     </Link>
                   </Button>

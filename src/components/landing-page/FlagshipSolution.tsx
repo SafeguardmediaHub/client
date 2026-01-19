@@ -1,7 +1,14 @@
 /** biome-ignore-all lint/a11y/noStaticElementInteractions: <> */
 'use client';
 
-import { Brain, Eye, Sparkles, Zap } from 'lucide-react';
+import {
+  AlertCircle,
+  MapPin,
+  MessageSquareText,
+  ScanEye,
+  Search,
+  Sparkles,
+} from 'lucide-react';
 import { useState } from 'react';
 
 export default function FlagshipSolution() {
@@ -9,27 +16,40 @@ export default function FlagshipSolution() {
 
   const features = [
     {
-      icon: Eye,
-      title: 'Multimodal Analysis',
+      icon: MessageSquareText,
+      title: 'Claim Research',
       description:
-        'Detect AI-generated content across video, audio, and images with our unified engine.',
+        'Investigate claims with AI-powered research that analyzes sources, credibility, and contradictions across the web.',
       gradient: 'from-blue-500 to-cyan-500',
       bgGradient: 'from-blue-50 to-cyan-50',
+      available: true,
     },
     {
-      icon: Zap,
-      title: 'High Accuracy Results',
-      description: 'Powered by AI models with a 98+ detection accuracy rate.',
-      gradient: 'from-green-500 to-emerald-500',
-      bgGradient: 'from-green-50 to-emerald-50',
-    },
-    {
-      icon: Brain,
-      title: 'Built for Your Workflow',
+      icon: ScanEye,
+      title: 'Tamper Detection',
       description:
-        'Integrate seamlessly with our API or use our intuitive web interface designed for verifiers.',
-      gradient: 'from-blue-500 to-cyan-500',
-      bgGradient: 'from-blue-50 to-cyan-50',
+        'Forensic analysis of images and videos to detect manipulation, editing artifacts, and authenticity markers.',
+      gradient: 'from-purple-500 to-pink-500',
+      bgGradient: 'from-purple-50 to-pink-50',
+      available: true,
+    },
+    {
+      icon: Search,
+      title: 'Reverse Lookup',
+      description:
+        'Trace media origins with reverse image search and find where content has appeared across the internet.',
+      gradient: 'from-emerald-500 to-teal-500',
+      bgGradient: 'from-emerald-50 to-teal-50',
+      available: true,
+    },
+    {
+      icon: MapPin,
+      title: 'Geolocation Verification',
+      description:
+        'Verify location claims by analyzing metadata, landmarks, and environmental markers in images and videos.',
+      gradient: 'from-orange-500 to-amber-500',
+      bgGradient: 'from-orange-50 to-amber-50',
+      available: true,
     },
   ];
 
@@ -46,41 +66,44 @@ export default function FlagshipSolution() {
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Left Content */}
           <div className="space-y-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 rounded-full">
-              <Sparkles className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-semibold text-blue-600">
-                Flagship Solution
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[hsl(35,85%,60%)]/10 to-[hsl(35,85%,50%)]/10 border border-[hsl(35,85%,60%)]/30 rounded-full">
+              <AlertCircle className="w-4 h-4 text-[hsl(35,85%,60%)]" />
+              <span className="text-sm font-semibold text-[hsl(35,85%,60%)]">
+                Coming Soon
               </span>
             </div>
 
             <h2 className="text-5xl md:text-6xl font-bold text-gray-900 leading-tight">
-              AI-Generated Media <span className="text-blue-600">Detection.</span>
+              AI-Generated Media{' '}
+              <span className="text-blue-600">Detection.</span>
             </h2>
 
             <p className="text-xl text-gray-600 leading-relaxed">
-              Our flagship feature instantly detects AI-generated content across video, audio, and images—protecting you from synthetic media with cutting-edge AI technology.
+              Our flagship AI Media Detection feature is launching soon. In the
+              meantime, explore our powerful suite of verification tools
+              designed to help you investigate and verify digital content.
             </p>
 
-            <div className="flex gap-4">
-              <button
-                type="button"
-                className="px-8 py-4 rounded-xl font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 flex items-center gap-2"
-              >
-                Try AI Media Detector
-                <Brain className="w-5 h-5" />
-              </button>
+            <div className="p-6 rounded-2xl bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-100">
+              <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-blue-600" />
+                Available Now
+              </h3>
+              <p className="text-gray-600">
+                Access our comprehensive verification toolkit including claim
+                research, tamper detection, reverse lookup, and geolocation
+                verification.
+              </p>
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-6 pt-8">
+            <div className="grid grid-cols-3 gap-6 pt-4">
               <div className="text-center p-4 rounded-2xl bg-white/50 backdrop-blur-sm border border-blue-100">
-                <div className="text-3xl font-bold text-blue-600">
-                  <span className="animate-pulse">98%</span>
-                </div>
-                <div className="text-sm text-gray-600 mt-1">Accuracy</div>
+                <div className="text-3xl font-bold text-blue-600">4</div>
+                <div className="text-sm text-gray-600 mt-1">Tools</div>
               </div>
               <div className="text-center p-4 rounded-2xl bg-white/50 backdrop-blur-sm border border-blue-100">
-                <div className="text-3xl font-bold text-blue-600">&lt;1s</div>
+                <div className="text-3xl font-bold text-blue-600">&lt;2s</div>
                 <div className="text-sm text-gray-600 mt-1">Response</div>
               </div>
               <div className="text-center p-4 rounded-2xl bg-white/50 backdrop-blur-sm border border-emerald-100">
