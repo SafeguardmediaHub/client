@@ -15,9 +15,9 @@ export default function CoreCapabilities() {
 
   const capabilities = [
     {
-      title: 'Deepfake Detection',
+      title: 'AI-Generated Media Detection',
       description:
-        'Rapidly comprehend faces by training advanced facial expressions, and AI-generated content across multiple media formats.',
+        'Detect AI-generated content across video, audio, and images using advanced AI models trained to identify synthetic media patterns.',
       icon: Shield,
       gradient: 'from-blue-500 via-cyan-500 to-sky-500',
       bgGradient: 'from-blue-50 to-sky-50',

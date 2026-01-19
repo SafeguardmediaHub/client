@@ -7,9 +7,15 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useRegister } from '@/hooks/useAuth';
 import { cn, validatePasswordStrength } from '@/lib/utils';
-import { PasswordStrengthIndicator } from './passwordLengthIndicator';
 
 export function SignupForm({
   className,
@@ -19,6 +25,7 @@ export function SignupForm({
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [userType, setUserType] = useState<string>('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
@@ -75,7 +82,13 @@ export function SignupForm({
       return;
     }
 
-    registerMutation.mutate({ email, password, firstName, lastName });
+    registerMutation.mutate({ 
+      email, 
+      password, 
+      firstName, 
+      lastName,
+      ...(userType && { userType })
+    });
   };
 
   return (
@@ -146,6 +159,30 @@ export function SignupForm({
             />
           </div>
         </div>
+        {/* User Type Selection */}
+        <div className="grid gap-2">
+          <Label htmlFor="userType" className="text-sm font-medium">
+            I am a...
+          </Label>
+          <Select value={userType} onValueChange={setUserType} disabled={registerMutation.isPending}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select your role (optional)" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Content Creator/Influencer">Content Creator/Influencer</SelectItem>
+              <SelectItem value="Journalist/Reporter">Journalist/Reporter</SelectItem>
+              <SelectItem value="Educator/Teacher">Educator/Teacher</SelectItem>
+              <SelectItem value="Researcher/Academic">Researcher/Academic</SelectItem>
+              <SelectItem value="Freelancer/Consultant">Freelancer/Consultant</SelectItem>
+              <SelectItem value="Student">Student</SelectItem>
+              <SelectItem value="Individual User">Individual User</SelectItem>
+              <SelectItem value="Other">Other</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            This helps us personalize your experience
+          </p>
+        </div>
         <div className="grid gap-2">
           <Label htmlFor="password" className="text-sm font-medium">
             Password
@@ -205,7 +242,7 @@ export function SignupForm({
           )}
         </div>
         <div className="space-y-4">
-          <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/50 p-4 transition-colors hover:bg-muted/80">
+          <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/50 p-3 transition-colors hover:bg-muted/80">
             <Checkbox
               id="terms"
               checked={agreedToTerms}
@@ -214,14 +251,14 @@ export function SignupForm({
               className="mt-0.5"
               required
             />
-            <div className="grid gap-1.5 leading-none">
+            <div className="grid gap-1 leading-none">
               <Label
                 htmlFor="terms"
                 className="text-sm font-medium leading-relaxed cursor-pointer"
               >
                 I agree to the Terms and Privacy Policy
               </Label>
-              <p className="text-xs text-muted-foreground leading-relaxed">
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
                 By creating an account, you agree to our{' '}
                 <a
                   href="/terms"

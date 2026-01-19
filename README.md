@@ -2,13 +2,13 @@
 
 **AI-Powered Misinformation Detection Platform**
 
-SafeguardMedia is an advanced media verification platform that helps journalists, investigators, NGOs, and content moderators detect misinformation, deepfakes, and manipulated media through comprehensive AI-powered analysis tools.
+SafeguardMedia is an advanced media verification platform that helps journalists, investigators, NGOs, and content moderators detect misinformation, AI-generated media, and manipulated content through comprehensive AI-powered analysis tools.
 
 ## 🌟 Features
 
 ### Core Verification Tools
 - **🔍 Metadata Extraction** - Extract and analyze EXIF data, timestamps, camera information, and file properties
-- **🎭 Deepfake Detection** - AI-powered detection of synthetic and manipulated media
+- **🎭 AI-Generated Media Detection** - AI-powered detection of synthetic and AI-generated content
 - **🔬 Forensic Analysis** - Advanced tamper detection using ELA, noise analysis, and copy-move detection
 - **✅ C2PA Verification** - Validate content authenticity using Coalition for Content Provenance and Authenticity standards
 - **📍 Geolocation Matching** - Verify location claims with visual landmark recognition and coordinate validation

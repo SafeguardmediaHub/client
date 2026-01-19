@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/a11y/noStaticElementInteractions: <> */
 'use client';
 
 import { CheckCircle, Shield, TrendingUp } from 'lucide-react';
@@ -68,7 +69,7 @@ export default function SecuringChannels() {
           </div>
           <div className="lg:pt-8">
             <p className="text-xl text-gray-600 leading-relaxed">
-              Deepfakes are attacks on our most critical channels of
+              AI-generated media is an attack on our most critical channels of
               communication, commerce, and democracy. See areas SafeguardMedia
               is deployed to protect these vital pathways from being
               compromised.
