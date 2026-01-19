@@ -46,7 +46,7 @@ export const metadata: Metadata = {
   generator: 'Next.js',
   referrer: 'origin-when-cross-origin',
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
   ),
 
   // Open Graph metadata for social sharing

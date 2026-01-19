@@ -1,12 +1,12 @@
-export type ContentType = "text" | "ocr" | "transcript" | "user_submission";
+export type ContentType = 'text' | 'ocr' | 'transcript' | 'user_submission';
 
-export type JobStatus = "prioritized" | "processing" | "completed" | "failed";
+export type JobStatus = 'prioritized' | 'processing' | 'completed' | 'failed';
 
 export type PublisherCredibility =
-  | "ifcn_certified"
-  | "reputable"
-  | "unknown"
-  | "questionable";
+  | 'ifcn_certified'
+  | 'reputable'
+  | 'unknown'
+  | 'questionable';
 
 export interface AnalyzeContentRequest {
   content: string;
@@ -21,8 +21,8 @@ export interface AnalyzeContentResponse {
     job_id: string;
     status: JobStatus;
     estimated_completion_seconds: number;
-    // job_id might be directly in data in some versions, but keeping consistent with prev code unless API changed structure significantly. 
-    // Integration guide says: data.data.job_id which implies typical wrapper. 
+    // job_id might be directly in data in some versions, but keeping consistent with prev code unless API changed structure significantly.
+    // Integration guide says: data.data.job_id which implies typical wrapper.
     // Checking file 20: const { data } = await api.post... return data.
     // So the response type matches the AXIOS response.data.
   };
@@ -74,12 +74,12 @@ export interface Claim {
   claim_id: string;
   text: string;
   context?: string;
-  status: "pending" | "processing" | "completed" | "failed"; // explicit status for claim
+  status: 'pending' | 'processing' | 'completed' | 'failed'; // explicit status for claim
   credibility_score?: number;
   reliability_index?: number;
-  verdict?: "True" | "False" | "Mixed" | "Unknown";
-  confidence?: "High" | "Medium" | "Low";
-  
+  verdict?: 'True' | 'False' | 'Mixed' | 'Unknown';
+  confidence?: 'High' | 'Medium' | 'Low';
+
   // Explanation / Sources
   ai_analysis?: AIAnalysis;
   verdicts?: Array<{
@@ -138,6 +138,8 @@ export interface Verdict {
   weighted_score: number;
   reviewed_at?: string;
   recency_days?: number;
+  credibility_multiplier?: number;
+  recency_multiplier?: number;
   api_response: VerdictApiResponse;
 }
 
@@ -169,7 +171,7 @@ export interface ClaimDetailResponse {
     verdicts: Verdict[];
     score?: ClaimScore; // New field from backend
     // specialized fields for backward compatibility if needed, but per json they are in score
-    overall_status?: string; 
+    overall_status?: string;
     confidence_score?: number;
   };
 }
