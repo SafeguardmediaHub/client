@@ -31,7 +31,7 @@ export function NavVerificationTools({
   const handleItemClick = (
     e: React.MouseEvent,
     url: string,
-    featureId?: string
+    featureId?: string,
   ) => {
     if (url === '#' && featureId) {
       e.preventDefault();
@@ -49,7 +49,7 @@ export function NavVerificationTools({
         className="group-data-[collapsible=icon]:hidden"
         suppressHydrationWarning
       >
-        <SidebarGroupLabel>Verification</SidebarGroupLabel>
+        <SidebarGroupLabel>Verification / Provenance</SidebarGroupLabel>
         <SidebarMenu>
           {projects.map((item) => {
             const isLocked = item.url === '#';
@@ -62,7 +62,7 @@ export function NavVerificationTools({
                       handleItemClick(e, item.url, item.featureId)
                     }
                     className={cn(
-                      'opacity-60 cursor-pointer hover:opacity-80 transition-opacity'
+                      'opacity-60 cursor-pointer hover:opacity-80 transition-opacity',
                     )}
                   >
                     <item.icon className="text-primary" />

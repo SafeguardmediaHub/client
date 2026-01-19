@@ -12,8 +12,8 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { ExplanationDisplay } from '@/components/explanation/ExplanationDisplay';
-import { useExplanation } from '@/hooks/useExplanation';
+// import { ExplanationDisplay } from '@/components/explanation/ExplanationDisplay';
+// import { useExplanation } from '@/hooks/useExplanation';
 import type { Media } from '@/hooks/useMedia';
 import { useReportGeneration } from '@/hooks/useReports';
 import { AspectRatio } from './ui/aspect-ratio';
@@ -83,23 +83,23 @@ export default function ResultsPage({
   });
 
   // AI Explanation Hook
-  const {
-    explanation,
-    isLoading: isExplanationLoading,
-    error: explanationError,
-    status: explanationStatus,
-    message: explanationMessage,
-    retry: retryExplanation,
-  } = useExplanation({
-    analysisId: media?.id || '',
-    featureType: 'timeline_verification',
-    enabled: !!media?.id && hasRealData,
-    options: {
-      tone: 'professional',
-      audience: 'general',
-      length: 'standard',
-    },
-  });
+  // const {
+  //   explanation,
+  //   isLoading: isExplanationLoading,
+  //   error: explanationError,
+  //   status: explanationStatus,
+  //   message: explanationMessage,
+  //   retry: retryExplanation,
+  // } = useExplanation({
+  //   analysisId: media?.id || '',
+  //   featureType: 'timeline_verification',
+  //   enabled: !!media?.id && hasRealData,
+  //   options: {
+  //     tone: 'professional',
+  //     audience: 'general',
+  //     length: 'standard',
+  //   },
+  // });
 
   const handleGenerateReport = async () => {
     if (!media?.id) {
@@ -421,7 +421,7 @@ export default function ResultsPage({
       </div>
 
       {/* AI Explanation Section */}
-      {hasRealData && media?.id && (
+      {/* {hasRealData && media?.id && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="p-4 md:p-6 pb-2">
             <h2 className="text-xl md:text-2xl font-semibold mb-1">
@@ -467,14 +467,14 @@ export default function ResultsPage({
             ) : null}
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Report Generation Section */}
       {hasRealData && media?.id && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6">
-          <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-4">
+        <div className="p-4 md:p-6">
+          {/* <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-4 text-center">
             Generate Report
-          </h3>
+          </h3> */}
 
           {/* Report Generation Status */}
           {reportGeneration.status && (
