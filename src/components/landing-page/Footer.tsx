@@ -71,11 +71,11 @@ export default function Footer() {
 
       {/* Geometric Pattern Background */}
       <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-0 left-0 w-full h-full bg-[linear-gradient(45deg,transparent_48%,hsl(190,95%,55%)_49%,hsl(190,95%,55%)_51%,transparent_52%)] bg-[length:40px_40px]" />
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(hsl(190,95%,55%)_1px,transparent_1px)] bg-[length:40px_40px]" />
       </div>
 
       {/* Diagonal Accent */}
-      <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-br from-[hsl(190,95%,55%)]/10 to-transparent transform skew-x-12 translate-x-1/4" />
+      <div className="absolute top-0 right-0 w-1/3 h-full bg-[hsl(190,95%,55%)]/5 transform skew-x-12 translate-x-1/4" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Footer Content */}
@@ -86,8 +86,8 @@ export default function Footer() {
               {/* Logo */}
               <Link href="/" className="inline-flex items-center gap-3 group">
                 <div className="relative">
-                  <div className="absolute -inset-1 bg-gradient-to-br from-[hsl(190,95%,55%)] to-[hsl(35,85%,60%)] rounded-lg blur opacity-50 group-hover:opacity-75 transition duration-300" />
-                  <div className="relative w-12 h-12 bg-gradient-to-br from-[hsl(190,95%,55%)] to-[hsl(35,85%,60%)] rounded-lg flex items-center justify-center shadow-lg">
+                  <div className="absolute -inset-1 bg-blue-600 rounded-lg blur opacity-50 group-hover:opacity-75 transition duration-300" />
+                  <div className="relative w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
                     <Shield className="w-6 h-6 text-white" />
                   </div>
                 </div>
@@ -115,7 +115,7 @@ export default function Footer() {
                   />
                   <button
                     type="button"
-                    className="px-6 py-3 bg-gradient-to-r from-[hsl(190,95%,55%)] to-[hsl(35,85%,60%)] hover:from-[hsl(190,95%,60%)] hover:to-[hsl(35,85%,65%)] rounded-lg font-semibold transition-all duration-300 flex items-center gap-2 group"
+                    className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-all duration-300 flex items-center gap-2 group"
                   >
                     <span>Subscribe</span>
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -162,7 +162,7 @@ export default function Footer() {
                           <span className="relative">
                             {link.label}
                             <span
-                              className={`absolute -bottom-0.5 left-0 h-px bg-gradient-to-r from-[hsl(190,95%,55%)] to-[hsl(35,85%,60%)] transition-all duration-300 ${
+                              className={`absolute -bottom-0.5 left-0 h-px bg-[hsl(190,95%,55%)] transition-all duration-300 ${
                                 hoveredLink === link.label ? 'w-full' : 'w-0'
                               }`}
                             />
@@ -208,9 +208,6 @@ export default function Footer() {
           </div>
         </div>
       </div>
-
-      {/* Animated Glow Effect */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-[hsl(190,95%,55%)] to-transparent opacity-30" />
     </footer>
   );
 }
