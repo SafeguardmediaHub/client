@@ -2,6 +2,7 @@
 'use client';
 
 import { ArrowRight, CheckCircle, Sparkles, Upload } from 'lucide-react';
+import Link from 'next/link';
 import { useState } from 'react';
 
 export default function HowItWorks() {
@@ -221,13 +222,13 @@ export default function HowItWorks() {
           <p className="text-lg text-gray-600 mb-6">
             Ready to verify your first piece of content?
           </p>
-          <button
-            type="button"
+          <Link
+            href="#waitlist"
             className="inline-flex items-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/60 transition-all duration-300"
           >
             Join Beta Waitlist
             <ArrowRight className="w-5 h-5" />
-          </button>
+          </Link>
         </div>
       </div>
     </section>

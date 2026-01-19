@@ -126,7 +126,7 @@ export default function HeroSection() {
                       className="relative rounded-xl px-8 py-6 text-base bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-xl"
                     >
                       <Link
-                        href="/auth/signup"
+                        href="#waitlist"
                         className="flex items-center gap-2"
                       >
                         <Shield className="w-5 h-5" />

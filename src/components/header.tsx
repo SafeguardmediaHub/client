@@ -120,7 +120,7 @@ export const HeroHeader = () => {
                       isScrolled && 'lg:hidden',
                     )}
                   >
-                    <Link href="/auth/signup">
+                    <Link href="#waitlist">
                       <span>Join Beta</span>
                     </Link>
                   </Button>
@@ -132,7 +132,7 @@ export const HeroHeader = () => {
                       isScrolled ? 'lg:inline-flex' : 'hidden',
                     )}
                   >
-                    <Link href="/auth/signup">
+                    <Link href="#waitlist">
                       <span>Join Beta</span>
                     </Link>
                   </Button>

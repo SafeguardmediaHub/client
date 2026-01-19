@@ -124,7 +124,10 @@ export default function WaitlistForm() {
   }
 
   return (
-    <section className="relative py-32 overflow-hidden bg-gradient-to-br from-[hsl(220,40%,15%)] via-[hsl(220,35%,20%)] to-[hsl(220,40%,15%)]">
+    <section
+      id="waitlist"
+      className="relative py-32 overflow-hidden bg-gradient-to-br from-[hsl(220,40%,15%)] via-[hsl(220,35%,20%)] to-[hsl(220,40%,15%)]"
+    >
       {/* Grain Texture */}
       <div className="absolute inset-0 opacity-[0.15] mix-blend-overlay pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGQ9Ik0wIDBoMzAwdjMwMEgweiIgZmlsdGVyPSJ1cmwoI2EpIiBvcGFjaXR5PSIuMDUiLz48L3N2Zz4=')]" />
 
