@@ -294,7 +294,7 @@ export default function WaitlistForm() {
             {/* Use Case (Optional) */}
             <div className="space-y-2">
               <Label htmlFor="useCase" className="text-white font-semibold">
-                How will you use SafeguardMedia?{' '}
+                How will you use Safeguardmedia?{' '}
                 <span className="text-gray-400 text-sm font-normal">
                   (Optional)
                 </span>

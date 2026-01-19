@@ -55,7 +55,7 @@ export const HeroHeader = () => {
                     </span>
                   </div>
                 </div>
-                <p className="font-bold text-gray-900">SafeguardMedia</p>
+                <p className="font-bold text-gray-900">Safeguardmedia</p>
               </Link>
 
               <button

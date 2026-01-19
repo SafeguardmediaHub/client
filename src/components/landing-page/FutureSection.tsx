@@ -25,13 +25,11 @@ export default function FutureSection() {
 
             <h2 className="text-5xl md:text-6xl font-bold leading-tight">
               Shaping The Future of{' '}
-              <span className="text-purple-600">
-                Digital Security
-              </span>
+              <span className="text-purple-600">Digital Security</span>
             </h2>
 
             <p className="text-xl text-gray-600 leading-relaxed">
-              At SafeguardMedia, we believe the best way to protect the future
+              At Safeguardmedia, we believe the best way to protect the future
               is to build it. Join our passionate team on a mission to ensure
               that AI is a tool for clarity and transparency, not confusion and
               deception.
@@ -40,21 +38,15 @@ export default function FutureSection() {
             {/* Stats Grid */}
             <div className="grid grid-cols-3 gap-6 py-6">
               <div className="text-center p-4 rounded-2xl bg-white/60 backdrop-blur-sm border border-purple-100">
-                <div className="text-3xl font-bold text-purple-600">
-                  50+
-                </div>
+                <div className="text-3xl font-bold text-purple-600">50+</div>
                 <div className="text-sm text-gray-600 mt-1">Team Members</div>
               </div>
               <div className="text-center p-4 rounded-2xl bg-white/60 backdrop-blur-sm border border-blue-100">
-                <div className="text-3xl font-bold text-blue-600">
-                  15+
-                </div>
+                <div className="text-3xl font-bold text-blue-600">15+</div>
                 <div className="text-sm text-gray-600 mt-1">Countries</div>
               </div>
               <div className="text-center p-4 rounded-2xl bg-white/60 backdrop-blur-sm border border-emerald-100">
-                <div className="text-3xl font-bold text-emerald-600">
-                  100%
-                </div>
+                <div className="text-3xl font-bold text-emerald-600">100%</div>
                 <div className="text-sm text-gray-600 mt-1">Remote</div>
               </div>
             </div>
@@ -86,7 +78,7 @@ export default function FutureSection() {
                 </div>
                 <div>
                   <p className="text-gray-700 italic mb-2">
-                    "Working at SafeguardMedia means being at the forefront of
+                    "Working at Safeguardmedia means being at the forefront of
                     defending truth in the digital age."
                   </p>
                   <p className="text-sm font-semibold text-gray-900">

@@ -256,7 +256,7 @@ const v2Features = [
         </div>
         <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
           RESTful API with comprehensive documentation for integrating
-          SafeguardMedia into your applications and workflows. Build custom
+          Safeguardmedia into your applications and workflows. Build custom
           solutions with our powerful verification engine.
         </p>
         <div className="bg-gray-900 dark:bg-gray-950 rounded-xl p-4 mt-6 font-mono text-sm">

@@ -92,7 +92,7 @@ export default function Footer() {
                   </div>
                 </div>
                 <span className="text-2xl font-bold tracking-tight">
-                  SafeguardMedia
+                  Safeguardmedia
                 </span>
               </Link>
 
@@ -189,7 +189,7 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             {/* Copyright */}
             <div className="flex items-center gap-2 text-sm text-gray-400">
-              <span>© {new Date().getFullYear()} SafeguardMedia.</span>
+              <span>© {new Date().getFullYear()} Safeguardmedia.</span>
               <span className="hidden md:inline">•</span>
               <span>All rights reserved.</span>
             </div>

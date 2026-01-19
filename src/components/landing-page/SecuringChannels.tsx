@@ -144,7 +144,7 @@ export default function SecuringChannels() {
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             From newsrooms to boardrooms, courtrooms to
-            classrooms—SafeguardMedia protects the critical channels that power
+            classrooms—Safeguardmedia protects the critical channels that power
             our society.
           </p>
         </div>
@@ -270,7 +270,7 @@ export default function SecuringChannels() {
                 Ready to Protect Your Organization?
               </h3>
               <p className="text-lg text-blue-100 mb-8">
-                Join thousands of organizations using SafeguardMedia to verify
+                Join thousands of organizations using Safeguardmedia to verify
                 content and combat misinformation.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">

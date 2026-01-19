@@ -22,8 +22,8 @@ const crimsonPro = Crimson_Pro({
 
 export const metadata: Metadata = {
   title: {
-    default: 'SafeguardMedia - AI-Powered Misinformation Detection',
-    template: '%s | SafeguardMedia',
+    default: 'Safeguardmedia - AI-Powered Misinformation Detection',
+    template: '%s | Safeguardmedia',
   },
   description:
     'Advanced AI-powered platform for detecting misinformation, AI-generated media, and manipulated content. Features include fact-checking, social media tracing, forensic analysis, and C2PA verification.',
@@ -41,10 +41,10 @@ export const metadata: Metadata = {
     'media forensics',
     'digital verification',
   ],
-  authors: [{ name: 'SafeguardMedia Team' }],
-  creator: 'SafeguardMedia',
-  publisher: 'SafeguardMedia',
-  applicationName: 'SafeguardMedia',
+  authors: [{ name: 'Safeguardmedia Team' }],
+  creator: 'Safeguardmedia',
+  publisher: 'Safeguardmedia',
+  applicationName: 'Safeguardmedia',
   generator: 'Next.js',
   referrer: 'origin-when-cross-origin',
   metadataBase: new URL(

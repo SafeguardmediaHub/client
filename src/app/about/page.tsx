@@ -71,7 +71,7 @@ export default function AboutPage() {
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-100 to-cyan-100 rounded-full mb-6">
                 <Shield className="w-4 h-4 text-blue-600" />
                 <span className="text-sm font-semibold text-blue-600">
-                  About SafeguardMedia
+                  About Safeguardmedia
                 </span>
               </div>
               <h1 className="text-5xl md:text-7xl font-bold text-[hsl(220,40%,15%)] mb-6 leading-tight">
