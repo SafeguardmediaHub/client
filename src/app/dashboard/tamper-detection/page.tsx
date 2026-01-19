@@ -4,18 +4,23 @@
 import {
   AlertCircle,
   ArrowLeft,
+  Check,
+  Copy,
   FileImage,
   Info,
   Shield,
+  Sparkles,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import {
   FEATURE_INFO,
   FeatureInfoDialog,
 } from '@/components/FeatureInfoDialog';
 import { AnalysisView } from '@/components/media/AnalysisView';
 import MediaSelector from '@/components/media/MediaSelector';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { type Media, useGetMedia } from '@/hooks/useMedia';
@@ -27,6 +32,7 @@ const TamperDetectionPage = () => {
   const [state, setState] = useState<PageState>('idle');
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
   const [showInfoDialog, setShowInfoDialog] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const router = useRouter();
   const { data } = useGetMedia();
@@ -49,6 +55,30 @@ const TamperDetectionPage = () => {
   const handleReset = () => {
     setState('idle');
     setSelectedMedia(null);
+  };
+
+  const handleCopyJSON = () => {
+    if (!selectedMedia) return;
+
+    const exportData = {
+      filename: selectedMedia.filename,
+      fileSize: selectedMedia.fileSize,
+      mimeType: selectedMedia.mimeType,
+      metadata: selectedMedia.metadata,
+      analysis: selectedMedia.metadata?.analysis,
+      c2paVerification: selectedMedia.c2paVerification,
+    };
+
+    navigator.clipboard
+      .writeText(JSON.stringify(exportData, null, 2))
+      .then(() => {
+        toast.success('Analysis data copied to clipboard');
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch(() => {
+        toast.error('Failed to copy data');
+      });
   };
 
   return (
@@ -77,7 +107,8 @@ const TamperDetectionPage = () => {
               Tamper Detection
             </h1>
             <p className="text-sm text-gray-500 mt-2">
-              Analyze media files for signs of manipulation, metadata tampering, and integrity issues
+              Analyze media files for signs of manipulation, metadata tampering,
+              and integrity issues
             </p>
             <Button
               variant="outline"
@@ -113,7 +144,8 @@ const TamperDetectionPage = () => {
                           All Media Types
                         </h3>
                         <p className="text-sm text-blue-800 mb-3">
-                          This tool analyzes images, videos, and audio files. Supported formats:
+                          This tool analyzes images, videos, and audio files.
+                          Supported formats:
                         </p>
                         <div className="flex flex-wrap gap-2">
                           <span className="px-2 py-1 bg-blue-200/50 text-blue-900 text-xs font-medium rounded">
@@ -143,7 +175,9 @@ const TamperDetectionPage = () => {
                           Lightning Fast Analysis
                         </h3>
                         <p className="text-sm text-green-800">
-                          Get instant tamper detection results the moment you select a file. Our advanced forensic analysis delivers comprehensive findings in milliseconds.
+                          Get instant tamper detection results the moment you
+                          select a file. Our advanced forensic analysis delivers
+                          comprehensive findings in milliseconds.
                         </p>
                       </div>
                     </div>
@@ -161,17 +195,26 @@ const TamperDetectionPage = () => {
                 <CardContent className="space-y-6">
                   {/* Media selector dropdown */}
                   <div>
-                    <label htmlFor="media-selector" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label
+                      htmlFor="media-selector"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
                       Choose from your library
                     </label>
-                    <MediaSelector onSelect={handleMediaSelection} filterType="all" />
+                    <MediaSelector
+                      onSelect={handleMediaSelection}
+                      filterType="all"
+                    />
                   </div>
 
                   {/* Tip */}
                   <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                     <AlertCircle className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
                     <div className="text-sm text-blue-800">
-                      <span className="font-medium">Pro Tip:</span> Our intelligent analysis engine processes every file as it's uploaded, so your results are always ready when you need them.
+                      <span className="font-medium">Pro Tip:</span> Our
+                      intelligent analysis engine processes every file as it's
+                      uploaded, so your results are always ready when you need
+                      them.
                     </div>
                   </div>
 
@@ -200,17 +243,35 @@ const TamperDetectionPage = () => {
               <Card>
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">
-                      Analysis Results
-                    </CardTitle>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleReset}
-                      className="text-gray-500"
-                    >
-                      Select Different File
-                    </Button>
+                    <CardTitle className="text-lg">Analysis Results</CardTitle>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleCopyJSON}
+                        className="flex items-center gap-2"
+                      >
+                        {copied ? (
+                          <>
+                            <Check className="size-4 text-green-600" />
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="size-4" />
+                            Copy JSON
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleReset}
+                        className="text-gray-500"
+                      >
+                        Select Different File
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -228,13 +289,105 @@ const TamperDetectionPage = () => {
                           {selectedMedia.filename}
                         </p>
                         <p className="text-sm text-gray-500">
-                          {formatFileSize(Number(selectedMedia.fileSize))} • {selectedMedia.mimeType}
+                          {formatFileSize(Number(selectedMedia.fileSize))} •{' '}
+                          {selectedMedia.mimeType}
                         </p>
                       </div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
+
+              {/* C2PA Status Card */}
+              {selectedMedia.c2paVerification && (
+                <Card
+                  className={
+                    selectedMedia.c2paVerification.result.c2paStatus ===
+                    'verified'
+                      ? 'border-green-200 bg-green-50/50'
+                      : selectedMedia.c2paVerification.result.c2paStatus ===
+                          'no_c2pa_found'
+                        ? 'border-gray-200 bg-gray-50/50'
+                        : 'border-yellow-200 bg-yellow-50/50'
+                  }
+                >
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-base font-semibold flex items-center gap-2">
+                        <Shield className="size-5 text-blue-600" />
+                        C2PA Content Credentials
+                      </CardTitle>
+                      <Badge
+                        variant={
+                          selectedMedia.c2paVerification.result.c2paStatus ===
+                          'verified'
+                            ? 'default'
+                            : 'secondary'
+                        }
+                        className="text-xs"
+                      >
+                        {selectedMedia.c2paVerification.result.c2paStatus}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {/* AI Generated Indicator */}
+                      {selectedMedia.c2paVerification.result.c2paStatus ===
+                        'verified' &&
+                        selectedMedia.c2paVerification.result.issuer && (
+                          <div className="flex items-start gap-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                            <Sparkles className="size-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-purple-900 mb-1">
+                                AI-Generated Content Detected
+                              </h4>
+                              <p className="text-sm text-purple-800">
+                                This media has C2PA credentials indicating it
+                                was created or modified by AI tools.
+                              </p>
+                              {selectedMedia.c2paVerification.result.issuer && (
+                                <p className="text-xs text-purple-700 mt-2">
+                                  <span className="font-medium">Issuer:</span>{' '}
+                                  {selectedMedia.c2paVerification.result.issuer}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                      {/* Status Details */}
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <span className="font-medium text-gray-600">
+                            Manifest:
+                          </span>
+                          <p className="text-gray-900 mt-1">
+                            {selectedMedia.c2paVerification.result
+                              .manifestPresent
+                              ? 'Present'
+                              : 'Not Found'}
+                          </p>
+                        </div>
+                        {selectedMedia.c2paVerification.result
+                          .signatureValid !== null && (
+                          <div>
+                            <span className="font-medium text-gray-600">
+                              Signature:
+                            </span>
+                            <p className="text-gray-900 mt-1">
+                              {selectedMedia.c2paVerification.result
+                                .signatureValid
+                                ? 'Valid'
+                                : 'Invalid'}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Analysis Results */}
               <AnalysisView analysis={selectedMedia.metadata?.analysis} />
