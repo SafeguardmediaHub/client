@@ -52,12 +52,12 @@ const data = {
       url: '/dashboard',
       icon: LayoutDashboard,
     },
-    {
-      name: 'Authenticity Check',
-      url: '/dashboard/authenticity-check',
-      icon: ShieldCheck,
-      featureId: 'authenticity_check',
-    },
+    // {
+    //   name: 'Authenticity Check',
+    //   url: '/dashboard/authenticity-check',
+    //   icon: ShieldCheck,
+    //   featureId: 'authenticity_check',
+    // },
     {
       name: 'Library',
       url: '/dashboard/library',
@@ -85,13 +85,13 @@ const data = {
     // },
     {
       name: 'Visual Forensics',
-      url:  '/dashboard/visual',
+      url: '/dashboard/visual',
       icon: Search,
       featureId: 'visual_forensics',
     },
     {
       name: 'Audio Forensics',
-      url:  '/dashboard/audio',
+      url: '/dashboard/audio',
       icon: Search,
       featureId: 'audio_forensics',
     },
