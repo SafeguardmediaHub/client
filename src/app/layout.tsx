@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Crimson_Pro, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import { Analytics } from '@vercel/analytics/next';
 import { Toaster } from 'sonner';
@@ -8,14 +8,16 @@ import { AssistantProvider } from '@/context/AssistantContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { WebSocketProvider } from '@/context/WebSocketContext';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const spaceGrotesk = Space_Grotesk({
+  variable: '--font-space-grotesk',
   subsets: ['latin'],
+  display: 'swap',
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const crimsonPro = Crimson_Pro({
+  variable: '--font-crimson-pro',
   subsets: ['latin'],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -121,7 +123,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${spaceGrotesk.variable} ${crimsonPro.variable} antialiased`}
         suppressHydrationWarning
       >
         <QueryProvider>

@@ -1,12 +1,14 @@
 'use client';
 
 import {
-  AlertTriangle,
-  BarChart3,
   CheckCircle,
-  Clock,
+  FileSearch,
+  MapPin,
+  MessageSquareText,
+  ScanEye,
   Search,
   Shield,
+  Sparkles,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -15,84 +17,93 @@ export default function CoreCapabilities() {
 
   const capabilities = [
     {
-      title: 'AI-Generated Media Detection',
+      title: 'AI Media Detection',
       description:
-        'Detect AI-generated content across video, audio, and images using advanced AI models trained to identify synthetic media patterns.',
+        'Analyzes media for signs of AI-generated or synthetically manipulated content, including face swaps and deepfakes.',
       icon: Shield,
       gradient: 'from-blue-500 via-cyan-500 to-sky-500',
       bgGradient: 'from-blue-50 to-sky-50',
       shadowColor: 'shadow-blue-500/50',
       glowColor: '59, 130, 246', // blue-500 RGB
+      comingSoon: true,
+      estimatedTime: '30-60 seconds',
     },
     {
-      title: 'Real-Time Fact-Checking',
+      title: 'Claim Research',
       description:
-        'Integrate with reputable fact-checking sources and AI-images and Data Check algorithms to verify content authenticity in real-time.',
-      icon: Clock,
+        'Conducts comprehensive web research to verify factual claims by gathering evidence from multiple sources with detailed citations.',
+      icon: MessageSquareText,
       gradient: 'from-blue-500 via-cyan-500 to-teal-500',
       bgGradient: 'from-blue-50 to-teal-50',
       shadowColor: 'shadow-blue-500/50',
       glowColor: '6, 182, 212', // cyan-500 RGB
+      estimatedTime: '45-90 seconds',
     },
     {
-      title: 'Visual Authenticity Reports',
+      title: 'Visual Tampering Detection',
       description:
-        'Generate comprehensive reports that analyze potential manipulation, metadata analysis, and source verification.',
-      icon: BarChart3,
-      gradient: 'from-emerald-500 via-green-500 to-lime-500',
-      bgGradient: 'from-emerald-50 to-lime-50',
+        'Analyzes media metadata and properties for signs of manipulation, detecting editing software signatures and inconsistencies.',
+      icon: ScanEye,
+      gradient: 'from-purple-500 via-pink-500 to-rose-500',
+      bgGradient: 'from-purple-50 to-rose-50',
+      shadowColor: 'shadow-purple-500/50',
+      glowColor: '168, 85, 247', // purple-500 RGB
+      estimatedTime: '5-15 seconds',
+    },
+    {
+      title: 'Reverse Image Lookup',
+      description:
+        'Searches the web to find earlier appearances of an image online, discovering context and detecting misattributed photos.',
+      icon: Search,
+      gradient: 'from-emerald-500 via-green-500 to-teal-500',
+      bgGradient: 'from-emerald-50 to-teal-50',
       shadowColor: 'shadow-emerald-500/50',
       glowColor: '16, 185, 129', // emerald-500 RGB
+      estimatedTime: '15-30 seconds',
     },
     {
-      title: 'Cheapfakes & Shallowfake Detection',
+      title: 'Geolocation Verification',
       description:
-        'Identifies low-tech edits such as speed manipulation, frame splicing, miscontextualization, and basic editing techniques.',
-      icon: Search,
+        'Verifies claimed locations by analyzing GPS data, metadata consistency, and assessing GPS signal quality.',
+      icon: MapPin,
       gradient: 'from-orange-500 via-amber-500 to-yellow-500',
       bgGradient: 'from-orange-50 to-yellow-50',
       shadowColor: 'shadow-orange-500/50',
       glowColor: '249, 115, 22', // orange-500 RGB
+      estimatedTime: '30-60 seconds',
     },
     {
-      title: 'Crowdsourced Verification Portal',
+      title: 'C2PA Content Credentials',
       description:
-        'Allow verified journalists, fact-checkers, and media professionals to annotate or debunk, and verify content through our platform.',
+        'Verifies Content Authenticity Initiative digital signatures and provenance data, essential for identifying AI-generated content.',
       icon: CheckCircle,
       gradient: 'from-blue-500 via-indigo-500 to-cyan-500',
       bgGradient: 'from-blue-50 to-cyan-50',
       shadowColor: 'shadow-blue-500/50',
       glowColor: '99, 102, 241', // indigo-500 RGB
+      estimatedTime: '10-20 seconds',
     },
     {
-      title: 'Live Detection Tool',
+      title: 'Fact-Check Verification',
       description:
-        'Real-time analysis during live broadcasts, video conferences, and streaming to detect manipulation as it occurs.',
-      icon: AlertTriangle,
+        'Searches authoritative fact-checking databases to verify textual claims against known verdicts from reputable sources.',
+      icon: FileSearch,
       gradient: 'from-indigo-500 via-blue-500 to-sky-500',
       bgGradient: 'from-indigo-50 to-sky-50',
       shadowColor: 'shadow-indigo-500/50',
       glowColor: '99, 102, 241', // indigo-500 RGB
+      estimatedTime: '20-45 seconds',
     },
     {
-      title: 'Metadata and Geolocation Analysis',
+      title: 'Timeline Verification',
       description:
-        'Forensics and evidence validation as a CSI-level deep media files to determine the original source and authenticity.',
-      icon: BarChart3,
-      gradient: 'from-blue-500 via-indigo-500 to-sky-500',
-      bgGradient: 'from-blue-50 to-indigo-50',
-      shadowColor: 'shadow-blue-500/50',
-      glowColor: '59, 130, 246', // blue-500 RGB
-    },
-    {
-      title: 'Risk Scoring System',
-      description:
-        'Combines multiple analysis results into a single risk score helping decision-makers make a quick assessment.',
-      icon: Shield,
+        'Verifies media metadata and performs reverse lookup to establish timeline, detecting backdated or misdated content.',
+      icon: Sparkles,
       gradient: 'from-cyan-500 via-blue-500 to-indigo-500',
       bgGradient: 'from-cyan-50 to-indigo-50',
       shadowColor: 'shadow-cyan-500/50',
       glowColor: '6, 182, 212', // cyan-500 RGB
+      estimatedTime: '20-40 seconds',
     },
   ];
 
@@ -107,18 +118,17 @@ export default function CoreCapabilities() {
         <div className="text-center mb-20">
           <div className="inline-flex items-center justify-center px-4 py-2 bg-blue-100 rounded-full mb-6">
             <span className="text-sm font-semibold text-blue-600">
-              Core Capabilities
+              Powerful Features
             </span>
           </div>
           <h2 className="text-5xl md:text-6xl font-bold mb-6">
-            <span className="text-gray-900">Powerful Features</span>
+            <span className="text-gray-900">Comprehensive Tools</span>
             <br />
             <span className="text-gray-900">at a Glance</span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            These tools are designed to move beyond the initial question of
-            authenticity and provide answers to the more profound challenges of
-            accuracy and safety.
+            From AI detection to fact-checking, our suite of verification tools
+            helps you investigate and validate digital content with confidence.
           </p>
         </div>
 
@@ -147,6 +157,17 @@ export default function CoreCapabilities() {
                       : 'border-gray-100 shadow-md'
                   }`}
                 >
+                  {/* Coming Soon Badge */}
+                  {capability.comingSoon && (
+                    <div className="absolute top-4 right-4 z-20">
+                      <div className="px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full shadow-lg">
+                        <span className="text-xs font-bold text-white uppercase tracking-wider">
+                          Coming Soon
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Background Gradient (on hover) */}
                   <div
                     className={`absolute inset-0 bg-gradient-to-br ${capability.bgGradient} rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
@@ -193,9 +214,15 @@ export default function CoreCapabilities() {
                     >
                       {capability.title}
                     </h3>
-                    <p className="text-sm text-gray-600 leading-relaxed">
+                    <p className="text-sm text-gray-600 leading-relaxed mb-4">
                       {capability.description}
                     </p>
+
+                    {/* Estimated Time */}
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <div className="w-1.5 h-1.5 bg-gray-400 rounded-full" />
+                      <span>{capability.estimatedTime}</span>
+                    </div>
                   </div>
 
                   {/* Decorative Corner */}
@@ -217,10 +244,10 @@ export default function CoreCapabilities() {
               </div>
               <div className="text-left">
                 <div className="text-2xl font-bold text-blue-600">
-                  Trusted by 500+ Organizations
+                  8 Powerful Tools
                 </div>
                 <div className="text-sm text-gray-600">
-                  Protecting digital integrity worldwide
+                  Comprehensive verification suite
                 </div>
               </div>
             </div>
