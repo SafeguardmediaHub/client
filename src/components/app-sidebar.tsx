@@ -199,7 +199,7 @@ const data = {
     },
     {
       name: 'Support',
-      url: '#',
+      url: '/dashboard/support',
       icon: LifeBuoy,
     },
   ],

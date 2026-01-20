@@ -39,6 +39,7 @@ const AppNavbar = () => {
     admin: 'Admin',
     waitlist: 'Waitlist Management',
     feedback: 'Feedback',
+    support: 'Support',
   };
 
   const getBreadcrumbItems = () => {
