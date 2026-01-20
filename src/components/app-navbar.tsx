@@ -20,36 +20,85 @@ const AppNavbar = () => {
   const { user } = useAuth();
   const pathname = usePathname();
 
-  const navigationMap = {
-    '/dashboard': { name: 'Dashboard', category: 'Overview' },
-    '/dashboard/library': { name: 'Library', category: 'Overview' },
-    '/dashboard/reporting': {
-      name: 'Reports Generation',
-      category: 'Reporting & Collaboration',
-    },
+  // Enhanced route name mapping
+  const routeNameMap: Record<string, string> = {
+    dashboard: 'Dashboard',
+    library: 'Library',
+    reporting: 'Reports',
+    batches: 'Batch Processing',
+    'fact-check': 'Fact Checking',
+    timeline: 'Timeline Verification',
+    geolocation: 'Geolocation',
+    reverse: 'Reverse Lookup',
+    'tamper-detection': 'Tamper Detection',
+    'claim-research': 'Claim Research',
+    keyframe: 'Keyframe Extraction',
+    authenticity: 'Authenticity',
+    verify: 'Verify',
+    badges: 'Badges',
+    admin: 'Admin',
+    waitlist: 'Waitlist Management',
+    feedback: 'Feedback',
   };
-
-  const currentPage = navigationMap[pathname as keyof typeof navigationMap];
 
   const getBreadcrumbItems = () => {
     const items = [];
+    const pathSegments = pathname.split('/').filter(Boolean);
 
+    // Always add Dashboard as first item
     items.push(
       <BreadcrumbItem key="dashboard" className="hidden md:block">
         <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-      </BreadcrumbItem>
+      </BreadcrumbItem>,
     );
 
-    if (currentPage && pathname !== '/dashboard') {
-      items.push(
-        <BreadcrumbSeparator key="separator" className="hidden md:block" />
-      );
-      items.push(
-        <BreadcrumbItem key="current">
-          <BreadcrumbPage>{currentPage.name}</BreadcrumbPage>
-        </BreadcrumbItem>
-      );
+    // Skip if we're on the dashboard root
+    if (pathSegments.length === 1 && pathSegments[0] === 'dashboard') {
+      return items;
     }
+
+    // Build breadcrumbs from path segments (skip 'dashboard' as it's already added)
+    const segments = pathSegments.slice(1);
+    let currentPath = '/dashboard';
+
+    segments.forEach((segment, index) => {
+      currentPath += `/${segment}`;
+      const isLast = index === segments.length - 1;
+
+      // Skip dynamic route segments (like [id])
+      if (segment.startsWith('[') && segment.endsWith(']')) {
+        return;
+      }
+
+      // Get display name from map or format the segment
+      const displayName =
+        routeNameMap[segment] ||
+        segment
+          .split('-')
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+
+      items.push(
+        <BreadcrumbSeparator
+          key={`separator-${segment}`}
+          className="hidden md:block"
+        />,
+      );
+
+      if (isLast) {
+        items.push(
+          <BreadcrumbItem key={segment}>
+            <BreadcrumbPage>{displayName}</BreadcrumbPage>
+          </BreadcrumbItem>,
+        );
+      } else {
+        items.push(
+          <BreadcrumbItem key={segment} className="hidden md:block">
+            <BreadcrumbLink href={currentPath}>{displayName}</BreadcrumbLink>
+          </BreadcrumbItem>,
+        );
+      }
+    });
 
     return items;
   };

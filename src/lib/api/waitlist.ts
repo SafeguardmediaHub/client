@@ -49,3 +49,92 @@ export const joinWaitlist = async (
     throw new Error('An unexpected error occurred');
   }
 };
+
+// Admin API methods
+import api from '@/lib/api';
+import type {
+  ApproveRejectInput,
+  UpdateWaitlistInput,
+  WaitlistEntriesResponse,
+  WaitlistEntry,
+  WaitlistQueryParams,
+  WaitlistStats,
+} from '@/types/waitlist-admin';
+
+export const waitlistAdminApi = {
+  // Get all entries with pagination and filters
+  async getAllEntries(
+    params?: WaitlistQueryParams,
+  ): Promise<WaitlistEntriesResponse> {
+    const response = await api.get<{
+      success: boolean;
+      message: string;
+      data: WaitlistEntriesResponse;
+    }>('/api/waitlist', { params });
+    return response.data.data;
+  },
+
+  // Get statistics
+  async getStats(): Promise<WaitlistStats> {
+    const response = await api.get<{
+      success: boolean;
+      message: string;
+      data: WaitlistStats;
+    }>('/api/waitlist/stats');
+    return response.data.data;
+  },
+
+  // Get single entry
+  async getEntry(id: string): Promise<WaitlistEntry> {
+    const response = await api.get<{
+      success: boolean;
+      message: string;
+      data: WaitlistEntry;
+    }>(`/api/waitlist/${id}`);
+    return response.data.data;
+  },
+
+  // Update entry
+  async updateEntry(
+    id: string,
+    data: UpdateWaitlistInput,
+  ): Promise<WaitlistEntry> {
+    const response = await api.patch<{
+      success: boolean;
+      message: string;
+      data: WaitlistEntry;
+    }>(`/api/waitlist/${id}`, data);
+    return response.data.data;
+  },
+
+  // Approve entry
+  async approveEntry(
+    id: string,
+    input?: ApproveRejectInput,
+  ): Promise<WaitlistEntry> {
+    const response = await api.patch<{
+      success: boolean;
+      message: string;
+      data: WaitlistEntry;
+    }>(`/api/waitlist/${id}/approve`, input || {});
+    return response.data.data;
+  },
+
+  // Reject entry
+  async rejectEntry(
+    id: string,
+    input?: ApproveRejectInput,
+  ): Promise<WaitlistEntry> {
+    const response = await api.patch<{
+      success: boolean;
+      message: string;
+      data: WaitlistEntry;
+    }>(`/api/waitlist/${id}/reject`, input || {});
+    return response.data.data;
+  },
+
+  // Delete entry
+  async deleteEntry(id: string): Promise<void> {
+    await api.delete(`/api/waitlist/${id}`);
+  },
+};

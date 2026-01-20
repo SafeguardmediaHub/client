@@ -18,16 +18,13 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
   MediaInfoBlock,
-  MediaInfoBlockSkeleton,
   MetadataViewer,
   StatusBadge,
   SummaryCard,
-  SummaryCardSkeleton,
   VerificationSteps,
 } from '@/components/c2pa';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   useDeleteVerification,
@@ -72,7 +69,7 @@ export default function VerificationDetailsPage() {
 
   // Report generation hook
   const reportGeneration = useReportGeneration({
-    onCompleted: (report) => {
+    onCompleted: (_report) => {
       toast.success('Report generated successfully!');
     },
     onFailed: (error) => {
@@ -101,7 +98,10 @@ export default function VerificationDetailsPage() {
       return;
     }
 
-    const mediaIdStr = typeof details.mediaId === 'string' ? details.mediaId : details.mediaId._id;
+    const mediaIdStr =
+      typeof details.mediaId === 'string'
+        ? details.mediaId
+        : details.mediaId._id;
 
     try {
       await reportGeneration.generate({
@@ -118,9 +118,7 @@ export default function VerificationDetailsPage() {
 
   const handleDownloadReport = () => {
     if (reportGeneration.downloadUrl) {
-      reportGeneration.downloadReport(
-        `Authenticity_Report_${verificationId}`
-      );
+      reportGeneration.downloadReport(`Authenticity_Report_${verificationId}`);
     } else {
       handleGenerateReport();
     }
@@ -202,7 +200,7 @@ export default function VerificationDetailsPage() {
     ) {
       // Extract data from the stringified MongoDB object
       const filenameMatch = details.mediaId.match(
-        /originalFilename:\s*'([^']+)'/
+        /originalFilename:\s*'([^']+)'/,
       );
       const thumbnailMatch = details.mediaId.match(/thumbnailUrl:\s*'([^']+)'/);
       const mimeTypeMatch = details.mediaId.match(/mimeType:\s*'([^']+)'/);
@@ -230,10 +228,10 @@ export default function VerificationDetailsPage() {
     (mimeType?.startsWith('image/')
       ? 'image'
       : mimeType?.startsWith('video/')
-      ? 'video'
-      : mimeType?.startsWith('audio/')
-      ? 'audio'
-      : 'document');
+        ? 'video'
+        : mimeType?.startsWith('audio/')
+          ? 'audio'
+          : 'document');
 
   // Use a default file size if not available
   const fileSize = parsedMediaId.fileSize || 0;
@@ -271,11 +269,21 @@ export default function VerificationDetailsPage() {
           </div>
         </div>
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
-          <Button variant="outline" size="sm" onClick={handleRefresh} className="flex-shrink-0">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            className="flex-shrink-0"
+          >
             <RefreshCw className="size-4" />
             <span className="ml-1 hidden sm:inline">Refresh</span>
           </Button>
-          <Button variant="outline" size="sm" onClick={handleDownloadReport} className="flex-shrink-0">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleDownloadReport}
+            className="flex-shrink-0"
+          >
             <Download className="size-4" />
             <span className="ml-1 hidden sm:inline">Download</span>
           </Button>
@@ -350,491 +358,505 @@ export default function VerificationDetailsPage() {
       {/* Completed/Error state - Tabs */}
       {!isProcessing && (
         <>
-        <Tabs defaultValue="summary" className="w-full">
-          <TabsList className="w-full mb-6 h-auto flex-wrap justify-start">
-            <TabsTrigger value="summary" className="flex-shrink-0">Summary</TabsTrigger>
-            <TabsTrigger value="manifest" className="flex-shrink-0">Manifest</TabsTrigger>
-            <TabsTrigger value="certificates" className="flex-shrink-0">Certificates</TabsTrigger>
-            <TabsTrigger value="metadata" className="flex-shrink-0">Metadata</TabsTrigger>
-            <TabsTrigger value="timeline" className="flex-shrink-0">Timeline</TabsTrigger>
-          </TabsList>
+          <Tabs defaultValue="summary" className="w-full">
+            <TabsList className="w-full mb-6 h-auto flex-wrap justify-start">
+              <TabsTrigger value="summary" className="flex-shrink-0">
+                Summary
+              </TabsTrigger>
+              <TabsTrigger value="manifest" className="flex-shrink-0">
+                Manifest
+              </TabsTrigger>
+              <TabsTrigger value="certificates" className="flex-shrink-0">
+                Certificates
+              </TabsTrigger>
+              <TabsTrigger value="metadata" className="flex-shrink-0">
+                Metadata
+              </TabsTrigger>
+              <TabsTrigger value="timeline" className="flex-shrink-0">
+                Timeline
+              </TabsTrigger>
+            </TabsList>
 
-          {/* Summary Tab */}
-          <TabsContent value="summary" className="mt-0">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <SummaryCard
-                summary={summary}
-                onDownloadReport={handleDownloadReport}
-              />
+            {/* Summary Tab */}
+            <TabsContent value="summary" className="mt-0">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <SummaryCard
+                  summary={summary}
+                  onDownloadReport={handleDownloadReport}
+                />
 
-              {/* Additional Info Card */}
-              <div className="p-6 bg-white border border-gray-200 rounded-xl">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Verification Details
-                </h3>
-                <dl className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <dt className="text-gray-500">Job Status:</dt>
-                    <dd className="font-medium text-gray-900">
-                      {details.jobStatus || 'N/A'}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt className="text-gray-500">Processing Time:</dt>
-                    <dd className="font-medium text-gray-900">
-                      {details.processingTimeMs
-                        ? `${(details.processingTimeMs / 1000).toFixed(2)}s`
-                        : 'N/A'}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt className="text-gray-500">Verified At:</dt>
-                    <dd className="font-medium text-gray-900">
-                      {details.verifiedAt
-                        ? new Date(details.verifiedAt).toLocaleString()
-                        : 'N/A'}
-                    </dd>
-                  </div>
-                  {details.signedAt && (
+                {/* Additional Info Card */}
+                <div className="p-6 bg-white border border-gray-200 rounded-xl">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    Verification Details
+                  </h3>
+                  <dl className="space-y-3 text-sm">
                     <div className="flex justify-between">
-                      <dt className="text-gray-500">Signed At:</dt>
+                      <dt className="text-gray-500">Job Status:</dt>
                       <dd className="font-medium text-gray-900">
-                        {new Date(details.signedAt).toLocaleString()}
+                        {details.jobStatus || 'N/A'}
                       </dd>
                     </div>
-                  )}
-                  {details.certificate?.issuer && (
                     <div className="flex justify-between">
-                      <dt className="text-gray-500">Certificate Issuer:</dt>
+                      <dt className="text-gray-500">Processing Time:</dt>
                       <dd className="font-medium text-gray-900">
-                        {details.certificate.issuer}
+                        {details.processingTimeMs
+                          ? `${(details.processingTimeMs / 1000).toFixed(2)}s`
+                          : 'N/A'}
                       </dd>
                     </div>
-                  )}
-                  {details.editedAfterSigning !== null && (
                     <div className="flex justify-between">
-                      <dt className="text-gray-500">Edited After Signing:</dt>
+                      <dt className="text-gray-500">Verified At:</dt>
                       <dd className="font-medium text-gray-900">
-                        {details.editedAfterSigning ? 'Yes' : 'No'}
+                        {details.verifiedAt
+                          ? new Date(details.verifiedAt).toLocaleString()
+                          : 'N/A'}
                       </dd>
                     </div>
-                  )}
-                </dl>
-
-                {/* Insights */}
-                {details.insights && details.insights.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">
-                      Insights
-                    </h4>
-                    <ul className="space-y-2">
-                      {details.insights.map(
-                        (insight: string, index: number) => (
-                          <li
-                            key={index}
-                            className="text-sm text-blue-700 bg-blue-50 rounded-lg p-2"
-                          >
-                            {insight}
-                          </li>
-                        )
-                      )}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            </div>
-          </TabsContent>
-
-          {/* Manifest Tab */}
-          <TabsContent value="manifest" className="mt-0">
-            <div className="p-6 bg-white border border-gray-200 rounded-xl">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Manifest Information
-              </h3>
-              {details.manifestPresent ? (
-                <div className="space-y-4">
-                  <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
-                    <p className="text-sm text-emerald-700">
-                      C2PA manifest detected in this file
-                    </p>
-                    {details.manifestVersion && (
-                      <p className="text-xs text-emerald-600 mt-1">
-                        Version: {details.manifestVersion}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Edit History */}
-                  {details.editHistory && details.editHistory.length > 0 && (
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">
-                        Edit History
-                      </h4>
-                      <div className="space-y-2">
-                        {details.editHistory.map((edit: any, index: number) => (
-                          <div
-                            key={index}
-                            className="bg-gray-50 rounded-lg p-3 text-sm"
-                          >
-                            <p className="font-medium text-gray-900">
-                              {edit.action || 'Unknown action'}
-                            </p>
-                            {edit.timestamp && (
-                              <p className="text-xs text-gray-500 mt-1">
-                                {new Date(edit.timestamp).toLocaleString()}
-                              </p>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {details.editHistory?.length === 0 && (
-                    <p className="text-sm text-gray-500">
-                      No edit history available. This may be the original file
-                      or edit history was not recorded.
-                    </p>
-                  )}
-                </div>
-              ) : (
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                  <p className="text-sm text-gray-600">
-                    No C2PA manifest found in this file. The file may not have
-                    been signed with C2PA-compliant software.
-                  </p>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          {/* Certificates Tab */}
-          <TabsContent value="certificates" className="mt-0">
-            <div className="p-6 bg-white border border-gray-200 rounded-xl">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Certificate Information
-              </h3>
-              {details.certificate?.issuer ? (
-                <div className="space-y-4">
-                  <div
-                    className={cn(
-                      'border rounded-lg p-4',
-                      details.certificate.valid
-                        ? 'bg-emerald-50 border-emerald-200'
-                        : 'bg-red-50 border-red-200'
-                    )}
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-900">
-                          {details.certificate.issuer}
-                        </h4>
-                        <p className="text-xs text-gray-500 mt-1">
-                          Certificate Issuer
-                        </p>
-                      </div>
-                      <span
-                        className={cn(
-                          'px-2 py-1 text-xs font-medium rounded-full',
-                          details.certificate.valid
-                            ? 'bg-emerald-100 text-emerald-700'
-                            : 'bg-red-100 text-red-700'
-                        )}
-                      >
-                        {details.certificate.valid ? 'Valid' : 'Invalid'}
-                      </span>
-                    </div>
-
-                    <dl className="space-y-2 text-sm">
+                    {details.signedAt && (
                       <div className="flex justify-between">
-                        <dt className="text-gray-600">Status:</dt>
+                        <dt className="text-gray-500">Signed At:</dt>
                         <dd className="font-medium text-gray-900">
-                          {details.certificate.expired ? 'Expired' : 'Active'}
+                          {new Date(details.signedAt).toLocaleString()}
                         </dd>
                       </div>
-                      {details.certificate.expiresAt && (
-                        <div className="flex justify-between">
-                          <dt className="text-gray-600">Expires:</dt>
-                          <dd className="font-medium text-gray-900">
-                            {new Date(
-                              details.certificate.expiresAt
-                            ).toLocaleDateString()}
-                          </dd>
-                        </div>
-                      )}
-                      {details.signatureAlgorithm && (
-                        <div className="flex justify-between">
-                          <dt className="text-gray-600">Algorithm:</dt>
-                          <dd className="font-medium text-gray-900">
-                            {details.signatureAlgorithm}
-                          </dd>
-                        </div>
-                      )}
-                    </dl>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                  <p className="text-sm text-gray-600">
-                    No certificate information available. This may indicate the
-                    file was not signed or the certificate data could not be
-                    extracted.
-                  </p>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          {/* Metadata Tab */}
-          <TabsContent value="metadata" className="mt-0">
-            <div className="p-6 bg-white border border-gray-200 rounded-xl">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Verification Metadata
-              </h3>
-              <p className="text-sm text-gray-500 mb-4">
-                Complete verification data from the backend.
-              </p>
-              <MetadataViewer
-                data={details as unknown as Record<string, unknown>}
-              />
-            </div>
-          </TabsContent>
-
-          {/* Timeline Tab */}
-          <TabsContent value="timeline" className="mt-0">
-            <div className="p-6 bg-white border border-gray-200 rounded-xl">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Verification Timeline
-              </h3>
-
-              {/* Verification Steps */}
-              <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <div
-                    className={cn(
-                      'flex-shrink-0 w-2 h-2 rounded-full mt-2',
-                      'bg-blue-500'
                     )}
-                  />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">
-                      Verification Started
-                    </p>
-                    {/* <p className="text-xs text-gray-500">
-                      {new Date(details.createdAt).toLocaleString()}
-                    </p> */}
-                  </div>
-                </div>
-
-                {details.manifestPresent && (
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-2 h-2 rounded-full mt-2 bg-emerald-500" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">
-                        C2PA Manifest Detected
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Manifest found in file
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {details.signatureValid !== null && (
-                  <div className="flex items-start gap-3">
-                    <div
-                      className={cn(
-                        'flex-shrink-0 w-2 h-2 rounded-full mt-2',
-                        details.signatureValid ? 'bg-emerald-500' : 'bg-red-500'
-                      )}
-                    />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">
-                        Signature Verification
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {details.signatureValid
-                          ? 'Signature is valid'
-                          : 'Signature verification failed'}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {details.certificate && (
-                  <div className="flex items-start gap-3">
-                    <div
-                      className={cn(
-                        'flex-shrink-0 w-2 h-2 rounded-full mt-2',
-                        details.certificate.valid
-                          ? 'bg-emerald-500'
-                          : 'bg-amber-500'
-                      )}
-                    />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">
-                        Certificate Validation
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {details.certificate.valid
-                          ? `Valid certificate from ${details.certificate.issuer}`
-                          : `Certificate validation failed: ${
-                              details.errors?.[0] || 'Unknown error'
-                            }`}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {details.integrity && (
-                  <div className="flex items-start gap-3">
-                    <div
-                      className={cn(
-                        'flex-shrink-0 w-2 h-2 rounded-full mt-2',
-                        details.integrity === 'intact'
-                          ? 'bg-emerald-500'
-                          : 'bg-red-500'
-                      )}
-                    />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">
-                        Integrity Check
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Content integrity is {details.integrity}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex items-start gap-3">
-                  <div
-                    className={cn(
-                      'flex-shrink-0 w-2 h-2 rounded-full mt-2',
-                      details.jobStatus === 'completed'
-                        ? 'bg-emerald-500'
-                        : 'bg-blue-500'
+                    {details.certificate?.issuer && (
+                      <div className="flex justify-between">
+                        <dt className="text-gray-500">Certificate Issuer:</dt>
+                        <dd className="font-medium text-gray-900">
+                          {details.certificate.issuer}
+                        </dd>
+                      </div>
                     )}
-                  />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">
-                      Verification Completed
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {details.verifiedAt
-                        ? new Date(details.verifiedAt).toLocaleString()
-                        : 'N/A'}
-                      {details.processingTimeMs &&
-                        ` • Took ${(details.processingTimeMs / 1000).toFixed(
-                          2
-                        )}s`}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
-
-        {/* Report Generation Section */}
-        <div className="mt-6 p-6 bg-white border border-gray-200 rounded-xl">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Generate Report
-          </h3>
-
-          {/* Report Generation Status */}
-          {reportGeneration.status && (
-            <div className="mb-4 bg-gray-50 rounded-lg p-4">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    {reportGeneration.status === 'completed' ? (
-                      <CheckCircle2 className="w-5 h-5 text-green-600" />
-                    ) : reportGeneration.status === 'failed' ? (
-                      <AlertCircle className="w-5 h-5 text-red-600" />
-                    ) : (
-                      <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
+                    {details.editedAfterSigning !== null && (
+                      <div className="flex justify-between">
+                        <dt className="text-gray-500">Edited After Signing:</dt>
+                        <dd className="font-medium text-gray-900">
+                          {details.editedAfterSigning ? 'Yes' : 'No'}
+                        </dd>
+                      </div>
                     )}
-                    <div>
-                      <h4 className="font-semibold text-gray-900">
-                        {reportGeneration.status === 'pending'
-                          ? 'Report Queued'
-                          : reportGeneration.status === 'processing'
-                          ? 'Generating Report'
-                          : reportGeneration.status === 'completed'
-                          ? 'Report Ready'
-                          : 'Report Generation Failed'}
+                  </dl>
+
+                  {/* Insights */}
+                  {details.insights && details.insights.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">
+                        Insights
                       </h4>
-                      <p className="text-sm text-gray-600">
-                        {reportGeneration.status === 'pending' &&
-                          'Your report is in the queue'}
-                        {reportGeneration.status === 'processing' &&
-                          'Creating your PDF report...'}
-                        {reportGeneration.status === 'completed' &&
-                          'Your report is ready to download'}
-                        {reportGeneration.status === 'failed' &&
-                          'An error occurred during generation'}
-                      </p>
+                      <ul className="space-y-2">
+                        {details.insights.map(
+                          (insight: string, index: number) => (
+                            <li
+                              key={index}
+                              className="text-sm text-blue-700 bg-blue-50 rounded-lg p-2"
+                            >
+                              {insight}
+                            </li>
+                          ),
+                        )}
+                      </ul>
                     </div>
-                  </div>
-                  {reportGeneration.status === 'completed' && (
-                    <Button
-                      onClick={handleDownloadReport}
-                      className="cursor-pointer"
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      Download PDF
-                    </Button>
                   )}
                 </div>
+              </div>
+            </TabsContent>
 
-                {/* Progress Bar */}
-                {(reportGeneration.status === 'pending' ||
-                  reportGeneration.status === 'processing') && (
-                  <div className="space-y-2">
-                    <Progress value={reportGeneration.progress || 0} />
-                    <p className="text-xs text-gray-500 text-center">
-                      {reportGeneration.progress || 0}% complete
+            {/* Manifest Tab */}
+            <TabsContent value="manifest" className="mt-0">
+              <div className="p-6 bg-white border border-gray-200 rounded-xl">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Manifest Information
+                </h3>
+                {details.manifestPresent ? (
+                  <div className="space-y-4">
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                      <p className="text-sm text-emerald-700">
+                        C2PA manifest detected in this file
+                      </p>
+                      {details.manifestVersion && (
+                        <p className="text-xs text-emerald-600 mt-1">
+                          Version: {details.manifestVersion}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Edit History */}
+                    {details.editHistory && details.editHistory.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">
+                          Edit History
+                        </h4>
+                        <div className="space-y-2">
+                          {details.editHistory.map(
+                            (edit: any, index: number) => (
+                              <div
+                                key={index}
+                                className="bg-gray-50 rounded-lg p-3 text-sm"
+                              >
+                                <p className="font-medium text-gray-900">
+                                  {edit.action || 'Unknown action'}
+                                </p>
+                                {edit.timestamp && (
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    {new Date(edit.timestamp).toLocaleString()}
+                                  </p>
+                                )}
+                              </div>
+                            ),
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {details.editHistory?.length === 0 && (
+                      <p className="text-sm text-gray-500">
+                        No edit history available. This may be the original file
+                        or edit history was not recorded.
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <p className="text-sm text-gray-600">
+                      No C2PA manifest found in this file. The file may not have
+                      been signed with C2PA-compliant software.
                     </p>
                   </div>
                 )}
               </div>
-            </div>
-          )}
+            </TabsContent>
 
-          {/* Action Buttons */}
-          <div className="flex justify-center gap-4">
-            {!reportGeneration.status && (
-              <Button
-                onClick={handleGenerateReport}
-                disabled={reportGeneration.isGenerating}
-                className="cursor-pointer"
-              >
-                {reportGeneration.isGenerating ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Starting...
-                  </>
+            {/* Certificates Tab */}
+            <TabsContent value="certificates" className="mt-0">
+              <div className="p-6 bg-white border border-gray-200 rounded-xl">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Certificate Information
+                </h3>
+                {details.certificate?.issuer ? (
+                  <div className="space-y-4">
+                    <div
+                      className={cn(
+                        'border rounded-lg p-4',
+                        details.certificate.valid
+                          ? 'bg-emerald-50 border-emerald-200'
+                          : 'bg-red-50 border-red-200',
+                      )}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-900">
+                            {details.certificate.issuer}
+                          </h4>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Certificate Issuer
+                          </p>
+                        </div>
+                        <span
+                          className={cn(
+                            'px-2 py-1 text-xs font-medium rounded-full',
+                            details.certificate.valid
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : 'bg-red-100 text-red-700',
+                          )}
+                        >
+                          {details.certificate.valid ? 'Valid' : 'Invalid'}
+                        </span>
+                      </div>
+
+                      <dl className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <dt className="text-gray-600">Status:</dt>
+                          <dd className="font-medium text-gray-900">
+                            {details.certificate.expired ? 'Expired' : 'Active'}
+                          </dd>
+                        </div>
+                        {details.certificate.expiresAt && (
+                          <div className="flex justify-between">
+                            <dt className="text-gray-600">Expires:</dt>
+                            <dd className="font-medium text-gray-900">
+                              {new Date(
+                                details.certificate.expiresAt,
+                              ).toLocaleDateString()}
+                            </dd>
+                          </div>
+                        )}
+                        {details.signatureAlgorithm && (
+                          <div className="flex justify-between">
+                            <dt className="text-gray-600">Algorithm:</dt>
+                            <dd className="font-medium text-gray-900">
+                              {details.signatureAlgorithm}
+                            </dd>
+                          </div>
+                        )}
+                      </dl>
+                    </div>
+                  </div>
                 ) : (
-                  <>
-                    <FileText className="w-4 h-4 mr-2" />
-                    Generate PDF Report
-                  </>
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <p className="text-sm text-gray-600">
+                      No certificate information available. This may indicate
+                      the file was not signed or the certificate data could not
+                      be extracted.
+                    </p>
+                  </div>
                 )}
-              </Button>
+              </div>
+            </TabsContent>
+
+            {/* Metadata Tab */}
+            <TabsContent value="metadata" className="mt-0">
+              <div className="p-6 bg-white border border-gray-200 rounded-xl">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Verification Metadata
+                </h3>
+                <p className="text-sm text-gray-500 mb-4">
+                  Complete verification data from the backend.
+                </p>
+                <MetadataViewer
+                  data={details as unknown as Record<string, unknown>}
+                />
+              </div>
+            </TabsContent>
+
+            {/* Timeline Tab */}
+            <TabsContent value="timeline" className="mt-0">
+              <div className="p-6 bg-white border border-gray-200 rounded-xl">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Verification Timeline
+                </h3>
+
+                {/* Verification Steps */}
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={cn(
+                        'flex-shrink-0 w-2 h-2 rounded-full mt-2',
+                        'bg-blue-500',
+                      )}
+                    />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900">
+                        Verification Started
+                      </p>
+                      {/* <p className="text-xs text-gray-500">
+                      {new Date(details.createdAt).toLocaleString()}
+                    </p> */}
+                    </div>
+                  </div>
+
+                  {details.manifestPresent && (
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-2 h-2 rounded-full mt-2 bg-emerald-500" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900">
+                          C2PA Manifest Detected
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Manifest found in file
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {details.signatureValid !== null && (
+                    <div className="flex items-start gap-3">
+                      <div
+                        className={cn(
+                          'flex-shrink-0 w-2 h-2 rounded-full mt-2',
+                          details.signatureValid
+                            ? 'bg-emerald-500'
+                            : 'bg-red-500',
+                        )}
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900">
+                          Signature Verification
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {details.signatureValid
+                            ? 'Signature is valid'
+                            : 'Signature verification failed'}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {details.certificate && (
+                    <div className="flex items-start gap-3">
+                      <div
+                        className={cn(
+                          'flex-shrink-0 w-2 h-2 rounded-full mt-2',
+                          details.certificate.valid
+                            ? 'bg-emerald-500'
+                            : 'bg-amber-500',
+                        )}
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900">
+                          Certificate Validation
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {details.certificate.valid
+                            ? `Valid certificate from ${details.certificate.issuer}`
+                            : `Certificate validation failed: ${
+                                details.errors?.[0] || 'Unknown error'
+                              }`}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {details.integrity && (
+                    <div className="flex items-start gap-3">
+                      <div
+                        className={cn(
+                          'flex-shrink-0 w-2 h-2 rounded-full mt-2',
+                          details.integrity === 'intact'
+                            ? 'bg-emerald-500'
+                            : 'bg-red-500',
+                        )}
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900">
+                          Integrity Check
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Content integrity is {details.integrity}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={cn(
+                        'flex-shrink-0 w-2 h-2 rounded-full mt-2',
+                        details.jobStatus === 'completed'
+                          ? 'bg-emerald-500'
+                          : 'bg-blue-500',
+                      )}
+                    />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900">
+                        Verification Completed
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {details.verifiedAt
+                          ? new Date(details.verifiedAt).toLocaleString()
+                          : 'N/A'}
+                        {details.processingTimeMs &&
+                          ` • Took ${(details.processingTimeMs / 1000).toFixed(
+                            2,
+                          )}s`}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          {/* Report Generation Section */}
+          <div className="mt-6 p-6 bg-white border border-gray-200 rounded-xl">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Generate Report
+            </h3>
+
+            {/* Report Generation Status */}
+            {reportGeneration.status && (
+              <div className="mb-4 bg-gray-50 rounded-lg p-4">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {reportGeneration.status === 'completed' ? (
+                        <CheckCircle2 className="w-5 h-5 text-green-600" />
+                      ) : reportGeneration.status === 'failed' ? (
+                        <AlertCircle className="w-5 h-5 text-red-600" />
+                      ) : (
+                        <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
+                      )}
+                      <div>
+                        <h4 className="font-semibold text-gray-900">
+                          {reportGeneration.status === 'pending'
+                            ? 'Report Queued'
+                            : reportGeneration.status === 'processing'
+                              ? 'Generating Report'
+                              : reportGeneration.status === 'completed'
+                                ? 'Report Ready'
+                                : 'Report Generation Failed'}
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          {reportGeneration.status === 'pending' &&
+                            'Your report is in the queue'}
+                          {reportGeneration.status === 'processing' &&
+                            'Creating your PDF report...'}
+                          {reportGeneration.status === 'completed' &&
+                            'Your report is ready to download'}
+                          {reportGeneration.status === 'failed' &&
+                            'An error occurred during generation'}
+                        </p>
+                      </div>
+                    </div>
+                    {reportGeneration.status === 'completed' && (
+                      <Button
+                        onClick={handleDownloadReport}
+                        className="cursor-pointer"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Download PDF
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Progress Bar */}
+                  {(reportGeneration.status === 'pending' ||
+                    reportGeneration.status === 'processing') && (
+                    <div className="space-y-2">
+                      <Progress value={reportGeneration.progress || 0} />
+                      <p className="text-xs text-gray-500 text-center">
+                        {reportGeneration.progress || 0}% complete
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
-            {reportGeneration.status === 'failed' && (
-              <Button
-                onClick={handleGenerateReport}
-                disabled={reportGeneration.isGenerating}
-                className="cursor-pointer"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Retry
-              </Button>
-            )}
+
+            {/* Action Buttons */}
+            <div className="flex justify-center gap-4">
+              {!reportGeneration.status && (
+                <Button
+                  onClick={handleGenerateReport}
+                  disabled={reportGeneration.isGenerating}
+                  className="cursor-pointer"
+                >
+                  {reportGeneration.isGenerating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Starting...
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="w-4 h-4 mr-2" />
+                      Generate PDF Report
+                    </>
+                  )}
+                </Button>
+              )}
+              {reportGeneration.status === 'failed' && (
+                <Button
+                  onClick={handleGenerateReport}
+                  disabled={reportGeneration.isGenerating}
+                  className="cursor-pointer"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Retry
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
         </>
       )}
     </div>
@@ -907,38 +929,38 @@ function VerificationStartingState({
   );
 }
 
-function DetailsLoadingState() {
-  return (
-    <div className="w-full flex flex-col gap-6 p-4 sm:p-6 md:p-8">
-      {/* Header skeleton */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <Skeleton className="h-8 w-20" />
-          <Skeleton className="h-8 w-28 rounded-full hidden sm:block" />
-        </div>
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-9 w-10 sm:w-24" />
-          <Skeleton className="h-9 w-10 sm:w-32" />
-          <Skeleton className="h-9 w-10 sm:w-20" />
-        </div>
-      </div>
+// function DetailsLoadingState() {
+//   return (
+//     <div className="w-full flex flex-col gap-6 p-4 sm:p-6 md:p-8">
+//       {/* Header skeleton */}
+//       <div className="flex items-center justify-between gap-3">
+//         <div className="flex items-center gap-3">
+//           <Skeleton className="h-8 w-20" />
+//           <Skeleton className="h-8 w-28 rounded-full hidden sm:block" />
+//         </div>
+//         <div className="flex items-center gap-2">
+//           <Skeleton className="h-9 w-10 sm:w-24" />
+//           <Skeleton className="h-9 w-10 sm:w-32" />
+//           <Skeleton className="h-9 w-10 sm:w-20" />
+//         </div>
+//       </div>
 
-      {/* Media info skeleton */}
-      <div className="p-6 bg-white border border-gray-200 rounded-xl">
-        <MediaInfoBlockSkeleton size="lg" />
-      </div>
+//       {/* Media info skeleton */}
+//       <div className="p-6 bg-white border border-gray-200 rounded-xl">
+//         <MediaInfoBlockSkeleton size="lg" />
+//       </div>
 
-      {/* Tabs skeleton */}
-      <div className="space-y-6">
-        <Skeleton className="h-10 w-full rounded-lg" />
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <SummaryCardSkeleton />
-          <div className="p-6 bg-white border border-gray-200 rounded-xl">
-            <Skeleton className="h-6 w-32 mb-4" />
-            <Skeleton className="h-20 w-full" />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+//       {/* Tabs skeleton */}
+//       <div className="space-y-6">
+//         <Skeleton className="h-10 w-full rounded-lg" />
+//         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+//           <SummaryCardSkeleton />
+//           <div className="p-6 bg-white border border-gray-200 rounded-xl">
+//             <Skeleton className="h-6 w-32 mb-4" />
+//             <Skeleton className="h-20 w-full" />
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }

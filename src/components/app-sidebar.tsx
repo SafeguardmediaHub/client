@@ -33,6 +33,7 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { useAuth } from '@/context/AuthContext';
+import { NavAdmin } from './nav-admin';
 import { NavDetectionTools } from './nav-detection';
 import { NavOverview } from './nav-overview';
 import { NavReporting } from './nav-reporting';
@@ -233,6 +234,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavVerificationTools projects={data.verification} />
         {/* <NavAuthenticity items={data.authenticity} /> */}
         <NavReporting projects={data.reporting} />
+        {user?.role === 'admin' && <NavAdmin />}
         <NavOverview projects={data.navSecondary} />
       </SidebarContent>
       {/* <SidebarFooter className="sm:hidden">
