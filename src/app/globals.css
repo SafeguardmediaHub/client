@@ -116,18 +116,18 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-crimson-pro), serif;
+    font-family: var(--font-geist-sans), sans-serif;
   }
 
-  /* Typography System - Retro-Futuristic */
+  /* Typography System - Modern / Vercel-like */
   h1,
   h2,
   h3,
   h4,
   h5,
   h6 {
-    font-family: var(--font-space-grotesk), sans-serif;
-    font-weight: 700;
+    font-family: 'Cal Sans', sans-serif;
+    font-weight: 600;
   }
 }
 
