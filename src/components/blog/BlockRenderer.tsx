@@ -3,6 +3,7 @@
 /** biome-ignore-all lint/performance/noImgElement: <> */
 
 import { AlertTriangle, Info, Lightbulb, Quote } from 'lucide-react';
+import Image from 'next/image';
 import type { ContentBlock } from '@/types/blog';
 
 interface BlockRendererProps {
@@ -37,10 +38,12 @@ export function BlockRenderer({ blocks }: BlockRendererProps) {
             return (
               <figure key={index} className="my-12 max-w-4xl mx-auto">
                 <div className="relative rounded-2xl overflow-hidden shadow-lg border border-border/50 bg-muted/20">
-                  <img
+                  <Image
                     src={imgUrl}
                     alt={block.alt_text || block.caption || 'Blog image'}
-                    className="w-full h-auto object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 900px"
                   />
                 </div>
                 {block.caption && (

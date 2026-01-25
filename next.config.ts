@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
       { hostname: 'png.pngtree.com' },
       { hostname: 'freesvg.org' },
       { hostname: 'ik.imagekit.io' },
+      { hostname: 'localhost' },
+      { hostname: '127.0.0.1' }, // Fallback for some local setups
     ],
   },
 };
