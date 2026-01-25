@@ -1,6 +1,12 @@
 'use client';
 
-import { FileSearch, Info, Loader2, ShieldCheck } from 'lucide-react';
+import {
+  FileSearch,
+  Info,
+  Lightbulb,
+  Loader2,
+  ShieldCheck,
+} from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
@@ -148,7 +154,7 @@ export function ClaimResearchForm({ onSuccess }: ClaimResearchFormProps) {
               htmlFor="context"
               className="text-sm font-medium text-zinc-600 dark:text-zinc-400"
             >
-              Additional Context (Optional)
+              Additional Context (Recommended)
             </Label>
             <Textarea
               id="context"
@@ -158,7 +164,20 @@ export function ClaimResearchForm({ onSuccess }: ClaimResearchFormProps) {
               rows={2}
               className="resize-none text-sm p-4 border-zinc-200 dark:border-zinc-800 focus:ring-2 focus:ring-blue-500/20 transition-all"
             />
+            <p className="text-xs text-zinc-500 px-1">
+              Links, dates, and locations help us verify 3x faster.
+            </p>
           </div>
+
+          {!context && claimText.length > 0 && (
+            <div className="bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 px-3 py-2 rounded-md text-xs flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300 mb-4">
+              <Lightbulb className="w-4 h-4 shrink-0" />
+              <p>
+                <strong>Pro Tip:</strong> Adding a source URL or date
+                significantly improves analysis accuracy.
+              </p>
+            </div>
+          )}
         </CardContent>
         <CardFooter>
           <Button
