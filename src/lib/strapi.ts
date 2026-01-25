@@ -52,6 +52,11 @@ export async function fetchAPI(
     return data;
   } catch (error) {
     console.error('[Strapi] Network/Fetch Error:', error);
+    if (error instanceof TypeError && error.message === 'fetch failed') {
+      console.error(
+        `[Strapi] 🚨 Could not connect to Strapi at ${STRAPI_URL}. Is the server running?`,
+      );
+    }
     throw error;
   }
 }
@@ -83,6 +88,7 @@ export async function getBlogPosts({
 
 export async function getBlogPostBySlug(
   slug: string,
+  isDraftMode = false,
 ): Promise<StrapiData<BlogPost> | null> {
   try {
     const query = {
@@ -115,50 +121,33 @@ export async function getBlogPostBySlug(
           fields: ['url', 'alternativeText'],
         },
       },
-      publicationState: 'live',
+      publicationState: isDraftMode ? 'preview' : 'live',
+      ...(isDraftMode && { status: 'draft' }), // User reported this helps with fetching drafts
     };
 
-    const res = await fetchAPI('/api/blog-posts', query);
+    if (isDraftMode) {
+      console.log(
+        '[Strapi] Fetching draft with token:',
+        PREVIEW_SECRET ? 'Present' : 'Missing',
+      );
+    }
+
+    const options = isDraftMode
+      ? {
+          headers: {
+            Authorization: `Bearer ${PREVIEW_SECRET}`,
+          },
+          cache: 'no-store' as RequestCache,
+        }
+      : {};
+
+    const res = await fetchAPI('/api/blog-posts', query, options);
     return res.data?.[0] || null;
   } catch (error) {
     console.error(`[Strapi] Failed to fetch post by slug "${slug}":`, error);
     // Return null to trigger notFound() in the page instead of crashing
     return null;
   }
-}
-
-export async function getPreviewBlogPostBySlug(
-  slug: string,
-): Promise<StrapiData<BlogPost> | null> {
-  if (!PREVIEW_SECRET) {
-    console.warn('STRAPI_PREVIEW_SECRET is not set');
-  }
-
-  const query = {
-    filters: {
-      slug: {
-        $eq: slug,
-      },
-    },
-    populate: {
-      content: { populate: '*' },
-      cover_image: '*',
-      author: { populate: ['avatar'] },
-      categories: '*',
-      tags: '*',
-      meta_image: '*',
-    },
-    publicationState: 'preview',
-  };
-
-  const res = await fetchAPI('/api/blog-posts', query, {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${PREVIEW_SECRET}`,
-    },
-    cache: 'no-store', // Ensure we always get the latest draft
-  });
-  return res.data?.[0] || null;
 }
 
 export async function getBlogCategories(): Promise<

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { draftMode } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { BlogPostLayout } from '@/components/blog/BlogPostLayout';
 import {
@@ -10,13 +11,20 @@ import {
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ token?: string }>;
 }
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getBlogPostBySlug(slug);
+  const { token } = await searchParams;
+  const isDraftCookie = (await draftMode()).isEnabled;
+  const isDraftToken = token === process.env.STRAPI_PREVIEW_SECRET;
+  const isDraft = isDraftCookie || isDraftToken;
+
+  const post = await getBlogPostBySlug(slug, isDraft);
 
   if (!post) {
     return {
@@ -48,12 +56,20 @@ export async function generateMetadata({
   };
 }
 
-export default async function BlogPostPage({ params }: PageProps) {
+export default async function BlogPostPage({
+  params,
+  searchParams,
+}: PageProps) {
   const { slug } = await params;
+  const { token } = await searchParams;
+
+  const isDraftCookie = (await draftMode()).isEnabled;
+  const isDraftToken = token === process.env.STRAPI_PREVIEW_SECRET;
+  const isDraft = isDraftCookie || isDraftToken;
 
   // Parallel fetch for post + sidebar data
   const [post, categoriesRes, tagsRes, recentPostsRes] = await Promise.all([
-    getBlogPostBySlug(slug),
+    getBlogPostBySlug(slug, isDraft),
     getBlogCategories(),
     getBlogTags(),
     getRecentPosts(3),
@@ -69,6 +85,7 @@ export default async function BlogPostPage({ params }: PageProps) {
       categories={categoriesRes.data}
       tags={tagsRes.data}
       recentPosts={recentPostsRes.data}
+      isPreview={isDraft}
     />
   );
 }
