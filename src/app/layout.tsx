@@ -1,5 +1,6 @@
+import { GeistSans } from 'geist/font/sans';
 import type { Metadata } from 'next';
-import { Crimson_Pro, Space_Grotesk } from 'next/font/google';
+import 'cal-sans/index.css';
 import './globals.css';
 import { Analytics } from '@vercel/analytics/next';
 import { Toaster } from 'sonner';
@@ -7,18 +8,6 @@ import QueryProvider from '@/components/providers/QueryProvider';
 import { AssistantProvider } from '@/context/AssistantContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { WebSocketProvider } from '@/context/WebSocketContext';
-
-const spaceGrotesk = Space_Grotesk({
-  variable: '--font-space-grotesk',
-  subsets: ['latin'],
-  display: 'swap',
-});
-
-const crimsonPro = Crimson_Pro({
-  variable: '--font-crimson-pro',
-  subsets: ['latin'],
-  display: 'swap',
-});
 
 export const metadata: Metadata = {
   title: {
@@ -123,7 +112,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${spaceGrotesk.variable} ${crimsonPro.variable} antialiased`}
+        className={`${GeistSans.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
         <QueryProvider>
