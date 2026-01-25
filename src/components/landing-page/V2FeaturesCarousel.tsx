@@ -1,9 +1,58 @@
 'use client';
 
-import { Bot, Code2, ScanEye, Sparkles, Users, Zap } from 'lucide-react';
+import {
+  Bot,
+  Code2,
+  LayoutDashboard,
+  ScanEye,
+  Sparkles,
+  Users,
+  Zap,
+} from 'lucide-react';
 import { Card, Carousel } from '@/components/ui/apple-cards-carousel';
 
 const v2Features = [
+  {
+    category: 'Coming in V2',
+    title: 'Redesigned Interface',
+    src: 'https://images.unsplash.com/photo-1558655146-d09347e92766?q=80&w=764&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    content: (
+      <div className="space-y-4">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-3 bg-gradient-to-br from-[hsl(260,85%,65%)] to-[hsl(260,85%,55%)] rounded-xl">
+            <LayoutDashboard className="w-8 h-8 text-white" />
+          </div>
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Redesigned Interface
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Streamlined & Immersive Experience
+            </p>
+          </div>
+        </div>
+        <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+          Experience a completely reimagined user interface designed for
+          clarity, speed, and engagement. Our new dark-mode-first aesthetic
+          reduces eye strain while surfacing critical insights instantly.
+        </p>
+        <ul className="space-y-2 mt-6">
+          <li className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+            <div className="w-2 h-2 bg-purple-500 rounded-full" />
+            Modern, glassmorphic aesthetics
+          </li>
+          <li className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+            <div className="w-2 h-2 bg-purple-500 rounded-full" />
+            Intuitive navigation structure
+          </li>
+          <li className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+            <div className="w-2 h-2 bg-purple-500 rounded-full" />
+            Real-time data visualization
+          </li>
+        </ul>
+      </div>
+    ),
+  },
   {
     category: 'Coming in V2',
     title: 'AI Media Detection',
@@ -130,7 +179,7 @@ const v2Features = [
   {
     category: 'Coming in V2',
     title: 'Frame Level Analysis',
-    src: 'https://images.unsplash.com/photo-1536240478700-b869070f9279?q=80&w=2940&auto=format&fit=crop',
+    src: 'https://images.unsplash.com/photo-1709124684187-090a44c5dc4d?q=80&w=691&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     content: (
       <div className="space-y-4">
         <div className="flex items-center gap-3 mb-6">

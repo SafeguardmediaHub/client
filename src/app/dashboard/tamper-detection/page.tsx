@@ -10,7 +10,9 @@ import {
   Info,
   Shield,
   Sparkles,
+  Upload,
 } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -205,6 +207,16 @@ const TamperDetectionPage = () => {
                       onSelect={handleMediaSelection}
                       filterType="all"
                     />
+                  </div>
+
+                  {/* Upload Media Button */}
+                  <div className="pt-2">
+                    <Button asChild variant="outline" className="w-full">
+                      <Link href="/dashboard/library">
+                        <Upload className="size-4 mr-2" />
+                        Upload Media to Library
+                      </Link>
+                    </Button>
                   </div>
 
                   {/* Tip */}

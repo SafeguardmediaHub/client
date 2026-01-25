@@ -1,4 +1,6 @@
 /** biome-ignore-all lint/performance/noImgElement: <> */
+/** biome-ignore-all lint/suspicious/noExplicitAny: <> */
+/** biome-ignore-all lint/a11y/noLabelWithoutControl: <> */
 'use client';
 
 import {
@@ -11,6 +13,7 @@ import {
   Info,
   Loader2,
   ScanSearch,
+  Upload,
   Video,
   X,
 } from 'lucide-react';
@@ -80,7 +83,7 @@ const ReverseLookupPage = () => {
           if (data.success && data.data.jobId) {
             toast.success('Reverse lookup started!');
             router.push(
-              `/dashboard/reverse/results?mediaId=${selectedMedia.id}&jobId=${data.data.jobId}`
+              `/dashboard/reverse/results?mediaId=${selectedMedia.id}&jobId=${data.data.jobId}`,
             );
           }
         },
@@ -93,7 +96,7 @@ const ReverseLookupPage = () => {
           toast.error(errorMessage);
           setState('selecting');
         },
-      }
+      },
     );
   };
 
@@ -225,6 +228,16 @@ const ReverseLookupPage = () => {
                       Choose from your library
                     </label>
                     <MediaSelector onSelect={handleMediaSelection} />
+                  </div>
+
+                  {/* Upload Media Button */}
+                  <div className="pt-2">
+                    <Button asChild variant="outline" className="w-full">
+                      <Link href="/dashboard/library">
+                        <Upload className="size-4 mr-2" />
+                        Upload Media to Library
+                      </Link>
+                    </Button>
                   </div>
 
                   {/* Tip */}
