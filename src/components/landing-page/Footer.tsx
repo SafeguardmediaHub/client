@@ -2,11 +2,11 @@
 
 import {
   ArrowRight,
-  Github,
   Linkedin,
   Mail,
   Shield,
   Twitter,
+  Youtube,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -59,9 +59,13 @@ export default function Footer() {
 
   const socialLinks = [
     { icon: Twitter, href: 'https://twitter.com', label: 'Twitter' },
-    { icon: Github, href: 'https://github.com', label: 'GitHub' },
+    {
+      icon: Youtube,
+      href: 'https://www.youtube.com/channel/UCNTAiiAqvTgO5rhzDc8aP6g',
+      label: 'YouTube',
+    },
     { icon: Linkedin, href: 'https://linkedin.com', label: 'LinkedIn' },
-    { icon: Mail, href: 'mailto:hello@safeguardmedia.com', label: 'Email' },
+    { icon: Mail, href: 'mailto:info@safeguardmedia.org', label: 'Email' },
   ];
 
   return (
