@@ -54,79 +54,98 @@ export default async function BlogListingPage({
     : posts;
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-7xl">
-      <BlogBreadcrumbs />
-
-      <div className="max-w-2xl text-center md:text-left mb-12">
-        <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl mb-4">
-          Latest Insights
-        </h1>
-        <p className="text-xl text-muted-foreground">
-          Explore our latest articles, guides, and news about media security and
-          authenticity.
-        </p>
-      </div>
-
+    <div className="min-h-screen bg-slate-950 text-slate-200 selection:bg-primary/30 selection:text-primary-foreground">
+      {/* Featured Post Section - Full Width */}
       {featuredPost && page === 1 && <FeaturedPost post={featuredPost} />}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-        {/* Main Content */}
-        <div className="lg:col-span-8 order-2 lg:order-1">
-          {filteredPosts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {filteredPosts.map((post) => (
-                <BlogCard key={post.id} post={post} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-20 bg-muted/30 rounded-xl">
-              <p className="text-muted-foreground">No posts found.</p>
-            </div>
-          )}
+      {/* Animated Sticky Categories Bar */}
+      {/* <BlogCategoryBar categories={categoriesRes.data} /> */}
 
-          {pageCount > 1 && (
-            <div className="mt-12">
-              <Pagination>
-                <PaginationContent>
-                  {page > 1 && (
-                    <PaginationItem>
-                      <PaginationPrevious href={`/blog?page=${page - 1}`} />
-                    </PaginationItem>
-                  )}
-
-                  {Array.from({ length: pageCount }).map((_, i) => {
-                    const p = i + 1;
-                    return (
-                      <PaginationItem key={p}>
-                        <PaginationLink
-                          href={`/blog?page=${p}`}
-                          isActive={page === p}
-                        >
-                          {p}
-                        </PaginationLink>
-                      </PaginationItem>
-                    );
-                  })}
-
-                  {page < pageCount && (
-                    <PaginationItem>
-                      <PaginationNext href={`/blog?page=${page + 1}`} />
-                    </PaginationItem>
-                  )}
-                </PaginationContent>
-              </Pagination>
-            </div>
-          )}
+      <div className="container mx-auto px-4 py-12 max-w-7xl">
+        <div className="mb-4">
+          <BlogBreadcrumbs />
         </div>
 
-        {/* Sidebar */}
-        <aside className="lg:col-span-4 order-1 lg:order-2">
-          <BlogSidebar
-            categories={categoriesRes.data}
-            tags={tagsRes.data}
-            recentPosts={recentPostsRes.data}
-          />
-        </aside>
+        <div className="max-w-2xl mb-12">
+          <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl mb-4 text-white">
+            Latest Insights
+          </h1>
+          <p className="text-xl text-slate-400">
+            Explore our latest articles, guides, and news about media security
+            and authenticity.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          {/* Main Content */}
+          <div className="lg:col-span-8 order-2 lg:order-1">
+            {filteredPosts.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {filteredPosts.map((post) => (
+                  <BlogCard key={post.id} post={post} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-20 bg-white/5 border border-white/10 rounded-xl backdrop-blur-sm">
+                <p className="text-slate-400">No posts found.</p>
+              </div>
+            )}
+
+            {pageCount > 1 && (
+              <div className="mt-16">
+                <Pagination>
+                  <PaginationContent>
+                    {page > 1 && (
+                      <PaginationItem>
+                        <PaginationPrevious
+                          href={`/blog?page=${page - 1}`}
+                          className="text-slate-200 hover:bg-white/10 hover:text-white"
+                        />
+                      </PaginationItem>
+                    )}
+
+                    {Array.from({ length: pageCount }).map((_, i) => {
+                      const p = i + 1;
+                      return (
+                        <PaginationItem key={p}>
+                          <PaginationLink
+                            href={`/blog?page=${p}`}
+                            isActive={page === p}
+                            className={
+                              page === p
+                                ? 'bg-primary text-black hover:bg-primary/90 hover:text-black border-primary'
+                                : 'text-slate-200 hover:bg-white/10 hover:text-white'
+                            }
+                          >
+                            {p}
+                          </PaginationLink>
+                        </PaginationItem>
+                      );
+                    })}
+
+                    {page < pageCount && (
+                      <PaginationItem>
+                        <PaginationNext
+                          href={`/blog?page=${page + 1}`}
+                          className="text-slate-200 hover:bg-white/10 hover:text-white"
+                        />
+                      </PaginationItem>
+                    )}
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
+          </div>
+
+          {/* Sidebar */}
+          <aside className="lg:col-span-4 order-1 lg:order-2">
+            <BlogSidebar
+              categories={categoriesRes.data}
+              tags={tagsRes.data}
+              recentPosts={recentPostsRes.data}
+            />
+          </aside>
+        </div>
       </div>
     </div>
   );
