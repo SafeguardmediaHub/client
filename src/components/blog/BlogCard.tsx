@@ -1,14 +1,8 @@
 /** biome-ignore-all lint/performance/noImgElement: <> */
+/** biome-ignore-all lint/performance/noImgElement: <> */
 import { format } from 'date-fns';
 import Link from 'next/link';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from '@/components/ui/card';
 import type { BlogPost, StrapiData } from '@/types/blog';
 
 interface BlogCardProps {
@@ -26,33 +20,33 @@ export function BlogCard({ post }: BlogCardProps) {
     : null;
 
   const authorName = author?.name || 'Unknown Author';
-  const authorAvatarUrl = author?.avatar?.url
-    ? author.avatar.url.startsWith('http')
-      ? author.avatar.url
-      : `${process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1337'}${author.avatar.url}`
-    : null;
 
   return (
     <Link href={`/blog/${slug}`} className="group flex flex-col h-full">
-      <Card className="h-full flex flex-col overflow-hidden border-border/40 bg-card transition-all duration-300 hover:shadow-xl hover:border-primary/20 group-hover:-translate-y-1">
-        <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
+      <div className="relative h-full flex flex-col overflow-hidden rounded-2xl bg-white/5 border border-white/10 transition-all duration-500 hover:border-primary/50 hover:bg-white/10 hover:shadow-[0_0_40px_-10px_rgba(var(--primary-rgb),0.3)] hover:-translate-y-2">
+        {/* Image Container */}
+        <div className="relative aspect-[16/10] w-full overflow-hidden">
           {coverUrl ? (
             <img
               src={coverUrl}
               alt={title}
-              className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+              className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110"
             />
           ) : (
-            <div className="flex items-center justify-center w-full h-full text-muted-foreground bg-secondary/30">
+            <div className="flex items-center justify-center w-full h-full text-slate-500 bg-slate-900">
               <span className="text-sm font-medium">No Image</span>
             </div>
           )}
-          <div className="absolute top-3 left-3 flex flex-wrap gap-2">
+
+          {/* Overlay Gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent opacity-60 transition-opacity group-hover:opacity-40" />
+
+          <div className="absolute top-4 left-4 flex flex-wrap gap-2">
             {categories?.slice(0, 2).map((cat) => (
               <Badge
                 key={cat.id}
                 variant="secondary"
-                className="font-medium bg-background/80 backdrop-blur-sm shadow-sm hover:bg-background/90 text-[10px] px-2 py-0.5 h-auto"
+                className="font-medium bg-black/50 backdrop-blur-md text-white border border-white/20 hover:bg-black/70 px-2.5 py-1"
               >
                 {cat.name}
               </Badge>
@@ -60,42 +54,34 @@ export function BlogCard({ post }: BlogCardProps) {
           </div>
         </div>
 
-        <CardHeader className="p-5 pb-2 space-y-2">
-          <h3 className="text-xl font-bold tracking-tight leading-snug group-hover:text-primary transition-colors line-clamp-2">
-            {title}
-          </h3>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span>{authorName}</span>
-            <span>•</span>
+        <div className="flex flex-col flex-grow p-6">
+          {/* Meta Top */}
+          <div className="flex items-center gap-2 mb-4 text-xs font-medium text-slate-400">
+            <span className="text-primary">{authorName}</span>
+            <span className="w-1 h-1 rounded-full bg-slate-500" />
             <time dateTime={publishedAt}>
               {publishedAt
                 ? format(new Date(publishedAt), 'MMM d, yyyy')
                 : 'Draft'}
             </time>
           </div>
-        </CardHeader>
 
-        <CardContent className="p-5 pt-2 flex-grow">
-          <p className="text-muted-foreground line-clamp-3 text-sm leading-relaxed">
+          <h3 className="text-xl md:text-2xl font-bold tracking-tight leading-tight text-slate-100 mb-3 group-hover:text-primary transition-colors line-clamp-2">
+            {title}
+          </h3>
+
+          <p className="text-slate-400 line-clamp-3 text-sm leading-relaxed mb-6 flex-grow">
             {excerpt}
           </p>
-        </CardContent>
 
-        <CardFooter className="p-5 pt-0 mt-auto flex items-center justify-between border-t border-border/40 pt-4">
-          {/* Author Avatar small */}
-          <div className="flex items-center gap-2">
-            <Avatar className="h-6 w-6">
-              <AvatarImage src={authorAvatarUrl || ''} alt={authorName} />
-              <AvatarFallback className="text-[10px]">
-                {authorName[0]}
-              </AvatarFallback>
-            </Avatar>
-            <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-              Read Article
-            </span>
+          <div className="flex items-center justify-between border-t border-white/10 pt-4 mt-auto">
+            <div className="flex items-center gap-2 text-sm text-primary font-medium opacity-0 -translate-x-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0">
+              Read Post <span className="text-lg">→</span>
+            </div>
+            {/* Optional: Add reading time or other meta here */}
           </div>
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
     </Link>
   );
 }
