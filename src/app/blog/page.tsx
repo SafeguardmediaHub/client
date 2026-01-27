@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { BlogBreadcrumbs } from '@/components/blog/BlogBreadcrumbs';
 import { BlogCard } from '@/components/blog/BlogCard';
-import { BlogCategoryBar } from '@/components/blog/BlogCategoryBar';
 import { BlogSidebar } from '@/components/blog/BlogSidebar';
 import { FeaturedPost } from '@/components/blog/FeaturedPost';
 import {
