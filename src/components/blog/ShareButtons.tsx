@@ -40,14 +40,12 @@ export function ShareButtons({ title, slug }: ShareButtonsProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm font-medium text-muted-foreground mr-2">
-        Share:
-      </span>
+      <span className="text-sm font-medium text-slate-400 mr-2">Share:</span>
 
       <Button
         variant="outline"
         size="icon"
-        className="h-8 w-8 rounded-full"
+        className="h-8 w-8 rounded-full bg-white/5 border-white/10 text-slate-300 hover:text-white hover:bg-primary hover:border-primary transition-colors"
         onClick={() => window.open(shareLinks.twitter, '_blank')}
       >
         <Twitter className="h-4 w-4" />
@@ -57,7 +55,7 @@ export function ShareButtons({ title, slug }: ShareButtonsProps) {
       <Button
         variant="outline"
         size="icon"
-        className="h-8 w-8 rounded-full"
+        className="h-8 w-8 rounded-full bg-white/5 border-white/10 text-slate-300 hover:text-white hover:bg-primary hover:border-primary transition-colors"
         onClick={() => window.open(shareLinks.linkedin, '_blank')}
       >
         <Linkedin className="h-4 w-4" />
@@ -67,7 +65,7 @@ export function ShareButtons({ title, slug }: ShareButtonsProps) {
       <Button
         variant="outline"
         size="icon"
-        className="h-8 w-8 rounded-full"
+        className="h-8 w-8 rounded-full bg-white/5 border-white/10 text-slate-300 hover:text-white hover:bg-primary hover:border-primary transition-colors"
         onClick={() => window.open(shareLinks.facebook, '_blank')}
       >
         <Facebook className="h-4 w-4" />
@@ -77,7 +75,7 @@ export function ShareButtons({ title, slug }: ShareButtonsProps) {
       <Button
         variant="outline"
         size="icon"
-        className="h-8 w-8 rounded-full"
+        className="h-8 w-8 rounded-full bg-white/5 border-white/10 text-slate-300 hover:text-white hover:bg-primary hover:border-primary transition-colors"
         onClick={handleCopy}
       >
         {copied ? (
