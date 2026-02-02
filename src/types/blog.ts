@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: <> */
 export interface StrapiResponse<T> {
   data: T;
   meta: {
@@ -65,7 +66,7 @@ export type BlockType =
 
 export interface RichTextBlock {
   __component: 'shared.rich-text';
-  body: string; // Changed from text to body based on user JSON
+  body: any[]; // Changed to any[] to support Strapi Blocks JSON structure
 }
 
 export interface ImageBlock {

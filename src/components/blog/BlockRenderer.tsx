@@ -5,6 +5,7 @@
 import { AlertTriangle, Info, Lightbulb, Quote } from 'lucide-react';
 import Image from 'next/image';
 import type { ContentBlock } from '@/types/blog';
+import { RichTextRenderer } from './RichTextRenderer';
 
 interface BlockRendererProps {
   blocks: ContentBlock[];
@@ -21,9 +22,9 @@ export function BlockRenderer({ blocks }: BlockRendererProps) {
             return (
               <div
                 key={index}
-                className="prose prose-lg dark:prose-invert mx-auto leading-relaxed my-8"
+                className="prose prose-lg dark:prose-invert mx-auto leading-relaxed my-8 max-w-none"
               >
-                <div dangerouslySetInnerHTML={{ __html: block.body }} />
+                <RichTextRenderer content={block.body} />
               </div>
             );
 
