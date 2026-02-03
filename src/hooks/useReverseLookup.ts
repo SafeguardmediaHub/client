@@ -140,8 +140,6 @@ const reverseLookupResult = async (
 };
 
 export const downloadReport = async (jobId: string) => {
-  console.log('downloading report for job id', jobId);
-
   const response = await api.get(
     `/api/reverse-lookup/result/${jobId}/report/download`,
   );
@@ -152,8 +150,6 @@ export const downloadReport = async (jobId: string) => {
     console.log('Full response:', response.data);
     throw new Error('Download URL not found');
   }
-
-  console.log('Download URL:', downloadUrl);
 
   // Trigger download using the same pattern as geolocation
   const a = document.createElement('a');
