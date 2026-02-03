@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: <> */
 import { useMutation, useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
 
@@ -62,6 +63,17 @@ export interface ReverseLookupResult {
       | 'cancelled'
       | 'expired';
     progress: number;
+    report?: {
+      id: string;
+      status:
+        | 'pending'
+        | 'generating'
+        | 'completed'
+        | 'failed'
+        | 'not_generated';
+      generatedAt?: string; // ISO Date string
+      error?: string;
+    };
     results: SearchResult[];
   };
 }
@@ -113,18 +125,51 @@ const reverseLookup = async ({
   const response = await api.post(
     '/api/reverse-lookup/search',
     { mediaId, includeSocial: true, priority: 'high' },
-    { headers: { 'Content-Type': 'application/json' } }
+    { headers: { 'Content-Type': 'application/json' } },
   );
 
   return response.data;
 };
 
 const reverseLookupResult = async (
-  jobId: string
+  jobId: string,
 ): Promise<ReverseLookupResult> => {
   const response = await api.get(`/api/reverse-lookup/result/${jobId}`);
 
   return response.data;
+};
+
+export const downloadReport = async (jobId: string) => {
+  console.log('downloading report for job id', jobId);
+
+  const response = await api.get(
+    `/api/reverse-lookup/result/${jobId}/report/download`,
+  );
+
+  const downloadUrl = response.data?.data?.downloadUrl;
+
+  if (!downloadUrl) {
+    console.log('Full response:', response.data);
+    throw new Error('Download URL not found');
+  }
+
+  console.log('Download URL:', downloadUrl);
+
+  // Trigger download using the same pattern as geolocation
+  const a = document.createElement('a');
+  a.href = downloadUrl;
+  a.download = `Report-${jobId}.pdf`;
+  a.target = '_blank';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+};
+
+export const shareReport = async (jobId: string, expiresIn = 7) => {
+  const { data } = await api.post(`/api/reverse-lookup/result/${jobId}/share`, {
+    expiresIn,
+  });
+  return data;
 };
 
 const fetchUserReverseLookups = async (): Promise<UserReverseLookups> => {
@@ -144,7 +189,7 @@ export const useReverseLookupResult = (
   options?: {
     pollingInterval?: number;
     enabled?: boolean;
-  }
+  },
 ) => {
   const pollingInterval = options?.pollingInterval ?? 10000; // 10 seconds default
 
@@ -162,9 +207,19 @@ export const useReverseLookupResult = (
       }
 
       const status = data.data.status;
+      const reportStatus = data.data.report?.status;
 
       // Only poll when status is queued or processing
       if (['queued', 'processing'].includes(status)) {
+        return pollingInterval;
+      }
+
+      // If job is completed but report is still generating, keep polling
+      if (
+        status === 'completed' &&
+        reportStatus &&
+        ['pending', 'generating'].includes(reportStatus)
+      ) {
         return pollingInterval;
       }
 

@@ -1,4 +1,5 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: <> */
+/** biome-ignore-all lint/performance/noImgElement: <> */
 'use client';
 
 import { formatDate } from 'date-fns';
@@ -7,8 +8,10 @@ import {
   Check,
   CheckCircle2,
   Clock,
+  Download,
   Loader2,
   RefreshCw,
+  Share2,
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
@@ -16,7 +19,11 @@ import { toast } from 'sonner';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Button } from '@/components/ui/button';
 import { useGetMedia } from '@/hooks/useMedia';
-import { useReverseLookupResult } from '@/hooks/useReverseLookup';
+import {
+  downloadReport,
+  shareReport,
+  useReverseLookupResult,
+} from '@/hooks/useReverseLookup';
 
 const ReverseLookupResultContent = () => {
   const router = useRouter();
@@ -27,6 +34,8 @@ const ReverseLookupResultContent = () => {
 
   const [lastRefreshTime, setLastRefreshTime] = useState<Date>(new Date());
   const [visibleResults, setVisibleResults] = useState(8);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
 
   const { data: mediaData, isLoading: isLoadingMedia } = useGetMedia();
   const selectedMedia = mediaData?.media?.find((m) => m.id === mediaId);
@@ -75,6 +84,47 @@ const ReverseLookupResultContent = () => {
   const handleManualRefresh = () => {
     refetch();
     toast.info('Refreshing lookup status...');
+  };
+
+  const handleDownloadReport = async () => {
+    if (!jobId) return;
+    try {
+      console.log('this is isdownloading', isDownloading);
+
+      setIsDownloading(true);
+
+      console.log('this is isdownloading', isDownloading);
+      await downloadReport(jobId);
+      toast.success('Report downloaded successfully');
+    } catch (error: any) {
+      console.log('this is error', error);
+      if (
+        error.response?.status === 400 &&
+        error.response?.data?.status === 'generating'
+      ) {
+        toast.info('Report is still generating, please wait...');
+      } else {
+        toast.error('Failed to download report');
+      }
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const handleShareReport = async () => {
+    if (!jobId) return;
+    try {
+      setIsSharing(true);
+      const data = await shareReport(jobId);
+
+      // Copy to clipboard
+      await navigator.clipboard.writeText(data.shareUrl);
+      toast.success('Link copied to clipboard!');
+    } catch (_error) {
+      toast.error('Failed to share report');
+    } finally {
+      setIsSharing(false);
+    }
   };
 
   const results = resultData?.data?.results || [];
@@ -382,6 +432,52 @@ const ReverseLookupResultContent = () => {
                 </p>
               </div>
               <div className="flex gap-2 sm:gap-3">
+                {resultData.data.report &&
+                  (resultData.data.report.status === 'completed' ||
+                    resultData.data.report.status === 'generating' ||
+                    resultData.data.report.status === 'pending') && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleDownloadReport}
+                        disabled={
+                          isDownloading ||
+                          resultData.data.report.status !== 'completed'
+                        }
+                        className="cursor-pointer flex-1 sm:flex-initial"
+                      >
+                        {isDownloading ? (
+                          <Loader2 className="w-4 h-4 sm:mr-2 animate-spin" />
+                        ) : (
+                          <Download className="w-4 h-4 sm:mr-2" />
+                        )}
+                        <span className="hidden sm:inline">
+                          {resultData.data.report.status === 'completed'
+                            ? 'Download Report'
+                            : 'Generating Report...'}
+                        </span>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleShareReport}
+                        disabled={
+                          isSharing ||
+                          resultData.data.report.status !== 'completed'
+                        }
+                        className="cursor-pointer flex-1 sm:flex-initial"
+                      >
+                        {isSharing ? (
+                          <Loader2 className="w-4 h-4 sm:mr-2 animate-spin" />
+                        ) : (
+                          <Share2 className="w-4 h-4 sm:mr-2" />
+                        )}
+                        <span className="hidden sm:inline">Share</span>
+                      </Button>
+                    </>
+                  )}
+
                 <Button
                   variant="outline"
                   size="sm"
@@ -421,13 +517,17 @@ const ReverseLookupResultContent = () => {
                   </h2>
                   <div className="space-y-3 md:space-y-4">
                     <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
-                      <span className="text-sm md:text-base text-gray-600">First Published</span>
+                      <span className="text-sm md:text-base text-gray-600">
+                        First Published
+                      </span>
                       <span className="text-sm md:text-base text-gray-900 font-medium">
                         {formatDate(selectedMedia.uploadedAt, 'dd-MMM-yyyy')}
                       </span>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
-                      <span className="text-sm md:text-base text-gray-600">Source</span>
+                      <span className="text-sm md:text-base text-gray-600">
+                        Source
+                      </span>
                       <span className="text-sm md:text-base text-gray-900 font-medium">
                         User Library
                       </span>
