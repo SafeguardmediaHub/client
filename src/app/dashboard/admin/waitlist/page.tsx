@@ -1,6 +1,7 @@
 'use client';
 
-import { Users } from 'lucide-react';
+import { Activity, Users } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { ApproveDialog } from '@/components/admin/ApproveDialog';
@@ -145,21 +146,30 @@ export default function WaitlistManagementPage() {
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-200">
-              <Users className="w-6 h-6 text-indigo-600" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-200">
+                <Users className="w-6 h-6 text-indigo-600" />
+              </div>
+              <div>
+                <h1
+                  className="text-3xl font-bold text-gray-900 mb-1"
+                  style={{ fontFamily: 'var(--font-space-grotesk)' }}
+                >
+                  Waitlist Management
+                </h1>
+                <p className="text-gray-600 text-sm">
+                  Manage and review waitlist entries
+                </p>
+              </div>
             </div>
-            <div>
-              <h1
-                className="text-3xl font-bold text-gray-900 mb-1"
-                style={{ fontFamily: 'var(--font-space-grotesk)' }}
-              >
-                Waitlist Management
-              </h1>
-              <p className="text-gray-600 text-sm">
-                Manage and review waitlist entries
-              </p>
-            </div>
+            <Link
+              href="/dashboard/admin/beta-users"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all shadow-sm hover:shadow-md font-medium text-sm"
+            >
+              <Activity className="w-4 h-4" />
+              View Beta Users Activity
+            </Link>
           </div>
         </div>
 

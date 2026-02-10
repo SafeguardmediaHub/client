@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Media } from '@/hooks/useMedia';
 import { formatFileSize } from '@/lib/utils';
+import { MediaReportGenerator } from './MediaReportGenerator';
 
 interface GeneralInfoViewProps {
   media: Media;
@@ -161,6 +162,9 @@ export function GeneralInfoView({ media }: GeneralInfoViewProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Media Report Generator */}
+      <MediaReportGenerator mediaId={media.id} mediaName={media.filename} />
     </div>
   );
 }

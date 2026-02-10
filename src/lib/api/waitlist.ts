@@ -137,4 +137,30 @@ export const waitlistAdminApi = {
   async deleteEntry(id: string): Promise<void> {
     await api.delete(`/api/waitlist/${id}`);
   },
+
+  // Activity tracking endpoints
+  async getAllUsersSummary(params?: {
+    dateFrom?: string;
+    dateTo?: string;
+    status?: 'active' | 'inactive' | 'suspended';
+  }): Promise<import('@/types/waitlist-activity').ActivitySummaryResponse> {
+    const response = await api.get<
+      import('@/types/waitlist-activity').ActivitySummaryResponse
+    >('/api/waitlist/activity/summary', { params });
+    return response.data;
+  },
+
+  async getUserActivity(
+    userId: string,
+    params?: {
+      dateFrom?: string;
+      dateTo?: string;
+    },
+  ): Promise<import('@/types/waitlist-activity').UserActivityResponse> {
+    const response = await api.get<{
+      success: boolean;
+      data: import('@/types/waitlist-activity').UserActivityResponse;
+    }>(`/api/waitlist/activity/user/${userId}`, { params });
+    return response.data.data;
+  },
 };

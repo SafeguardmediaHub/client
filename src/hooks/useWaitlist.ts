@@ -116,3 +116,31 @@ export const useDeleteWaitlistEntry = () => {
     },
   });
 };
+
+// Activity tracking hooks
+export const useWaitlistSummary = (filters?: {
+  dateFrom?: string;
+  dateTo?: string;
+  status?: 'active' | 'inactive' | 'suspended';
+}) => {
+  return useQuery({
+    queryKey: ['waitlist-summary', filters],
+    queryFn: () => waitlistAdminApi.getAllUsersSummary(filters),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
+
+export const useUserActivity = (
+  userId: string,
+  dateRange?: {
+    dateFrom?: string;
+    dateTo?: string;
+  },
+) => {
+  return useQuery({
+    queryKey: ['user-activity', userId, dateRange],
+    queryFn: () => waitlistAdminApi.getUserActivity(userId, dateRange),
+    enabled: !!userId,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+};
