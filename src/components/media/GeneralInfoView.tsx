@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Media } from '@/hooks/useMedia';
 import { formatFileSize } from '@/lib/utils';
+import { AISummaryView } from './AISummaryView';
 import { MediaReportGenerator } from './MediaReportGenerator';
 
 interface GeneralInfoViewProps {
@@ -49,6 +50,9 @@ export function GeneralInfoView({ media }: GeneralInfoViewProps) {
 
   return (
     <div className="space-y-4">
+      {/* AI Summary */}
+      <AISummaryView media={media} />
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base font-semibold flex items-center gap-2">

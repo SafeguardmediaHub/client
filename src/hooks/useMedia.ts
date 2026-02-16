@@ -9,6 +9,14 @@ import {
 import { toast } from 'sonner';
 import api from '@/lib/api';
 
+export interface AISummary {
+  summary: string;
+  generatedAt: string; // ISO date string
+  model: string; // e.g. "gpt-4o-mini"
+  tokensUsed: number;
+  dataVersion: number; // increments as summary gets richer
+}
+
 export interface Media {
   id: string;
   filename: string;
@@ -48,6 +56,7 @@ export interface Media {
     completedAt: string;
     error: string | null;
   };
+  aiSummary?: AISummary;
 }
 
 interface Pagination {
@@ -123,7 +132,7 @@ const urlUpload = async ({ url }: { url: string }) => {
       headers: {
         'Content-Type': 'application/json',
       },
-    }
+    },
   );
 
   return data;
@@ -133,7 +142,7 @@ const requestPresignedUrl = async (
   filename: string,
   contentType: string,
   fileSize: number,
-  uploadType: string
+  uploadType: string,
 ) => {
   const { data } = await api.post('/api/media/presigned-url', {
     filename,
@@ -173,7 +182,7 @@ const uploadKeyframe = async ({
     file.name,
     file.type,
     file.size,
-    'general_image'
+    'general_image',
   );
 
   const { uploadUrl, s3Key, correlationId } = presignedData.upload;
@@ -198,7 +207,7 @@ export const useGetMedia = (
   options?: {
     refetchInterval?: number | false;
     refetchOnWindowFocus?: boolean;
-  }
+  },
 ) => {
   return useQuery({
     queryKey: ['userMedia', params],

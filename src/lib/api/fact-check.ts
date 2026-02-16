@@ -5,14 +5,15 @@ import type {
   JobStatusResponse,
   VerifyClaimRequest,
   VerifyClaimResponse,
-} from "@/types/fact-check";
-import api from "../api";
+} from '@/types/fact-check';
+
+import api from '../api';
 
 export const analyzeContent = async (
   payload: AnalyzeContentRequest,
 ): Promise<AnalyzeContentResponse> => {
-  const { data } = await api.post("/api/fact-check/analyze", payload, {
-    headers: { "Content-Type": "application/json" },
+  const { data } = await api.post('/api/fact-check/analyze', payload, {
+    headers: { 'Content-Type': 'application/json' },
   });
 
   return data;
@@ -37,8 +38,8 @@ export const getClaimDetail = async (
 export const verifyClaim = async (
   payload: VerifyClaimRequest,
 ): Promise<VerifyClaimResponse> => {
-  const { data } = await api.post("/api/fact-check/verify-claim", payload, {
-    headers: { "Content-Type": "application/json" },
+  const { data } = await api.post('/api/fact-check/verify-claim', payload, {
+    headers: { 'Content-Type': 'application/json' },
   });
 
   return data;

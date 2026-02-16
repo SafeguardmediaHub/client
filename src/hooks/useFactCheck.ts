@@ -23,7 +23,7 @@ export const useJobStatus = (
   options?: {
     pollingInterval?: number;
     enabled?: boolean;
-  }
+  },
 ) => {
   const pollingInterval = options?.pollingInterval ?? 3000; // 3 seconds default
 
@@ -55,7 +55,7 @@ export const useJobStatus = (
 
         // Check if ANY claim is still pending or processing
         const hasPendingClaims = claims.some(
-          (c) => c.status === 'pending' || c.status === 'processing'
+          (c) => c.status === 'pending' || c.status === 'processing',
         );
 
         if (hasPendingClaims) {
@@ -86,13 +86,21 @@ export const useJobStatus = (
 
 export const useClaimDetail = (
   claimId: string,
-  options?: { enabled?: boolean }
+  options?: { enabled?: boolean },
 ) => {
   return useQuery({
     queryKey: ['claimDetail', claimId],
     queryFn: () => getClaimDetail(claimId),
     enabled: options?.enabled ?? !!claimId,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    retry: (failureCount, error) => {
+      // Don't retry on 403 (ownership check) or 404
+      const status = (error as any)?.response?.status;
+      if (status === 403 || status === 404) {
+        return false;
+      }
+      return failureCount < 3;
+    },
   });
 };
 

@@ -1,14 +1,21 @@
-"use client";
+/** biome-ignore-all lint/suspicious/noArrayIndexKey: <> */
+'use client';
 
-import { useEffect, useRef } from "react";
-import { ArrowLeft, TrendingUp } from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { useClaimDetail } from "@/hooks/useFactCheck";
-import { EmptyState } from "./EmptyState";
-import { ErrorState } from "./ErrorState";
-import { LoadingState } from "./LoadingState";
-import { VerdictCard } from "./VerdictCard";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  HelpCircle,
+  ShieldCheck,
+  XCircle,
+} from 'lucide-react';
+import { useEffect, useRef } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { useClaimDetail } from '@/hooks/useFactCheck';
+import { EmptyState } from './EmptyState';
+import { ErrorState } from './ErrorState';
+import { LoadingState } from './LoadingState';
+import { VerdictCard } from './VerdictCard';
 
 interface ClaimDetailProps {
   claimId: string;
@@ -22,10 +29,17 @@ export const ClaimDetail = ({ claimId, onBack }: ClaimDetailProps) => {
   useEffect(() => {
     if (error && !hasShownErrorToast.current) {
       hasShownErrorToast.current = true;
+
+      // Handle 403 Forbidden specifically
+      const statusCode = (error as any)?.response?.status;
       const errorMessage =
-        (error as any)?.response?.data?.message ||
-        (error as any)?.response?.data?.error ||
-        (error instanceof Error ? error.message : 'Unable to retrieve claim');
+        statusCode === 403
+          ? 'You do not have permission to view this claim.'
+          : (error as any)?.response?.data?.message ||
+            (error as any)?.response?.data?.error ||
+            (error instanceof Error
+              ? error.message
+              : 'Unable to retrieve claim');
       toast.error('Failed to load claim details', {
         description: errorMessage,
       });
@@ -37,32 +51,55 @@ export const ClaimDetail = ({ claimId, onBack }: ClaimDetailProps) => {
   }
 
   if (error || !data?.data) {
+    const statusCode = (error as any)?.response?.status;
     return (
       <ErrorState
-        title="Claim Analysis Not Found"
-        message="Unable to retrieve the requested fact-check report. The ID might be invalid or the report is still regenerating."
-        onRetry={() => refetch()}
+        title={
+          statusCode === 403 ? 'Access Denied' : 'Claim Analysis Not Found'
+        }
+        message={
+          statusCode === 403
+            ? 'You do not have permission to view this claim. You can only access claims for your own media.'
+            : 'Unable to retrieve the requested fact-check report. The ID might be invalid or the report is still regenerating.'
+        }
+        onRetry={statusCode === 403 ? undefined : () => refetch()}
       />
     );
   }
 
-  const { claim, verdicts, score } = data.data;
+  const { claim, verdicts } = data.data;
 
-  // Fallbacks if score object is missing (backward compatibility)
-  const verdictStatus = score?.verdict || claim.verdict || 'Unknown';
-  const confidenceLevel = score?.confidence || claim.confidence || 'Low';
-  const credibilityScore = score?.credibility_score ?? claim.credibility_score ?? 0;
-  const agreementRate = score?.consensus?.agreement_rate ?? 0;
-  const totalSources = score?.breakdown?.total_sources ?? verdicts.length;
-  const reliableSources = score?.breakdown?.ifcn_certified ?? 0;
-
-  const getVerdictBadgeStyle = (status: string) => {
-    const s = status.toLowerCase();
-    if (s.includes('true') || s.includes('correct')) return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-    if (s.includes('false') || s.includes('incorrect')) return 'bg-rose-100 text-rose-800 border-rose-200';
-    if (s.includes('mixed')) return 'bg-amber-100 text-amber-800 border-amber-200';
-    return 'bg-gray-100 text-gray-800 border-gray-200';
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return {
+          icon: CheckCircle2,
+          label: 'Fact-Checked',
+          style: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+        };
+      case 'no_verdict':
+        return {
+          icon: HelpCircle,
+          label: 'No Verdict',
+          style: 'bg-gray-100 text-gray-700 border-gray-200',
+        };
+      case 'failed':
+        return {
+          icon: XCircle,
+          label: 'Failed',
+          style: 'bg-rose-100 text-rose-800 border-rose-200',
+        };
+      default:
+        return {
+          icon: HelpCircle,
+          label: status || 'Unknown',
+          style: 'bg-gray-100 text-gray-800 border-gray-200',
+        };
+    }
   };
+
+  const statusBadge = getStatusBadge(claim.status);
+  const StatusIcon = statusBadge.icon;
 
   return (
     <div className="max-w-5xl mx-auto pb-12 animate-in fade-in duration-500">
@@ -84,96 +121,77 @@ export const ClaimDetail = ({ claimId, onBack }: ClaimDetailProps) => {
         <div className="p-6 md:p-8 lg:p-10">
           <div className="flex flex-col gap-6">
             <div className="flex flex-wrap items-center gap-3">
-              <span className={`px-4 py-1.5 rounded-full text-sm font-bold tracking-wide uppercase border ${getVerdictBadgeStyle(verdictStatus)}`}>
-                {verdictStatus}
-              </span>
-              <span className="px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-100">
-                {confidenceLevel} Confidence
+              <span
+                className={`px-4 py-1.5 rounded-full text-sm font-bold tracking-wide uppercase border flex items-center gap-2 ${statusBadge.style}`}
+              >
+                <StatusIcon className="w-4 h-4" />
+                {statusBadge.label}
               </span>
               <span className="text-xs text-gray-400 font-mono ml-auto">
                 ID: {claim.claim_id.slice(-8)}
               </span>
             </div>
-            
+
             <h1 className="text-2xl md:text-3xl lg:text-4xl font-serif text-gray-900 leading-tight">
               &ldquo;{claim.text}&rdquo;
             </h1>
-            
+
             {claim.context && (
-               <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                 <p className="text-sm text-gray-600 italic">
-                   <span className="font-semibold text-gray-900 not-italic mr-2">Context:</span>
-                   {claim.context}
-                 </p>
-               </div>
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                <p className="text-sm text-gray-600 italic">
+                  <span className="font-semibold text-gray-900 not-italic mr-2">
+                    Context:
+                  </span>
+                  {claim.context}
+                </p>
+              </div>
             )}
           </div>
         </div>
 
-        {/* Key Metrics Bar */}
-        <div className="bg-gray-50 border-t border-gray-100 p-6 grid grid-cols-2 md:grid-cols-4 gap-6">
+        {/* Summary Bar */}
+        <div className="bg-gray-50 border-t border-gray-100 p-6 grid grid-cols-2 gap-6">
           <div>
             <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
-              Credibility Score
+              Status
             </p>
-            <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold text-gray-900">
-                {Math.round(credibilityScore * 100)}%
-              </span>
-              <span className="text-xs text-gray-500">trust rating</span>
-            </div>
-          </div>
-          
-          <div>
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
-              Consensus
-            </p>
-             <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold text-gray-900">
-                {Math.round(agreementRate * 100)}%
-              </span>
-              <span className="text-xs text-gray-500">agreement</span>
-            </div>
-          </div>
-
-           <div>
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
-              Sources Analyzed
-            </p>
-            <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold text-gray-900">
-                {totalSources}
-              </span>
-              <span className="text-xs text-gray-500">total reports</span>
-            </div>
+            <span className="text-lg font-bold text-gray-900 capitalize">
+              {claim.status === 'no_verdict' ? 'No Verdict' : claim.status}
+            </span>
           </div>
 
           <div>
             <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
-              Reliable Sources
+              Sources Found
             </p>
-             <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold text-green-700">
-                {reliableSources}
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-bold text-gray-900">
+                {verdicts.length}
               </span>
-              <span className="text-xs text-gray-500">IFCN certified</span>
+              <span className="text-xs text-gray-500">fact-check reports</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Consensus Interpretation */}
-      {/* {score?.consensus?.interpretation && (
-        <div className="mb-8 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl flex items-center gap-3 text-blue-900">
-          <div className="p-2 bg-white/50 rounded-full">
-            <TrendingUp className="w-5 h-5 text-blue-600" />
+      {/* IFCN Trust Banner */}
+      {verdicts.length > 0 && (
+        <div className="mb-8 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl flex items-start gap-3">
+          <div className="p-2 bg-white/70 rounded-full border border-green-200 flex-shrink-0">
+            <ShieldCheck className="w-5 h-5 text-green-600" />
           </div>
-          <p className="text-sm font-medium">
-            <span className="font-bold mr-1">Consensus Analysis:</span> 
-            {score.consensus.interpretation}
-          </p>
+          <div>
+            <p className="text-sm font-semibold text-green-900">
+              IFCN Certified Sources
+            </p>
+            <p className="text-xs text-green-700 mt-0.5 leading-relaxed">
+              All results are sourced from fact-checking organizations certified
+              by the International Fact-Checking Network (IFCN), accessed via
+              the Google Fact Check API.
+            </p>
+          </div>
         </div>
-      )} */}
+      )}
 
       {/* Verdicts List */}
       <div className="space-y-6">
@@ -189,7 +207,11 @@ export const ClaimDetail = ({ claimId, onBack }: ClaimDetailProps) => {
         {verdicts.length === 0 ? (
           <EmptyState
             title="No Verified Reports Found"
-            message="No external fact-checking organizations have published reports for this specific claim yet."
+            message={
+              claim.status === 'no_verdict'
+                ? 'This claim has not been fact-checked by any known sources yet.'
+                : 'No external fact-checking organizations have published reports for this specific claim yet.'
+            }
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
