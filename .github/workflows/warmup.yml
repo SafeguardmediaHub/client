@@ -11,7 +11,5 @@ jobs:
     steps:
       - name: Ping Strapi
         run: |
-          curl -s -o /dev/null -w "blog-posts: %{http_code}\n" \
-            "https://pretty-melody-e3c2e84521.strapiapp.com/api/blog-posts" || true
-          curl -s -o /dev/null -w "categories: %{http_code}\n" \
-            "https://pretty-melody-e3c2e84521.strapiapp.com/api/categories" || true
+          curl https://pretty-melody-e3c2e84521.strapiapp.com/api/blog-posts || true
+          curl https://pretty-melody-e3c2e84521.strapiapp.com/api/categories || true
