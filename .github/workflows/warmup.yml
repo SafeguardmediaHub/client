@@ -12,13 +12,13 @@ jobs:
       - name: Ping blog-posts
         run: |
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            "https://pretty-melody-e3c2e84521.strapiapp.com/api/blog-posts?pagination%5Blimit%5D=1&publicationState=live")
+            "https://pretty-melody-e3c2e84521.strapiapp.com/api/blog-posts")
           echo "blog-posts status: $STATUS"
           [ "$STATUS" -eq 200 ]
 
       - name: Ping categories
         run: |
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            "https://pretty-melody-e3c2e84521.strapiapp.com/api/categories?pagination%5Blimit%5D=1")
+            "https://pretty-melody-e3c2e84521.strapiapp.com/api/categories")
           echo "categories status: $STATUS"
           [ "$STATUS" -eq 200 ]
