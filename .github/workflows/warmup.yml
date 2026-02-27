@@ -1,0 +1,24 @@
+name: Warm Up Strapi
+
+on:
+  schedule:
+    - cron: "*/3 * * * *"  # every 3 minutes
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping blog-posts
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://pretty-melody-e3c2e84521.strapiapp.com/api/blog-posts?pagination[limit]=1&publicationState=live")
+          echo "blog-posts status: $STATUS"
+          [ "$STATUS" -eq 200 ]
+
+      - name: Ping categories
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://pretty-melody-e3c2e84521.strapiapp.com/api/categories?pagination[limit]=1")
+          echo "categories status: $STATUS"
+          [ "$STATUS" -eq 200 ]
