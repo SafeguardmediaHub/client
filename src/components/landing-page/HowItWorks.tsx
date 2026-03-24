@@ -226,7 +226,7 @@ export default function HowItWorks() {
             href="#waitlist"
             className="inline-flex items-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/60 transition-all duration-300"
           >
-            Join Beta Waitlist
+            Get Started
             <ArrowRight className="w-5 h-5" />
           </Link>
         </div>

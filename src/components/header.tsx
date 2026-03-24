@@ -103,7 +103,7 @@ export const HeroHeader = () => {
               <GoogleTranslate className="w-full justify-start lg:w-auto lg:justify-center" />
               {!isAuthenticated && (
                 <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
-                  {/* <Button
+                  <Button
                     asChild
                     variant="outline"
                     size="sm"
@@ -112,7 +112,7 @@ export const HeroHeader = () => {
                     <Link href="/auth/login">
                       <span>Login</span>
                     </Link>
-                  </Button> */}
+                  </Button>
                   <Button
                     asChild
                     size="sm"
@@ -121,8 +121,8 @@ export const HeroHeader = () => {
                       isScrolled && 'lg:hidden',
                     )}
                   >
-                    <Link href="#waitlist">
-                      <span>Join Beta</span>
+                    <Link href="/auth/signup">
+                      <span>Get Started</span>
                     </Link>
                   </Button>
                   <Button
@@ -133,8 +133,8 @@ export const HeroHeader = () => {
                       isScrolled ? 'lg:inline-flex' : 'hidden',
                     )}
                   >
-                    <Link href="#waitlist">
-                      <span>Join Beta</span>
+                    <Link href="/auth/signup">
+                      <span>Get Started</span>
                     </Link>
                   </Button>
                 </div>

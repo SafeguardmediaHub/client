@@ -346,7 +346,7 @@ export default function AboutPage() {
                     type="button"
                     className="inline-flex items-center gap-2 px-8 py-4 bg-white text-blue-600 font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
                   >
-                    Join Beta Waitlist
+                    Get Started
                     <ArrowRight className="w-5 h-5" />
                   </button>
                 </Link>
