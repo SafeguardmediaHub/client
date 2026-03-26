@@ -18,10 +18,16 @@ const menuItems = [
   // { name: "About", href: "/about" },
 ];
 
-export const HeroHeader = () => {
+type HeroHeaderProps = {
+  variant?: "default" | "compact";
+};
+
+export const HeroHeader = ({ variant = "default" }: HeroHeaderProps) => {
   const [menuState, setMenuState] = React.useState(false);
   const [isScrolled, setIsScrolled] = React.useState(false);
   const { isAuthenticated } = useAuth();
+  const isCompact = variant === "compact";
+  const shouldShowFloatingShell = isCompact || isScrolled;
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -38,12 +44,21 @@ export const HeroHeader = () => {
       >
         <div
           className={cn(
-            "mx-auto mt-2 max-w-6xl px-6 transition-all duration-300 lg:px-12",
-            isScrolled &&
-              "bg-background/50 max-w-4xl rounded-2xl border backdrop-blur-lg lg:px-5",
+            "mx-auto transition-all duration-300",
+            isCompact
+              ? "mt-1 max-w-5xl px-4 sm:px-6 lg:px-8"
+              : "mt-2 max-w-6xl px-6 lg:px-12",
+            shouldShowFloatingShell &&
+              "bg-background/70 rounded-2xl border shadow-sm backdrop-blur-lg",
+            isScrolled && !isCompact && "max-w-4xl lg:px-5",
           )}
         >
-          <div className="relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4">
+          <div
+            className={cn(
+              "relative flex flex-wrap items-center justify-between gap-6 lg:gap-0",
+              isCompact ? "py-2.5 lg:py-3" : "py-3 lg:py-4",
+            )}
+          >
             <div className="flex w-full justify-between lg:w-auto">
               <Link
                 href="/"
@@ -52,12 +67,27 @@ export const HeroHeader = () => {
               >
                 <div className="relative">
                   <div className="absolute -inset-1 rounded-xl bg-blue-600/50 blur-md transition duration-300 group-hover:bg-blue-500/60" />
-                  <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 shadow-lg shadow-blue-500/20 transition-transform duration-300 group-hover:scale-105">
-                    <Shield className="h-5 w-5 text-white" />
+                  <div
+                    className={cn(
+                      "relative flex items-center justify-center rounded-xl bg-blue-600 shadow-lg shadow-blue-500/20 transition-transform duration-300 group-hover:scale-105",
+                      isCompact ? "h-9 w-9" : "h-10 w-10",
+                    )}
+                  >
+                    <Shield
+                      className={cn(
+                        "text-white",
+                        isCompact ? "h-[18px] w-[18px]" : "h-5 w-5",
+                      )}
+                    />
                   </div>
                 </div>
                 <div className="leading-tight">
-                  <p className="font-semibold tracking-tight text-gray-900">
+                  <p
+                    className={cn(
+                      "font-semibold tracking-tight text-gray-900",
+                      isCompact ? "text-[0.95rem]" : "",
+                    )}
+                  >
                     Safeguardmedia
                   </p>
                   <p className="text-xs text-slate-500">Technologies</p>
