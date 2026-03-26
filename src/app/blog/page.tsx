@@ -1,8 +1,8 @@
-import type { Metadata } from 'next';
-import { BlogBreadcrumbs } from '@/components/blog/BlogBreadcrumbs';
-import { BlogCard } from '@/components/blog/BlogCard';
-import { BlogSidebar } from '@/components/blog/BlogSidebar';
-import { FeaturedPost } from '@/components/blog/FeaturedPost';
+import type { Metadata } from "next";
+import { BlogBreadcrumbs } from "@/components/blog/BlogBreadcrumbs";
+import { BlogCard } from "@/components/blog/BlogCard";
+import { BlogSidebar } from "@/components/blog/BlogSidebar";
+import { FeaturedPost } from "@/components/blog/FeaturedPost";
 import {
   Pagination,
   PaginationContent,
@@ -10,18 +10,18 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from '@/components/ui/pagination';
+} from "@/components/ui/pagination";
 import {
   getBlogCategories,
   getBlogPosts,
   getBlogTags,
   getFeaturedPosts,
   getRecentPosts,
-} from '@/lib/strapi';
+} from "@/lib/strapi";
 
 export const metadata: Metadata = {
-  title: 'Blog | SafeguardMedia',
-  description: 'Latest updates and insights from SafeguardMedia.',
+  title: "Blog | SafeguardMedia",
+  description: "Latest updates and insights from SafeguardMedia.",
 };
 
 export default async function BlogListingPage({
@@ -46,6 +46,7 @@ export default async function BlogListingPage({
   const { data: posts, meta } = postsRes;
   const { pageCount } = meta.pagination;
   const featuredPost = featuredPostsRes.data?.[0]; // Get the first featured post
+  const showFeaturedPost = Boolean(featuredPost && page === 1);
 
   // Filter out the featured post from the main list if it exists in the main list
   // This is a client-side filter for now as Strapi filtering can be complex with "not in"
@@ -56,12 +57,16 @@ export default async function BlogListingPage({
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 selection:bg-primary/30 selection:text-primary-foreground">
       {/* Featured Post Section - Full Width */}
-      {featuredPost && page === 1 && <FeaturedPost post={featuredPost} />}
+      {showFeaturedPost && featuredPost && <FeaturedPost post={featuredPost} />}
 
       {/* Animated Sticky Categories Bar */}
       {/* <BlogCategoryBar categories={categoriesRes.data} /> */}
 
-      <div className="container mx-auto px-4 py-12 max-w-7xl">
+      <div
+        className={`container mx-auto max-w-7xl px-4 pb-12 ${
+          showFeaturedPost ? "pt-12" : "pt-28"
+        }`}
+      >
         <div className="mb-4">
           <BlogBreadcrumbs />
         </div>
@@ -113,8 +118,8 @@ export default async function BlogListingPage({
                             isActive={page === p}
                             className={
                               page === p
-                                ? 'bg-primary text-black hover:bg-primary/90 hover:text-black border-primary'
-                                : 'text-slate-200 hover:bg-white/10 hover:text-white'
+                                ? "bg-primary text-black hover:bg-primary/90 hover:text-black border-primary"
+                                : "text-slate-200 hover:bg-white/10 hover:text-white"
                             }
                           >
                             {p}
