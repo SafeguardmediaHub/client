@@ -1,49 +1,43 @@
-'use client';
+"use client";
 
-import {
-  ArrowRight,
-  CheckCircle2,
-  GalleryVerticalEnd,
-  Loader2,
-  Mail,
-  XCircle,
-} from 'lucide-react';
-import Image from 'next/image';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useResendVerificationEmail, useVerifyEmail } from '@/hooks/useAuth';
+import { ArrowRight, CheckCircle2, Loader2, Mail, XCircle } from "lucide-react";
+import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import AuthBrand from "@/components/auth/AuthBrand";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useResendVerificationEmail, useVerifyEmail } from "@/hooks/useAuth";
 
 type VerificationState =
-  | 'verifying'
-  | 'success'
-  | 'error'
-  | 'no-token'
-  | 'request-email'
-  | 'awaiting-verification';
+  | "verifying"
+  | "success"
+  | "error"
+  | "no-token"
+  | "request-email"
+  | "awaiting-verification";
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [verificationState, setVerificationState] =
-    useState<VerificationState>('verifying');
-  const [errorMessage, setErrorMessage] = useState<string>('');
-  const [email, setEmail] = useState<string>('');
-  const [emailError, setEmailError] = useState<string>('');
+    useState<VerificationState>("verifying");
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [emailError, setEmailError] = useState<string>("");
   const { mutate: verifyEmail } = useVerifyEmail();
   const { mutate: resendVerification, isPending: isResending } =
     useResendVerificationEmail();
 
   useEffect(() => {
-    const token = searchParams.get('token');
-    const registered = searchParams.get('registered');
-    const userEmail = searchParams.get('email');
+    const token = searchParams.get("token");
+    const registered = searchParams.get("registered");
+    const userEmail = searchParams.get("email");
 
     // Check if user just registered
-    if (registered === 'true') {
-      setVerificationState('awaiting-verification');
+    if (registered === "true") {
+      setVerificationState("awaiting-verification");
       if (userEmail) {
         setEmail(userEmail);
       }
@@ -51,32 +45,32 @@ function VerifyEmailContent() {
     }
 
     if (!token) {
-      setVerificationState('no-token');
+      setVerificationState("no-token");
       return;
     }
 
     // Trigger email verification
     verifyEmail(token, {
       onSuccess: () => {
-        setVerificationState('success');
+        setVerificationState("success");
         // Redirect to login after 3 seconds
         setTimeout(() => {
-          router.push('/auth/login');
+          router.push("/auth/login");
         }, 3000);
       },
       onError: (error: unknown) => {
-        setVerificationState('error');
+        setVerificationState("error");
         let message =
-          'Email verification failed. The link may be invalid or expired.';
+          "Email verification failed. The link may be invalid or expired.";
         if (
-          typeof error === 'object' &&
+          typeof error === "object" &&
           error !== null &&
           // @ts-expect-error narrow runtime shape safely
           error.response &&
           // @ts-expect-error narrow runtime shape safely
           error.response.data &&
           // @ts-expect-error narrow runtime shape safely
-          typeof error.response.data.message === 'string'
+          typeof error.response.data.message === "string"
         ) {
           // @ts-expect-error see guards above
           message = error.response.data.message as string;
@@ -89,14 +83,14 @@ function VerifyEmailContent() {
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email) {
-      setEmailError('Email is required');
+      setEmailError("Email is required");
       return false;
     }
     if (!emailRegex.test(email)) {
-      setEmailError('Please enter a valid email address');
+      setEmailError("Please enter a valid email address");
       return false;
     }
-    setEmailError('');
+    setEmailError("");
     return true;
   };
 
@@ -115,24 +109,24 @@ function VerifyEmailContent() {
 
     resendVerification(email, {
       onSuccess: () => {
-        setVerificationState('success');
-        setErrorMessage('');
+        setVerificationState("success");
+        setErrorMessage("");
         // Redirect to login after 3 seconds
         setTimeout(() => {
-          router.push('/auth/login');
+          router.push("/auth/login");
         }, 3000);
       },
       onError: (error: unknown) => {
-        let message = 'Failed to send verification email. Please try again.';
+        let message = "Failed to send verification email. Please try again.";
         if (
-          typeof error === 'object' &&
+          typeof error === "object" &&
           error !== null &&
           // @ts-expect-error narrow runtime shape safely
           error.response &&
           // @ts-expect-error narrow runtime shape safely
           error.response.data &&
           // @ts-expect-error narrow runtime shape safely
-          typeof error.response.data.message === 'string'
+          typeof error.response.data.message === "string"
         ) {
           // @ts-expect-error see guards above
           message = error.response.data.message as string;
@@ -143,32 +137,27 @@ function VerifyEmailContent() {
   };
 
   const handleNavigateToLogin = () => {
-    router.push('/auth/login');
+    router.push("/auth/login");
   };
 
   const handleResendVerification = () => {
-    setVerificationState('request-email');
-    setErrorMessage('');
-    setEmail('');
-    setEmailError('');
+    setVerificationState("request-email");
+    setErrorMessage("");
+    setEmail("");
+    setEmailError("");
   };
 
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex justify-center gap-2 md:justify-start">
-          <a href="/" className="flex items-center gap-2 font-medium">
-            <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
-              <GalleryVerticalEnd className="size-4" />
-            </div>
-            Safeguard Media.
-          </a>
+          <AuthBrand />
         </div>
 
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-md">
             {/* Verifying State */}
-            {verificationState === 'verifying' && (
+            {verificationState === "verifying" && (
               <div className="flex flex-col gap-6 text-center">
                 <div className="flex justify-center">
                   <div className="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-full">
@@ -189,7 +178,7 @@ function VerifyEmailContent() {
             )}
 
             {/* Success State */}
-            {verificationState === 'success' && (
+            {verificationState === "success" && (
               <div className="flex flex-col gap-6 text-center">
                 <div className="flex justify-center">
                   <div className="bg-green-50 dark:bg-green-950/30 p-6 rounded-full">
@@ -199,14 +188,14 @@ function VerifyEmailContent() {
 
                 <div className="space-y-3">
                   <h1 className="text-2xl font-bold tracking-tight text-green-900 dark:text-green-100">
-                    {searchParams.get('token')
-                      ? 'Email Verified Successfully!'
-                      : 'Verification Email Sent!'}
+                    {searchParams.get("token")
+                      ? "Email Verified Successfully!"
+                      : "Verification Email Sent!"}
                   </h1>
                   <p className="text-muted-foreground text-balance">
-                    {searchParams.get('token')
-                      ? 'Your email has been verified. You will be redirected to the login page shortly.'
-                      : 'A new verification link has been sent to your email address. Please check your inbox and click the link to verify your account.'}
+                    {searchParams.get("token")
+                      ? "Your email has been verified. You will be redirected to the login page shortly."
+                      : "A new verification link has been sent to your email address. Please check your inbox and click the link to verify your account."}
                   </p>
                 </div>
 
@@ -226,7 +215,7 @@ function VerifyEmailContent() {
             )}
 
             {/* Error State */}
-            {verificationState === 'error' && (
+            {verificationState === "error" && (
               <div className="flex flex-col gap-6 text-center">
                 <div className="flex justify-center">
                   <div className="bg-red-50 dark:bg-red-950/30 p-6 rounded-full">
@@ -264,7 +253,7 @@ function VerifyEmailContent() {
             )}
 
             {/* No Token State */}
-            {verificationState === 'no-token' && (
+            {verificationState === "no-token" && (
               <div className="flex flex-col gap-6 text-center">
                 <div className="flex justify-center">
                   <div className="bg-amber-50 dark:bg-amber-950/30 p-6 rounded-full">
@@ -303,7 +292,7 @@ function VerifyEmailContent() {
             )}
 
             {/* Awaiting Verification State (Just Registered) */}
-            {verificationState === 'awaiting-verification' && (
+            {verificationState === "awaiting-verification" && (
               <div className="flex flex-col gap-6 text-center">
                 <div className="flex justify-center">
                   <div className="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-full">
@@ -316,16 +305,16 @@ function VerifyEmailContent() {
                     Check Your Email
                   </h1>
                   <p className="text-muted-foreground text-balance">
-                    We've sent a verification link to{' '}
+                    We've sent a verification link to{" "}
                     <span className="font-semibold text-foreground">
-                      {email || 'your email address'}
+                      {email || "your email address"}
                     </span>
                     . Please check your inbox and click the link to verify your
                     account.
                   </p>
                   <p className="text-sm text-muted-foreground pt-2">
-                    Didn't receive the email? Check your spam folder or request a
-                    new verification link below.
+                    Didn't receive the email? Check your spam folder or request
+                    a new verification link below.
                   </p>
                 </div>
 
@@ -350,7 +339,7 @@ function VerifyEmailContent() {
             )}
 
             {/* Request Email State */}
-            {verificationState === 'request-email' && (
+            {verificationState === "request-email" && (
               <div className="flex flex-col gap-6">
                 <div className="text-center">
                   <div className="flex justify-center mb-4">
@@ -380,8 +369,8 @@ function VerifyEmailContent() {
                       onChange={handleEmailChange}
                       className={
                         emailError
-                          ? 'border-red-500 focus-visible:ring-red-500'
-                          : ''
+                          ? "border-red-500 focus-visible:ring-red-500"
+                          : ""
                       }
                       required
                     />

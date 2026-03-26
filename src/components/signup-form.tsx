@@ -1,31 +1,31 @@
-'use client';
+"use client";
 
-import { AlertCircle, Eye, EyeOff, Loader2 } from 'lucide-react';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { AlertCircle, Eye, EyeOff, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { useRegister } from '@/hooks/useAuth';
-import { cn, validatePasswordStrength } from '@/lib/utils';
+} from "@/components/ui/select";
+import { useRegister } from "@/hooks/useAuth";
+import { cn, validatePasswordStrength } from "@/lib/utils";
 
 export function SignupForm({
   className,
   ...props
-}: React.ComponentProps<'form'>) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [userType, setUserType] = useState<string>('');
+}: React.ComponentProps<"form">) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [userType, setUserType] = useState<string>("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
@@ -51,12 +51,12 @@ export function SignupForm({
   // Handle Google OAuth sign-in
   const handleGoogleSignIn = () => {
     if (!agreedToTerms) {
-      toast.error('You must agree to the Terms and Privacy Policy to continue');
+      toast.error("You must agree to the Terms and Privacy Policy to continue");
       return;
     }
 
     // Redirect to backend OAuth endpoint
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || '';
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "";
     const oauthUrl = `${backendUrl}/api/auth/oauth/google?termsAgreed=true`;
     window.location.href = oauthUrl;
   };
@@ -65,12 +65,12 @@ export function SignupForm({
     e.preventDefault();
 
     if (!email || !password || !firstName || !lastName) {
-      toast.error('Please fill in all required fields');
+      toast.error("Please fill in all required fields");
       return;
     }
 
     if (!agreedToTerms) {
-      toast.error('You must agree to the Terms to continue');
+      toast.error("You must agree to the Terms to continue");
       return;
     }
 
@@ -78,22 +78,22 @@ export function SignupForm({
     const passwordValidation = validatePasswordStrength(password);
     if (!passwordValidation.isValid) {
       setShowPasswordErrors(true);
-      toast.error('Please fix password requirements before continuing');
+      toast.error("Please fix password requirements before continuing");
       return;
     }
 
-    registerMutation.mutate({ 
-      email, 
-      password, 
-      firstName, 
+    registerMutation.mutate({
+      email,
+      password,
+      firstName,
       lastName,
-      ...(userType && { userType })
+      ...(userType && { userType }),
     });
   };
 
   return (
     <form
-      className={cn('flex flex-col gap-6', className)}
+      className={cn("flex flex-col gap-6", className)}
       {...props}
       onSubmit={handleSubmit}
     >
@@ -102,7 +102,8 @@ export function SignupForm({
           Create your account
         </h1>
         <p className="text-muted-foreground text-balance max-w-sm">
-          Get started with SafeguardMedia to verify and protect your content
+          Get started with Safeguardmedia Technologies to verify and protect
+          your content
         </p>
       </div>
       <div className="grid gap-6">
@@ -164,16 +165,28 @@ export function SignupForm({
           <Label htmlFor="userType" className="text-sm font-medium">
             I am a...
           </Label>
-          <Select value={userType} onValueChange={setUserType} disabled={registerMutation.isPending}>
+          <Select
+            value={userType}
+            onValueChange={setUserType}
+            disabled={registerMutation.isPending}
+          >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select your role (optional)" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Content Creator/Influencer">Content Creator/Influencer</SelectItem>
-              <SelectItem value="Journalist/Reporter">Journalist/Reporter</SelectItem>
+              <SelectItem value="Content Creator/Influencer">
+                Content Creator/Influencer
+              </SelectItem>
+              <SelectItem value="Journalist/Reporter">
+                Journalist/Reporter
+              </SelectItem>
               <SelectItem value="Educator/Teacher">Educator/Teacher</SelectItem>
-              <SelectItem value="Researcher/Academic">Researcher/Academic</SelectItem>
-              <SelectItem value="Freelancer/Consultant">Freelancer/Consultant</SelectItem>
+              <SelectItem value="Researcher/Academic">
+                Researcher/Academic
+              </SelectItem>
+              <SelectItem value="Freelancer/Consultant">
+                Freelancer/Consultant
+              </SelectItem>
               <SelectItem value="Student">Student</SelectItem>
               <SelectItem value="Individual User">Individual User</SelectItem>
               <SelectItem value="Other">Other</SelectItem>
@@ -190,17 +203,17 @@ export function SignupForm({
           <div className="relative">
             <Input
               id="password"
-              type={showPassword ? 'text' : 'password'}
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={handlePasswordChange}
               autoComplete="new-password"
               disabled={registerMutation.isPending}
               required
               className={cn(
-                'pr-10 transition-all',
+                "pr-10 transition-all",
                 showPasswordErrors &&
                   passwordErrors.length > 0 &&
-                  'border-destructive focus-visible:ring-destructive'
+                  "border-destructive focus-visible:ring-destructive",
               )}
             />
             <Button
@@ -210,7 +223,7 @@ export function SignupForm({
               className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
               onClick={() => setShowPassword(!showPassword)}
               disabled={registerMutation.isPending}
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? (
                 <EyeOff className="h-4 w-4 text-muted-foreground" />
@@ -259,7 +272,7 @@ export function SignupForm({
                 I agree to the Terms and Privacy Policy
               </Label>
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                By creating an account, you agree to our{' '}
+                By creating an account, you agree to our{" "}
                 <a
                   href="/terms"
                   className="font-medium underline underline-offset-4 hover:text-primary transition-colors"
@@ -267,8 +280,8 @@ export function SignupForm({
                   rel="noreferrer"
                 >
                   Terms and Conditions
-                </a>{' '}
-                and{' '}
+                </a>{" "}
+                and{" "}
                 <a
                   href="/privacy"
                   className="font-medium underline underline-offset-4 hover:text-primary transition-colors"
@@ -285,10 +298,10 @@ export function SignupForm({
           type="submit"
           size="lg"
           className={cn(
-            'w-full shadow-md hover:shadow-lg transition-all',
+            "w-full shadow-md hover:shadow-lg transition-all",
             passwordErrors.length > 0
-              ? 'bg-gray-400 hover:bg-gray-400 cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-700 cursor-pointer'
+              ? "bg-gray-400 hover:bg-gray-400 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700 cursor-pointer",
           )}
           disabled={
             !agreedToTerms ||
@@ -297,7 +310,7 @@ export function SignupForm({
           }
           title={
             passwordErrors.length > 0
-              ? 'Please fix password requirements'
+              ? "Please fix password requirements"
               : undefined
           }
         >
@@ -312,7 +325,7 @@ export function SignupForm({
               Fix password requirements
             </>
           ) : (
-            'Create account'
+            "Create account"
           )}
         </Button>
         <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
@@ -355,7 +368,7 @@ export function SignupForm({
         </Button>
       </div>
       <div className="text-center text-sm text-muted-foreground">
-        Already have an account?{' '}
+        Already have an account?{" "}
         <a
           href="/auth/login"
           className="font-medium text-primary underline underline-offset-4 hover:text-primary/80 transition-colors"

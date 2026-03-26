@@ -1,7 +1,8 @@
 "use client";
 
-import { CheckCircle2, GalleryVerticalEnd, Loader2, Mail } from "lucide-react";
+import { CheckCircle2, Loader2, Mail } from "lucide-react";
 import { useState } from "react";
+import AuthBrand from "@/components/auth/AuthBrand";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,12 +31,7 @@ export default function ForgotPasswordPage() {
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex justify-center gap-2 md:justify-start">
-          <a href="/" className="flex items-center gap-2 font-medium">
-            <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
-              <GalleryVerticalEnd className="size-4" />
-            </div>
-            Safeguard Media.
-          </a>
+          <AuthBrand />
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-xs">
@@ -45,14 +41,19 @@ export default function ForgotPasswordPage() {
                   <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-2">
                     <Mail className="w-6 h-6 text-blue-600" />
                   </div>
-                  <h1 className="text-3xl font-bold tracking-tight">Forgot password?</h1>
+                  <h1 className="text-3xl font-bold tracking-tight">
+                    Forgot password?
+                  </h1>
                   <p className="text-muted-foreground text-balance max-w-sm">
-                    No worries! Enter your email address and we&apos;ll send you a link to reset your password
+                    No worries! Enter your email address and we&apos;ll send you
+                    a link to reset your password
                   </p>
                 </div>
                 <div className="grid gap-6">
                   <div className="grid gap-2">
-                    <Label htmlFor="email" className="text-sm font-medium">Email address</Label>
+                    <Label htmlFor="email" className="text-sm font-medium">
+                      Email address
+                    </Label>
                     <Input
                       id="email"
                       type="email"
@@ -96,14 +97,20 @@ export default function ForgotPasswordPage() {
                   <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-2">
                     <CheckCircle2 className="w-10 h-10 text-green-600" />
                   </div>
-                  <h1 className="text-3xl font-bold tracking-tight">Check your email</h1>
+                  <h1 className="text-3xl font-bold tracking-tight">
+                    Check your email
+                  </h1>
                   <p className="text-muted-foreground text-balance max-w-sm">
-                    If an account with <span className="font-medium text-foreground">{email}</span> exists, we&apos;ve sent you a password reset link. Please check your inbox and spam folder.
+                    If an account with{" "}
+                    <span className="font-medium text-foreground">{email}</span>{" "}
+                    exists, we&apos;ve sent you a password reset link. Please
+                    check your inbox and spam folder.
                   </p>
                 </div>
                 <div className="text-center text-sm text-muted-foreground">
                   Didn&apos;t receive the email?{" "}
                   <button
+                    type="button"
                     onClick={() => setIsSubmitted(false)}
                     className="font-medium text-primary underline underline-offset-4 hover:text-primary/80 transition-colors"
                   >

@@ -1,8 +1,9 @@
 "use client";
 
-import { AlertCircle, Eye, EyeOff, GalleryVerticalEnd, KeyRound, Loader2 } from "lucide-react";
+import { AlertCircle, Eye, EyeOff, KeyRound, Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
+import AuthBrand from "@/components/auth/AuthBrand";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,7 +46,9 @@ function ResetPasswordForm() {
   };
 
   // Validate confirm password on change
-  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleConfirmPasswordChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const newConfirmPassword = e.target.value;
     setConfirmPassword(newConfirmPassword);
 
@@ -94,7 +97,9 @@ function ResetPasswordForm() {
           <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-2">
             <AlertCircle className="w-6 h-6 text-red-600" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">Invalid reset link</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Invalid reset link
+          </h1>
           <p className="text-muted-foreground text-balance max-w-sm">
             This password reset link is invalid or has expired. Please request a
             new one.
@@ -118,14 +123,18 @@ function ResetPasswordForm() {
         <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-2">
           <KeyRound className="w-6 h-6 text-blue-600" />
         </div>
-        <h1 className="text-3xl font-bold tracking-tight">Reset your password</h1>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Reset your password
+        </h1>
         <p className="text-muted-foreground text-balance max-w-sm">
           Enter your new password below to regain access to your account
         </p>
       </div>
       <div className="grid gap-6">
         <div className="grid gap-2">
-          <Label htmlFor="password" className="text-sm font-medium">New Password</Label>
+          <Label htmlFor="password" className="text-sm font-medium">
+            New Password
+          </Label>
           <div className="relative">
             <Input
               id="password"
@@ -163,8 +172,8 @@ function ResetPasswordForm() {
                 </p>
               </div>
               <ul className="ml-6 space-y-1 text-xs text-destructive/90 list-disc">
-                {passwordErrors.map((error, index) => (
-                  <li key={index}>{error}</li>
+                {passwordErrors.map((error) => (
+                  <li key={error}>{error}</li>
                 ))}
               </ul>
             </div>
@@ -172,7 +181,9 @@ function ResetPasswordForm() {
         </div>
 
         <div className="grid gap-2">
-          <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</Label>
+          <Label htmlFor="confirmPassword" className="text-sm font-medium">
+            Confirm Password
+          </Label>
           <div className="relative">
             <Input
               id="confirmPassword"
@@ -190,7 +201,9 @@ function ResetPasswordForm() {
               className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               disabled={isPending}
-              aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+              aria-label={
+                showConfirmPassword ? "Hide password" : "Show password"
+              }
             >
               {showConfirmPassword ? (
                 <EyeOff className="h-4 w-4 text-muted-foreground" />
@@ -217,7 +230,9 @@ function ResetPasswordForm() {
           type="submit"
           size="lg"
           className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg transition-all"
-          disabled={isPending || passwordErrors.length > 0 || !!confirmPasswordError}
+          disabled={
+            isPending || passwordErrors.length > 0 || !!confirmPasswordError
+          }
         >
           {isPending ? (
             <>
@@ -247,12 +262,7 @@ export default function ResetPasswordPage() {
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex justify-center gap-2 md:justify-start">
-          <a href="/" className="flex items-center gap-2 font-medium">
-            <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
-              <GalleryVerticalEnd className="size-4" />
-            </div>
-            Safeguard Media.
-          </a>
+          <AuthBrand />
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-xs">

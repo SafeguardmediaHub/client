@@ -201,32 +201,38 @@ export default function Footer() {
 
             <motion.div
               variants={motionSet.quickStagger}
-              className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:col-span-7"
+              className="rounded-[1.75rem] border border-white/8 bg-white/[0.03] p-6 md:p-7 lg:col-span-7"
             >
-              {footerSections.map((section) => (
-                <motion.div
-                  key={section.title}
-                  variants={motionSet.card}
-                  className="rounded-[1.5rem] border border-white/8 bg-white/[0.03] p-5"
-                >
-                  <h3 className="text-sm font-bold uppercase tracking-[0.16em] text-[hsl(35,85%,68%)]">
-                    {section.title}
-                  </h3>
-                  <ul className="mt-4 space-y-2">
-                    {section.links.map((link) => (
-                      <li key={link.label}>
-                        <SmoothScrollLink
-                          href={link.href}
-                          className="group flex items-center justify-between rounded-xl px-3 py-2.5 text-sm text-slate-300 transition-all duration-200 hover:bg-white/5 hover:text-white"
-                        >
-                          <span>{link.label}</span>
-                          <ArrowRight className="h-4 w-4 opacity-0 transition-all duration-200 group-hover:translate-x-0.5 group-hover:opacity-100" />
-                        </SmoothScrollLink>
-                      </li>
-                    ))}
-                  </ul>
-                </motion.div>
-              ))}
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-3 md:gap-6">
+                {footerSections.map((section, index) => (
+                  <motion.div
+                    key={section.title}
+                    variants={motionSet.card}
+                    className={
+                      index === 0
+                        ? ""
+                        : "border-t border-white/8 pt-6 md:border-l md:border-t-0 md:pt-0 md:pl-6"
+                    }
+                  >
+                    <h3 className="text-sm font-bold uppercase tracking-[0.16em] text-[hsl(35,85%,68%)]">
+                      {section.title}
+                    </h3>
+                    <ul className="mt-4 space-y-1.5">
+                      {section.links.map((link) => (
+                        <li key={link.label}>
+                          <SmoothScrollLink
+                            href={link.href}
+                            className="group inline-flex items-center gap-2 rounded-lg py-2 text-sm text-slate-300 transition-colors duration-200 hover:text-white"
+                          >
+                            <span>{link.label}</span>
+                            <ArrowRight className="h-4 w-4 opacity-0 transition-all duration-200 group-hover:translate-x-0.5 group-hover:opacity-100" />
+                          </SmoothScrollLink>
+                        </li>
+                      ))}
+                    </ul>
+                  </motion.div>
+                ))}
+              </div>
             </motion.div>
           </div>
         </motion.div>

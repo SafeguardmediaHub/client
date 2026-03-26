@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import { Menu, X } from 'lucide-react';
-import Link from 'next/link';
-import React from 'react';
-import SmoothScrollLink from '@/components/landing-page/SmoothScrollLink';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/context/AuthContext';
-import { cn } from '@/lib/utils';
-import GoogleTranslate from './GoogleTranslate';
+import { Menu, Shield, X } from "lucide-react";
+import Link from "next/link";
+import React from "react";
+import SmoothScrollLink from "@/components/landing-page/SmoothScrollLink";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
+import { cn } from "@/lib/utils";
+import GoogleTranslate from "./GoogleTranslate";
 
 const menuItems = [
-  { name: 'Platform', href: '#platform' },
-  { name: 'Workflow', href: '#workflow' },
-  { name: 'Use Cases', href: '#use-cases' },
-  { name: 'Roadmap', href: '#roadmap' },
-  { name: 'Blog', href: '/blog' },
+  { name: "Platform", href: "#platform" },
+  { name: "Workflow", href: "#workflow" },
+  { name: "Use Cases", href: "#use-cases" },
+  { name: "Roadmap", href: "#roadmap" },
+  { name: "Blog", href: "/blog" },
   // { name: "About", href: "/about" },
 ];
 
@@ -27,20 +27,20 @@ export const HeroHeader = () => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
   return (
     <header>
       <nav
-        data-state={menuState && 'active'}
+        data-state={menuState && "active"}
         className="fixed z-20 w-full px-2"
       >
         <div
           className={cn(
-            'mx-auto mt-2 max-w-6xl px-6 transition-all duration-300 lg:px-12',
+            "mx-auto mt-2 max-w-6xl px-6 transition-all duration-300 lg:px-12",
             isScrolled &&
-              'bg-background/50 max-w-4xl rounded-2xl border backdrop-blur-lg lg:px-5',
+              "bg-background/50 max-w-4xl rounded-2xl border backdrop-blur-lg lg:px-5",
           )}
         >
           <div className="relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4">
@@ -51,20 +51,23 @@ export const HeroHeader = () => {
                 className="flex items-center space-x-2 group"
               >
                 <div className="relative">
-                  <div className="absolute -inset-0.5 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-lg blur opacity-50 group-hover:opacity-75 transition duration-300"></div>
-                  <div className="relative w-8 h-8 bg-gradient-to-br from-blue-500 via-blue-600 to-cyan-600 rounded-lg flex items-center justify-center shadow-md shadow-blue-500/30 transform transition-transform duration-300 group-hover:scale-110">
-                    <span className="text-white font-bold text-sm drop-shadow-md">
-                      S
-                    </span>
+                  <div className="absolute -inset-1 rounded-xl bg-blue-600/50 blur-md transition duration-300 group-hover:bg-blue-500/60" />
+                  <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 shadow-lg shadow-blue-500/20 transition-transform duration-300 group-hover:scale-105">
+                    <Shield className="h-5 w-5 text-white" />
                   </div>
                 </div>
-                <p className="font-bold text-gray-900">Safeguardmedia</p>
+                <div className="leading-tight">
+                  <p className="font-semibold tracking-tight text-gray-900">
+                    Safeguardmedia
+                  </p>
+                  <p className="text-xs text-slate-500">Technologies</p>
+                </div>
               </Link>
 
               <button
                 type="button"
                 onClick={() => setMenuState(!menuState)}
-                aria-label={menuState === true ? 'Close Menu' : 'Open Menu'}
+                aria-label={menuState === true ? "Close Menu" : "Open Menu"}
                 className="relative z-20 -m-2.5 -mr-4 block cursor-pointer p-2.5 lg:hidden"
               >
                 <Menu className="in-data-[state=active]:rotate-180 in-data-[state=active]:scale-0 in-data-[state=active]:opacity-0 m-auto size-6 duration-200" />
@@ -111,7 +114,7 @@ export const HeroHeader = () => {
                     asChild
                     variant="outline"
                     size="sm"
-                    className={cn(isScrolled && 'lg:hidden')}
+                    className={cn(isScrolled && "lg:hidden")}
                   >
                     <Link href="/auth/login">
                       <span>Login</span>
@@ -121,8 +124,8 @@ export const HeroHeader = () => {
                     asChild
                     size="sm"
                     className={cn(
-                      'bg-blue-600 hover:bg-blue-700 text-white',
-                      isScrolled && 'lg:hidden',
+                      "bg-blue-600 hover:bg-blue-700 text-white",
+                      isScrolled && "lg:hidden",
                     )}
                   >
                     <Link href="/auth/signup">
@@ -133,8 +136,8 @@ export const HeroHeader = () => {
                     asChild
                     size="sm"
                     className={cn(
-                      'bg-blue-600 hover:bg-blue-700 text-white',
-                      isScrolled ? 'lg:inline-flex' : 'hidden',
+                      "bg-blue-600 hover:bg-blue-700 text-white",
+                      isScrolled ? "lg:inline-flex" : "hidden",
                     )}
                   >
                     <Link href="/auth/signup">
@@ -149,7 +152,7 @@ export const HeroHeader = () => {
                     asChild
                     size="sm"
                     className={cn(
-                      isScrolled ? 'lg:inline-flex' : 'lg:inline-flex',
+                      isScrolled ? "lg:inline-flex" : "lg:inline-flex",
                     )}
                   >
                     <Link href="/dashboard">
