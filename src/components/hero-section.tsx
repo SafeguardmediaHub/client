@@ -1,32 +1,14 @@
 "use client";
 
 import { ArrowRight, CheckCircle2, Shield, Sparkles } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
-import { AnimatedGroup } from "@/components/ui/animated-group";
+import SmoothScrollLink from "@/components/landing-page/SmoothScrollLink";
 import { Button } from "@/components/ui/button";
 import { TextEffect } from "@/components/ui/text-effect";
 import { useAuth } from "@/context/AuthContext";
+import { createLandingMotion } from "@/lib/landing-motion";
 import { HeroHeader } from "./header";
-
-const transitionVariants = {
-  item: {
-    hidden: {
-      opacity: 0,
-      filter: "blur(12px)",
-      y: 12,
-    },
-    visible: {
-      opacity: 1,
-      filter: "blur(0px)",
-      y: 0,
-      transition: {
-        type: "spring" as const,
-        bounce: 0.28,
-        duration: 1.2,
-      },
-    },
-  },
-};
 
 const capabilityChips = [
   "AI media detection",
@@ -61,6 +43,8 @@ const liveSignals = [
 
 export default function HeroSection() {
   const { isAuthenticated } = useAuth();
+  const reducedMotion = useReducedMotion();
+  const motionSet = createLandingMotion(Boolean(reducedMotion));
 
   return (
     <>
@@ -76,8 +60,13 @@ export default function HeroSection() {
         <section className="relative pb-20 pt-28 md:pb-28 md:pt-40">
           <div className="mx-auto max-w-7xl px-6">
             <div>
-              <div className="mx-auto max-w-6xl text-center">
-                <AnimatedGroup variants={transitionVariants}>
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={motionSet.stagger}
+                className="mx-auto max-w-6xl text-center"
+              >
+                <motion.div variants={motionSet.item}>
                   <Link
                     href={
                       isAuthenticated
@@ -92,97 +81,97 @@ export default function HeroSection() {
                     </span>
                     <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
                   </Link>
-                </AnimatedGroup>
+                </motion.div>
 
-                <TextEffect
-                  preset="fade-in-blur"
-                  speedSegment={0.3}
-                  as="h1"
-                  className="mt-8 max-w-6xl text-balance text-5xl font-bold tracking-tight leading-[0.96] text-[hsl(220,40%,14%)] md:text-7xl xl:text-[5.9rem]"
-                >
-                  Investigate digital content before it becomes a trust problem.
-                </TextEffect>
+                <motion.div variants={motionSet.sectionIntro}>
+                  <TextEffect
+                    preset="fade-in-blur"
+                    speedSegment={0.3}
+                    as="h1"
+                    className="mt-8 max-w-6xl text-balance text-5xl font-bold tracking-tight leading-[0.96] text-[hsl(220,40%,14%)] md:text-7xl xl:text-[5.9rem]"
+                  >
+                    Investigate digital content before it becomes a trust
+                    problem.
+                  </TextEffect>
+                </motion.div>
 
-                <TextEffect
-                  per="line"
-                  preset="fade-in-blur"
-                  speedSegment={0.3}
-                  delay={0.4}
-                  as="p"
-                  className="mx-auto mt-8 max-w-3xl text-balance text-lg leading-8 text-slate-600"
-                >
-                  Safeguardmedia Technologies gives trust and investigations
-                  teams one place to detect AI-generated media, verify
-                  provenance, and review evidence-backed results with speed.
-                </TextEffect>
+                <motion.div variants={motionSet.item}>
+                  <TextEffect
+                    per="line"
+                    preset="fade-in-blur"
+                    speedSegment={0.3}
+                    delay={0.4}
+                    as="p"
+                    className="mx-auto mt-8 max-w-3xl text-balance text-lg leading-8 text-slate-600"
+                  >
+                    Safeguardmedia Technologies gives trust and investigations
+                    teams one place to detect AI-generated media, verify
+                    provenance, and review evidence-backed results with speed.
+                  </TextEffect>
+                </motion.div>
 
-                <AnimatedGroup
-                  variants={{
-                    container: {
-                      visible: {
-                        transition: {
-                          staggerChildren: 0.05,
-                          delayChildren: 0.7,
-                        },
-                      },
-                    },
-                    ...transitionVariants,
-                  }}
+                <motion.div
+                  variants={motionSet.quickStagger}
                   className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row"
                 >
-                  <Button
-                    asChild
-                    size="lg"
-                    className="rounded-xl bg-blue-600 px-8 py-6 text-base text-white shadow-xl shadow-blue-500/20 hover:bg-blue-700"
-                  >
-                    <Link
-                      href={isAuthenticated ? "/dashboard" : "/auth/signup"}
+                  <motion.div variants={motionSet.item}>
+                    <Button
+                      asChild
+                      size="lg"
+                      className="rounded-xl bg-blue-600 px-8 py-6 text-base text-white shadow-xl shadow-blue-500/20 hover:bg-blue-700"
                     >
-                      Get Started
-                    </Link>
-                  </Button>
-                  <Button
-                    asChild
-                    size="lg"
-                    variant="outline"
-                    className="h-14 rounded-xl border-slate-300 px-8 text-base text-slate-700 hover:border-blue-300 hover:bg-blue-50"
-                  >
-                    <Link href="#platform">Explore the Platform</Link>
-                  </Button>
-                </AnimatedGroup>
+                      <Link
+                        href={isAuthenticated ? "/dashboard" : "/auth/signup"}
+                      >
+                        Get Started
+                      </Link>
+                    </Button>
+                  </motion.div>
+                  <motion.div variants={motionSet.item}>
+                    <Button
+                      asChild
+                      size="lg"
+                      variant="outline"
+                      className="h-14 rounded-xl border-slate-300 px-8 text-base text-slate-700 hover:border-blue-300 hover:bg-blue-50"
+                    >
+                      <SmoothScrollLink href="#platform">
+                        Explore the Platform
+                      </SmoothScrollLink>
+                    </Button>
+                  </motion.div>
+                </motion.div>
 
-                <AnimatedGroup
-                  variants={transitionVariants}
+                <motion.div
+                  variants={motionSet.quickStagger}
                   className="mt-10 flex flex-wrap justify-center gap-3"
                 >
                   {capabilityChips.map((chip) => (
-                    <div
+                    <motion.div
                       key={chip}
+                      variants={motionSet.item}
                       className="rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm"
                     >
                       {chip}
-                    </div>
+                    </motion.div>
                   ))}
-                </AnimatedGroup>
-              </div>
+                </motion.div>
+              </motion.div>
 
-              <AnimatedGroup
-                variants={{
-                  container: {
-                    visible: {
-                      transition: {
-                        staggerChildren: 0.06,
-                        delayChildren: 0.8,
-                      },
-                    },
-                  },
-                  ...transitionVariants,
-                }}
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={motionSet.panel}
                 className="relative mt-16"
               >
                 <div className="absolute inset-x-12 top-12 -z-10 h-72 rounded-full bg-blue-400/20 blur-3xl" />
-                <div className="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white/85 p-5 shadow-2xl shadow-slate-200/70 backdrop-blur-xl">
-                  <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3">
+                <motion.div
+                  variants={motionSet.stagger}
+                  className="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white/85 p-5 shadow-2xl shadow-slate-200/70 backdrop-blur-xl"
+                >
+                  <motion.div
+                    variants={motionSet.item}
+                    className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3"
+                  >
                     <div>
                       <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                         Investigation Workspace
@@ -194,10 +183,13 @@ export default function HeroSection() {
                     <div className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
                       Live product
                     </div>
-                  </div>
+                  </motion.div>
 
                   <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-                    <div className="rounded-[1.5rem] border border-slate-200 bg-white p-5">
+                    <motion.div
+                      variants={motionSet.card}
+                      className="rounded-[1.5rem] border border-slate-200 bg-white p-5"
+                    >
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="text-sm font-semibold text-slate-900">
@@ -212,8 +204,9 @@ export default function HeroSection() {
 
                       <div className="mt-5 space-y-4">
                         {workflowItems.map((item, index) => (
-                          <div
+                          <motion.div
                             key={item.title}
+                            variants={motionSet.item}
                             className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-4"
                           >
                             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
@@ -227,13 +220,19 @@ export default function HeroSection() {
                                 {item.detail}
                               </p>
                             </div>
-                          </div>
+                          </motion.div>
                         ))}
                       </div>
-                    </div>
+                    </motion.div>
 
-                    <div className="space-y-4">
-                      <div className="rounded-[1.5rem] border border-blue-700 bg-blue-600 p-5 text-white shadow-lg shadow-blue-500/20">
+                    <motion.div
+                      variants={motionSet.quickStagger}
+                      className="space-y-4"
+                    >
+                      <motion.div
+                        variants={motionSet.card}
+                        className="rounded-[1.5rem] border border-blue-700 bg-blue-600 p-5 text-white shadow-lg shadow-blue-500/20"
+                      >
                         <div className="flex items-center justify-between">
                           <div className="text-sm font-semibold">
                             AI media detection
@@ -264,30 +263,34 @@ export default function HeroSection() {
                             </div>
                           </div>
                         </div>
-                      </div>
+                      </motion.div>
 
-                      <div className="rounded-[1.5rem] border border-slate-200 bg-white p-5">
+                      <motion.div
+                        variants={motionSet.card}
+                        className="rounded-[1.5rem] border border-slate-200 bg-white p-5"
+                      >
                         <div className="text-sm font-semibold text-slate-900">
                           Live verification coverage
                         </div>
                         <div className="mt-4 space-y-3">
                           {liveSignals.map((signal) => (
-                            <div
+                            <motion.div
                               key={signal}
+                              variants={motionSet.item}
                               className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3"
                             >
                               <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                               <span className="text-sm font-medium text-slate-700">
                                 {signal}
                               </span>
-                            </div>
+                            </motion.div>
                           ))}
                         </div>
-                      </div>
-                    </div>
+                      </motion.div>
+                    </motion.div>
                   </div>
-                </div>
-              </AnimatedGroup>
+                </motion.div>
+              </motion.div>
             </div>
           </div>
         </section>

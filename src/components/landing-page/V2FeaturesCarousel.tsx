@@ -7,7 +7,9 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import { Card, Carousel } from "@/components/ui/apple-cards-carousel";
+import { createLandingMotion, landingViewport } from "@/lib/landing-motion";
 
 const roadmapItems = [
   {
@@ -172,6 +174,8 @@ const roadmapItems = [
 ];
 
 export default function V2FeaturesCarousel() {
+  const reducedMotion = useReducedMotion();
+  const motionSet = createLandingMotion(Boolean(reducedMotion));
   const cards = roadmapItems.map((item, index) => (
     <Card key={item.title} card={item} index={index} />
   ));
@@ -179,29 +183,48 @@ export default function V2FeaturesCarousel() {
   return (
     <section
       id="roadmap"
-      className="relative overflow-hidden bg-[hsl(210,35%,97%)] py-24"
+      className="relative overflow-hidden scroll-mt-28 bg-[hsl(210,35%,97%)] py-24 lg:scroll-mt-32"
     >
       <div className="absolute inset-0 opacity-[0.03] mix-blend-multiply pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGQ9Ik0wIDBoMzAwdjMwMEgweiIgZmlsdGVyPSJ1cmwoI2EpIiBvcGFjaXR5PSIuMDUiLz48L3N2Zz4=')]" />
       <div className="absolute left-0 top-0 h-full w-1/2 -translate-x-1/4 -skew-x-12 bg-gradient-to-br from-[hsl(190,95%,55%)]/5 to-transparent" />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-14 text-center">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={landingViewport}
+          variants={motionSet.stagger}
+          className="mb-14 text-center"
+        >
           <div className="inline-flex items-center gap-2 rounded-full border border-[hsl(35,85%,60%)]/30 bg-[hsl(35,85%,60%)]/10 px-4 py-2">
             <Sparkles className="h-4 w-4 text-[hsl(35,85%,60%)]" />
             <span className="text-sm font-bold uppercase tracking-wider text-[hsl(35,85%,60%)]">
               Expanding next
             </span>
           </div>
-          <h2 className="mt-6 text-5xl font-bold leading-tight text-[hsl(220,40%,15%)] md:text-6xl">
+          <motion.h2
+            variants={motionSet.sectionIntro}
+            className="mt-6 text-5xl font-bold leading-tight text-[hsl(220,40%,15%)] md:text-6xl"
+          >
             Roadmap work that strengthens the platform.
-          </h2>
-          <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-slate-600">
+          </motion.h2>
+          <motion.p
+            variants={motionSet.item}
+            className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-slate-600"
+          >
             These roadmap items build on the workflows already available today
             and extend the platform into deeper forensic and contextual review.
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
-        <Carousel items={cards} />
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={landingViewport}
+          variants={motionSet.panel}
+        >
+          <Carousel items={cards} />
+        </motion.div>
       </div>
     </section>
   );

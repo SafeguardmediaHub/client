@@ -1,7 +1,9 @@
 "use client";
 
 import { ArrowRight, CheckCircle2, Shield, Sparkles } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
+import { createLandingMotion, landingViewport } from "@/lib/landing-motion";
 
 const steps = [
   {
@@ -36,32 +38,53 @@ const outputs = [
 ];
 
 export default function HowItWorks() {
+  const reducedMotion = useReducedMotion();
+  const motionSet = createLandingMotion(Boolean(reducedMotion));
+
   return (
     <section
       id="workflow"
-      className="relative overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#ffffff_100%)] py-28"
+      className="relative overflow-hidden scroll-mt-28 bg-[linear-gradient(180deg,#f8fbff_0%,#ffffff_100%)] py-28 lg:scroll-mt-32"
     >
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#7aa6c90d_1px,transparent_1px),linear-gradient(to_bottom,#7aa6c90d_1px,transparent_1px)] bg-[size:18px_18px]" />
       <div className="absolute left-[8%] top-14 h-64 w-64 rounded-full bg-cyan-200/25 blur-3xl" />
       <div className="absolute bottom-0 right-[8%] h-72 w-72 rounded-full bg-blue-200/20 blur-3xl" />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={landingViewport}
+          variants={motionSet.stagger}
+          className="max-w-3xl"
+        >
           <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm">
             <Sparkles className="h-4 w-4" />
             Operational workflow
           </div>
-          <h2 className="mt-6 text-4xl font-bold tracking-tight text-[hsl(220,40%,15%)] md:text-6xl">
+          <motion.h2
+            variants={motionSet.sectionIntro}
+            className="mt-6 text-4xl font-bold tracking-tight text-[hsl(220,40%,15%)] md:text-6xl"
+          >
             A clearer path from raw content to a defendable decision.
-          </h2>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+          </motion.h2>
+          <motion.p
+            variants={motionSet.item}
+            className="mt-6 max-w-2xl text-lg leading-8 text-slate-600"
+          >
             The platform is built to reduce the gap between an uploaded file and
             a result your team can actually trust, share, and act on.
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
         <div className="mt-16 grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-start">
-          <div className="rounded-[2rem] border border-slate-200 bg-[hsl(220,38%,16%)] p-8 text-white shadow-xl shadow-slate-200/60">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={landingViewport}
+            variants={motionSet.panel}
+            className="rounded-[2rem] border border-slate-200 bg-[hsl(220,38%,16%)] p-8 text-white shadow-xl shadow-slate-200/60"
+          >
             <div className="flex items-center gap-3">
               <div className="rounded-2xl bg-white/10 p-3">
                 <Shield className="h-5 w-5 text-cyan-300" />
@@ -108,12 +131,19 @@ export default function HowItWorks() {
               Get started
               <ArrowRight className="h-4 w-4" />
             </Link>
-          </div>
+          </motion.div>
 
-          <div className="space-y-4">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={landingViewport}
+            variants={motionSet.quickStagger}
+            className="space-y-4"
+          >
             {steps.map((step) => (
-              <div
+              <motion.div
                 key={step.number}
+                variants={motionSet.card}
                 className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm md:p-7"
               >
                 <div className="flex flex-col gap-5 md:flex-row md:items-start">
@@ -141,9 +171,9 @@ export default function HowItWorks() {
                     </p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

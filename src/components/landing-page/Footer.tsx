@@ -8,7 +8,10 @@ import {
   Twitter,
   Youtube,
 } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
+import SmoothScrollLink from "@/components/landing-page/SmoothScrollLink";
+import { createLandingMotion, landingViewport } from "@/lib/landing-motion";
 
 const footerSections = [
   {
@@ -65,6 +68,9 @@ const socialLinks = [
 ];
 
 export default function Footer() {
+  const reducedMotion = useReducedMotion();
+  const motionSet = createLandingMotion(Boolean(reducedMotion));
+
   return (
     <footer className="relative overflow-hidden bg-[hsl(222,42%,12%)] text-white">
       <div className="absolute inset-0 opacity-[0.05] mix-blend-overlay pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGQ9Ik0wIDBoMzAwdjMwMEgweiIgZmlsdGVyPSJ1cmwoI2EpIiBvcGFjaXR5PSIuMDUiLz48L3N2Zz4=')]" />
@@ -74,8 +80,17 @@ export default function Footer() {
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(120,170,220,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(120,170,220,0.06)_1px,transparent_1px)] bg-[size:22px_22px]" />
 
       <div className="relative mx-auto max-w-7xl px-4 pb-10 pt-20 sm:px-6 lg:px-8">
-        <div className="rounded-[2.25rem] border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.03))] p-8 shadow-[0_24px_80px_rgba(0,0,0,0.28)] backdrop-blur-xl md:p-10">
-          <div className="grid gap-8 border-b border-white/10 pb-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={landingViewport}
+          variants={motionSet.stagger}
+          className="rounded-[2.25rem] border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.03))] p-8 shadow-[0_24px_80px_rgba(0,0,0,0.28)] backdrop-blur-xl md:p-10"
+        >
+          <motion.div
+            variants={motionSet.panel}
+            className="grid gap-8 border-b border-white/10 pb-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end"
+          >
             <div className="max-w-3xl text-center lg:text-left">
               <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-sm font-semibold text-cyan-100">
                 <Shield className="h-4 w-4" />
@@ -106,10 +121,13 @@ export default function Footer() {
                 Talk to Us
               </a>
             </div>
-          </div>
+          </motion.div>
 
           <div className="grid gap-12 pt-10 lg:grid-cols-12">
-            <div className="space-y-8 text-center lg:col-span-5 lg:text-left">
+            <motion.div
+              variants={motionSet.stagger}
+              className="space-y-8 text-center lg:col-span-5 lg:text-left"
+            >
               <div className="space-y-5">
                 <Link
                   href="/"
@@ -179,12 +197,16 @@ export default function Footer() {
                   );
                 })}
               </div>
-            </div>
+            </motion.div>
 
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:col-span-7">
+            <motion.div
+              variants={motionSet.quickStagger}
+              className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:col-span-7"
+            >
               {footerSections.map((section) => (
-                <div
+                <motion.div
                   key={section.title}
+                  variants={motionSet.card}
                   className="rounded-[1.5rem] border border-white/8 bg-white/[0.03] p-5"
                 >
                   <h3 className="text-sm font-bold uppercase tracking-[0.16em] text-[hsl(35,85%,68%)]">
@@ -193,23 +215,29 @@ export default function Footer() {
                   <ul className="mt-4 space-y-2">
                     {section.links.map((link) => (
                       <li key={link.label}>
-                        <Link
+                        <SmoothScrollLink
                           href={link.href}
                           className="group flex items-center justify-between rounded-xl px-3 py-2.5 text-sm text-slate-300 transition-all duration-200 hover:bg-white/5 hover:text-white"
                         >
                           <span>{link.label}</span>
                           <ArrowRight className="h-4 w-4 opacity-0 transition-all duration-200 group-hover:translate-x-0.5 group-hover:opacity-100" />
-                        </Link>
+                        </SmoothScrollLink>
                       </li>
                     ))}
                   </ul>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="mt-8 flex flex-col items-center justify-between gap-4 text-center md:flex-row md:text-left">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={landingViewport}
+          variants={motionSet.quickStagger}
+          className="mt-8 flex flex-col items-center justify-between gap-4 text-center md:flex-row md:text-left"
+        >
           <div className="flex flex-wrap items-center justify-center gap-2 text-sm text-slate-400 md:justify-start">
             <span>
               © {new Date().getFullYear()} Safeguardmedia Technologies.
@@ -228,7 +256,7 @@ export default function Footer() {
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
       </div>
     </footer>
   );

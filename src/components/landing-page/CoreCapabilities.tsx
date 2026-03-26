@@ -10,7 +10,9 @@ import {
   Search,
   Shield,
 } from "lucide-react";
-import Link from "next/link";
+import { motion, useReducedMotion } from "motion/react";
+import SmoothScrollLink from "@/components/landing-page/SmoothScrollLink";
+import { createLandingMotion, landingViewport } from "@/lib/landing-motion";
 
 type Capability = {
   title: string;
@@ -79,27 +81,48 @@ const availableNow: Capability[] = [
 ];
 
 export default function CoreCapabilities() {
+  const reducedMotion = useReducedMotion();
+  const motionSet = createLandingMotion(Boolean(reducedMotion));
+
   return (
-    <section id="platform" className="relative overflow-hidden bg-white py-28">
+    <section
+      id="platform"
+      className="relative overflow-hidden scroll-mt-28 bg-white py-28 lg:scroll-mt-32"
+    >
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#7aa6c90d_1px,transparent_1px),linear-gradient(to_bottom,#7aa6c90d_1px,transparent_1px)] bg-[size:18px_18px]" />
       <div className="absolute left-1/4 top-0 h-80 w-80 rounded-full bg-blue-100/40 blur-3xl" />
       <div className="absolute bottom-0 right-[12%] h-80 w-80 rounded-full bg-cyan-100/35 blur-3xl" />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-start">
-          <div className="max-w-xl">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={landingViewport}
+            variants={motionSet.stagger}
+            className="max-w-xl"
+          >
             <div className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">
               Platform overview
             </div>
-            <h2 className="mt-6 text-4xl font-bold tracking-tight text-[hsl(220,40%,15%)] md:text-6xl">
+            <motion.h2
+              variants={motionSet.sectionIntro}
+              className="mt-6 text-4xl font-bold tracking-tight text-[hsl(220,40%,15%)] md:text-6xl"
+            >
               What teams can do in the platform right now.
-            </h2>
-            <p className="mt-6 text-lg leading-8 text-slate-600">
+            </motion.h2>
+            <motion.p
+              variants={motionSet.item}
+              className="mt-6 text-lg leading-8 text-slate-600"
+            >
               A broad set of verification workflows are already live, from AI
               media detection to provenance, research, and integrity review.
-            </p>
+            </motion.p>
 
-            <div className="mt-8 rounded-[2rem] border border-slate-200 bg-slate-50/80 p-6">
+            <motion.div
+              variants={motionSet.card}
+              className="mt-8 rounded-[2rem] border border-slate-200 bg-slate-50/80 p-6"
+            >
               <div className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
                 More workflows
               </div>
@@ -110,18 +133,23 @@ export default function CoreCapabilities() {
                 Explore the roadmap section for deeper forensics and upcoming
                 verification workflows that build on what is live today.
               </p>
-              <Link
+              <SmoothScrollLink
                 href="#roadmap"
                 className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-blue-700 transition-colors hover:text-blue-800"
               >
                 See the roadmap
                 <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </div>
+              </SmoothScrollLink>
+            </motion.div>
+          </motion.div>
 
-          <div>
-            <div>
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={landingViewport}
+            variants={motionSet.stagger}
+          >
+            <motion.div variants={motionSet.sectionIntro}>
               <div className="mb-4 flex items-center justify-between gap-4">
                 <div>
                   <div className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -136,13 +164,17 @@ export default function CoreCapabilities() {
                 </div>
               </div>
 
-              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              <motion.div
+                variants={motionSet.quickStagger}
+                className="grid gap-5 md:grid-cols-2 xl:grid-cols-3"
+              >
                 {availableNow.map((capability) => {
                   const Icon = capability.icon;
 
                   return (
-                    <div
+                    <motion.div
                       key={capability.title}
+                      variants={motionSet.card}
                       className={`rounded-[1.75rem] border border-slate-200 bg-gradient-to-br ${capability.surface} p-6 shadow-sm`}
                     >
                       <div className="flex items-start justify-between gap-4">
@@ -159,12 +191,12 @@ export default function CoreCapabilities() {
                       <p className="mt-3 text-sm leading-7 text-slate-600">
                         {capability.description}
                       </p>
-                    </div>
+                    </motion.div>
                   );
                 })}
-              </div>
-            </div>
-          </div>
+              </motion.div>
+            </motion.div>
+          </motion.div>
         </div>
       </div>
     </section>
