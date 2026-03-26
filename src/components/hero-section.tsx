@@ -1,33 +1,63 @@
-'use client';
+"use client";
 
-import { ArrowRight, Shield, Sparkles } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { AnimatedGroup } from '@/components/ui/animated-group';
-import { Button } from '@/components/ui/button';
-import { TextEffect } from '@/components/ui/text-effect';
-import { useAuth } from '@/context/AuthContext';
-import { HeroHeader } from './header';
+import { ArrowRight, CheckCircle2, Shield, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { AnimatedGroup } from "@/components/ui/animated-group";
+import { Button } from "@/components/ui/button";
+import { TextEffect } from "@/components/ui/text-effect";
+import { useAuth } from "@/context/AuthContext";
+import { HeroHeader } from "./header";
 
 const transitionVariants = {
   item: {
     hidden: {
       opacity: 0,
-      filter: 'blur(12px)',
+      filter: "blur(12px)",
       y: 12,
     },
     visible: {
       opacity: 1,
-      filter: 'blur(0px)',
+      filter: "blur(0px)",
       y: 0,
       transition: {
-        type: 'spring' as const,
-        bounce: 0.3,
-        duration: 1.5,
+        type: "spring" as const,
+        bounce: 0.28,
+        duration: 1.2,
       },
     },
   },
 };
+
+const capabilityChips = [
+  "AI media detection",
+  "Authenticity and C2PA",
+  "Claim research",
+  "Forensic verification",
+];
+
+const workflowItems = [
+  {
+    title: "Choose the right workflow",
+    detail:
+      "AI media detection, authenticity, reverse lookup, or claim research.",
+  },
+  {
+    title: "Review evidence, not just verdicts",
+    detail:
+      "Confidence, provenance, citations, and supporting context stay in one place.",
+  },
+  {
+    title: "Move from upload to investigation fast",
+    detail:
+      "Designed for teams handling trust-sensitive content under time pressure.",
+  },
+];
+
+const liveSignals = [
+  "AI-generated media detection",
+  "Content authenticity checks",
+  "Fact-checking and research",
+];
 
 export default function HeroSection() {
   const { isAuthenticated } = useAuth();
@@ -35,50 +65,32 @@ export default function HeroSection() {
   return (
     <>
       <HeroHeader />
-      <main className="overflow-hidden relative">
-        {/* Animated Gradient Background Mesh */}
+      <main className="relative overflow-hidden bg-[linear-gradient(180deg,#ffffff_0%,#f6fbff_54%,#ffffff_100%)]">
         <div className="absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob" />
-          <div className="absolute top-0 right-1/4 w-96 h-96 bg-cyan-500/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000" />
-          <div className="absolute -bottom-8 left-1/2 w-96 h-96 bg-sky-500/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/50 to-white" />
+          <div className="absolute left-1/2 top-[-14rem] h-[28rem] w-[28rem] -translate-x-1/2 rounded-full bg-blue-300/25 blur-3xl" />
+          <div className="absolute left-[8%] top-40 h-72 w-72 rounded-full bg-cyan-200/35 blur-3xl" />
+          <div className="absolute bottom-0 right-[6%] h-80 w-80 rounded-full bg-sky-200/30 blur-3xl" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#7aa6c90d_1px,transparent_1px),linear-gradient(to_bottom,#7aa6c90d_1px,transparent_1px)] bg-[size:20px_20px]" />
         </div>
 
-        {/* Floating Particles */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-[10%] w-2 h-2 bg-blue-400 rounded-full animate-float" />
-          <div className="absolute top-40 right-[15%] w-3 h-3 bg-cyan-400 rounded-full animate-float animation-delay-1000" />
-          <div className="absolute top-60 left-[20%] w-2 h-2 bg-sky-400 rounded-full animate-float animation-delay-2000" />
-          <div className="absolute top-96 right-[25%] w-3 h-3 bg-indigo-400 rounded-full animate-float animation-delay-3000" />
-        </div>
-
-        <section>
-          <div className="relative pt-24 md:pt-36">
-            <div className="mx-auto max-w-7xl px-6">
-              <div className="text-center sm:mx-auto lg:mr-auto lg:mt-0">
+        <section className="relative pb-20 pt-28 md:pb-28 md:pt-40">
+          <div className="mx-auto max-w-7xl px-6">
+            <div>
+              <div className="mx-auto max-w-6xl text-center">
                 <AnimatedGroup variants={transitionVariants}>
                   <Link
                     href={
                       isAuthenticated
-                        ? '/dashboard/authenticity'
-                        : '/auth/login'
+                        ? "/dashboard/ai-media-detection"
+                        : "/auth/signup"
                     }
-                    className="hover:bg-white/80 dark:hover:border-t-border bg-white/60 backdrop-blur-sm group mx-auto flex w-fit items-center gap-4 rounded-full border border-blue-200 p-1 pl-4 shadow-lg shadow-blue-500/20 transition-all duration-300 hover:shadow-blue-500/30 hover:scale-105"
+                    className="group inline-flex w-fit items-center gap-3 rounded-full border border-blue-200 bg-white/80 px-4 py-1.5 text-sm font-medium text-blue-700 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-blue-300 hover:shadow-md"
                   >
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-blue-600 animate-pulse" />
-                      <span className="text-blue-600 text-sm font-semibold">
-                        Introducing C2PA Verification
-                      </span>
-                    </div>
-                    <span className="hidden sm:inline text-sm text-gray-600">
-                      — Now Live!
+                    <Sparkles className="h-4 w-4" />
+                    <span>
+                      Live now: AI Media Detection and content authenticity
                     </span>
-                    <span className="dark:border-background block h-4 w-0.5 border-l bg-blue-200"></span>
-
-                    <div className="bg-blue-600 size-6 overflow-hidden rounded-full duration-500 flex items-center justify-center">
-                      <ArrowRight className="size-3 text-white" />
-                    </div>
+                    <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
                   </Link>
                 </AnimatedGroup>
 
@@ -86,22 +98,22 @@ export default function HeroSection() {
                   preset="fade-in-blur"
                   speedSegment={0.3}
                   as="h1"
-                  className="mx-auto mt-8 max-w-4xl text-balance text-5xl font-bold max-md:font-semibold md:text-7xl lg:mt-16 xl:text-[5.25rem] text-gray-900"
+                  className="mt-8 max-w-6xl text-balance text-5xl font-bold tracking-tight leading-[0.96] text-[hsl(220,40%,14%)] md:text-7xl xl:text-[5.9rem]"
                 >
-                  The Standard for Media Trust
+                  Investigate digital content before it becomes a trust problem.
                 </TextEffect>
+
                 <TextEffect
                   per="line"
                   preset="fade-in-blur"
                   speedSegment={0.3}
-                  delay={0.5}
+                  delay={0.4}
                   as="p"
-                  className="mx-auto mt-8 max-w-2xl text-balance text-lg text-gray-600"
+                  className="mx-auto mt-8 max-w-3xl text-balance text-lg leading-8 text-slate-600"
                 >
-                  Arm your organization with the industry's most comprehensive
-                  AI suite to instantly detect AI-Generated Media, verify
-                  multimedia content, and protect your assets from digital
-                  fraud.
+                  Safeguardmedia Technologies gives trust and investigations
+                  teams one place to detect AI-generated media, verify
+                  provenance, and review evidence-backed results with speed.
                 </TextEffect>
 
                 <AnimatedGroup
@@ -110,172 +122,176 @@ export default function HeroSection() {
                       visible: {
                         transition: {
                           staggerChildren: 0.05,
-                          delayChildren: 0.75,
+                          delayChildren: 0.7,
                         },
                       },
                     },
                     ...transitionVariants,
                   }}
-                  className="mt-12 flex flex-col items-center justify-center gap-4 md:flex-row"
+                  className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row"
                 >
-                  <div key={1} className="relative group">
-                    <div className="absolute -inset-0.5 bg-blue-600 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-300 animate-pulse-slow" />
-                    <Button
-                      asChild
-                      size="lg"
-                      className="relative rounded-xl px-8 py-6 text-base bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-xl"
-                    >
-                      <Link
-                        href="/auth/signup"
-                        className="flex items-center gap-2"
-                      >
-                        <Shield className="w-5 h-5" />
-                        <span className="text-nowrap font-semibold">
-                          Get Started
-                        </span>
-                      </Link>
-                    </Button>
-                  </div>
                   <Button
-                    key={2}
+                    asChild
+                    size="lg"
+                    className="rounded-xl bg-blue-600 px-8 py-6 text-base text-white shadow-xl shadow-blue-500/20 hover:bg-blue-700"
+                  >
+                    <Link
+                      href={isAuthenticated ? "/dashboard" : "/auth/signup"}
+                    >
+                      Get Started
+                    </Link>
+                  </Button>
+                  <Button
                     asChild
                     size="lg"
                     variant="outline"
-                    className="h-12 rounded-xl px-8 border-2 border-gray-300 hover:border-blue-600 hover:bg-blue-50 transition-all duration-300"
+                    className="h-14 rounded-xl border-slate-300 px-8 text-base text-slate-700 hover:border-blue-300 hover:bg-blue-50"
                   >
-                    <Link href="/about" className="flex items-center gap-2">
-                      <span className="text-nowrap">About Us</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </Link>
+                    <Link href="#platform">Explore the Platform</Link>
                   </Button>
                 </AnimatedGroup>
 
-                {/* Trust Indicators */}
                 <AnimatedGroup
                   variants={transitionVariants}
-                  className="mt-16 flex items-center justify-center gap-8 flex-wrap"
+                  className="mt-10 flex flex-wrap justify-center gap-3"
                 >
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-blue-600">98%</div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      Accuracy Rate
+                  {capabilityChips.map((chip) => (
+                    <div
+                      key={chip}
+                      className="rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm"
+                    >
+                      {chip}
                     </div>
-                  </div>
-                  <div className="h-12 w-px bg-gray-300" />
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-blue-600">1M+</div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      Media Verified
-                    </div>
-                  </div>
-                  <div className="h-12 w-px bg-gray-300" />
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-emerald-600">
-                      500+
-                    </div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      Organizations
-                    </div>
-                  </div>
+                  ))}
                 </AnimatedGroup>
               </div>
-            </div>
 
-            <AnimatedGroup
-              variants={{
-                container: {
-                  visible: {
-                    transition: {
-                      staggerChildren: 0.05,
-                      delayChildren: 0.75,
+              <AnimatedGroup
+                variants={{
+                  container: {
+                    visible: {
+                      transition: {
+                        staggerChildren: 0.06,
+                        delayChildren: 0.8,
+                      },
                     },
                   },
-                },
-                ...transitionVariants,
-              }}
-            >
-              <div className="mask-b-from-55% relative -mr-56 mt-16 overflow-hidden px-2 sm:mr-0 sm:mt-20 md:mt-24">
-                <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl border-2 border-blue-200/50 p-4 shadow-2xl shadow-blue-500/20 bg-gradient-to-br from-white via-blue-50/30 to-cyan-50/30 backdrop-blur-sm">
-                  <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl" />
-                  <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-cyan-400/20 rounded-full blur-3xl" />
-                  <Image
-                    className="relative rounded-2xl border border-gray-200/50 shadow-xl"
-                    src="https://images.unsplash.com/photo-1685391896546-9abaf50bfc99?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                    alt="app screen"
-                    width="2700"
-                    height="1440"
-                  />
+                  ...transitionVariants,
+                }}
+                className="relative mt-16"
+              >
+                <div className="absolute inset-x-12 top-12 -z-10 h-72 rounded-full bg-blue-400/20 blur-3xl" />
+                <div className="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white/85 p-5 shadow-2xl shadow-slate-200/70 backdrop-blur-xl">
+                  <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3">
+                    <div>
+                      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                        Investigation Workspace
+                      </div>
+                      <div className="mt-1 text-sm font-semibold text-slate-900">
+                        Safeguardmedia Technologies
+                      </div>
+                    </div>
+                    <div className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                      Live product
+                    </div>
+                  </div>
+
+                  <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+                    <div className="rounded-[1.5rem] border border-slate-200 bg-white p-5">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-sm font-semibold text-slate-900">
+                            Workflow snapshot
+                          </div>
+                          <div className="text-sm text-slate-500">
+                            From selection to verdict
+                          </div>
+                        </div>
+                        <Shield className="h-5 w-5 text-blue-600" />
+                      </div>
+
+                      <div className="mt-5 space-y-4">
+                        {workflowItems.map((item, index) => (
+                          <div
+                            key={item.title}
+                            className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-4"
+                          >
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
+                              {index + 1}
+                            </div>
+                            <div>
+                              <div className="text-sm font-semibold text-slate-900">
+                                {item.title}
+                              </div>
+                              <p className="mt-1 text-sm leading-6 text-slate-600">
+                                {item.detail}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="rounded-[1.5rem] border border-blue-700 bg-blue-600 p-5 text-white shadow-lg shadow-blue-500/20">
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm font-semibold">
+                            AI media detection
+                          </div>
+                          <div className="rounded-full bg-white/15 px-2.5 py-1 text-xs font-medium">
+                            Result sample
+                          </div>
+                        </div>
+                        <div className="mt-5 rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
+                          <div className="text-xs uppercase tracking-[0.16em] text-blue-100">
+                            Verdict
+                          </div>
+                          <div className="mt-2 text-3xl font-semibold">
+                            Likely AI-Generated
+                          </div>
+                          <div className="mt-4 flex items-end justify-between">
+                            <div>
+                              <div className="text-xs text-blue-100">
+                                Confidence
+                              </div>
+                              <div className="text-2xl font-semibold">94%</div>
+                            </div>
+                            <div>
+                              <div className="text-xs text-blue-100">
+                                Media type
+                              </div>
+                              <div className="text-lg font-medium">Video</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="rounded-[1.5rem] border border-slate-200 bg-white p-5">
+                        <div className="text-sm font-semibold text-slate-900">
+                          Live verification coverage
+                        </div>
+                        <div className="mt-4 space-y-3">
+                          {liveSignals.map((signal) => (
+                            <div
+                              key={signal}
+                              className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3"
+                            >
+                              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                              <span className="text-sm font-medium text-slate-700">
+                                {signal}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </AnimatedGroup>
+              </AnimatedGroup>
+            </div>
           </div>
         </section>
       </main>
-
-      <style jsx global>{`
-        @keyframes blob {
-          0% {
-            transform: translate(0px, 0px) scale(1);
-          }
-          33% {
-            transform: translate(30px, -50px) scale(1.1);
-          }
-          66% {
-            transform: translate(-20px, 20px) scale(0.9);
-          }
-          100% {
-            transform: translate(0px, 0px) scale(1);
-          }
-        }
-
-        @keyframes float {
-          0%,
-          100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-20px);
-          }
-        }
-
-        @keyframes pulse-slow {
-          0%,
-          100% {
-            opacity: 0.75;
-          }
-          50% {
-            opacity: 1;
-          }
-        }
-
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-
-        .animate-float {
-          animation: float 3s ease-in-out infinite;
-        }
-
-        .animate-pulse-slow {
-          animation: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-
-        .animation-delay-1000 {
-          animation-delay: 1s;
-        }
-
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-
-        .animation-delay-3000 {
-          animation-delay: 3s;
-        }
-
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-      `}</style>
     </>
   );
 }

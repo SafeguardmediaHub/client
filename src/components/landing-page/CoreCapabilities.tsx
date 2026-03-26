@@ -1,254 +1,167 @@
-'use client';
+"use client";
 
 import {
-  CheckCircle,
-  FileSearch,
+  ArrowRight,
+  CheckCircle2,
+  type LucideIcon,
   MapPin,
   MessageSquareText,
   ScanEye,
   Search,
   Shield,
-  Sparkles,
-} from 'lucide-react';
-import { useState } from 'react';
+} from "lucide-react";
+import Link from "next/link";
+
+type Capability = {
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  status: string;
+  accent: string;
+  surface: string;
+};
+
+const availableNow: Capability[] = [
+  {
+    title: "AI Media Detection",
+    description:
+      "Detect AI-generated images, audio, and video from a dedicated analysis workspace.",
+    icon: Shield,
+    status: "Live now",
+    accent: "text-blue-700",
+    surface: "from-blue-50 to-cyan-50",
+  },
+  {
+    title: "Authenticity and C2PA",
+    description:
+      "Review content credentials, provenance, and authenticity signals in one flow.",
+    icon: CheckCircle2,
+    status: "Live now",
+    accent: "text-emerald-700",
+    surface: "from-emerald-50 to-teal-50",
+  },
+  {
+    title: "Claim Research",
+    description:
+      "Investigate claims with cited web research and structured supporting evidence.",
+    icon: MessageSquareText,
+    status: "Live now",
+    accent: "text-sky-700",
+    surface: "from-sky-50 to-blue-50",
+  },
+  {
+    title: "Tamper Detection",
+    description:
+      "Check for signs of manipulation, forensic inconsistencies, and integrity risks.",
+    icon: ScanEye,
+    status: "Live now",
+    accent: "text-violet-700",
+    surface: "from-violet-50 to-fuchsia-50",
+  },
+  {
+    title: "Reverse Lookup",
+    description:
+      "Trace earlier uses of media across the web to recover context and provenance.",
+    icon: Search,
+    status: "Live now",
+    accent: "text-teal-700",
+    surface: "from-teal-50 to-emerald-50",
+  },
+  {
+    title: "Geolocation and Fact Checking",
+    description:
+      "Verify location claims and compare statements against trusted fact-checking sources.",
+    icon: MapPin,
+    status: "Live now",
+    accent: "text-amber-700",
+    surface: "from-amber-50 to-orange-50",
+  },
+];
 
 export default function CoreCapabilities() {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-
-  const capabilities = [
-    {
-      title: 'AI Media Detection',
-      description:
-        'Analyzes media for signs of AI-generated or synthetically manipulated content, including face swaps and deepfakes.',
-      icon: Shield,
-      gradient: 'from-blue-500 via-cyan-500 to-sky-500',
-      bgGradient: 'from-blue-50 to-sky-50',
-      shadowColor: 'shadow-blue-500/50',
-      glowColor: '59, 130, 246', // blue-500 RGB
-      comingSoon: true,
-      estimatedTime: '30-60 seconds',
-    },
-    {
-      title: 'Claim Research',
-      description:
-        'Conducts comprehensive web research to verify factual claims by gathering evidence from multiple sources with detailed citations.',
-      icon: MessageSquareText,
-      gradient: 'from-blue-500 via-cyan-500 to-teal-500',
-      bgGradient: 'from-blue-50 to-teal-50',
-      shadowColor: 'shadow-blue-500/50',
-      glowColor: '6, 182, 212', // cyan-500 RGB
-      estimatedTime: '45-90 seconds',
-    },
-    {
-      title: 'Visual Tampering Detection',
-      description:
-        'Analyzes media metadata and properties for signs of manipulation, detecting editing software signatures and inconsistencies.',
-      icon: ScanEye,
-      gradient: 'from-purple-500 via-pink-500 to-rose-500',
-      bgGradient: 'from-purple-50 to-rose-50',
-      shadowColor: 'shadow-purple-500/50',
-      glowColor: '168, 85, 247', // purple-500 RGB
-      estimatedTime: '5-15 seconds',
-    },
-    {
-      title: 'Reverse Image Lookup',
-      description:
-        'Searches the web to find earlier appearances of an image online, discovering context and detecting misattributed photos.',
-      icon: Search,
-      gradient: 'from-emerald-500 via-green-500 to-teal-500',
-      bgGradient: 'from-emerald-50 to-teal-50',
-      shadowColor: 'shadow-emerald-500/50',
-      glowColor: '16, 185, 129', // emerald-500 RGB
-      estimatedTime: '15-30 seconds',
-    },
-    {
-      title: 'Geolocation Verification',
-      description:
-        'Verifies claimed locations by analyzing GPS data, metadata consistency, and assessing GPS signal quality.',
-      icon: MapPin,
-      gradient: 'from-orange-500 via-amber-500 to-yellow-500',
-      bgGradient: 'from-orange-50 to-yellow-50',
-      shadowColor: 'shadow-orange-500/50',
-      glowColor: '249, 115, 22', // orange-500 RGB
-      estimatedTime: '30-60 seconds',
-    },
-    {
-      title: 'C2PA Content Credentials',
-      description:
-        'Verifies Content Authenticity Initiative digital signatures and provenance data, essential for identifying AI-generated content.',
-      icon: CheckCircle,
-      gradient: 'from-blue-500 via-indigo-500 to-cyan-500',
-      bgGradient: 'from-blue-50 to-cyan-50',
-      shadowColor: 'shadow-blue-500/50',
-      glowColor: '99, 102, 241', // indigo-500 RGB
-      estimatedTime: '10-20 seconds',
-    },
-    {
-      title: 'Fact-Check Verification',
-      description:
-        'Searches authoritative fact-checking databases to verify textual claims against known verdicts from reputable sources.',
-      icon: FileSearch,
-      gradient: 'from-indigo-500 via-blue-500 to-sky-500',
-      bgGradient: 'from-indigo-50 to-sky-50',
-      shadowColor: 'shadow-indigo-500/50',
-      glowColor: '99, 102, 241', // indigo-500 RGB
-      estimatedTime: '20-45 seconds',
-    },
-    {
-      title: 'Timeline Verification',
-      description:
-        'Verifies media metadata and performs reverse lookup to establish timeline, detecting backdated or misdated content.',
-      icon: Sparkles,
-      gradient: 'from-cyan-500 via-blue-500 to-indigo-500',
-      bgGradient: 'from-cyan-50 to-indigo-50',
-      shadowColor: 'shadow-cyan-500/50',
-      glowColor: '6, 182, 212', // cyan-500 RGB
-      estimatedTime: '20-40 seconds',
-    },
-  ];
-
   return (
-    <section id="features" className="relative py-32 bg-white overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]" />
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-200/20 rounded-full mix-blend-multiply filter blur-3xl" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-200/20 rounded-full mix-blend-multiply filter blur-3xl" />
+    <section id="platform" className="relative overflow-hidden bg-white py-28">
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#7aa6c90d_1px,transparent_1px),linear-gradient(to_bottom,#7aa6c90d_1px,transparent_1px)] bg-[size:18px_18px]" />
+      <div className="absolute left-1/4 top-0 h-80 w-80 rounded-full bg-blue-100/40 blur-3xl" />
+      <div className="absolute bottom-0 right-[12%] h-80 w-80 rounded-full bg-cyan-100/35 blur-3xl" />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-20">
-          <div className="inline-flex items-center justify-center px-4 py-2 bg-blue-100 rounded-full mb-6">
-            <span className="text-sm font-semibold text-blue-600">
-              Powerful Features
-            </span>
-          </div>
-          <h2 className="text-5xl md:text-6xl font-bold mb-6">
-            <span className="text-gray-900">Comprehensive Tools</span>
-            <br />
-            <span className="text-gray-900">at a Glance</span>
-          </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            From AI detection to fact-checking, our suite of verification tools
-            helps you investigate and validate digital content with confidence.
-          </p>
-        </div>
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-start">
+          <div className="max-w-xl">
+            <div className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">
+              Platform overview
+            </div>
+            <h2 className="mt-6 text-4xl font-bold tracking-tight text-[hsl(220,40%,15%)] md:text-6xl">
+              What teams can do in the platform right now.
+            </h2>
+            <p className="mt-6 text-lg leading-8 text-slate-600">
+              A broad set of verification workflows are already live, from AI
+              media detection to provenance, research, and integrity review.
+            </p>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {capabilities.map((capability, index) => {
-            const IconComponent = capability.icon;
-            const isHovered = hoveredIndex === index;
-
-            return (
-              <div
-                key={capability.title}
-                className="relative group"
-                onMouseEnter={() => setHoveredIndex(index)}
-                onMouseLeave={() => setHoveredIndex(null)}
+            <div className="mt-8 rounded-[2rem] border border-slate-200 bg-slate-50/80 p-6">
+              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+                More workflows
+              </div>
+              <div className="mt-1 text-xl font-semibold text-slate-900">
+                Additional capabilities are already on the roadmap.
+              </div>
+              <p className="mt-2 text-sm leading-7 text-slate-600">
+                Explore the roadmap section for deeper forensics and upcoming
+                verification workflows that build on what is live today.
+              </p>
+              <Link
+                href="#roadmap"
+                className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-blue-700 transition-colors hover:text-blue-800"
               >
-                {/* Glow Effect */}
-                <div
-                  className={`absolute -inset-1 bg-gradient-to-r ${capability.gradient} rounded-3xl blur-lg opacity-0 group-hover:opacity-75 transition duration-500`}
-                />
+                See the roadmap
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
 
-                {/* Card */}
-                <div
-                  className={`relative h-full bg-white rounded-3xl p-8 transition-all duration-500 border-2 ${
-                    isHovered
-                      ? `border-transparent shadow-2xl ${capability.shadowColor} transform -translate-y-2`
-                      : 'border-gray-100 shadow-md'
-                  }`}
-                >
-                  {/* Coming Soon Badge */}
-                  {capability.comingSoon && (
-                    <div className="absolute top-4 right-4 z-20">
-                      <div className="px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full shadow-lg">
-                        <span className="text-xs font-bold text-white uppercase tracking-wider">
-                          Coming Soon
-                        </span>
-                      </div>
-                    </div>
-                  )}
+          <div>
+            <div>
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <div>
+                  <div className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    Available now
+                  </div>
+                  <div className="mt-1 text-2xl font-semibold text-slate-900">
+                    Live verification workflows
+                  </div>
+                </div>
+                <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                  Shipping today
+                </div>
+              </div>
 
-                  {/* Background Gradient (on hover) */}
-                  <div
-                    className={`absolute inset-0 bg-gradient-to-br ${capability.bgGradient} rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
-                  />
+              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                {availableNow.map((capability) => {
+                  const Icon = capability.icon;
 
-                  {/* Content */}
-                  <div className="relative z-10">
-                    {/* Icon Container */}
+                  return (
                     <div
-                      className={`relative w-20 h-20 mb-6 transition-transform duration-500 ${
-                        isHovered ? 'scale-110 rotate-6' : ''
-                      }`}
+                      key={capability.title}
+                      className={`rounded-[1.75rem] border border-slate-200 bg-gradient-to-br ${capability.surface} p-6 shadow-sm`}
                     >
-                      <div
-                        className={`absolute inset-0 bg-gradient-to-br ${capability.gradient} rounded-2xl opacity-10 blur-sm`}
-                      />
-                      <div
-                        className={`relative w-full h-full rounded-2xl bg-gradient-to-br ${capability.gradient} p-0.5`}
-                      >
-                        <div className="w-full h-full bg-white rounded-2xl flex items-center justify-center">
-                          <IconComponent
-                            className={`w-10 h-10 bg-gradient-to-br ${
-                              capability.gradient
-                            } bg-clip-text text-transparent transition-transform duration-500 ${
-                              isHovered ? 'scale-110' : ''
-                            }`}
-                            style={{
-                              filter: isHovered
-                                ? `drop-shadow(0 0 8px rgba(${capability.glowColor}, 0.6))`
-                                : 'none',
-                            }}
-                          />
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="rounded-2xl bg-white/90 p-3 shadow-sm">
+                          <Icon className={`h-5 w-5 ${capability.accent}`} />
+                        </div>
+                        <div className="rounded-full bg-white/85 px-3 py-1 text-xs font-semibold text-slate-600">
+                          {capability.status}
                         </div>
                       </div>
+                      <h3 className="mt-5 text-lg font-semibold text-slate-900">
+                        {capability.title}
+                      </h3>
+                      <p className="mt-3 text-sm leading-7 text-slate-600">
+                        {capability.description}
+                      </p>
                     </div>
-
-                    {/* Text */}
-                    <h3
-                      className={`text-lg font-bold mb-3 transition-all duration-300 ${
-                        isHovered
-                          ? `bg-gradient-to-r ${capability.gradient} bg-clip-text text-transparent`
-                          : 'text-gray-900'
-                      }`}
-                    >
-                      {capability.title}
-                    </h3>
-                    <p className="text-sm text-gray-600 leading-relaxed mb-4">
-                      {capability.description}
-                    </p>
-
-                    {/* Estimated Time */}
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <div className="w-1.5 h-1.5 bg-gray-400 rounded-full" />
-                      <span>{capability.estimatedTime}</span>
-                    </div>
-                  </div>
-
-                  {/* Decorative Corner */}
-                  <div
-                    className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-br ${capability.gradient} rounded-bl-3xl rounded-tr-3xl opacity-0 group-hover:opacity-5 transition-opacity duration-500`}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Trust Badge */}
-        <div className="mt-20 text-center">
-          <div className="inline-flex items-center gap-8 px-8 py-6 bg-blue-50 rounded-2xl border-2 border-blue-100/50">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center">
-                <Shield className="w-6 h-6 text-white" />
-              </div>
-              <div className="text-left">
-                <div className="text-2xl font-bold text-blue-600">
-                  8 Powerful Tools
-                </div>
-                <div className="text-sm text-gray-600">
-                  Comprehensive verification suite
-                </div>
+                  );
+                })}
               </div>
             </div>
           </div>

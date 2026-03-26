@@ -1,72 +1,73 @@
-import { GeistSans } from 'geist/font/sans';
-import type { Metadata } from 'next';
-import 'cal-sans/index.css';
-import './globals.css';
-import { Analytics } from '@vercel/analytics/next';
-import { Toaster } from 'sonner';
-import QueryProvider from '@/components/providers/QueryProvider';
-import { AssistantProvider } from '@/context/AssistantContext';
-import { AuthProvider } from '@/context/AuthContext';
-import { WebSocketProvider } from '@/context/WebSocketContext';
+import { GeistSans } from "geist/font/sans";
+import type { Metadata } from "next";
+import "cal-sans/index.css";
+import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
+import { Toaster } from "sonner";
+import QueryProvider from "@/components/providers/QueryProvider";
+import { AssistantProvider } from "@/context/AssistantContext";
+import { AuthProvider } from "@/context/AuthContext";
+import { WebSocketProvider } from "@/context/WebSocketContext";
 
 export const metadata: Metadata = {
   title: {
-    default: 'Safeguardmedia - AI-Powered Misinformation Detection',
-    template: '%s | Safeguardmedia',
+    default:
+      "Safeguardmedia Technologies - AI-Powered Misinformation Detection",
+    template: "%s | Safeguardmedia Technologies",
   },
   description:
-    'Advanced AI-powered platform for detecting misinformation, AI-generated media, and manipulated content. Features include fact-checking, social media tracing, forensic analysis, and C2PA verification.',
+    "Advanced AI-powered platform for detecting misinformation, AI-generated media, and manipulated content. Features include fact-checking, social media tracing, forensic analysis, and C2PA verification.",
   keywords: [
-    'misinformation detection',
-    'fact checking',
-    'AI-generated media detection',
-    'media verification',
-    'AI fact checker',
-    'social media tracing',
-    'forensic analysis',
-    'C2PA verification',
-    'content authenticity',
-    'fake news detection',
-    'media forensics',
-    'digital verification',
+    "misinformation detection",
+    "fact checking",
+    "AI-generated media detection",
+    "media verification",
+    "AI fact checker",
+    "social media tracing",
+    "forensic analysis",
+    "C2PA verification",
+    "content authenticity",
+    "fake news detection",
+    "media forensics",
+    "digital verification",
   ],
-  authors: [{ name: 'Safeguardmedia Team' }],
-  creator: 'Safeguardmedia',
-  publisher: 'Safeguardmedia',
-  applicationName: 'Safeguardmedia',
-  generator: 'Next.js',
-  referrer: 'origin-when-cross-origin',
+  authors: [{ name: "Safeguardmedia Technologies Team" }],
+  creator: "Safeguardmedia Technologies",
+  publisher: "Safeguardmedia Technologies",
+  applicationName: "Safeguardmedia Technologies",
+  generator: "Next.js",
+  referrer: "origin-when-cross-origin",
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
   ),
 
   // Open Graph metadata for social sharing
   openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    url: '/',
-    siteName: 'SafeguardMedia',
-    title: 'SafeguardMedia - AI-Powered Misinformation Detection',
+    type: "website",
+    locale: "en_US",
+    url: "/",
+    siteName: "Safeguardmedia Technologies",
+    title: "Safeguardmedia Technologies - AI-Powered Misinformation Detection",
     description:
-      'Advanced AI-powered platform for detecting misinformation, AI-generated media, and manipulated content. Features include fact-checking, social media tracing, forensic analysis, and C2PA verification.',
+      "Advanced AI-powered platform for detecting misinformation, AI-generated media, and manipulated content. Features include fact-checking, social media tracing, forensic analysis, and C2PA verification.",
     images: [
       {
-        url: '/og-image.png',
+        url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: 'SafeguardMedia - AI-Powered Misinformation Detection Platform',
+        alt: "Safeguardmedia Technologies - AI-Powered Misinformation Detection Platform",
       },
     ],
   },
 
   // Twitter Card metadata
   twitter: {
-    card: 'summary_large_image',
-    title: 'SafeguardMedia - AI-Powered Misinformation Detection',
+    card: "summary_large_image",
+    title: "Safeguardmedia Technologies - AI-Powered Misinformation Detection",
     description:
-      'Advanced AI-powered platform for detecting misinformation, AI-generated media, and manipulated content.',
-    images: ['/og-image.png'],
-    creator: '@safeguardmedia',
+      "Advanced AI-powered platform for detecting misinformation, AI-generated media, and manipulated content.",
+    images: ["/og-image.png"],
+    creator: "@safeguardmedia",
   },
 
   // Robots and indexing
@@ -76,21 +77,21 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
     },
   },
 
   // Icons
   icons: {
     icon: [
-      { url: '/favicon.ico' },
-      { url: '/icon-16x16.png', sizes: '16x16', type: 'image/png' },
-      { url: '/icon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: "/favicon.ico" },
+      { url: "/icon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/icon-32x32.png", sizes: "32x32", type: "image/png" },
     ],
     apple: [
-      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
   },
 
@@ -101,7 +102,7 @@ export const metadata: Metadata = {
   // },
 
   // Category
-  category: 'technology',
+  category: "technology",
 };
 
 export default function RootLayout({

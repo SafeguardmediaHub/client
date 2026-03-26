@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import { Menu, X } from 'lucide-react';
-import Link from 'next/link';
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/context/AuthContext';
-import { cn } from '@/lib/utils';
-import GoogleTranslate from './GoogleTranslate';
+import { Menu, X } from "lucide-react";
+import Link from "next/link";
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
+import { cn } from "@/lib/utils";
+import GoogleTranslate from "./GoogleTranslate";
 
 const menuItems = [
-  { name: 'Features', href: '#features' },
-  { name: 'Solutions', href: '#solutions' },
-  { name: 'Use Cases', href: '#use-cases' },
-  { name: 'Blog', href: '/blog' },
-  { name: 'About', href: '/about' },
+  { name: "Platform", href: "#platform" },
+  { name: "Workflow", href: "#workflow" },
+  { name: "Use Cases", href: "#use-cases" },
+  { name: "Roadmap", href: "#roadmap" },
+  { name: "About", href: "/about" },
 ];
 
 export const HeroHeader = () => {
@@ -25,20 +25,20 @@ export const HeroHeader = () => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
   return (
     <header>
       <nav
-        data-state={menuState && 'active'}
+        data-state={menuState && "active"}
         className="fixed z-20 w-full px-2"
       >
         <div
           className={cn(
-            'mx-auto mt-2 max-w-6xl px-6 transition-all duration-300 lg:px-12',
+            "mx-auto mt-2 max-w-6xl px-6 transition-all duration-300 lg:px-12",
             isScrolled &&
-              'bg-background/50 max-w-4xl rounded-2xl border backdrop-blur-lg lg:px-5',
+              "bg-background/50 max-w-4xl rounded-2xl border backdrop-blur-lg lg:px-5",
           )}
         >
           <div className="relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4">
@@ -62,7 +62,7 @@ export const HeroHeader = () => {
               <button
                 type="button"
                 onClick={() => setMenuState(!menuState)}
-                aria-label={menuState === true ? 'Close Menu' : 'Open Menu'}
+                aria-label={menuState === true ? "Close Menu" : "Open Menu"}
                 className="relative z-20 -m-2.5 -mr-4 block cursor-pointer p-2.5 lg:hidden"
               >
                 <Menu className="in-data-[state=active]:rotate-180 in-data-[state=active]:scale-0 in-data-[state=active]:opacity-0 m-auto size-6 duration-200" />
@@ -107,7 +107,7 @@ export const HeroHeader = () => {
                     asChild
                     variant="outline"
                     size="sm"
-                    className={cn(isScrolled && 'lg:hidden')}
+                    className={cn(isScrolled && "lg:hidden")}
                   >
                     <Link href="/auth/login">
                       <span>Login</span>
@@ -117,8 +117,8 @@ export const HeroHeader = () => {
                     asChild
                     size="sm"
                     className={cn(
-                      'bg-blue-600 hover:bg-blue-700 text-white',
-                      isScrolled && 'lg:hidden',
+                      "bg-blue-600 hover:bg-blue-700 text-white",
+                      isScrolled && "lg:hidden",
                     )}
                   >
                     <Link href="/auth/signup">
@@ -129,8 +129,8 @@ export const HeroHeader = () => {
                     asChild
                     size="sm"
                     className={cn(
-                      'bg-blue-600 hover:bg-blue-700 text-white',
-                      isScrolled ? 'lg:inline-flex' : 'hidden',
+                      "bg-blue-600 hover:bg-blue-700 text-white",
+                      isScrolled ? "lg:inline-flex" : "hidden",
                     )}
                   >
                     <Link href="/auth/signup">
@@ -145,7 +145,7 @@ export const HeroHeader = () => {
                     asChild
                     size="sm"
                     className={cn(
-                      isScrolled ? 'lg:inline-flex' : 'lg:inline-flex',
+                      isScrolled ? "lg:inline-flex" : "lg:inline-flex",
                     )}
                   >
                     <Link href="/dashboard">

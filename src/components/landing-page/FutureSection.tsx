@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { ArrowRight, ExternalLink, Rocket, Users } from 'lucide-react';
-import Image from 'next/image';
+import { ArrowRight, ExternalLink, Rocket, Users } from "lucide-react";
+import Image from "next/image";
 
 export default function FutureSection() {
   return (
@@ -24,15 +24,15 @@ export default function FutureSection() {
             </div>
 
             <h2 className="text-5xl md:text-6xl font-bold leading-tight">
-              Shaping The Future of{' '}
+              Shaping The Future of{" "}
               <span className="text-purple-600">Digital Security</span>
             </h2>
 
             <p className="text-xl text-gray-600 leading-relaxed">
-              At Safeguardmedia, we believe the best way to protect the future
-              is to build it. Join our passionate team on a mission to ensure
-              that AI is a tool for clarity and transparency, not confusion and
-              deception.
+              At Safeguardmedia Technologies, we believe the best way to protect
+              the future is to build it. Join our passionate team on a mission
+              to ensure that AI is a tool for clarity and transparency, not
+              confusion and deception.
             </p>
 
             {/* Stats Grid */}
@@ -78,8 +78,8 @@ export default function FutureSection() {
                 </div>
                 <div>
                   <p className="text-gray-700 italic mb-2">
-                    "Working at Safeguardmedia means being at the forefront of
-                    defending truth in the digital age."
+                    "Working at Safeguardmedia Technologies means being at the
+                    forefront of defending truth in the digital age."
                   </p>
                   <p className="text-sm font-semibold text-gray-900">
                     — Engineering Team

@@ -1,4 +1,4 @@
-import type {LucideIcon} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 export type FeatureStatus =
   | "available"
@@ -14,11 +14,11 @@ export interface FeatureMetadata {
   url?: string;
   icon?: LucideIcon;
   category:
-  | "detection"
-  | "verification"
-  | "reporting"
-  | "overview"
-  | "authenticity";
+    | "detection"
+    | "verification"
+    | "reporting"
+    | "overview"
+    | "authenticity";
   estimatedRelease?: string; // e.g., "Q1 2025", "March 2025"
   benefits?: string[];
   comingSoonMessage?: string;
@@ -66,17 +66,15 @@ export const FEATURES: Record<string, FeatureMetadata> = {
     name: "AI-Generated Media Detection",
     description:
       "Detect AI-generated faces, voice cloning, and manipulated videos using advanced neural network analysis.",
-    status: "coming_soon",
+    status: "available",
+    url: "/dashboard/ai-media-detection",
     category: "detection",
-    estimatedRelease: "Q2 2025",
     benefits: [
       "Detect AI-generated faces, voices, and synthetic videos",
       "Identify AI-generated images and manipulated content",
       "Advanced neural network-based analysis",
       "Frame-by-frame AI-generation probability scoring",
     ],
-    comingSoonMessage:
-      "Our AI research team is training advanced models to detect the latest AI-generated media techniques. This feature will launch in Q2 2025.",
   },
   cheapfake_detection: {
     id: "cheapfake_detection",
@@ -294,13 +292,13 @@ export const getFeatureById = (id: string): FeatureMetadata | undefined => {
 };
 
 export const getFeaturesByCategory = (
-  category: FeatureMetadata["category"]
+  category: FeatureMetadata["category"],
 ): FeatureMetadata[] => {
   return Object.values(FEATURES).filter((f) => f.category === category);
 };
 
 export const getFeaturesByStatus = (
-  status: FeatureStatus
+  status: FeatureStatus,
 ): FeatureMetadata[] => {
   return Object.values(FEATURES).filter((f) => f.status === status);
 };

@@ -1,367 +1,206 @@
-'use client';
+"use client";
 
 import {
-  Bot,
   Code2,
-  LayoutDashboard,
-  ScanEye,
+  ImageIcon,
+  SlidersHorizontal,
   Sparkles,
   Users,
-  Zap,
-} from 'lucide-react';
-import { Card, Carousel } from '@/components/ui/apple-cards-carousel';
+} from "lucide-react";
+import { Card, Carousel } from "@/components/ui/apple-cards-carousel";
 
-const v2Features = [
+const roadmapItems = [
   {
-    category: 'Coming in V2',
-    title: 'Redesigned Interface',
-    src: 'https://images.unsplash.com/photo-1558655146-d09347e92766?q=80&w=764&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    category: "In development",
+    title: "Developer API Access",
+    src: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2940&auto=format&fit=crop",
     content: (
       <div className="space-y-4">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 bg-gradient-to-br from-[hsl(260,85%,65%)] to-[hsl(260,85%,55%)] rounded-xl">
-            <LayoutDashboard className="w-8 h-8 text-white" />
+        <div className="mb-6 flex items-center gap-3">
+          <div className="rounded-xl bg-gradient-to-br from-[hsl(220,85%,60%)] to-[hsl(190,95%,55%)] p-3">
+            <Code2 className="h-8 w-8 text-white" />
           </div>
           <div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Redesigned Interface
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Streamlined & Immersive Experience
-            </p>
-          </div>
-        </div>
-        <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-          Experience a completely reimagined user interface designed for
-          clarity, speed, and engagement. Our new dark-mode-first aesthetic
-          reduces eye strain while surfacing critical insights instantly.
-        </p>
-        <ul className="space-y-2 mt-6">
-          <li className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-            <div className="w-2 h-2 bg-purple-500 rounded-full" />
-            Modern, glassmorphic aesthetics
-          </li>
-          <li className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-            <div className="w-2 h-2 bg-purple-500 rounded-full" />
-            Intuitive navigation structure
-          </li>
-          <li className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-            <div className="w-2 h-2 bg-purple-500 rounded-full" />
-            Real-time data visualization
-          </li>
-        </ul>
-      </div>
-    ),
-  },
-  {
-    category: 'Coming in V2',
-    title: 'AI Media Detection',
-    src: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=2832&auto=format&fit=crop',
-    content: (
-      <div className="space-y-4">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 bg-gradient-to-br from-[hsl(190,95%,55%)] to-[hsl(190,95%,45%)] rounded-xl">
-            <Bot className="w-8 h-8 text-white" />
-          </div>
-          <div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-              AI Media Detection
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Powered by Advanced Machine Learning
-            </p>
-          </div>
-        </div>
-        <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-          Advanced AI models trained to detect synthetic media across video,
-          audio, and images with industry-leading accuracy. Our detection system
-          analyzes subtle patterns and artifacts that are invisible to the human
-          eye.
-        </p>
-        <div className="grid grid-cols-2 gap-4 mt-6">
-          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-            <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-              98%
-            </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              Accuracy Rate
-            </div>
-          </div>
-          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-            <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-              &lt;2s
-            </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              Analysis Time
-            </div>
-          </div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    category: 'Coming in V2',
-    title: 'Visual Forensics',
-    src: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2940&auto=format&fit=crop',
-    content: (
-      <div className="space-y-4">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 bg-gradient-to-br from-[hsl(35,85%,60%)] to-[hsl(35,85%,50%)] rounded-xl">
-            <ScanEye className="w-8 h-8 text-white" />
-          </div>
-          <div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Visual Forensics
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Deep Image & Video Analysis
-            </p>
-          </div>
-        </div>
-        <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-          Deep forensic analysis of images and videos to detect manipulation,
-          editing artifacts, and authenticity markers. We examine EXIF data,
-          compression patterns, and pixel-level inconsistencies.
-        </p>
-        <ul className="space-y-2 mt-6">
-          <li className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-            <div className="w-2 h-2 bg-amber-500 rounded-full" />
-            Metadata extraction and verification
-          </li>
-          <li className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-            <div className="w-2 h-2 bg-amber-500 rounded-full" />
-            Clone detection and copy-move analysis
-          </li>
-          <li className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-            <div className="w-2 h-2 bg-amber-500 rounded-full" />
-            Compression artifact identification
-          </li>
-        </ul>
-      </div>
-    ),
-  },
-  {
-    category: 'Coming in V2',
-    title: 'Audio Forensics',
-    src: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=2940&auto=format&fit=crop',
-    content: (
-      <div className="space-y-4">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 bg-gradient-to-br from-[hsl(190,95%,55%)] to-[hsl(35,85%,60%)] rounded-xl">
-            <Zap className="w-8 h-8 text-white" />
-          </div>
-          <div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Audio Forensics
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Voice Clone & Deepfake Detection
-            </p>
-          </div>
-        </div>
-        <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-          Sophisticated audio analysis to identify voice cloning, audio
-          deepfakes, and sound manipulation techniques. Our algorithms detect
-          unnatural speech patterns and synthetic voice characteristics.
-        </p>
-        <div className="p-4 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 rounded-xl mt-6">
-          <p className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-            Detection Capabilities:
-          </p>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            AI-generated voices, spliced audio, pitch manipulation, background
-            noise inconsistencies, and temporal anomalies.
-          </p>
-        </div>
-      </div>
-    ),
-  },
-  {
-    category: 'Coming in V2',
-    title: 'Frame Level Analysis',
-    src: 'https://images.unsplash.com/photo-1709124684187-090a44c5dc4d?q=80&w=691&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    content: (
-      <div className="space-y-4">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 bg-gradient-to-br from-[hsl(220,40%,50%)] to-[hsl(220,40%,40%)] rounded-xl">
-            <Sparkles className="w-8 h-8 text-white" />
-          </div>
-          <div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Frame Level Analysis
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Granular Video Examination
-            </p>
-          </div>
-        </div>
-        <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-          Granular frame-by-frame examination of video content to detect subtle
-          edits and temporal inconsistencies. Every frame is analyzed for
-          manipulation markers and continuity breaks.
-        </p>
-        <div className="grid grid-cols-3 gap-3 mt-6">
-          <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">
-              60fps
-            </div>
-            <div className="text-xs text-gray-600 dark:text-gray-400">
-              Analysis Speed
-            </div>
-          </div>
-          <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">
-              4K
-            </div>
-            <div className="text-xs text-gray-600 dark:text-gray-400">
-              Max Resolution
-            </div>
-          </div>
-          <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">
-              ∞
-            </div>
-            <div className="text-xs text-gray-600 dark:text-gray-400">
-              Video Length
-            </div>
-          </div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    category: 'Coming in V2',
-    title: 'Organization Support',
-    src: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2940&auto=format&fit=crop',
-    content: (
-      <div className="space-y-4">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 bg-gradient-to-br from-[hsl(35,85%,60%)] to-[hsl(190,95%,55%)] rounded-xl">
-            <Users className="w-8 h-8 text-white" />
-          </div>
-          <div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Organization Support
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Enterprise-Grade Team Features
-            </p>
-          </div>
-        </div>
-        <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-          Enterprise-grade features including team management, role-based
-          access, and collaborative verification workflows. Perfect for
-          newsrooms, research teams, and content moderation departments.
-        </p>
-        <div className="space-y-3 mt-6">
-          <div className="flex items-start gap-3 p-3 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg">
-            <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span className="text-white text-xs font-bold">1</span>
-            </div>
-            <div>
-              <p className="font-semibold text-gray-900 dark:text-white">
-                Team Workspaces
-              </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Shared projects and collaborative investigations
-              </p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3 p-3 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg">
-            <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span className="text-white text-xs font-bold">2</span>
-            </div>
-            <div>
-              <p className="font-semibold text-gray-900 dark:text-white">
-                Role-Based Access
-              </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Granular permissions and access control
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    category: 'Coming in V2',
-    title: 'Developer API Access',
-    src: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2940&auto=format&fit=crop',
-    content: (
-      <div className="space-y-4">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 bg-gradient-to-br from-[hsl(190,95%,55%)] to-[hsl(220,40%,50%)] rounded-xl">
-            <Code2 className="w-8 h-8 text-white" />
-          </div>
-          <div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h3 className="text-2xl font-bold text-gray-900">
               Developer API Access
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              RESTful API Integration
+            <p className="text-sm text-gray-600">
+              Bring verification workflows into your own systems
             </p>
           </div>
         </div>
-        <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-          RESTful API with comprehensive documentation for integrating
-          Safeguardmedia into your applications and workflows. Build custom
-          solutions with our powerful verification engine.
+        <p className="text-lg leading-relaxed text-gray-700">
+          API access is in development for teams that want to run Safeguardmedia
+          Technologies inside their own applications, moderation pipelines, and
+          trust operations.
         </p>
-        <div className="bg-gray-900 dark:bg-gray-950 rounded-xl p-4 mt-6 font-mono text-sm">
-          <div className="text-green-400 mb-2">{'//'} Example API Request</div>
-          <div className="text-gray-300">
-            <span className="text-purple-400">POST</span>{' '}
-            <span className="text-blue-400">/api/v2/verify</span>
+        <ul className="mt-6 space-y-2">
+          <li className="flex items-center gap-2 text-gray-700">
+            <div className="h-2 w-2 rounded-full bg-blue-500" />
+            Verification endpoints for core workflows
+          </li>
+          <li className="flex items-center gap-2 text-gray-700">
+            <div className="h-2 w-2 rounded-full bg-blue-500" />
+            Better integration into internal tooling
+          </li>
+          <li className="flex items-center gap-2 text-gray-700">
+            <div className="h-2 w-2 rounded-full bg-blue-500" />
+            Programmatic access for higher-volume teams
+          </li>
+        </ul>
+      </div>
+    ),
+  },
+  {
+    category: "In development",
+    title: "Teams and Organization Support",
+    src: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2940&auto=format&fit=crop",
+    content: (
+      <div className="space-y-4">
+        <div className="mb-6 flex items-center gap-3">
+          <div className="rounded-xl bg-gradient-to-br from-[hsl(35,85%,60%)] to-[hsl(12,90%,62%)] p-3">
+            <Users className="h-8 w-8 text-white" />
           </div>
-          <div className="text-gray-500 mt-2">{'{'}</div>
-          <div className="text-gray-300 ml-4">
-            <span className="text-yellow-400">"media_url"</span>:{' '}
-            <span className="text-green-400">"https://..."</span>,
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900">
+              Teams and Organization Support
+            </h3>
+            <p className="text-sm text-gray-600">
+              Built for shared workflows, not just individual use
+            </p>
           </div>
-          <div className="text-gray-300 ml-4">
-            <span className="text-yellow-400">"analysis_type"</span>:{' '}
-            <span className="text-green-400">"comprehensive"</span>
-          </div>
-          <div className="text-gray-500">{'}'}</div>
         </div>
+        <p className="text-lg leading-relaxed text-gray-700">
+          Multi-user support is in development so organizations can manage
+          access, share investigation context, and operate the platform as a
+          real team workspace.
+        </p>
+        <div className="mt-6 grid grid-cols-2 gap-4">
+          <div className="rounded-xl bg-amber-50 p-4">
+            <div className="text-2xl font-bold text-amber-700">Teams</div>
+            <div className="text-sm text-gray-600">
+              Shared investigation space
+            </div>
+          </div>
+          <div className="rounded-xl bg-amber-50 p-4">
+            <div className="text-2xl font-bold text-amber-700">Roles</div>
+            <div className="text-sm text-gray-600">
+              Organization-level access
+            </div>
+          </div>
+        </div>
+      </div>
+    ),
+  },
+  {
+    category: "In development",
+    title: "Custom Workflows",
+    src: "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2940&auto=format&fit=crop",
+    content: (
+      <div className="space-y-4">
+        <div className="mb-6 flex items-center gap-3">
+          <div className="rounded-xl bg-gradient-to-br from-[hsl(190,95%,55%)] to-[hsl(220,85%,60%)] p-3">
+            <SlidersHorizontal className="h-8 w-8 text-white" />
+          </div>
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900">
+              Custom Workflows
+            </h3>
+            <p className="text-sm text-gray-600">
+              Fit the platform to different trust and review processes
+            </p>
+          </div>
+        </div>
+        <p className="text-lg leading-relaxed text-gray-700">
+          Custom workflow support is in development for teams that need
+          verification paths, review steps, and result handling tailored to
+          their internal processes.
+        </p>
+        <div className="mt-6 rounded-xl bg-gradient-to-r from-cyan-50 to-blue-50 p-4">
+          <p className="mb-2 text-sm font-semibold text-gray-900">
+            Planned focus
+          </p>
+          <p className="text-sm text-gray-600">
+            More flexible task flows, configurable review paths, and better
+            alignment with how organizations actually investigate content.
+          </p>
+        </div>
+      </div>
+    ),
+  },
+  {
+    category: "In development",
+    title: "Image Support for Claim Extraction",
+    src: "https://images.unsplash.com/photo-1455390582262-044cdead277a?q=80&w=2940&auto=format&fit=crop",
+    content: (
+      <div className="space-y-4">
+        <div className="mb-6 flex items-center gap-3">
+          <div className="rounded-xl bg-gradient-to-br from-[hsl(140,70%,48%)] to-[hsl(190,95%,45%)] p-3">
+            <ImageIcon className="h-8 w-8 text-white" />
+          </div>
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900">
+              Image Support for Claim Extraction
+            </h3>
+            <p className="text-sm text-gray-600">
+              Bring claim extraction into image-based investigations
+            </p>
+          </div>
+        </div>
+        <p className="text-lg leading-relaxed text-gray-700">
+          OCR is already part of the picture. What is in development is better
+          image-based support for claim extraction so screenshots and visual
+          evidence can move more directly into research workflows.
+        </p>
+        <ul className="mt-6 space-y-2">
+          <li className="flex items-center gap-2 text-gray-700">
+            <div className="h-2 w-2 rounded-full bg-emerald-500" />
+            Better claim extraction from screenshots
+          </li>
+          <li className="flex items-center gap-2 text-gray-700">
+            <div className="h-2 w-2 rounded-full bg-emerald-500" />
+            Stronger handoff from image evidence to research
+          </li>
+          <li className="flex items-center gap-2 text-gray-700">
+            <div className="h-2 w-2 rounded-full bg-emerald-500" />
+            Clearer support for image-led verification cases
+          </li>
+        </ul>
       </div>
     ),
   },
 ];
 
 export default function V2FeaturesCarousel() {
-  const cards = v2Features.map((feature, index) => (
-    <Card key={feature.title} card={feature} index={index} />
+  const cards = roadmapItems.map((item, index) => (
+    <Card key={item.title} card={item} index={index} />
   ));
 
   return (
-    <section className="relative py-32 overflow-hidden bg-[hsl(40,40%,95%)]">
-      {/* Grain Texture */}
+    <section
+      id="roadmap"
+      className="relative overflow-hidden bg-[hsl(210,35%,97%)] py-24"
+    >
       <div className="absolute inset-0 opacity-[0.03] mix-blend-multiply pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGQ9Ik0wIDBoMzAwdjMwMEgweiIgZmlsdGVyPSJ1cmwoI2EpIiBvcGFjaXR5PSIuMDUiLz48L3N2Zz4=')]" />
+      <div className="absolute left-0 top-0 h-full w-1/2 -translate-x-1/4 -skew-x-12 bg-gradient-to-br from-[hsl(190,95%,55%)]/5 to-transparent" />
 
-      {/* Diagonal Accent */}
-      <div className="absolute top-0 left-0 w-1/2 h-full bg-gradient-to-br from-[hsl(190,95%,55%)]/5 to-transparent transform -skew-x-12 -translate-x-1/4" />
-
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[hsl(35,85%,60%)]/10 to-[hsl(35,85%,50%)]/10 border border-[hsl(35,85%,60%)]/30 rounded-full mb-6">
-            <Sparkles className="w-4 h-4 text-[hsl(35,85%,60%)]" />
-            <span className="text-sm font-bold text-[hsl(35,85%,60%)] uppercase tracking-wider">
-              Coming in V2
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-14 text-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[hsl(35,85%,60%)]/30 bg-[hsl(35,85%,60%)]/10 px-4 py-2">
+            <Sparkles className="h-4 w-4 text-[hsl(35,85%,60%)]" />
+            <span className="text-sm font-bold uppercase tracking-wider text-[hsl(35,85%,60%)]">
+              Expanding next
             </span>
           </div>
-          <h2 className="text-5xl md:text-7xl font-bold text-[hsl(220,40%,15%)] mb-6 leading-tight">
-            What's Coming Next
+          <h2 className="mt-6 text-5xl font-bold leading-tight text-[hsl(220,40%,15%)] md:text-6xl">
+            Roadmap work that strengthens the platform.
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Powerful new features coming in Version 2.0 to revolutionize how you
-            verify and protect digital content.
+          <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-slate-600">
+            These roadmap items build on the workflows already available today
+            and extend the platform into deeper forensic and contextual review.
           </p>
         </div>
 
-        {/* Apple Cards Carousel */}
         <Carousel items={cards} />
       </div>
     </section>

@@ -1,18 +1,19 @@
-'use client';
+"use client";
 
-import type { LucideIcon } from 'lucide-react';
-import { Lock } from 'lucide-react';
-import { useState } from 'react';
-import { FeaturePreviewModal } from '@/components/feature-preview-modal';
+import type { LucideIcon } from "lucide-react";
+import { Lock } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { FeaturePreviewModal } from "@/components/feature-preview-modal";
 import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from '@/components/ui/sidebar';
-import { getFeatureById } from '@/lib/features';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/sidebar";
+import { getFeatureById } from "@/lib/features";
+import { cn } from "@/lib/utils";
 
 export function NavDetectionTools({
   projects,
@@ -25,13 +26,14 @@ export function NavDetectionTools({
   }[];
 }) {
   const [previewFeatureId, setPreviewFeatureId] = useState<string | null>(null);
+  const pathname = usePathname();
 
   const handleItemClick = (
     e: React.MouseEvent,
     url: string,
-    featureId?: string
+    featureId?: string,
   ) => {
-    if (url === '#' && featureId) {
+    if (url === "#" && featureId) {
       e.preventDefault();
       setPreviewFeatureId(featureId);
     }
@@ -47,7 +49,7 @@ export function NavDetectionTools({
         <SidebarGroupLabel>Forensics</SidebarGroupLabel>
         <SidebarMenu>
           {projects.map((item) => {
-            const isLocked = item.url === '#';
+            const isLocked = item.url === "#";
             // const feature = item.featureId
             //   ? getFeatureById(item.featureId)
             //   : null;
@@ -60,7 +62,7 @@ export function NavDetectionTools({
                       handleItemClick(e, item.url, item.featureId)
                     }
                     className={cn(
-                      'opacity-60 cursor-pointer hover:opacity-80 transition-opacity'
+                      "opacity-60 cursor-pointer hover:opacity-80 transition-opacity",
                     )}
                   >
                     <item.icon className="text-primary" />
@@ -68,7 +70,7 @@ export function NavDetectionTools({
                     <Lock className="ml-auto w-3.5 h-3.5 text-gray-400 shrink-0" />
                   </SidebarMenuButton>
                 ) : (
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild isActive={pathname === item.url}>
                     <a href={item.url}>
                       <item.icon className="text-primary" />
                       <span>{item.name}</span>

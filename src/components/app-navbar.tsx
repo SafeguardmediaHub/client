@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { usePathname } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
+import { usePathname } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
-import GoogleTranslate from './GoogleTranslate';
-import { NavDropdown } from './nav-dropdown';
+import GoogleTranslate from "./GoogleTranslate";
+import { NavDropdown } from "./nav-dropdown";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -12,9 +12,9 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from './ui/breadcrumb';
-import { Separator } from './ui/separator';
-import { SidebarTrigger } from './ui/sidebar';
+} from "./ui/breadcrumb";
+import { Separator } from "./ui/separator";
+import { SidebarTrigger } from "./ui/sidebar";
 
 const AppNavbar = () => {
   const { user } = useAuth();
@@ -22,29 +22,30 @@ const AppNavbar = () => {
 
   // Enhanced route name mapping
   const routeNameMap: Record<string, string> = {
-    dashboard: 'Dashboard',
-    library: 'Library',
-    reporting: 'Reports',
-    batches: 'Batch Processing',
-    'fact-check': 'Fact Checking',
-    timeline: 'Timeline Verification',
-    geolocation: 'Geolocation',
-    reverse: 'Reverse Lookup',
-    'tamper-detection': 'Tamper Detection',
-    'claim-research': 'Claim Research',
-    keyframe: 'Keyframe Extraction',
-    authenticity: 'Authenticity',
-    verify: 'Verify',
-    badges: 'Badges',
-    admin: 'Admin',
-    waitlist: 'Waitlist Management',
-    feedback: 'Feedback',
-    support: 'Support',
+    dashboard: "Dashboard",
+    library: "Library",
+    reporting: "Reports",
+    batches: "Batch Processing",
+    "fact-check": "Fact Checking",
+    "ai-media-detection": "AI Media Detection",
+    timeline: "Timeline Verification",
+    geolocation: "Geolocation",
+    reverse: "Reverse Lookup",
+    "tamper-detection": "Tamper Detection",
+    "claim-research": "Claim Research",
+    keyframe: "Keyframe Extraction",
+    authenticity: "Authenticity",
+    verify: "Verify",
+    badges: "Badges",
+    admin: "Admin",
+    waitlist: "Waitlist Management",
+    feedback: "Feedback",
+    support: "Support",
   };
 
   const getBreadcrumbItems = () => {
     const items = [];
-    const pathSegments = pathname.split('/').filter(Boolean);
+    const pathSegments = pathname.split("/").filter(Boolean);
 
     // Always add Dashboard as first item
     items.push(
@@ -54,20 +55,20 @@ const AppNavbar = () => {
     );
 
     // Skip if we're on the dashboard root
-    if (pathSegments.length === 1 && pathSegments[0] === 'dashboard') {
+    if (pathSegments.length === 1 && pathSegments[0] === "dashboard") {
       return items;
     }
 
     // Build breadcrumbs from path segments (skip 'dashboard' as it's already added)
     const segments = pathSegments.slice(1);
-    let currentPath = '/dashboard';
+    let currentPath = "/dashboard";
 
     segments.forEach((segment, index) => {
       currentPath += `/${segment}`;
       const isLast = index === segments.length - 1;
 
       // Skip dynamic route segments (like [id])
-      if (segment.startsWith('[') && segment.endsWith(']')) {
+      if (segment.startsWith("[") && segment.endsWith("]")) {
         return;
       }
 
@@ -75,9 +76,9 @@ const AppNavbar = () => {
       const displayName =
         routeNameMap[segment] ||
         segment
-          .split('-')
+          .split("-")
           .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ');
+          .join(" ");
 
       items.push(
         <BreadcrumbSeparator

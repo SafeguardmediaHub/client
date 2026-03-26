@@ -1,53 +1,64 @@
-'use client';
+"use client";
 
-import { AlertCircle, CheckCircle2, Loader2, Sparkles } from 'lucide-react';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import {
+  AlertCircle,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Loader2,
+  Sparkles,
+} from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { useJoinWaitlist } from '@/hooks/useWaitlist';
-import type { UserType } from '@/lib/api/waitlist';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { useJoinWaitlist } from "@/hooks/useWaitlist";
+import type { UserType } from "@/lib/api/waitlist";
+import { cn } from "@/lib/utils";
+
+const accessBenefits = [
+  "Early access to AI media detection workflows",
+  "Authenticity and provenance verification tools",
+  "A workspace built for high-trust investigations",
+];
 
 export default function WaitlistForm() {
-  const [email, setEmail] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [userType, setUserType] = useState('');
-  const [organization, setOrganization] = useState('');
-  const [useCase, setUseCase] = useState('');
-  const [referralSource, setReferralSource] = useState('');
+  const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [userType, setUserType] = useState("");
+  const [organization, setOrganization] = useState("");
+  const [useCase, setUseCase] = useState("");
+  const [referralSource, setReferralSource] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [emailError, setEmailError] = useState('');
+  const [emailError, setEmailError] = useState("");
+  const [showOptionalFields, setShowOptionalFields] = useState(false);
 
   const joinWaitlistMutation = useJoinWaitlist();
 
-  // Email validation function
-  const validateEmail = (email: string): boolean => {
-    // Basic email regex that requires a proper domain extension
+  const validateEmail = (value: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    return emailRegex.test(value);
   };
 
-  // Handle email change with validation
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newEmail = e.target.value;
     setEmail(newEmail);
 
     if (newEmail && !validateEmail(newEmail)) {
-      setEmailError('Please enter a valid email address');
+      setEmailError("Please enter a valid email address");
     } else {
-      setEmailError('');
+      setEmailError("");
     }
   };
 
@@ -59,7 +70,7 @@ export default function WaitlistForm() {
     }
 
     if (!validateEmail(email)) {
-      setEmailError('Please enter a valid email address');
+      setEmailError("Please enter a valid email address");
       return;
     }
 
@@ -80,15 +91,15 @@ export default function WaitlistForm() {
       {
         onSuccess: () => {
           setIsSubmitted(true);
-          // Reset form
-          setEmail('');
-          setFirstName('');
-          setLastName('');
-          setUserType('');
-          setOrganization('');
-          setUseCase('');
-          setReferralSource('');
+          setEmail("");
+          setFirstName("");
+          setLastName("");
+          setUserType("");
+          setOrganization("");
+          setUseCase("");
+          setReferralSource("");
           setAgreedToTerms(false);
+          setShowOptionalFields(false);
         },
       },
     );
@@ -96,27 +107,28 @@ export default function WaitlistForm() {
 
   if (isSubmitted) {
     return (
-      <section className="relative py-32 overflow-hidden bg-gradient-to-br from-[hsl(220,40%,15%)] via-[hsl(220,35%,20%)] to-[hsl(220,40%,15%)]">
-        {/* Grain Texture */}
-        <div className="absolute inset-0 opacity-[0.15] mix-blend-overlay pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGQ9Ik0wIDBoMzAwdjMwMEgweiIgZmlsdGVyPSJ1cmwoI2EpIiBvcGFjaXR5PSIuMDUiLz48L3N2Zz4=')]" />
-
-        <div className="relative max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-[hsl(190,95%,55%)] to-[hsl(190,95%,45%)] mb-8 shadow-2xl shadow-[hsl(190,95%,55%)]/50">
-            <CheckCircle2 className="w-10 h-10 text-white" />
+      <section
+        id="waitlist"
+        className="relative overflow-hidden bg-[hsl(220,40%,15%)] py-28"
+      >
+        <div className="absolute inset-0 opacity-[0.12] mix-blend-overlay pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGQ9Ik0wIDBoMzAwdjMwMEgweiIgZmlsdGVyPSJ1cmwoI2EpIiBvcGFjaXR5PSIuMDUiLz48L3N2Zz4=')]" />
+        <div className="relative mx-auto max-w-2xl px-4 text-center sm:px-6 lg:px-8">
+          <div className="mx-auto mb-8 inline-flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[hsl(190,95%,55%)] to-[hsl(190,95%,45%)] shadow-2xl shadow-[hsl(190,95%,55%)]/30">
+            <CheckCircle2 className="h-10 w-10 text-white" />
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            You're on the list!
+          <h2 className="text-4xl font-bold text-white md:text-5xl">
+            Access request received.
           </h2>
-          <p className="text-xl text-[hsl(190,95%,75%)] mb-8">
-            We'll notify you as soon as our beta launches. Get ready to
-            experience the future of media verification.
+          <p className="mt-5 text-lg leading-8 text-cyan-100">
+            We&apos;ll reach out as early access expands. You&apos;re now in the
+            queue for product updates from Safeguardmedia Technologies.
           </p>
           <Button
             onClick={() => setIsSubmitted(false)}
             variant="outline"
-            className="border-[hsl(190,95%,55%)] text-[hsl(190,95%,55%)] hover:bg-[hsl(190,95%,55%)]/10"
+            className="mt-8 border-cyan-400/50 bg-transparent text-cyan-100 hover:bg-cyan-400/10 hover:text-white"
           >
-            Join Another Person
+            Submit another request
           </Button>
         </div>
       </section>
@@ -126,53 +138,56 @@ export default function WaitlistForm() {
   return (
     <section
       id="waitlist"
-      className="relative py-32 overflow-hidden bg-gradient-to-br from-[hsl(220,40%,15%)] via-[hsl(220,35%,20%)] to-[hsl(220,40%,15%)]"
+      className="relative overflow-hidden bg-gradient-to-br from-[hsl(220,40%,15%)] via-[hsl(220,35%,20%)] to-[hsl(220,40%,15%)] py-28"
     >
-      {/* Grain Texture */}
-      <div className="absolute inset-0 opacity-[0.15] mix-blend-overlay pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGQ9Ik0wIDBoMzAwdjMwMEgweiIgZmlsdGVyPSJ1cmwoI2EpIiBvcGFjaXR5PSIuMDUiLz48L3N2Zz4=')]" />
-
-      {/* Geometric Grid Pattern */}
+      <div className="absolute inset-0 opacity-[0.12] mix-blend-overlay pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGQ9Ik0wIDBoMzAwdjMwMEgweiIgZmlsdGVyPSJ1cmwoI2EpIiBvcGFjaXR5PSIuMDUiLz48L3N2Zz4=')]" />
       <div className="absolute inset-0 opacity-10">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(190,95%,55%)_1px,transparent_1px),linear-gradient(to_bottom,hsl(190,95%,55%)_1px,transparent_1px)] bg-[size:60px_60px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(190,95%,55%)_1px,transparent_1px),linear-gradient(to_bottom,hsl(190,95%,55%)_1px,transparent_1px)] bg-[size:52px_52px]" />
       </div>
+      <div className="absolute right-0 top-0 h-full w-1/3 translate-x-1/4 skew-x-12 bg-gradient-to-br from-[hsl(35,85%,60%)]/20 to-transparent" />
 
-      {/* Diagonal Accent */}
-      <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-br from-[hsl(35,85%,60%)]/20 to-transparent transform skew-x-12 translate-x-1/4" />
-
-      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-[hsl(190,95%,55%)]/10 border border-[hsl(190,95%,55%)]/30 rounded-full mb-6 backdrop-blur-sm">
-            <Sparkles className="w-4 h-4 text-[hsl(190,95%,55%)]" />
-            <span className="text-sm font-bold text-[hsl(190,95%,55%)] uppercase tracking-wider">
-              Beta Launching Soon
+      <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl text-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[hsl(190,95%,55%)]/30 bg-[hsl(190,95%,55%)]/10 px-4 py-2 backdrop-blur-sm">
+            <Sparkles className="h-4 w-4 text-[hsl(190,95%,55%)]" />
+            <span className="text-sm font-bold uppercase tracking-wider text-[hsl(190,95%,55%)]">
+              Request early access
             </span>
           </div>
-          <h2 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+          <h2 className="mt-6 text-5xl font-bold leading-tight text-white md:text-7xl">
             Join the
             <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[hsl(190,95%,55%)] via-[hsl(190,95%,65%)] to-[hsl(35,85%,60%)]">
-              Waitlist
+            <span className="bg-gradient-to-r from-[hsl(190,95%,55%)] via-[hsl(190,95%,65%)] to-[hsl(35,85%,60%)] bg-clip-text text-transparent">
+              Access List
             </span>
           </h2>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
-            Be among the first to experience our comprehensive media
-            verification platform. Join the beta and help shape the future of
-            digital trust.
+          <p className="mx-auto mt-6 max-w-2xl text-xl leading-8 text-gray-300">
+            Request early access to the platform and tell us a little about the
+            role or team you want to support with these verification workflows.
           </p>
+        </div>
+
+        <div className="mt-12 grid gap-4 md:grid-cols-3">
+          {accessBenefits.map((benefit) => (
+            <div
+              key={benefit}
+              className="rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm font-medium text-slate-200 backdrop-blur-sm"
+            >
+              {benefit}
+            </div>
+          ))}
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-12 shadow-2xl"
+          className="relative mt-10 rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-xl md:p-10"
         >
-          {/* Glow Effect */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-[hsl(190,95%,55%)] via-[hsl(35,85%,60%)] to-[hsl(190,95%,55%)] rounded-3xl blur-2xl opacity-20 animate-pulse-slow" />
+          <div className="absolute -inset-1 rounded-[2rem] bg-gradient-to-r from-[hsl(190,95%,55%)] via-[hsl(35,85%,60%)] to-[hsl(190,95%,55%)] opacity-15 blur-2xl" />
 
           <div className="relative space-y-6">
-            {/* Name Fields */}
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="firstName" className="text-white font-semibold">
+                <Label htmlFor="firstName" className="font-semibold text-white">
                   First Name
                 </Label>
                 <Input
@@ -183,11 +198,12 @@ export default function WaitlistForm() {
                   onChange={(e) => setFirstName(e.target.value)}
                   disabled={joinWaitlistMutation.isPending}
                   required
-                  className="bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus:border-[hsl(190,95%,55%)] focus:ring-[hsl(190,95%,55%)]/50 h-12"
+                  className="h-12 border-white/20 bg-white/10 text-white placeholder:text-gray-400 focus:border-[hsl(190,95%,55%)] focus:ring-[hsl(190,95%,55%)]/50"
                 />
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="lastName" className="text-white font-semibold">
+                <Label htmlFor="lastName" className="font-semibold text-white">
                   Last Name
                 </Label>
                 <Input
@@ -198,15 +214,14 @@ export default function WaitlistForm() {
                   onChange={(e) => setLastName(e.target.value)}
                   disabled={joinWaitlistMutation.isPending}
                   required
-                  className="bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus:border-[hsl(190,95%,55%)] focus:ring-[hsl(190,95%,55%)]/50 h-12"
+                  className="h-12 border-white/20 bg-white/10 text-white placeholder:text-gray-400 focus:border-[hsl(190,95%,55%)] focus:ring-[hsl(190,95%,55%)]/50"
                 />
               </div>
             </div>
 
-            {/* Email */}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-white font-semibold">
-                Email Address
+              <Label htmlFor="email" className="font-semibold text-white">
+                Work Email
               </Label>
               <Input
                 id="email"
@@ -217,30 +232,29 @@ export default function WaitlistForm() {
                 disabled={joinWaitlistMutation.isPending}
                 required
                 className={cn(
-                  'bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus:border-[hsl(190,95%,55%)] focus:ring-[hsl(190,95%,55%)]/50 h-12',
+                  "h-12 border-white/20 bg-white/10 text-white placeholder:text-gray-400 focus:border-[hsl(190,95%,55%)] focus:ring-[hsl(190,95%,55%)]/50",
                   emailError &&
-                    'border-red-400 focus:border-red-400 focus:ring-red-400/50',
+                    "border-red-400 focus:border-red-400 focus:ring-red-400/50",
                 )}
               />
               {emailError && (
-                <p className="text-sm text-red-400 flex items-center gap-1">
+                <p className="flex items-center gap-1 text-sm text-red-400">
                   <AlertCircle className="h-4 w-4" />
                   {emailError}
                 </p>
               )}
             </div>
 
-            {/* User Type */}
             <div className="space-y-2">
-              <Label htmlFor="userType" className="text-white font-semibold">
-                I am a...
+              <Label htmlFor="userType" className="font-semibold text-white">
+                Your Role
               </Label>
               <Select
                 value={userType}
                 onValueChange={setUserType}
                 disabled={joinWaitlistMutation.isPending}
               >
-                <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[hsl(190,95%,55%)] focus:ring-[hsl(190,95%,55%)]/50 h-12">
+                <SelectTrigger className="h-12 border-white/20 bg-white/10 text-white focus:border-[hsl(190,95%,55%)] focus:ring-[hsl(190,95%,55%)]/50">
                   <SelectValue placeholder="Select your role" />
                 </SelectTrigger>
                 <SelectContent>
@@ -268,77 +282,93 @@ export default function WaitlistForm() {
               </Select>
             </div>
 
-            {/* Organization (Optional) */}
-            <div className="space-y-2">
-              <Label
-                htmlFor="organization"
-                className="text-white font-semibold"
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <button
+                type="button"
+                onClick={() => setShowOptionalFields((current) => !current)}
+                className="flex w-full items-center justify-between gap-4 text-left"
               >
-                Organization{' '}
-                <span className="text-gray-400 text-sm font-normal">
-                  (Optional)
-                </span>
-              </Label>
-              <Input
-                id="organization"
-                type="text"
-                placeholder="Your company or institution"
-                value={organization}
-                onChange={(e) => setOrganization(e.target.value)}
-                disabled={joinWaitlistMutation.isPending}
-                maxLength={100}
-                className="bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus:border-[hsl(190,95%,55%)] focus:ring-[hsl(190,95%,55%)]/50 h-12"
-              />
+                <div>
+                  <div className="text-sm font-semibold text-white">
+                    Add more context
+                  </div>
+                  <div className="mt-1 text-sm text-slate-300">
+                    Optional fields for team, use case, and referral details.
+                  </div>
+                </div>
+                {showOptionalFields ? (
+                  <ChevronUp className="h-5 w-5 text-slate-300" />
+                ) : (
+                  <ChevronDown className="h-5 w-5 text-slate-300" />
+                )}
+              </button>
+
+              {showOptionalFields && (
+                <div className="mt-5 space-y-6 border-t border-white/10 pt-5">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="organization"
+                      className="font-semibold text-white"
+                    >
+                      Organization
+                    </Label>
+                    <Input
+                      id="organization"
+                      type="text"
+                      placeholder="Your company or institution"
+                      value={organization}
+                      onChange={(e) => setOrganization(e.target.value)}
+                      disabled={joinWaitlistMutation.isPending}
+                      maxLength={100}
+                      className="h-12 border-white/20 bg-white/10 text-white placeholder:text-gray-400 focus:border-[hsl(190,95%,55%)] focus:ring-[hsl(190,95%,55%)]/50"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="useCase"
+                      className="font-semibold text-white"
+                    >
+                      How will you use Safeguardmedia Technologies?
+                    </Label>
+                    <Textarea
+                      id="useCase"
+                      placeholder="Tell us about your verification needs..."
+                      value={useCase}
+                      onChange={(e) => setUseCase(e.target.value)}
+                      disabled={joinWaitlistMutation.isPending}
+                      maxLength={500}
+                      rows={3}
+                      className="resize-none border-white/20 bg-white/10 text-white placeholder:text-gray-400 focus:border-[hsl(190,95%,55%)] focus:ring-[hsl(190,95%,55%)]/50"
+                    />
+                    <p className="text-xs text-gray-400">
+                      {useCase.length}/500 characters
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="referralSource"
+                      className="font-semibold text-white"
+                    >
+                      How did you hear about us?
+                    </Label>
+                    <Input
+                      id="referralSource"
+                      type="text"
+                      placeholder="Referral, search, social media, etc."
+                      value={referralSource}
+                      onChange={(e) => setReferralSource(e.target.value)}
+                      disabled={joinWaitlistMutation.isPending}
+                      maxLength={100}
+                      className="h-12 border-white/20 bg-white/10 text-white placeholder:text-gray-400 focus:border-[hsl(190,95%,55%)] focus:ring-[hsl(190,95%,55%)]/50"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Use Case (Optional) */}
-            <div className="space-y-2">
-              <Label htmlFor="useCase" className="text-white font-semibold">
-                How will you use Safeguardmedia?{' '}
-                <span className="text-gray-400 text-sm font-normal">
-                  (Optional)
-                </span>
-              </Label>
-              <Textarea
-                id="useCase"
-                placeholder="Tell us about your verification needs..."
-                value={useCase}
-                onChange={(e) => setUseCase(e.target.value)}
-                disabled={joinWaitlistMutation.isPending}
-                maxLength={500}
-                rows={3}
-                className="bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus:border-[hsl(190,95%,55%)] focus:ring-[hsl(190,95%,55%)]/50 resize-none"
-              />
-              <p className="text-xs text-gray-400">
-                {useCase.length}/500 characters
-              </p>
-            </div>
-
-            {/* Referral Source (Optional) */}
-            <div className="space-y-2">
-              <Label
-                htmlFor="referralSource"
-                className="text-white font-semibold"
-              >
-                How did you hear about us?{' '}
-                <span className="text-gray-400 text-sm font-normal">
-                  (Optional)
-                </span>
-              </Label>
-              <Input
-                id="referralSource"
-                type="text"
-                placeholder="Google, Twitter, friend, etc."
-                value={referralSource}
-                onChange={(e) => setReferralSource(e.target.value)}
-                disabled={joinWaitlistMutation.isPending}
-                maxLength={100}
-                className="bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus:border-[hsl(190,95%,55%)] focus:ring-[hsl(190,95%,55%)]/50 h-12"
-              />
-            </div>
-
-            {/* Terms Checkbox */}
-            <div className="flex items-start gap-3 p-4 bg-white/5 border border-white/10 rounded-xl">
+            <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
               <Checkbox
                 id="terms"
                 checked={agreedToTerms}
@@ -347,35 +377,35 @@ export default function WaitlistForm() {
                 }
                 disabled={joinWaitlistMutation.isPending}
                 required
-                className="mt-0.5 border-white/30 data-[state=checked]:bg-[hsl(190,95%,55%)] data-[state=checked]:border-[hsl(190,95%,55%)]"
+                className="mt-0.5 border-white/30 data-[state=checked]:border-[hsl(190,95%,55%)] data-[state=checked]:bg-[hsl(190,95%,55%)]"
               />
               <Label
                 htmlFor="terms"
-                className="text-sm text-gray-300 leading-relaxed cursor-pointer"
+                className="cursor-pointer text-sm leading-relaxed text-gray-300"
               >
-                I agree to receive updates about the SafeguardMedia beta and
-                accept the{' '}
+                I agree to receive updates about the Safeguardmedia Technologies
+                beta and accept the{" "}
                 <a
                   href="/terms"
-                  className="text-[hsl(190,95%,55%)] underline underline-offset-2 hover:text-[hsl(190,95%,65%)]"
                   target="_blank"
                   rel="noreferrer"
+                  className="text-[hsl(190,95%,55%)] underline underline-offset-2 hover:text-[hsl(190,95%,65%)]"
                 >
                   Terms
-                </a>{' '}
-                and{' '}
+                </a>{" "}
+                and{" "}
                 <a
                   href="/privacy"
-                  className="text-[hsl(190,95%,55%)] underline underline-offset-2 hover:text-[hsl(190,95%,65%)]"
                   target="_blank"
                   rel="noreferrer"
+                  className="text-[hsl(190,95%,55%)] underline underline-offset-2 hover:text-[hsl(190,95%,65%)]"
                 >
                   Privacy Policy
                 </a>
+                .
               </Label>
             </div>
 
-            {/* Submit Button */}
             <Button
               type="submit"
               size="lg"
@@ -389,55 +419,37 @@ export default function WaitlistForm() {
                 joinWaitlistMutation.isPending
               }
               className={cn(
-                'w-full h-14 text-lg font-bold rounded-xl transition-all duration-300',
-                'bg-gradient-to-r from-[hsl(190,95%,55%)] to-[hsl(190,95%,45%)]',
-                'hover:from-[hsl(190,95%,60%)] hover:to-[hsl(190,95%,50%)]',
-                'shadow-lg shadow-[hsl(190,95%,55%)]/50 hover:shadow-xl hover:shadow-[hsl(190,95%,55%)]/60',
-                'disabled:opacity-50 disabled:cursor-not-allowed',
+                "h-14 w-full rounded-xl text-lg font-bold transition-all duration-300",
+                "bg-gradient-to-r from-[hsl(190,95%,55%)] to-[hsl(190,95%,45%)]",
+                "shadow-lg shadow-[hsl(190,95%,55%)]/35 hover:from-[hsl(190,95%,60%)] hover:to-[hsl(190,95%,50%)] hover:shadow-xl hover:shadow-[hsl(190,95%,55%)]/45",
+                "disabled:cursor-not-allowed disabled:opacity-50",
               )}
             >
               {joinWaitlistMutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Joining Waitlist...
+                  Sending request...
                 </>
               ) : (
                 <>
                   <Sparkles className="mr-2 h-5 w-5" />
-                  Join the Waitlist
+                  Request Beta Access
                 </>
               )}
             </Button>
 
-            {/* Error Message */}
             {joinWaitlistMutation.isError && (
-              <div className="flex items-center gap-2 p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
+              <div className="flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 p-4">
                 <AlertCircle className="h-5 w-5 text-red-400" />
                 <p className="text-sm text-red-400">
                   {joinWaitlistMutation.error?.message ||
-                    'Failed to join waitlist. Please try again.'}
+                    "Failed to submit your request. Please try again."}
                 </p>
               </div>
             )}
           </div>
         </form>
       </div>
-
-      <style jsx global>{`
-        @keyframes pulse-slow {
-          0%,
-          100% {
-            opacity: 0.2;
-          }
-          50% {
-            opacity: 0.4;
-          }
-        }
-
-        .animate-pulse-slow {
-          animation: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-      `}</style>
     </section>
   );
 }

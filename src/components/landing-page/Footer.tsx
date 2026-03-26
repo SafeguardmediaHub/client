@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   ArrowRight,
@@ -7,177 +7,198 @@ import {
   Shield,
   Twitter,
   Youtube,
-} from 'lucide-react';
-import Link from 'next/link';
-import { useState } from 'react';
+} from "lucide-react";
+import Link from "next/link";
+
+const footerSections = [
+  {
+    title: "Platform",
+    links: [
+      { label: "Overview", href: "#platform" },
+      { label: "Workflow", href: "#workflow" },
+      { label: "Use Cases", href: "#use-cases" },
+      { label: "Roadmap", href: "#roadmap" },
+    ],
+  },
+  {
+    title: "Product",
+    links: [
+      { label: "AI Media Detection", href: "/dashboard/ai-media-detection" },
+      { label: "Authenticity", href: "/dashboard/authenticity" },
+      { label: "Fact Checking", href: "/dashboard/fact-check" },
+      { label: "Library", href: "/dashboard/library" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      { label: "About Us", href: "/about" },
+      { label: "Blog", href: "/blog" },
+      { label: "Privacy", href: "/privacy" },
+      { label: "Terms", href: "/terms" },
+    ],
+  },
+];
+
+const workflowTags = [
+  "AI media detection",
+  "Authenticity",
+  "Claim research",
+  "Evidence review",
+];
+
+const statusPills = [
+  "Live verification workflows",
+  "Evidence-backed review",
+  "Built for high-trust teams",
+];
+
+const socialLinks = [
+  { icon: Twitter, href: "https://twitter.com", label: "Twitter" },
+  {
+    icon: Youtube,
+    href: "https://www.youtube.com/channel/UCNTAiiAqvTgO5rhzDc8aP6g",
+    label: "YouTube",
+  },
+  { icon: Linkedin, href: "https://linkedin.com", label: "LinkedIn" },
+  { icon: Mail, href: "mailto:info@safeguardmedia.org", label: "Email" },
+];
 
 export default function Footer() {
-  const [hoveredLink, setHoveredLink] = useState<string | null>(null);
-
-  const footerSections = [
-    {
-      title: 'Product',
-      links: [
-        { label: 'Features', href: '/#features' },
-        { label: 'Verification Tools', href: '/#solutions' },
-        { label: 'Use Cases', href: '/#use-cases' },
-        { label: 'Pricing', href: '/pricing' },
-        { label: 'API Documentation', href: '/docs' },
-      ],
-    },
-    {
-      title: 'Company',
-      links: [
-        { label: 'About Us', href: '/about' },
-        { label: 'Careers', href: '/careers' },
-        { label: 'Blog', href: '/blog' },
-        { label: 'Press Kit', href: '/press' },
-        { label: 'Contact', href: '/contact' },
-      ],
-    },
-    {
-      title: 'Resources',
-      links: [
-        { label: 'Documentation', href: '/docs' },
-        { label: 'Help Center', href: '/help' },
-        { label: 'Community', href: '/community' },
-        { label: 'Research Papers', href: '/research' },
-        { label: 'Status', href: '/status' },
-      ],
-    },
-    {
-      title: 'Legal',
-      links: [
-        { label: 'Privacy Policy', href: '/privacy' },
-        { label: 'Terms of Service', href: '/terms' },
-        { label: 'Cookie Policy', href: '/cookies' },
-        { label: 'Security', href: '/security' },
-        { label: 'Compliance', href: '/compliance' },
-      ],
-    },
-  ];
-
-  const socialLinks = [
-    { icon: Twitter, href: 'https://twitter.com', label: 'Twitter' },
-    {
-      icon: Youtube,
-      href: 'https://www.youtube.com/channel/UCNTAiiAqvTgO5rhzDc8aP6g',
-      label: 'YouTube',
-    },
-    { icon: Linkedin, href: 'https://linkedin.com', label: 'LinkedIn' },
-    { icon: Mail, href: 'mailto:info@safeguardmedia.org', label: 'Email' },
-  ];
-
   return (
-    <footer className="relative bg-[hsl(220,40%,15%)] text-white overflow-hidden">
-      {/* Grain Texture Overlay */}
-      <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGQ9Ik0wIDBoMzAwdjMwMEgweiIgZmlsdGVyPSJ1cmwoI2EpIiBvcGFjaXR5PSIuMDUiLz48L3N2Zz4=')]" />
+    <footer className="relative overflow-hidden bg-[hsl(222,42%,12%)] text-white">
+      <div className="absolute inset-0 opacity-[0.05] mix-blend-overlay pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGQ9Ik0wIDBoMzAwdjMwMEgweiIgZmlsdGVyPSJ1cmwoI2EpIiBvcGFjaXR5PSIuMDUiLz48L3N2Zz4=')]" />
+      <div className="absolute left-[-8rem] top-12 h-72 w-72 rounded-full bg-blue-500/15 blur-3xl" />
+      <div className="absolute right-[-5rem] top-0 h-96 w-96 rounded-full bg-cyan-400/10 blur-3xl" />
+      <div className="absolute bottom-[-8rem] left-1/3 h-80 w-80 rounded-full bg-sky-400/10 blur-3xl" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(120,170,220,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(120,170,220,0.06)_1px,transparent_1px)] bg-[size:22px_22px]" />
 
-      {/* Geometric Pattern Background */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(hsl(190,95%,55%)_1px,transparent_1px)] bg-[length:40px_40px]" />
-      </div>
-
-      {/* Diagonal Accent */}
-      <div className="absolute top-0 right-0 w-1/3 h-full bg-[hsl(190,95%,55%)]/5 transform skew-x-12 translate-x-1/4" />
-
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Main Footer Content */}
-        <div className="py-16 border-b border-white/10">
-          <div className="grid lg:grid-cols-12 gap-12">
-            {/* Brand Section - Takes 5 columns */}
-            <div className="lg:col-span-5 space-y-6">
-              {/* Logo */}
-              <Link href="/" className="inline-flex items-center gap-3 group">
-                <div className="relative">
-                  <div className="absolute -inset-1 bg-blue-600 rounded-lg blur opacity-50 group-hover:opacity-75 transition duration-300" />
-                  <div className="relative w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
-                    <Shield className="w-6 h-6 text-white" />
-                  </div>
-                </div>
-                <span className="text-2xl font-bold tracking-tight">
-                  Safeguardmedia
-                </span>
-              </Link>
-
-              {/* Tagline */}
-              <p className="text-lg text-gray-300 leading-relaxed max-w-md">
-                Defending truth in the age of AI. Building the infrastructure to
-                verify digital content and combat misinformation at scale.
+      <div className="relative mx-auto max-w-7xl px-4 pb-10 pt-20 sm:px-6 lg:px-8">
+        <div className="rounded-[2.25rem] border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.03))] p-8 shadow-[0_24px_80px_rgba(0,0,0,0.28)] backdrop-blur-xl md:p-10">
+          <div className="grid gap-8 border-b border-white/10 pb-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+            <div className="max-w-3xl text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-sm font-semibold text-cyan-100">
+                <Shield className="h-4 w-4" />
+                Trusted media verification infrastructure
+              </div>
+              <h2 className="mt-5 text-3xl font-semibold tracking-tight text-white md:text-5xl">
+                Bring your verification workflow into one place.
+              </h2>
+              <p className="mt-4 max-w-2xl text-base leading-8 text-slate-300 md:text-lg">
+                Detect AI-generated media, review authenticity signals, and move
+                from suspicious content to evidence-backed findings with less
+                friction.
               </p>
+            </div>
 
-              {/* Newsletter */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-[hsl(190,95%,55%)]">
-                  Stay Updated
-                </h3>
-                <div className="flex gap-2">
-                  <input
-                    type="email"
-                    placeholder="your@email.com"
-                    className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-gray-500 focus:outline-none focus:border-[hsl(190,95%,55%)] focus:ring-1 focus:ring-[hsl(190,95%,55%)] transition-all"
-                  />
-                  <button
-                    type="button"
-                    className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-all duration-300 flex items-center gap-2 group"
-                  >
-                    <span>Subscribe</span>
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </button>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/auth/signup"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20 sm:w-auto"
+              >
+                Get Started
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <a
+                href="mailto:info@safeguardmedia.org"
+                className="inline-flex w-full items-center justify-center rounded-xl border border-white/15 bg-white/5 px-6 py-3.5 text-sm font-semibold text-slate-200 transition-colors hover:bg-white/10 hover:text-white sm:w-auto"
+              >
+                Talk to Us
+              </a>
+            </div>
+          </div>
+
+          <div className="grid gap-12 pt-10 lg:grid-cols-12">
+            <div className="space-y-8 text-center lg:col-span-5 lg:text-left">
+              <div className="space-y-5">
+                <Link
+                  href="/"
+                  className="inline-flex items-center gap-3 justify-center lg:justify-start"
+                >
+                  <div className="relative">
+                    <div className="absolute -inset-1 rounded-xl bg-blue-600/50 blur-md" />
+                    <div className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 shadow-lg shadow-blue-500/20">
+                      <Shield className="h-6 w-6 text-white" />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xl font-semibold tracking-tight text-white">
+                      Safeguardmedia Technologies
+                    </div>
+                    <div className="text-sm text-slate-400">
+                      Defending trust in digital media
+                    </div>
+                  </div>
+                </Link>
+
+                <p className="max-w-md text-base leading-8 text-slate-300">
+                  Built for trust and investigations teams handling AI-generated
+                  media, provenance questions, and high-stakes digital evidence.
+                </p>
+
+                <div className="flex flex-wrap justify-center gap-2 lg:justify-start">
+                  {workflowTags.map((tag) => (
+                    <div
+                      key={tag}
+                      className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium uppercase tracking-[0.14em] text-slate-300"
+                    >
+                      {tag}
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              {/* Social Links */}
-              <div className="flex gap-3">
+              <div className="rounded-[1.75rem] border border-white/10 bg-black/20 p-5">
+                <div className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-200">
+                  Contact
+                </div>
+                <div className="mt-3 break-all text-xl font-semibold text-white sm:break-normal">
+                  info@safeguardmedia.org
+                </div>
+                <p className="mt-2 text-sm leading-7 text-slate-300">
+                  Reach out if your team is evaluating verification workflows,
+                  internal tooling, or organization-level adoption.
+                </p>
+              </div>
+
+              <div className="flex justify-center gap-3 lg:justify-start">
                 {socialLinks.map((social) => {
-                  const IconComponent = social.icon;
+                  const Icon = social.icon;
+
                   return (
                     <a
                       key={social.label}
                       href={social.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-10 h-10 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[hsl(190,95%,55%)] rounded-lg flex items-center justify-center transition-all duration-300 group"
                       aria-label={social.label}
+                      className="group flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 transition-all duration-200 hover:border-cyan-300/40 hover:bg-white/10"
                     >
-                      <IconComponent className="w-5 h-5 text-gray-400 group-hover:text-[hsl(190,95%,55%)] transition-colors" />
+                      <Icon className="h-5 w-5 text-slate-400 transition-colors group-hover:text-cyan-200" />
                     </a>
                   );
                 })}
               </div>
             </div>
 
-            {/* Links Grid - Takes 7 columns */}
-            <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:col-span-7">
               {footerSections.map((section) => (
-                <div key={section.title} className="space-y-4">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-[hsl(35,85%,60%)]">
+                <div
+                  key={section.title}
+                  className="rounded-[1.5rem] border border-white/8 bg-white/[0.03] p-5"
+                >
+                  <h3 className="text-sm font-bold uppercase tracking-[0.16em] text-[hsl(35,85%,68%)]">
                     {section.title}
                   </h3>
-                  <ul className="space-y-3">
+                  <ul className="mt-4 space-y-2">
                     {section.links.map((link) => (
                       <li key={link.label}>
                         <Link
                           href={link.href}
-                          className="text-gray-300 hover:text-white transition-colors duration-200 inline-flex items-center gap-2 group"
-                          onMouseEnter={() => setHoveredLink(link.label)}
-                          onMouseLeave={() => setHoveredLink(null)}
+                          className="group flex items-center justify-between rounded-xl px-3 py-2.5 text-sm text-slate-300 transition-all duration-200 hover:bg-white/5 hover:text-white"
                         >
-                          <span className="relative">
-                            {link.label}
-                            <span
-                              className={`absolute -bottom-0.5 left-0 h-px bg-[hsl(190,95%,55%)] transition-all duration-300 ${
-                                hoveredLink === link.label ? 'w-full' : 'w-0'
-                              }`}
-                            />
-                          </span>
-                          <ArrowRight
-                            className={`w-3 h-3 transition-all duration-300 ${
-                              hoveredLink === link.label
-                                ? 'opacity-100 translate-x-0'
-                                : 'opacity-0 -translate-x-2'
-                            }`}
-                          />
+                          <span>{link.label}</span>
+                          <ArrowRight className="h-4 w-4 opacity-0 transition-all duration-200 group-hover:translate-x-0.5 group-hover:opacity-100" />
                         </Link>
                       </li>
                     ))}
@@ -188,27 +209,24 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="py-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            {/* Copyright */}
-            <div className="flex items-center gap-2 text-sm text-gray-400">
-              <span>© {new Date().getFullYear()} Safeguardmedia.</span>
-              <span className="hidden md:inline">•</span>
-              <span>All rights reserved.</span>
-            </div>
+        <div className="mt-8 flex flex-col items-center justify-between gap-4 text-center md:flex-row md:text-left">
+          <div className="flex flex-wrap items-center justify-center gap-2 text-sm text-slate-400 md:justify-start">
+            <span>
+              © {new Date().getFullYear()} Safeguardmedia Technologies.
+            </span>
+            <span className="hidden md:inline">•</span>
+            <span>All rights reserved.</span>
+          </div>
 
-            {/* Trust Badges */}
-            <div className="flex items-center gap-6 text-xs text-gray-500">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                <span>All Systems Operational</span>
+          <div className="flex flex-wrap items-center justify-center gap-2 md:justify-end">
+            {statusPills.map((pill) => (
+              <div
+                key={pill}
+                className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-300"
+              >
+                {pill}
               </div>
-              <span className="hidden md:inline">•</span>
-              <span>SOC 2 Type II Certified</span>
-              <span className="hidden md:inline">•</span>
-              <span>GDPR Compliant</span>
-            </div>
+            ))}
           </div>
         </div>
       </div>
