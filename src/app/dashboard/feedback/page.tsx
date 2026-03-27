@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   AlertCircle,
@@ -11,25 +11,26 @@ import {
   ThumbsDown,
   ThumbsUp,
   X,
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useCreateFeedback } from '@/hooks/useFeedback';
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { useCreateFeedback } from "@/hooks/useFeedback";
 
 const FeedbackPage = () => {
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
-  const [feedbackType, setFeedbackType] = useState('General Feedback');
-  const [feedbackText, setFeedbackText] = useState('');
-  const [email, setEmail] = useState('');
+  const [feedbackType, setFeedbackType] = useState("General Feedback");
+  const [feedbackText, setFeedbackText] = useState("");
+  const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
-  const { mutateAsync: createFeedback, isPending: isSubmittingFeedback } = useCreateFeedback();
+  const { mutateAsync: createFeedback, isPending: isSubmittingFeedback } =
+    useCreateFeedback();
 
   useEffect(() => {
     if (errorMessage) {
       const timer = setTimeout(() => {
-        setErrorMessage('');
+        setErrorMessage("");
       }, 3000);
 
       return () => clearTimeout(timer);
@@ -38,18 +39,18 @@ const FeedbackPage = () => {
 
   const feedbackTypes = [
     {
-      id: 'General Feedback',
-      label: 'General Feedback',
+      id: "General Feedback",
+      label: "General Feedback",
       icon: MessageSquarePlus,
     },
-    { id: 'Bug Report', label: 'Bug Report', icon: ThumbsDown },
-    { id: 'Feature Request', label: 'Feature Request', icon: Sparkles },
-    { id: 'Improvement', label: 'Improvement', icon: ThumbsUp },
+    { id: "Bug Report", label: "Bug Report", icon: ThumbsDown },
+    { id: "Feature Request", label: "Feature Request", icon: Sparkles },
+    { id: "Improvement", label: "Improvement", icon: ThumbsUp },
   ];
 
   const handleSubmit = async () => {
     if (!feedbackText) {
-      setErrorMessage('Feedback description cannot be empty.'); // Local validation message
+      setErrorMessage("Feedback description cannot be empty."); // Local validation message
       return;
     }
 
@@ -64,18 +65,18 @@ const FeedbackPage = () => {
       await createFeedback(feedbackData); // USING HOOK'S MUTATE FUNCTION
 
       setIsSubmitted(true);
-      setErrorMessage(''); // Clear any previous local error message
+      setErrorMessage(""); // Clear any previous local error message
 
       // Reset after showing success
       setTimeout(() => {
         setIsSubmitted(false);
         setRating(0);
-        setFeedbackText('');
-        setEmail('');
-        setFeedbackType('General Feedback');
+        setFeedbackText("");
+        setEmail("");
+        setFeedbackType("General Feedback");
       }, 3000);
     } catch (error) {
-      console.error('Failed to submit feedback (local catch):', error);
+      console.error("Failed to submit feedback (local catch):", error);
     }
   };
 
@@ -114,7 +115,7 @@ const FeedbackPage = () => {
                   Send Feedback
                 </h1>
                 <p className="text-sm text-gray-500">
-                  Help us improve Safeguardmedia
+                  Help us improve Safeguardmedia Technologies
                 </p>
               </div>
             </div>
@@ -137,7 +138,7 @@ const FeedbackPage = () => {
             <span>{errorMessage}</span>
             <button
               type="button"
-              onClick={() => setErrorMessage('')}
+              onClick={() => setErrorMessage("")}
               className="ml-auto text-red-400 hover:text-red-600"
             >
               <X className="w-4 h-4" />
@@ -165,22 +166,22 @@ const FeedbackPage = () => {
                       onClick={() => setFeedbackType(type.id)}
                       className={`p-3 rounded-lg border-2 transition-all duration-200 transform hover:scale-105 ${
                         feedbackType === type.id
-                          ? 'border-[#0F2FA3] bg-[#0F2FA3]/10 shadow-md'
-                          : 'border-gray-200 hover:border-gray-300'
+                          ? "border-[#0F2FA3] bg-[#0F2FA3]/10 shadow-md"
+                          : "border-gray-200 hover:border-gray-300"
                       }`}
                     >
                       <Icon
                         className={`w-5 h-5 mx-auto mb-2 ${
                           feedbackType === type.id
-                            ? 'text-[#0F2FA3]'
-                            : 'text-gray-500'
+                            ? "text-[#0F2FA3]"
+                            : "text-gray-500"
                         }`}
                       />
                       <span
                         className={`text-xs font-medium ${
                           feedbackType === type.id
-                            ? 'text-[#0F2FA3]'
-                            : 'text-gray-600'
+                            ? "text-[#0F2FA3]"
+                            : "text-gray-600"
                         }`}
                       >
                         {type.label}
@@ -213,20 +214,20 @@ const FeedbackPage = () => {
                 <Star
                   className={`w-8 h-8 transition-colors duration-200 ${
                     star <= (hoveredRating || rating)
-                      ? 'fill-yellow-400 text-yellow-400'
-                      : 'text-gray-300'
+                      ? "fill-yellow-400 text-yellow-400"
+                      : "text-gray-300"
                   }`}
                 />
               </button>
             ))}
           </div>
           <p className="text-center mt-3 text-sm text-gray-500">
-            {rating === 0 && 'Click to rate'}
-            {rating === 1 && 'Poor'}
-            {rating === 2 && 'Fair'}
-            {rating === 3 && 'Good'}
-            {rating === 4 && 'Very Good'}
-            {rating === 5 && 'Excellent'}
+            {rating === 0 && "Click to rate"}
+            {rating === 1 && "Poor"}
+            {rating === 2 && "Fair"}
+            {rating === 3 && "Good"}
+            {rating === 4 && "Very Good"}
+            {rating === 5 && "Excellent"}
           </p>
         </fieldset>
       </div>
@@ -250,7 +251,7 @@ const FeedbackPage = () => {
         <div className="mt-2 text-right">
           <span
             className={`text-xs ${
-              feedbackText.length > 500 ? 'text-red-500' : 'text-gray-400'
+              feedbackText.length > 500 ? "text-red-500" : "text-gray-400"
             }`}
           >
             {feedbackText.length}/500
@@ -294,8 +295,8 @@ const FeedbackPage = () => {
           disabled={!feedbackText || isSubmittingFeedback}
           className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 flex items-center space-x-2 ${
             !feedbackText || isSubmittingFeedback
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-[#0F2FA3] text-white hover:bg-blue-700 shadow-lg hover:shadow-xl'
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-[#0F2FA3] text-white hover:bg-blue-700 shadow-lg hover:shadow-xl"
           }`}
         >
           {isSubmittingFeedback ? (

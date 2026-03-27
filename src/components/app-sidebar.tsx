@@ -5,7 +5,6 @@ import {
   BookCheck,
   BookOpen,
   CalendarClock,
-  Command,
   FileBarChart,
   Layers,
   LayoutDashboard,
@@ -202,12 +201,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <a href="/">
-                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <Command className="size-4" />
+                <div className="relative flex aspect-square size-8 items-center justify-center rounded-lg bg-blue-600 text-white shadow-lg shadow-blue-500/20">
+                  <Shield className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate text-lg font-medium">
-                    Safeguard Media
+                    Safeguardmedia
                   </span>
                 </div>
               </a>
