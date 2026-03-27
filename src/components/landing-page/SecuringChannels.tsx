@@ -94,7 +94,7 @@ export default function SecuringChannels() {
   return (
     <section
       id="use-cases"
-      className="relative overflow-hidden scroll-mt-28 bg-[linear-gradient(180deg,#ffffff_0%,#f9fbff_100%)] py-28 lg:scroll-mt-32"
+      className="relative overflow-hidden scroll-mt-28 bg-[linear-gradient(180deg,#ffffff_0%,#f9fbff_100%)] py-20 sm:py-24 lg:scroll-mt-32 lg:py-28"
     >
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#7aa6c90d_1px,transparent_1px),linear-gradient(to_bottom,#7aa6c90d_1px,transparent_1px)] bg-[size:18px_18px]" />
       <div className="absolute left-0 top-20 h-80 w-80 rounded-full bg-blue-100/35 blur-3xl" />
@@ -167,7 +167,7 @@ export default function SecuringChannels() {
                   onClick={() => setActiveUseCase(useCase.title)}
                   className={`w-full rounded-[1.75rem] border text-left transition-all duration-200 ${
                     isActive
-                      ? `border-slate-200 bg-gradient-to-br ${useCase.surface} p-6 shadow-sm md:p-7`
+                      ? `border-slate-200 bg-gradient-to-br ${useCase.surface} p-5 shadow-sm sm:p-6 md:p-7`
                       : "border-slate-200 bg-white p-4 shadow-sm hover:border-slate-300 hover:bg-slate-50/80"
                   }`}
                 >
@@ -182,7 +182,7 @@ export default function SecuringChannels() {
                         exit="exit"
                         className="flex flex-col gap-5 md:flex-row md:items-start"
                       >
-                        <div className="flex items-center gap-4 md:w-48 md:flex-col md:items-start md:gap-4">
+                        <div className="flex flex-wrap items-center gap-3 sm:gap-4 md:w-48 md:flex-col md:items-start md:gap-4">
                           <div className="rounded-2xl bg-white p-3 shadow-sm">
                             <Icon className={`h-5 w-5 ${useCase.accent}`} />
                           </div>
@@ -192,11 +192,11 @@ export default function SecuringChannels() {
                         </div>
 
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-start justify-between gap-4">
-                            <h3 className="text-xl font-semibold text-slate-900 md:text-2xl">
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                            <h3 className="text-lg font-semibold leading-tight text-slate-900 sm:text-xl md:text-2xl">
                               {useCase.title}
                             </h3>
-                            <ChevronRight className="h-5 w-5 shrink-0 rotate-90 text-slate-400" />
+                            <ChevronRight className="h-5 w-5 shrink-0 self-end rotate-90 text-slate-400 sm:self-auto" />
                           </div>
                           <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 md:text-[0.95rem]">
                             {useCase.description}
@@ -206,10 +206,10 @@ export default function SecuringChannels() {
                             {useCase.outcomes.map((outcome) => (
                               <div
                                 key={outcome}
-                                className="flex items-start gap-3 rounded-2xl bg-white/70 px-4 py-3"
+                                className="flex items-start gap-3 rounded-2xl bg-white/70 px-3 py-3 sm:px-4"
                               >
                                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
-                                <span className="text-sm font-medium leading-7 text-slate-700">
+                                <span className="text-sm font-medium leading-6 text-slate-700 sm:leading-7">
                                   {outcome}
                                 </span>
                               </div>
@@ -225,22 +225,22 @@ export default function SecuringChannels() {
                         initial="hidden"
                         animate="visible"
                         exit="exit"
-                        className="flex items-center justify-between gap-4"
+                        className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
                       >
-                        <div className="flex min-w-0 items-center gap-4">
+                        <div className="flex w-full min-w-0 items-start gap-3 sm:items-center sm:gap-4">
                           <div className="rounded-2xl bg-slate-100 p-3">
                             <Icon className={`h-5 w-5 ${useCase.accent}`} />
                           </div>
                           <div className="min-w-0">
-                            <div className="text-base font-semibold text-slate-900">
+                            <div className="text-base font-semibold leading-snug text-slate-900">
                               {useCase.title}
                             </div>
-                            <p className="mt-1 truncate text-sm text-slate-500">
+                            <p className="mt-1 text-sm leading-6 text-slate-500 sm:truncate">
                               {useCase.description}
                             </p>
                           </div>
                         </div>
-                        <ChevronRight className="h-5 w-5 shrink-0 text-slate-400" />
+                        <ChevronRight className="h-5 w-5 shrink-0 self-end text-slate-400 sm:self-auto" />
                       </motion.div>
                     )}
                   </AnimatePresence>
