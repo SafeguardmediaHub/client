@@ -46,7 +46,7 @@ export function NavDetectionTools({
   return (
     <>
       <SidebarGroup suppressHydrationWarning>
-        <SidebarGroupLabel>Forensics</SidebarGroupLabel>
+        <SidebarGroupLabel>Detection</SidebarGroupLabel>
         <SidebarMenu>
           {projects.map((item) => {
             const isLocked = item.url === "#";

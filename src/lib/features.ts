@@ -76,6 +76,21 @@ export const FEATURES: Record<string, FeatureMetadata> = {
       "Frame-by-frame AI-generation probability scoring",
     ],
   },
+  forensics: {
+    id: "forensics",
+    name: "Forensics",
+    description:
+      "Run forensic analysis on supported media to review verdicts, findings, and investigation-oriented evidence.",
+    status: "available",
+    url: "/dashboard/forensics",
+    category: "detection",
+    benefits: [
+      "Image and audio forensic analysis",
+      "Confidence and probability scoring",
+      "Finding-level forensic review",
+      "Advanced technical details for deeper inspection",
+    ],
+  },
   cheapfake_detection: {
     id: "cheapfake_detection",
     name: "Cheapfake Detection",

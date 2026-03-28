@@ -33,7 +33,6 @@ export interface AnalysisStatusData {
     updatedAt: string;
   };
   processing: {
-    provider?: string;
     processingMode?: string;
   };
   queue: AnalysisQueueStatus;

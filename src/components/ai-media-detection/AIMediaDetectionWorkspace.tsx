@@ -15,7 +15,6 @@ import {
   Search,
   Sparkles,
   Upload,
-  Wand2,
 } from "lucide-react";
 import Link from "next/link";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
@@ -241,7 +240,7 @@ function getMediaAvailability(media: Media) {
 
 function humanizeAnalysisError(error?: string, mediaType?: AIMediaType | null) {
   if (!error) {
-    return "The provider could not process this file. Please try another file or check again later.";
+    return "The analysis could not be completed for this file. Please try another file or check again later.";
   }
 
   const normalized = error.toLowerCase();
@@ -252,8 +251,8 @@ function humanizeAnalysisError(error?: string, mediaType?: AIMediaType | null) {
     normalized.includes("unable to evaluate")
   ) {
     return mediaType === "audio"
-      ? "This audio file was uploaded successfully, but the provider could not evaluate it."
-      : "This file was uploaded successfully, but the provider could not evaluate it.";
+      ? "This audio file was uploaded successfully, but it could not be evaluated."
+      : "This file was uploaded successfully, but it could not be evaluated.";
   }
 
   if (
@@ -261,18 +260,26 @@ function humanizeAnalysisError(error?: string, mediaType?: AIMediaType | null) {
     normalized.includes("credential") ||
     normalized.includes("configuration")
   ) {
-    return "Analysis is temporarily unavailable because the provider configuration could not be used.";
+    return "Analysis is temporarily unavailable because the service configuration could not be used.";
   }
 
   if (normalized.includes("timeout")) {
-    return "The provider took too long to respond for this file. Try refreshing the status or rerunning the analysis later.";
+    return "The analysis took too long to respond for this file. Try refreshing the status or rerunning it later.";
   }
 
   if (normalized.includes("provider")) {
-    return "The analysis provider could not process this file right now.";
+    return "The analysis could not be completed for this file right now.";
   }
 
   return error;
+}
+
+function getModelLabel(modelInfo?: Record<string, unknown>) {
+  if (typeof modelInfo?.name === "string") {
+    return modelInfo.name;
+  }
+
+  return "Not available";
 }
 
 function MediaThumbnail({ media }: { media: Media }) {
@@ -724,12 +731,11 @@ export function AIMediaDetectionWorkspace() {
         statusQuery.data?.queue.status ||
         "pending";
       const progress = statusQuery.data?.queue.progress ?? 18;
-      const provider = statusQuery.data?.processing.provider;
       const queueMessage =
         flowState === "analysis_processing"
-          ? "The provider is currently working through the selected file."
+          ? "The analysis is currently working through the selected file."
           : flowState === "starting_analysis"
-            ? "We are creating the analysis job and preparing the provider request."
+            ? "We are creating the analysis job and preparing the request."
             : "The analysis request has been accepted and is waiting to begin.";
 
       return (
@@ -764,12 +770,6 @@ export function AIMediaDetectionWorkspace() {
                 <Clock3 className="size-4 text-slate-500" />
                 {queueMessage}
               </span>
-              {provider && (
-                <span className="inline-flex items-center gap-2">
-                  <Wand2 className="size-4 text-slate-500" />
-                  Routed through {provider}
-                </span>
-              )}
             </div>
           </div>
 
@@ -781,12 +781,6 @@ export function AIMediaDetectionWorkspace() {
                 {statusQuery.data?.processing.processingMode ||
                   "Queued workflow"}
               </span>
-              {statusQuery.data?.processing.provider && (
-                <span className="inline-flex items-center gap-2">
-                  <Wand2 className="size-4" />
-                  Provider: {statusQuery.data.processing.provider}
-                </span>
-              )}
               {typeof statusQuery.data?.queue.attemptsMade === "number" && (
                 <span>Attempts: {statusQuery.data.queue.attemptsMade}</span>
               )}
@@ -834,12 +828,12 @@ export function AIMediaDetectionWorkspace() {
               </h3>
               <p className="mt-2 text-sm text-red-800">
                 {flowError ||
-                  "The provider could not process this file. Please try a different file or check again later."}
+                  "The analysis could not process this file. Please try a different file or check again later."}
               </p>
               <div className="mt-4 rounded-2xl border border-red-200/70 bg-white/60 p-4 text-sm text-red-900">
                 If this persists, try another file or rerun the analysis later.
-                Audio files are more likely to fail when provider support or
-                content quality is limited.
+                Audio files are more likely to fail when support or content
+                quality is limited.
               </div>
               {activeAnalysisId && (
                 <div className="mt-4">
@@ -1276,7 +1270,7 @@ export function AIMediaDetectionWorkspace() {
 
               <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
                 Image results are usually faster. Video and audio analyses may
-                spend longer in queue or provider processing.
+                spend longer in queue or analysis processing.
               </div>
             </CardContent>
           </Card>
@@ -1527,7 +1521,7 @@ export function AIMediaDetectionWorkspace() {
               Result breakdown
             </SheetTitle>
             <SheetDescription className="max-w-2xl text-sm text-slate-500">
-              Review the verdict, confidence signals, timing, and provider-level
+              Review the verdict, confidence signals, timing, and technical
               metadata for this analysis run.
             </SheetDescription>
           </SheetHeader>
@@ -1579,15 +1573,10 @@ export function AIMediaDetectionWorkspace() {
                       </div>
                       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                         <p className="text-xs uppercase tracking-[0.14em] text-slate-500">
-                          Provider
+                          Model
                         </p>
                         <p className="mt-2 text-sm font-semibold text-slate-900">
-                          {typeof detailQuery.data.detectionFeatures
-                            ?.provider === "string"
-                            ? String(
-                                detailQuery.data.detectionFeatures.provider,
-                              )
-                            : "Not available"}
+                          {getModelLabel(detailQuery.data.modelInfo)}
                         </p>
                       </div>
                       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
@@ -1638,13 +1627,8 @@ export function AIMediaDetectionWorkspace() {
                       value={formatDateTime(detailQuery.data.uploadDate)}
                     />
                     <DetailRow
-                      label="Provider"
-                      value={
-                        typeof detailQuery.data.detectionFeatures?.provider ===
-                        "string"
-                          ? String(detailQuery.data.detectionFeatures.provider)
-                          : "Not available"
-                      }
+                      label="Model"
+                      value={getModelLabel(detailQuery.data.modelInfo)}
                     />
                   </CardContent>
                 </Card>
@@ -1653,8 +1637,7 @@ export function AIMediaDetectionWorkspace() {
                   <CardHeader className="border-b border-slate-200 bg-slate-50/70 py-4">
                     <CardTitle>Technical details</CardTitle>
                     <CardDescription>
-                      Advanced provider metadata and model output for deeper
-                      review.
+                      Generic model output and detection data for deeper review.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-5 px-6 py-6">

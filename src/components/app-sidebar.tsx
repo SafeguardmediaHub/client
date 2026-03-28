@@ -76,6 +76,12 @@ const data = {
       icon: ShieldIcon,
       featureId: "ai_generated_media_detection",
     },
+    {
+      name: "Forensics",
+      url: "/dashboard/forensics",
+      icon: Shield,
+      featureId: "forensics",
+    },
     // {
     //   name: 'Cheapfake Detection',
     //   url: '#',

@@ -28,6 +28,7 @@ const AppNavbar = () => {
     batches: "Batch Processing",
     "fact-check": "Fact Checking",
     "ai-media-detection": "AI Media Detection",
+    forensics: "Forensics",
     timeline: "Timeline Verification",
     geolocation: "Geolocation",
     reverse: "Reverse Lookup",
