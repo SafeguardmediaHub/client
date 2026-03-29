@@ -19,6 +19,8 @@ import {
 import Link from "next/link";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { AccessNotice } from "@/components/subscription/AccessNotice";
+import { UsageSummaryBanner } from "@/components/subscription/UsageSummaryBanner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -62,6 +64,16 @@ import {
 } from "@/hooks/useAIMediaDetection";
 import { useAnalysisHistory } from "@/hooks/useAnalysisHistory";
 import { type Media, useGetMedia } from "@/hooks/useMedia";
+import { useSubscriptionUsage } from "@/hooks/useSubscriptionUsage";
+import {
+  formatResetDate,
+  getCombinedFeatureState,
+  getDeniedStateFromError,
+  getFeatureState,
+  getLimitReachedMessage,
+  getUsageGate,
+  type ProductFeatureKey,
+} from "@/lib/subscription-access";
 import { cn, formatFileSize, timeAgo } from "@/lib/utils";
 
 type MediaFilter = "all" | AIMediaType;
@@ -99,6 +111,21 @@ const ANALYSIS_STATUS_FILTERS: Array<{
   { label: "Completed", value: "completed" },
   { label: "Failed", value: "failed" },
 ];
+
+function getDeepfakeFeatureKey(
+  mediaType?: AIMediaType | null,
+): ProductFeatureKey | null {
+  switch (mediaType) {
+    case "image":
+      return "deepfakeImage";
+    case "video":
+      return "deepfakeVideo";
+    case "audio":
+      return "deepfakeAudio";
+    default:
+      return null;
+  }
+}
 
 function getMediaTypeLabel(mediaType: AIMediaType) {
   switch (mediaType) {
@@ -355,6 +382,7 @@ export function AIMediaDetectionWorkspace() {
   const [detailAnalysisId, setDetailAnalysisId] = useState<string | null>(null);
 
   const mediaQuery = useGetMedia({ page: 1, limit: 100, sort: "createdAt" });
+  const subscriptionUsageQuery = useSubscriptionUsage();
   const analysisHistoryQuery = useAnalysisHistory({
     page: analysisPage,
     limit: 10,
@@ -482,6 +510,20 @@ export function AIMediaDetectionWorkspace() {
   const selectedMediaAvailability = selectedMedia
     ? getMediaAvailability(selectedMedia)
     : null;
+  const deepfakeAccessState = getCombinedFeatureState(
+    subscriptionUsageQuery.data,
+    ["deepfakeImage", "deepfakeVideo", "deepfakeAudio"],
+  );
+  const selectedFeatureState = selectedMediaAvailability?.mediaType
+    ? getFeatureState(
+        subscriptionUsageQuery.data,
+        getDeepfakeFeatureKey(
+          selectedMediaAvailability.mediaType,
+        ) as ProductFeatureKey,
+      )
+    : deepfakeAccessState;
+  const analysisUsage = subscriptionUsageQuery.data?.usage.analyses;
+  const analysisUsageGate = getUsageGate(analysisUsage);
 
   const recentAnalyses = useMemo(() => {
     const items = analysisHistoryQuery.data?.analyses || [];
@@ -524,6 +566,20 @@ export function AIMediaDetectionWorkspace() {
   const handleRunAnalysis = async () => {
     if (!selectedMedia || !selectedMediaAvailability?.mediaType) return;
     if (!selectedMediaAvailability.isReady) return;
+    if (!selectedFeatureState.available) {
+      toast.error(
+        selectedFeatureState.message || "This analysis is unavailable.",
+      );
+      return;
+    }
+    if (!analysisUsageGate.allowed) {
+      toast.error(
+        `You have reached your monthly analysis limit. Your limit resets on ${formatResetDate(
+          subscriptionUsageQuery.data?.currentPeriod.endDate,
+        )}.`,
+      );
+      return;
+    }
 
     setFlowState("starting_analysis");
     setFlowError(null);
@@ -555,13 +611,20 @@ export function AIMediaDetectionWorkspace() {
       setPollUntil(Date.now() + 5 * 60 * 1000);
       toast.success("Analysis started. We will keep checking for updates.");
     } catch (error) {
-      const message =
-        (error as { response?: { data?: { message?: string } } })?.response
-          ?.data?.message || "Failed to start the analysis.";
-      const friendlyMessage = humanizeAnalysisError(
-        message,
-        selectedMediaAvailability.mediaType,
-      );
+      const denialState = getDeniedStateFromError(error);
+      const friendlyMessage =
+        denialState.kind === "limit"
+          ? `You have reached your monthly analysis limit. Used ${denialState.used ?? analysisUsage?.used ?? 0} of ${denialState.limit ?? analysisUsage?.limit ?? 0}. Your limit resets on ${formatResetDate(
+              denialState.resetsAt ||
+                subscriptionUsageQuery.data?.currentPeriod.endDate,
+            )}.`
+          : denialState.kind === "plan" || denialState.kind === "unavailable"
+            ? denialState.message
+            : humanizeAnalysisError(
+                (error as { response?: { data?: { message?: string } } })
+                  ?.response?.data?.message || "Failed to start the analysis.",
+                selectedMediaAvailability.mediaType,
+              );
       setFlowState("analysis_failed");
       setFlowError(friendlyMessage);
       toast.error(friendlyMessage);
@@ -673,7 +736,10 @@ export function AIMediaDetectionWorkspace() {
               <Button
                 onClick={handleRunAnalysis}
                 disabled={
-                  !selectedMediaAvailability.isReady || startDetection.isPending
+                  !selectedMediaAvailability.isReady ||
+                  !selectedFeatureState.available ||
+                  !analysisUsageGate.allowed ||
+                  startDetection.isPending
                 }
                 className="min-w-40"
               >
@@ -717,6 +783,27 @@ export function AIMediaDetectionWorkspace() {
               here.
             </div>
           )}
+          {selectedMediaAvailability.isReady &&
+            !selectedFeatureState.available && (
+              <AccessNotice
+                state={selectedFeatureState}
+                message={
+                  selectedFeatureState.message ||
+                  "This analysis is currently unavailable for the selected media type."
+                }
+              />
+            )}
+          {selectedMediaAvailability.isReady &&
+            selectedFeatureState.available &&
+            !analysisUsageGate.allowed && (
+              <AccessNotice
+                tone="limit"
+                message={getLimitReachedMessage(
+                  "analysis",
+                  subscriptionUsageQuery.data?.currentPeriod.endDate,
+                )}
+              />
+            )}
         </div>
       );
     }
@@ -951,6 +1038,12 @@ export function AIMediaDetectionWorkspace() {
             generation or manipulation.
           </p>
         </header>
+
+        <UsageSummaryBanner
+          bucket={analysisUsage}
+          label="Analyses used this month"
+          resetAt={subscriptionUsageQuery.data?.currentPeriod.endDate}
+        />
 
         <div className="grid gap-6 xl:grid-cols-[1.65fr_0.95fr]">
           <Card className="overflow-hidden py-0">
@@ -1272,6 +1365,15 @@ export function AIMediaDetectionWorkspace() {
                 Image results are usually faster. Video and audio analyses may
                 spend longer in queue or analysis processing.
               </div>
+              {!deepfakeAccessState.available && (
+                <AccessNotice
+                  state={deepfakeAccessState}
+                  message={
+                    deepfakeAccessState.message ||
+                    "AI media detection is currently unavailable."
+                  }
+                />
+              )}
             </CardContent>
           </Card>
         </div>

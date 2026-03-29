@@ -31,6 +31,12 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/context/AuthContext";
+import { useSubscriptionUsage } from "@/hooks/useSubscriptionUsage";
+import {
+  getCombinedFeatureState,
+  getFeatureStateShortLabel,
+  type ProductFeatureKey,
+} from "@/lib/subscription-access";
 import { NavAdmin } from "./nav-admin";
 import { NavDetectionTools } from "./nav-detection";
 import { NavOverview } from "./nav-overview";
@@ -66,6 +72,7 @@ const data = {
       name: "Batch Processing",
       url: "/dashboard/batches",
       icon: Layers,
+      accessFeatures: ["batchUpload"] as ProductFeatureKey[],
     },
   ],
 
@@ -75,12 +82,21 @@ const data = {
       url: "/dashboard/ai-media-detection",
       icon: ShieldIcon,
       featureId: "ai_generated_media_detection",
+      accessFeatures: [
+        "deepfakeImage",
+        "deepfakeVideo",
+        "deepfakeAudio",
+      ] as ProductFeatureKey[],
     },
     {
       name: "Forensics",
       url: "/dashboard/forensics",
       icon: Shield,
       featureId: "forensics",
+      accessFeatures: [
+        "forensicsImage",
+        "forensicsAudio",
+      ] as ProductFeatureKey[],
     },
     // {
     //   name: 'Cheapfake Detection',
@@ -102,18 +118,21 @@ const data = {
       url: "/dashboard/reverse",
       icon: SearchCheck,
       featureId: "reverse_lookup",
+      accessFeatures: ["reverseLookup"] as ProductFeatureKey[],
     },
     {
       name: "Geolocation Verification",
       url: "/dashboard/geolocation",
       icon: MapPin,
       featureId: "geolocation_verification",
+      accessFeatures: ["geolocationVerification"] as ProductFeatureKey[],
     },
     {
       name: "Timeline Verification",
       url: "/dashboard/timeline",
       icon: CalendarClock,
       featureId: "timeline_verification",
+      accessFeatures: ["timelineVerification"] as ProductFeatureKey[],
     },
     {
       name: "Tamper Detection",
@@ -126,6 +145,7 @@ const data = {
       url: "/dashboard/fact-check",
       icon: BookCheck,
       featureId: "fact_checking",
+      accessFeatures: ["factCheck"] as ProductFeatureKey[],
     },
     // {
     //   name: 'SM Source Tracing',
@@ -138,6 +158,7 @@ const data = {
       url: "/dashboard/claim-research",
       icon: Sparkles,
       featureId: "claim_research",
+      accessFeatures: ["claimResearch"] as ProductFeatureKey[],
     },
   ],
 
@@ -162,18 +183,21 @@ const data = {
       url: "/dashboard/authenticity",
       icon: ShieldCheck,
       featureId: "c2pa_overview",
+      accessFeatures: ["c2pa"] as ProductFeatureKey[],
     },
     {
       name: "Verify",
       url: "/dashboard/authenticity/verify",
       icon: Upload,
       featureId: "c2pa_verify",
+      accessFeatures: ["c2pa"] as ProductFeatureKey[],
     },
     {
       name: "Badges",
       url: "/dashboard/authenticity/badges",
       icon: Award,
       featureId: "c2pa_badges",
+      accessFeatures: ["c2pa"] as ProductFeatureKey[],
     },
     // {
     //   name: 'Admin Panel',
@@ -199,6 +223,64 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useAuth();
+  const subscriptionUsageQuery = useSubscriptionUsage();
+
+  const gatedOverview = data.overview.map((item) => {
+    if (!("accessFeatures" in item) || !item.accessFeatures) {
+      return item;
+    }
+
+    const state = getCombinedFeatureState(
+      subscriptionUsageQuery.data,
+      item.accessFeatures,
+    );
+
+    return {
+      ...item,
+      disabled: !state.available,
+      disabledReason: !state.available
+        ? getFeatureStateShortLabel(state)
+        : undefined,
+    };
+  });
+
+  const gatedDetection = data.detection.map((item) => {
+    if (!("accessFeatures" in item) || !item.accessFeatures) {
+      return item;
+    }
+
+    const state = getCombinedFeatureState(
+      subscriptionUsageQuery.data,
+      item.accessFeatures,
+    );
+
+    return {
+      ...item,
+      disabled: !state.available,
+      disabledReason: !state.available
+        ? getFeatureStateShortLabel(state)
+        : undefined,
+    };
+  });
+
+  const gatedVerification = data.verification.map((item) => {
+    if (!("accessFeatures" in item) || !item.accessFeatures) {
+      return item;
+    }
+
+    const state = getCombinedFeatureState(
+      subscriptionUsageQuery.data,
+      item.accessFeatures,
+    );
+
+    return {
+      ...item,
+      disabled: !state.available,
+      disabledReason: !state.available
+        ? getFeatureStateShortLabel(state)
+        : undefined,
+    };
+  });
 
   return (
     <Sidebar variant="inset" {...props} collapsible="offcanvas">
@@ -221,9 +303,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent className="pb-4">
-        <NavOverview projects={data.overview} />
-        <NavDetectionTools projects={data.detection} />
-        <NavVerificationTools projects={data.verification} />
+        <NavOverview projects={gatedOverview} />
+        <NavDetectionTools projects={gatedDetection} />
+        <NavVerificationTools projects={gatedVerification} />
         {/* <NavAuthenticity items={data.authenticity} /> */}
         <NavReporting projects={data.reporting} />
         {user?.role === "admin" && <NavAdmin />}

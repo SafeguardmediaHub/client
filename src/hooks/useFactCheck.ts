@@ -1,20 +1,34 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: <> */
 
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   analyzeContent,
   getClaimDetail,
   getJobStatus,
   verifyClaim,
-} from '@/lib/api/fact-check';
+} from "@/lib/api/fact-check";
+import {
+  getDeniedStateFromError,
+  invalidateSubscriptionUsage,
+} from "@/lib/subscription-access";
 import type {
   AnalyzeContentRequest,
   VerifyClaimRequest,
-} from '@/types/fact-check';
+} from "@/types/fact-check";
 
 export const useAnalyzeContent = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (payload: AnalyzeContentRequest) => analyzeContent(payload),
+    onSuccess: () => {
+      invalidateSubscriptionUsage(queryClient);
+    },
+    onError: (error) => {
+      if (getDeniedStateFromError(error).kind === "limit") {
+        invalidateSubscriptionUsage(queryClient);
+      }
+    },
   });
 };
 
@@ -28,7 +42,7 @@ export const useJobStatus = (
   const pollingInterval = options?.pollingInterval ?? 3000; // 3 seconds default
 
   return useQuery({
-    queryKey: ['factCheckJob', jobId],
+    queryKey: ["factCheckJob", jobId],
     queryFn: () => {
       return getJobStatus(jobId);
     },
@@ -43,19 +57,19 @@ export const useJobStatus = (
       const { status, claims } = data.data;
 
       // Stop if failed
-      if (status === 'failed') {
+      if (status === "failed") {
         return false;
       }
 
       // If job is "completed", we check for pending claims (Agentic Verification)
-      if (status === 'completed') {
+      if (status === "completed") {
         if (!claims || claims.length === 0) {
           return false; // Done, no claims
         }
 
         // Check if ANY claim is still pending or processing
         const hasPendingClaims = claims.some(
-          (c) => c.status === 'pending' || c.status === 'processing',
+          (c) => c.status === "pending" || c.status === "processing",
         );
 
         if (hasPendingClaims) {
@@ -89,7 +103,7 @@ export const useClaimDetail = (
   options?: { enabled?: boolean },
 ) => {
   return useQuery({
-    queryKey: ['claimDetail', claimId],
+    queryKey: ["claimDetail", claimId],
     queryFn: () => getClaimDetail(claimId),
     enabled: options?.enabled ?? !!claimId,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
@@ -105,7 +119,17 @@ export const useClaimDetail = (
 };
 
 export const useVerifyClaim = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (payload: VerifyClaimRequest) => verifyClaim(payload),
+    onSuccess: () => {
+      invalidateSubscriptionUsage(queryClient);
+    },
+    onError: (error) => {
+      if (getDeniedStateFromError(error).kind === "limit") {
+        invalidateSubscriptionUsage(queryClient);
+      }
+    },
   });
 };

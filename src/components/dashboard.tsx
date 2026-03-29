@@ -1,42 +1,45 @@
-'use client';
+"use client";
 
-import { LinkIcon, Loader2, UploadIcon } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import type { FC } from 'react';
-import { useCallback, useId, useMemo, useRef, useState } from 'react';
-import { toast } from 'sonner';
-import { useUrlUpload } from '@/hooks/useMedia';
-import api from '@/lib/api';
-import {
-  batchProcessingData,
-  chartCategories,
-  chartData,
-  recentActivities,
-  statisticsData,
-} from '@/lib/data';
-import { Button } from './ui/button';
-import { Card, CardContent } from './ui/card';
-import { Input } from './ui/input';
-import { DashboardOverview } from './dashboard/overview/DashboardOverview';
-import { Badge } from './ui/badge';
-import { useDashboardOverview } from '@/hooks/useDashboard';
+import { useQueryClient } from "@tanstack/react-query";
+import { LinkIcon, Loader2, UploadIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import type { FC } from "react";
+import { useCallback, useId, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
+import { useAssistant } from "@/context/AssistantContext";
+import { useDashboardOverview } from "@/hooks/useDashboard";
+import { useUrlUpload } from "@/hooks/useMedia";
+import { useSubscriptionUsage } from "@/hooks/useSubscriptionUsage";
+import api from "@/lib/api";
 import {
   formatSubscriptionTier,
   getSubscriptionBadgeColor,
-} from '@/lib/dashboard-utils';
-import { AssistantPanel, AssistantErrorBoundary } from './assistant';
-import { useAssistant } from '@/context/AssistantContext';
+} from "@/lib/dashboard-utils";
+import {
+  formatResetDate,
+  formatUsageValue,
+  getUsageGate,
+  getUsageThreshold,
+  getUsageToneClasses,
+  invalidateSubscriptionUsage,
+} from "@/lib/subscription-access";
+import { AssistantErrorBoundary, AssistantPanel } from "./assistant";
+import { DashboardOverview } from "./dashboard/overview/DashboardOverview";
+import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
+import { Card, CardContent } from "./ui/card";
+import { Input } from "./ui/input";
 
 type UploadPhase =
-  | 'idle'
-  | 'validating'
-  | 'requesting_url'
-  | 'uploading'
-  | 'confirming'
-  | 'success'
-  | 'error';
+  | "idle"
+  | "validating"
+  | "requesting_url"
+  | "uploading"
+  | "confirming"
+  | "success"
+  | "error";
 
-type UploadType = 'general_image' | 'video' | 'audio';
+type UploadType = "general_image" | "video" | "audio";
 
 type DashboardProps = {
   userName?: string;
@@ -45,45 +48,62 @@ type DashboardProps = {
 };
 
 const MAX_BYTES = 1_000_000_000; // 1GB
-const ALLOWED_MIME_PREFIXES = ['image/', 'video/', 'audio/'];
+const ALLOWED_MIME_PREFIXES = ["image/", "video/", "audio/"];
 const ALLOWED_EXTENSIONS = [
-  'jpg',
-  'jpeg',
-  'png',
-  'mp4',
-  'mov',
-  'mp3',
-  'wav',
-  'm4a',
-  'aac',
-  'ogg',
+  "jpg",
+  "jpeg",
+  "png",
+  "mp4",
+  "mov",
+  "mp3",
+  "wav",
+  "m4a",
+  "aac",
+  "ogg",
 ];
 
 const Dashboard: FC<DashboardProps> = ({
-  userName = 'there',
+  userName = "there",
   onAnalyzeLink,
   onUploadSuccess,
 }) => {
   const router = useRouter();
-  const [url, setUrl] = useState('');
-  const [uploadPhase, setUploadPhase] = useState<UploadPhase>('idle');
+  const [url, setUrl] = useState("");
+  const [uploadPhase, setUploadPhase] = useState<UploadPhase>("idle");
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [progress, setProgress] = useState<number>(0);
   const [uploadedKey, setUploadedKey] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const queryClient = useQueryClient();
 
   const urlUploadMutation = useUrlUpload();
   const { openAssistant, setMediaContext } = useAssistant();
+  const subscriptionUsageQuery = useSubscriptionUsage();
+  const fileUsage = subscriptionUsageQuery.data?.usage.files;
+  const analysisUsage = subscriptionUsageQuery.data?.usage.analyses;
+  const batchUsage = subscriptionUsageQuery.data?.usage.batches;
+  const uploadGate = getUsageGate(fileUsage);
+  const uploadThreshold = getUsageThreshold(fileUsage);
 
   const handleUpload = () => {
-    if (!url) {
-      toast.error('Please enter a URL to upload.');
+    if (!uploadGate.allowed) {
+      const resetLabel = formatResetDate(
+        subscriptionUsageQuery.data?.currentPeriod.endDate,
+      );
+      toast.error(
+        `You have reached your monthly upload limit. Your limit resets on ${resetLabel}.`,
+      );
       return;
     }
 
-    toast.info('Starting upload from URL...');
+    if (!url) {
+      toast.error("Please enter a URL to upload.");
+      return;
+    }
 
-    setUrl('');
+    toast.info("Starting upload from URL...");
+
+    setUrl("");
     urlUploadMutation.mutate(
       {
         url,
@@ -91,53 +111,53 @@ const Dashboard: FC<DashboardProps> = ({
       },
       {
         onSuccess: () => {
-          router.push('/dashboard/library');
+          router.push("/dashboard/library");
         },
-      }
+      },
     );
   };
 
   const isBusy = useMemo(
     () =>
-      uploadPhase === 'validating' ||
-      uploadPhase === 'requesting_url' ||
-      uploadPhase === 'uploading' ||
-      uploadPhase === 'confirming' ||
+      uploadPhase === "validating" ||
+      uploadPhase === "requesting_url" ||
+      uploadPhase === "uploading" ||
+      uploadPhase === "confirming" ||
       urlUploadMutation.isPending,
-    [uploadPhase, urlUploadMutation.isPending]
+    [uploadPhase, urlUploadMutation.isPending],
   );
 
   const validateFile = useCallback((file: File) => {
     if (file.size > MAX_BYTES) {
-      return 'File is too large. Max size is 1GB.';
+      return "File is too large. Max size is 1GB.";
     }
-    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
     const isAllowedExt = ALLOWED_EXTENSIONS.includes(ext);
     const isAllowedMime = ALLOWED_MIME_PREFIXES.some((p) =>
-      file.type.startsWith(p)
+      file.type.startsWith(p),
     );
     if (!isAllowedExt && !isAllowedMime) {
-      return 'Unsupported file type. Use JPEG, PNG, MP4, MOV, or common audio (MP3, WAV, M4A, AAC, OGG).';
+      return "Unsupported file type. Use JPEG, PNG, MP4, MOV, or common audio (MP3, WAV, M4A, AAC, OGG).";
     }
     return null;
   }, []);
 
   const determineUploadType = useCallback((file: File): UploadType => {
-    if (file.type.startsWith('image/')) return 'general_image';
-    if (file.type.startsWith('video/')) return 'video';
-    if (file.type.startsWith('audio/')) return 'audio';
-    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
-    if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext))
-      return 'general_image';
-    if (['mp4', 'mov', 'avi', 'mkv', 'webm'].includes(ext)) return 'video';
-    if (['mp3', 'wav', 'm4a', 'aac', 'ogg'].includes(ext)) return 'audio';
-    return 'general_image';
+    if (file.type.startsWith("image/")) return "general_image";
+    if (file.type.startsWith("video/")) return "video";
+    if (file.type.startsWith("audio/")) return "audio";
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+    if (["jpg", "jpeg", "png", "webp", "gif"].includes(ext))
+      return "general_image";
+    if (["mp4", "mov", "avi", "mkv", "webm"].includes(ext)) return "video";
+    if (["mp3", "wav", "m4a", "aac", "ogg"].includes(ext)) return "audio";
+    return "general_image";
   }, []);
 
   const requestPresignedUrl = useCallback(
     async (file: File, uploadType: UploadType) => {
       try {
-        const response = await api.post('/api/media/presigned-url', {
+        const response = await api.post("/api/media/presigned-url", {
           filename: file.name,
           contentType: file.type,
           fileSize: file.size,
@@ -147,43 +167,43 @@ const Dashboard: FC<DashboardProps> = ({
         const result = response.data;
         const { data } = result;
 
-        toast.success('Upload URL obtained. Starting upload...');
+        toast.success("Upload URL obtained. Starting upload...");
         const { uploadUrl, s3Key, correlationId } = data.upload;
 
         return { uploadUrl, key: s3Key, correlationId };
       } catch (error: unknown) {
-        console.error('Failed to get presigned URL:', error);
+        console.error("Failed to get presigned URL:", error);
         const errorMessage =
           (error as { response?: { data?: { message?: string } } })?.response
-            ?.data?.message || 'Failed to get upload URL. Please try again.';
+            ?.data?.message || "Failed to get upload URL. Please try again.";
         toast.error(errorMessage);
         throw new Error(errorMessage);
       }
     },
-    []
+    [],
   );
 
   const confirmUpload = useCallback(
     async (s3Key: string, correlationId: string) => {
       try {
-        const response = await api.post('/api/media/confirm-upload', {
+        const response = await api.post("/api/media/confirm-upload", {
           s3Key,
           correlationId,
         });
 
         const result = response.data;
-        toast.success('File uploaded and confirmed successfully!');
+        toast.success("File uploaded and confirmed successfully!");
         return result;
       } catch (error: unknown) {
-        console.error('Failed to confirm upload:', error);
+        console.error("Failed to confirm upload:", error);
         const errorMessage =
           (error as { response?: { data?: { message?: string } } })?.response
-            ?.data?.message || 'Failed to confirm upload. Please try again.';
+            ?.data?.message || "Failed to confirm upload. Please try again.";
         toast.error(errorMessage);
         throw new Error(errorMessage);
       }
     },
-    []
+    [],
   );
 
   const uploadWithProgress = useCallback(
@@ -191,7 +211,7 @@ const Dashboard: FC<DashboardProps> = ({
       // Use XHR to track upload progress
       await new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        xhr.open('PUT', uploadUrl, true);
+        xhr.open("PUT", uploadUrl, true);
         xhr.upload.onprogress = (evt) => {
           if (evt.lengthComputable) {
             const pct = Math.round((evt.loaded / evt.total) * 100);
@@ -207,55 +227,83 @@ const Dashboard: FC<DashboardProps> = ({
           }
         };
         xhr.onerror = () => {
-          reject(new Error('Network error during upload'));
+          reject(new Error("Network error during upload"));
         };
         xhr.setRequestHeader(
-          'Content-Type',
-          file.type || 'application/octet-stream'
+          "Content-Type",
+          file.type || "application/octet-stream",
         );
         xhr.send(file);
       });
     },
-    []
+    [],
   );
 
   const handleFiles = useCallback(
     async (files: FileList | null) => {
       if (!files || files.length === 0) return;
+      if (!uploadGate.allowed) {
+        const resetLabel = formatResetDate(
+          subscriptionUsageQuery.data?.currentPeriod.endDate,
+        );
+        setUploadPhase("error");
+        setUploadError(
+          `You have reached your monthly upload limit. Your limit resets on ${resetLabel}.`,
+        );
+        return;
+      }
       setUploadError(null);
       setUploadedKey(null);
       setProgress(0);
       const file = files[0];
-      setUploadPhase('validating');
+      setUploadPhase("validating");
       const validationError = validateFile(file);
       if (validationError) {
-        setUploadPhase('error');
+        setUploadPhase("error");
         setUploadError(validationError);
         return;
       }
       try {
-        setUploadPhase('requesting_url');
+        setUploadPhase("requesting_url");
         const uploadType = determineUploadType(file);
         const { uploadUrl, key, correlationId } = await requestPresignedUrl(
           file,
-          uploadType
+          uploadType,
         );
-        setUploadPhase('uploading');
+        setUploadPhase("uploading");
         await uploadWithProgress(file, uploadUrl);
-        setUploadPhase('confirming');
+        setUploadPhase("confirming");
         await confirmUpload(key, correlationId);
-        setUploadPhase('success');
+        invalidateSubscriptionUsage(queryClient);
+        setUploadPhase("success");
         setUploadedKey(key);
         onUploadSuccess?.(key);
-        
+
         // Auto-open assistant and set media context
-        setMediaContext(key, uploadType === 'general_image' ? 'image' : uploadType);
+        setMediaContext(
+          key,
+          uploadType === "general_image" ? "image" : uploadType,
+        );
         openAssistant();
-        
-        router.push('/dashboard/library');
+
+        router.push("/dashboard/library");
       } catch (err: unknown) {
-        setUploadPhase('error');
-        const message = err instanceof Error ? err.message : 'Upload failed';
+        const status =
+          typeof err === "object" &&
+          err !== null &&
+          "response" in err &&
+          typeof err.response === "object" &&
+          err.response !== null &&
+          "status" in err.response &&
+          typeof err.response.status === "number"
+            ? err.response.status
+            : null;
+
+        if (status === 429) {
+          invalidateSubscriptionUsage(queryClient);
+        }
+        setUploadPhase("error");
+        const message = err instanceof Error ? err.message : "Upload failed";
         setUploadError(message);
       }
     },
@@ -266,8 +314,13 @@ const Dashboard: FC<DashboardProps> = ({
       validateFile,
       confirmUpload,
       determineUploadType,
+      openAssistant,
       router,
-    ]
+      setMediaContext,
+      uploadGate.allowed,
+      subscriptionUsageQuery.data?.currentPeriod.endDate,
+      queryClient,
+    ],
   );
 
   const onDrop = useCallback(
@@ -278,7 +331,7 @@ const Dashboard: FC<DashboardProps> = ({
       const dt = e.dataTransfer;
       handleFiles(dt.files);
     },
-    [handleFiles, isBusy]
+    [handleFiles, isBusy],
   );
 
   const onBrowseClick = useCallback(() => {
@@ -291,7 +344,7 @@ const Dashboard: FC<DashboardProps> = ({
       e.preventDefault();
       onAnalyzeLink?.(url);
     },
-    [onAnalyzeLink, url]
+    [onAnalyzeLink, url],
   );
   const inputId = useId();
 
@@ -317,6 +370,45 @@ const Dashboard: FC<DashboardProps> = ({
         )}
       </header>
 
+      {subscriptionUsageQuery.data ? (
+        <div className="grid gap-4 md:grid-cols-4">
+          <Card className="border-slate-200">
+            <CardContent className="space-y-2 p-4">
+              <p className="text-sm text-muted-foreground">Uploads</p>
+              <p className="text-2xl font-semibold text-slate-900">
+                {formatUsageValue(fileUsage)}
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="border-slate-200">
+            <CardContent className="space-y-2 p-4">
+              <p className="text-sm text-muted-foreground">Analyses</p>
+              <p className="text-2xl font-semibold text-slate-900">
+                {formatUsageValue(analysisUsage)}
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="border-slate-200">
+            <CardContent className="space-y-2 p-4">
+              <p className="text-sm text-muted-foreground">Batches</p>
+              <p className="text-2xl font-semibold text-slate-900">
+                {formatUsageValue(batchUsage)}
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="border-slate-200">
+            <CardContent className="space-y-2 p-4">
+              <p className="text-sm text-muted-foreground">Resets</p>
+              <p className="text-2xl font-semibold text-slate-900">
+                {formatResetDate(
+                  subscriptionUsageQuery.data.currentPeriod.endDate,
+                )}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      ) : null}
+
       <Card className="p-4 sm:p-6">
         <CardContent className="p-0 w-full space-y-6">
           <div>
@@ -326,6 +418,19 @@ const Dashboard: FC<DashboardProps> = ({
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">
               Upload media to verify authenticity
             </p>
+          </div>
+          <div
+            className={`rounded-lg border px-4 py-3 text-sm ${getUsageToneClasses(uploadThreshold)}`}
+          >
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+              <span>{formatUsageValue(fileUsage)} uploads used this month</span>
+              <span>
+                Resets{" "}
+                {formatResetDate(
+                  subscriptionUsageQuery.data?.currentPeriod.endDate,
+                )}
+              </span>
+            </div>
           </div>
 
           {/* URL Upload Form */}
@@ -338,13 +443,13 @@ const Dashboard: FC<DashboardProps> = ({
                 placeholder="Paste media URL here..."
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                disabled={isBusy}
+                disabled={isBusy || !uploadGate.allowed}
               />
             </div>
             <Button
               type="submit"
               className="cursor-pointer w-full sm:w-auto sm:min-w-[140px]"
-              disabled={isBusy}
+              disabled={isBusy || !uploadGate.allowed}
               onClick={handleUpload}
             >
               {isBusy ? (
@@ -353,7 +458,7 @@ const Dashboard: FC<DashboardProps> = ({
                   Uploading...
                 </>
               ) : (
-                'Upload from URL'
+                "Upload from URL"
               )}
             </Button>
           </form>
@@ -373,7 +478,7 @@ const Dashboard: FC<DashboardProps> = ({
             className="relative w-full rounded-lg border-2 border-dashed border-muted-foreground/30 bg-muted/30 hover:bg-muted/50 hover:border-primary/50 transition-all"
             aria-label="Upload dropzone"
             onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
+              if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
                 onBrowseClick();
               }
@@ -397,16 +502,14 @@ const Dashboard: FC<DashboardProps> = ({
                   <span className="hidden sm:inline">
                     Drop files here or click to browse
                   </span>
-                  <span className="sm:hidden">
-                    Tap to select files
-                  </span>
+                  <span className="sm:hidden">Tap to select files</span>
                 </p>
                 <p className="text-xs text-muted-foreground text-center max-w-xs">
                   JPEG, PNG, MP4, MOV, MP3, WAV (Max 1GB)
                 </p>
               </div>
 
-              {uploadPhase === 'uploading' && (
+              {uploadPhase === "uploading" && (
                 <div className="w-full max-w-sm space-y-2">
                   <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
                     <div
@@ -420,10 +523,13 @@ const Dashboard: FC<DashboardProps> = ({
                 </div>
               )}
 
-              {uploadPhase === 'confirming' && (
+              {uploadPhase === "confirming" && (
                 <div className="w-full max-w-sm space-y-2">
                   <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
-                    <div className="h-full bg-primary transition-all animate-pulse rounded-full" style={{ width: '100%' }} />
+                    <div
+                      className="h-full bg-primary transition-all animate-pulse rounded-full"
+                      style={{ width: "100%" }}
+                    />
                   </div>
                   <p className="text-xs text-muted-foreground text-center">
                     Confirming upload...
@@ -431,19 +537,41 @@ const Dashboard: FC<DashboardProps> = ({
                 </div>
               )}
 
-              {uploadPhase === 'success' && uploadedKey && (
+              {uploadPhase === "success" && uploadedKey && (
                 <div className="flex items-center gap-2 text-green-600">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                   <p className="text-sm font-medium">Uploaded successfully!</p>
                 </div>
               )}
 
-              {uploadPhase === 'error' && uploadError && (
+              {uploadPhase === "error" && uploadError && (
                 <div className="flex items-center gap-2 text-red-600 max-w-sm">
-                  <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="w-5 h-5 flex-shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                   <p className="text-sm">{uploadError}</p>
                 </div>
@@ -456,23 +584,23 @@ const Dashboard: FC<DashboardProps> = ({
                 className="sr-only"
                 onChange={(e) => handleFiles(e.target.files)}
                 accept={[
-                  '.jpg',
-                  '.jpeg',
-                  '.png',
-                  '.heic',
-                  '.heif',
-                  '.mp4',
-                  '.mov',
-                  '.mp3',
-                  '.wav',
-                  '.m4a',
-                  '.aac',
-                  '.ogg',
-                  'image/*',
-                  'video/*',
-                  'audio/*',
-                ].join(',')}
-                disabled={isBusy}
+                  ".jpg",
+                  ".jpeg",
+                  ".png",
+                  ".heic",
+                  ".heif",
+                  ".mp4",
+                  ".mov",
+                  ".mp3",
+                  ".wav",
+                  ".m4a",
+                  ".aac",
+                  ".ogg",
+                  "image/*",
+                  "video/*",
+                  "audio/*",
+                ].join(",")}
+                disabled={isBusy || !uploadGate.allowed}
               />
             </label>
           </section>
@@ -481,7 +609,7 @@ const Dashboard: FC<DashboardProps> = ({
 
       {/* Dashboard Overview */}
       <DashboardOverview />
-      
+
       {/* AI Intent Assistant */}
       <AssistantErrorBoundary>
         <AssistantPanel />

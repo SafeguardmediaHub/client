@@ -1,5 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
+import {
+  getDeniedStateFromError,
+  invalidateSubscriptionUsage,
+} from "@/lib/subscription-access";
 
 export type ForensicsMediaType = "image" | "audio";
 
@@ -133,6 +137,12 @@ export function useStartForensics() {
     mutationFn: startForensics,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["userMedia"] });
+      invalidateSubscriptionUsage(queryClient);
+    },
+    onError: (error) => {
+      if (getDeniedStateFromError(error).kind === "limit") {
+        invalidateSubscriptionUsage(queryClient);
+      }
     },
   });
 }

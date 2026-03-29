@@ -18,13 +18,15 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateBatch } from "@/hooks/batches/useCreateBatch";
-import { formatFileSize, getFileIcon } from "@/lib/batch-utils";
+import { getFileIcon } from "@/lib/batch-utils";
 import type { UploadProgress } from "@/types/batch";
 import { FileDropzone } from "./FileDropzone";
 
 interface BatchUploadModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  disabled?: boolean;
+  disabledMessage?: string;
 }
 
 type UploadStep = "details" | "files" | "uploading" | "complete";
@@ -32,6 +34,8 @@ type UploadStep = "details" | "files" | "uploading" | "complete";
 export function BatchUploadModal({
   open,
   onOpenChange,
+  disabled = false,
+  disabledMessage,
 }: BatchUploadModalProps) {
   const router = useRouter();
   const [step, setStep] = useState<UploadStep>("details");
@@ -88,6 +92,9 @@ export function BatchUploadModal({
   };
 
   const handleNext = () => {
+    if (disabled) {
+      return;
+    }
     if (step === "details") {
       setStep("files");
     } else if (step === "files" && files.length > 0) {
@@ -97,6 +104,10 @@ export function BatchUploadModal({
   };
 
   const handleUpload = () => {
+    if (disabled) {
+      return;
+    }
+
     const batchData = {
       name: formData.name || undefined,
       description: formData.description || undefined,
@@ -174,6 +185,12 @@ export function BatchUploadModal({
             </DialogHeader>
 
             <div className="space-y-4 py-4">
+              {disabled && (
+                <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                  {disabledMessage ||
+                    "Batch creation is currently unavailable."}
+                </div>
+              )}
               {/* Batch Name */}
               <div className="space-y-2">
                 <Label htmlFor="name">Batch Name (optional)</Label>
@@ -185,6 +202,7 @@ export function BatchUploadModal({
                     setFormData({ ...formData, name: e.target.value })
                   }
                   maxLength={200}
+                  disabled={disabled}
                 />
               </div>
 
@@ -200,6 +218,7 @@ export function BatchUploadModal({
                   }
                   maxLength={1000}
                   rows={3}
+                  disabled={disabled}
                 />
                 <p className="text-xs text-gray-500 text-right">
                   {formData.description.length}/1000
@@ -223,11 +242,13 @@ export function BatchUploadModal({
                         handleAddTag();
                       }
                     }}
+                    disabled={disabled}
                   />
                   <Button
                     type="button"
                     variant="outline"
                     onClick={handleAddTag}
+                    disabled={disabled}
                   >
                     Add
                   </Button>
@@ -243,6 +264,7 @@ export function BatchUploadModal({
                         <button
                           type="button"
                           onClick={() => handleRemoveTag(tag)}
+                          disabled={disabled}
                           className="hover:text-blue-900"
                         >
                           ×
@@ -280,7 +302,8 @@ export function BatchUploadModal({
                         Enable Integrity Analysis (Authenticity Check)
                       </label>
                       <p className="text-xs text-gray-500 mt-1">
-                        Analyze media authenticity and detect manipulation across metadata, C2PA, file integrity, and geolocation
+                        Analyze media authenticity and detect manipulation
+                        across metadata, C2PA, file integrity, and geolocation
                       </p>
                     </div>
                   </div>
@@ -307,7 +330,8 @@ export function BatchUploadModal({
                         Enable C2PA Verification
                       </label>
                       <p className="text-xs text-gray-500 mt-1">
-                        Verify digital signatures and content credentials to confirm media authenticity and origin
+                        Verify digital signatures and content credentials to
+                        confirm media authenticity and origin
                       </p>
                     </div>
                   </div>
@@ -333,7 +357,8 @@ export function BatchUploadModal({
                         Enable OCR Text Extraction
                       </label>
                       <p className="text-xs text-gray-500 mt-1">
-                        Extract and analyze text content from images and documents for verification purposes
+                        Extract and analyze text content from images and
+                        documents for verification purposes
                       </p>
                     </div>
                   </div>
@@ -359,18 +384,15 @@ export function BatchUploadModal({
                         Enable Geolocation Verification
                       </label>
                       <p className="text-xs text-gray-500 mt-1">
-                        Verify location metadata and GPS coordinates to confirm where media was captured
+                        Verify location metadata and GPS coordinates to confirm
+                        where media was captured
                       </p>
                     </div>
                   </div>
 
                   {/* Deepfake - DISABLED */}
                   <div className="flex items-center space-x-2 opacity-50">
-                    <Checkbox
-                      id="deepfake"
-                      checked={false}
-                      disabled
-                    />
+                    <Checkbox id="deepfake" checked={false} disabled />
                     <div className="flex-1">
                       <label
                         htmlFor="deepfake"
@@ -378,9 +400,7 @@ export function BatchUploadModal({
                       >
                         Enable Deepfake Detection
                       </label>
-                      <p className="text-xs text-gray-400 mt-1">
-                        Coming soon
-                      </p>
+                      <p className="text-xs text-gray-400 mt-1">Coming soon</p>
                     </div>
                   </div>
                 </div>
@@ -405,7 +425,9 @@ export function BatchUploadModal({
               <Button variant="outline" onClick={handleClose}>
                 Cancel
               </Button>
-              <Button onClick={handleNext}>Next</Button>
+              <Button onClick={handleNext} disabled={disabled}>
+                Next
+              </Button>
             </DialogFooter>
           </>
         )}
@@ -428,7 +450,10 @@ export function BatchUploadModal({
               <Button variant="outline" onClick={() => setStep("details")}>
                 Back
               </Button>
-              <Button onClick={handleNext} disabled={files.length === 0}>
+              <Button
+                onClick={handleNext}
+                disabled={disabled || files.length === 0}
+              >
                 Upload Files
               </Button>
             </DialogFooter>

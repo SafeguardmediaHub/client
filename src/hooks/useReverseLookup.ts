@@ -1,6 +1,10 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: <> */
-import { useMutation, useQuery } from '@tanstack/react-query';
-import api from '@/lib/api';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import api from "@/lib/api";
+import {
+  getDeniedStateFromError,
+  invalidateSubscriptionUsage,
+} from "@/lib/subscription-access";
 
 export interface SearchResult {
   id: string;
@@ -41,12 +45,12 @@ export interface InitiateReverseLookupResponse {
     jobId: string;
     estimatedTime: number;
     status:
-      | 'queued'
-      | 'processing'
-      | 'completed'
-      | 'failed'
-      | 'cancelled'
-      | 'expired';
+      | "queued"
+      | "processing"
+      | "completed"
+      | "failed"
+      | "cancelled"
+      | "expired";
   };
 }
 
@@ -56,21 +60,21 @@ export interface ReverseLookupResult {
   data: {
     jobId: string;
     status:
-      | 'queued'
-      | 'processing'
-      | 'completed'
-      | 'failed'
-      | 'cancelled'
-      | 'expired';
+      | "queued"
+      | "processing"
+      | "completed"
+      | "failed"
+      | "cancelled"
+      | "expired";
     progress: number;
     report?: {
       id: string;
       status:
-        | 'pending'
-        | 'generating'
-        | 'completed'
-        | 'failed'
-        | 'not_generated';
+        | "pending"
+        | "generating"
+        | "completed"
+        | "failed"
+        | "not_generated";
       generatedAt?: string; // ISO Date string
       error?: string;
     };
@@ -89,12 +93,12 @@ export interface UserReverseLookup {
   };
   userId: string;
   status:
-    | 'queued'
-    | 'processing'
-    | 'completed'
-    | 'failed'
-    | 'cancelled'
-    | 'expired';
+    | "queued"
+    | "processing"
+    | "completed"
+    | "failed"
+    | "cancelled"
+    | "expired";
   progress: number;
   resultsCount: number;
   createdAt: string;
@@ -123,9 +127,9 @@ const reverseLookup = async ({
   mediaId: string;
 }): Promise<InitiateReverseLookupResponse> => {
   const response = await api.post(
-    '/api/reverse-lookup/search',
-    { mediaId, includeSocial: true, priority: 'high' },
-    { headers: { 'Content-Type': 'application/json' } },
+    "/api/reverse-lookup/search",
+    { mediaId, includeSocial: true, priority: "high" },
+    { headers: { "Content-Type": "application/json" } },
   );
 
   return response.data;
@@ -147,15 +151,15 @@ export const downloadReport = async (jobId: string) => {
   const downloadUrl = response.data?.data?.downloadUrl;
 
   if (!downloadUrl) {
-    console.log('Full response:', response.data);
-    throw new Error('Download URL not found');
+    console.log("Full response:", response.data);
+    throw new Error("Download URL not found");
   }
 
   // Trigger download using the same pattern as geolocation
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = downloadUrl;
   a.download = `Report-${jobId}.pdf`;
-  a.target = '_blank';
+  a.target = "_blank";
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -169,14 +173,24 @@ export const shareReport = async (jobId: string, expiresIn = 7) => {
 };
 
 const fetchUserReverseLookups = async (): Promise<UserReverseLookups> => {
-  const response = await api.get('/api/reverse-lookup/search');
+  const response = await api.get("/api/reverse-lookup/search");
 
   return response.data;
 };
 
 export const useReverseLookup = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: reverseLookup,
+    onSuccess: () => {
+      invalidateSubscriptionUsage(queryClient);
+    },
+    onError: (error) => {
+      if (getDeniedStateFromError(error).kind === "limit") {
+        invalidateSubscriptionUsage(queryClient);
+      }
+    },
   });
 };
 
@@ -190,7 +204,7 @@ export const useReverseLookupResult = (
   const pollingInterval = options?.pollingInterval ?? 10000; // 10 seconds default
 
   return useQuery({
-    queryKey: ['reverseLookupResult', jobId],
+    queryKey: ["reverseLookupResult", jobId],
     queryFn: () => reverseLookupResult(jobId),
     enabled: options?.enabled ?? !!jobId,
     refetchInterval: (query) => {
@@ -206,15 +220,15 @@ export const useReverseLookupResult = (
       const reportStatus = data.data.report?.status;
 
       // Only poll when status is queued or processing
-      if (['queued', 'processing'].includes(status)) {
+      if (["queued", "processing"].includes(status)) {
         return pollingInterval;
       }
 
       // If job is completed but report is still generating, keep polling
       if (
-        status === 'completed' &&
+        status === "completed" &&
         reportStatus &&
-        ['pending', 'generating'].includes(reportStatus)
+        ["pending", "generating"].includes(reportStatus)
       ) {
         return pollingInterval;
       }
@@ -236,7 +250,7 @@ export const useReverseLookupResult = (
 
 export const useUserReverseLookups = () => {
   return useQuery({
-    queryKey: ['userReverseLookups'],
+    queryKey: ["userReverseLookups"],
     queryFn: fetchUserReverseLookups,
     staleTime: 60 * 1000, // cache for 1 minute
   });

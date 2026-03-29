@@ -1,8 +1,12 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
-import { confirmBatch, createBatch, uploadFileToS3 } from '@/lib/api/batch';
-import { retryWithBackoff } from '@/lib/batch-utils';
-import type { CreateBatchRequest, UploadProgress } from '@/types/batch';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { confirmBatch, createBatch, uploadFileToS3 } from "@/lib/api/batch";
+import { retryWithBackoff } from "@/lib/batch-utils";
+import {
+  getDeniedStateFromError,
+  invalidateSubscriptionUsage,
+} from "@/lib/subscription-access";
+import type { CreateBatchRequest, UploadProgress } from "@/types/batch";
 
 interface UseCreateBatchOptions {
   onUploadProgress?: (progress: UploadProgress[]) => void;
@@ -31,7 +35,7 @@ export const useCreateBatch = (options?: UseCreateBatchOptions) => {
         progressMap.set(file.name, {
           filename: file.name,
           progress: 0,
-          status: 'pending',
+          status: "pending",
         });
       });
 
@@ -49,7 +53,7 @@ export const useCreateBatch = (options?: UseCreateBatchOptions) => {
           progressMap.set(file.name, {
             filename: file.name,
             progress: 0,
-            status: 'uploading',
+            status: "uploading",
           });
           updateProgress();
 
@@ -60,19 +64,19 @@ export const useCreateBatch = (options?: UseCreateBatchOptions) => {
                 progressMap.set(file.name, {
                   filename: file.name,
                   progress,
-                  status: 'uploading',
+                  status: "uploading",
                 });
                 updateProgress();
               }),
             3,
-            1000
+            1000,
           );
 
           // Mark as completed
           progressMap.set(file.name, {
             filename: file.name,
             progress: 100,
-            status: 'completed',
+            status: "completed",
           });
           updateProgress();
 
@@ -82,8 +86,8 @@ export const useCreateBatch = (options?: UseCreateBatchOptions) => {
           progressMap.set(file.name, {
             filename: file.name,
             progress: 0,
-            status: 'failed',
-            error: error instanceof Error ? error.message : 'Upload failed',
+            status: "failed",
+            error: error instanceof Error ? error.message : "Upload failed",
           });
           updateProgress();
 
@@ -97,12 +101,12 @@ export const useCreateBatch = (options?: UseCreateBatchOptions) => {
       const successfulUploads = uploadResults
         .filter(
           (
-            result
+            result,
           ): result is PromiseFulfilledResult<{
             itemId: string;
             s3Key: string;
             uploaded: boolean;
-          }> => result.status === 'fulfilled'
+          }> => result.status === "fulfilled",
         )
         .map((result) => result.value);
 
@@ -113,7 +117,7 @@ export const useCreateBatch = (options?: UseCreateBatchOptions) => {
 
       // Check if any uploads failed
       const failedCount = uploadResults.filter(
-        (r) => r.status === 'rejected'
+        (r) => r.status === "rejected",
       ).length;
 
       return {
@@ -125,27 +129,36 @@ export const useCreateBatch = (options?: UseCreateBatchOptions) => {
     },
     onSuccess: (data) => {
       // Invalidate queries to refetch data
-      queryClient.invalidateQueries({ queryKey: ['batches'] });
-      queryClient.invalidateQueries({ queryKey: ['batch-stats'] });
+      queryClient.invalidateQueries({ queryKey: ["batches"] });
+      queryClient.invalidateQueries({ queryKey: ["batch-stats"] });
+      invalidateSubscriptionUsage(queryClient);
 
       if (data.failedUploads > 0) {
         toast.warning(
-          `Batch created with ${data.successfulUploads}/${data.totalFiles} files uploaded`
+          `Batch created with ${data.successfulUploads}/${data.totalFiles} files uploaded`,
         );
       } else {
         toast.success(
-          `Batch created successfully! ${data.totalFiles} files uploaded`
+          `Batch created successfully! ${data.totalFiles} files uploaded`,
         );
       }
 
       options?.onSuccess?.(data.batchId);
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      if (getDeniedStateFromError(error).kind === "limit") {
+        invalidateSubscriptionUsage(queryClient);
+      }
       // Extract error message from backend response
       const errorMessage =
-        error?.response?.data?.message ||
-        error?.message ||
-        'Failed to create batch';
+        (
+          error as {
+            response?: { data?: { message?: string } };
+            message?: string;
+          }
+        )?.response?.data?.message ||
+        (error as { message?: string })?.message ||
+        "Failed to create batch";
 
       toast.error(errorMessage);
       options?.onError?.();

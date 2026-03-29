@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useDeferredValue, useMemo, useState } from "react";
+import { AccessNotice } from "@/components/subscription/AccessNotice";
+import { UsageSummaryBanner } from "@/components/subscription/UsageSummaryBanner";
 import {
   Accordion,
   AccordionContent,
@@ -40,6 +42,15 @@ import {
   useStartForensics,
 } from "@/hooks/useForensics";
 import { type Media, useGetMedia } from "@/hooks/useMedia";
+import { useSubscriptionUsage } from "@/hooks/useSubscriptionUsage";
+import {
+  formatResetDate,
+  getCombinedFeatureState,
+  getDeniedStateFromError,
+  getFeatureState,
+  getUsageGate,
+  type ProductFeatureKey,
+} from "@/lib/subscription-access";
 import { cn, formatFileSize, timeAgo } from "@/lib/utils";
 
 type MediaFilter = "all" | ForensicsMediaType;
@@ -57,6 +68,19 @@ const MEDIA_FILTERS: Array<{ label: string; value: MediaFilter }> = [
   { label: "Images", value: "image" },
   { label: "Audio", value: "audio" },
 ];
+
+function getForensicsFeatureKey(
+  mediaType?: ForensicsMediaType | null,
+): ProductFeatureKey | null {
+  switch (mediaType) {
+    case "image":
+      return "forensicsImage";
+    case "audio":
+      return "forensicsAudio";
+    default:
+      return null;
+  }
+}
 
 function getMediaTypeLabel(mediaType: ForensicsMediaType) {
   return mediaType === "image" ? "Image" : "Audio";
@@ -239,6 +263,7 @@ export function ForensicsWorkspace() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const deferredSearchValue = useDeferredValue(searchValue);
+  const subscriptionUsageQuery = useSubscriptionUsage();
   const mediaQuery = useGetMedia({
     page: 1,
     limit: 60,
@@ -255,6 +280,20 @@ export function ForensicsWorkspace() {
   const selectedAvailability = selectedMedia
     ? getMediaAvailability(selectedMedia)
     : null;
+  const forensicsAccessState = getCombinedFeatureState(
+    subscriptionUsageQuery.data,
+    ["forensicsImage", "forensicsAudio"],
+  );
+  const selectedFeatureState = selectedAvailability?.mediaType
+    ? getFeatureState(
+        subscriptionUsageQuery.data,
+        getForensicsFeatureKey(
+          selectedAvailability.mediaType,
+        ) as ProductFeatureKey,
+      )
+    : forensicsAccessState;
+  const analysisUsage = subscriptionUsageQuery.data?.usage.analyses;
+  const analysisUsageGate = getUsageGate(analysisUsage);
 
   const filteredMedia = useMemo(() => {
     const normalizedSearch = deferredSearchValue.trim().toLowerCase();
@@ -301,6 +340,23 @@ export function ForensicsWorkspace() {
     ) {
       return;
     }
+    if (!selectedFeatureState.available) {
+      setErrorMessage(
+        selectedFeatureState.message ||
+          "This forensic workflow is unavailable.",
+      );
+      setFlowState("failed");
+      return;
+    }
+    if (!analysisUsageGate.allowed) {
+      setErrorMessage(
+        `You have reached your monthly analysis limit. Your limit resets on ${formatResetDate(
+          subscriptionUsageQuery.data?.currentPeriod.endDate,
+        )}.`,
+      );
+      setFlowState("failed");
+      return;
+    }
 
     setFlowState("creating_forensic_analysis");
     setErrorMessage(null);
@@ -317,13 +373,29 @@ export function ForensicsWorkspace() {
       setAnalysisId(analysis.id);
       setFlowState("completed");
     } catch (error) {
-      setErrorMessage(getForensicsErrorMessage(error));
+      const denialState = getDeniedStateFromError(error);
+      setErrorMessage(
+        denialState.kind === "limit"
+          ? `You have reached your monthly analysis limit. Used ${denialState.used ?? analysisUsage?.used ?? 0} of ${denialState.limit ?? analysisUsage?.limit ?? 0}. Your limit resets on ${formatResetDate(
+              denialState.resetsAt ||
+                subscriptionUsageQuery.data?.currentPeriod.endDate,
+            )}.`
+          : denialState.kind === "plan" || denialState.kind === "unavailable"
+            ? denialState.message
+            : getForensicsErrorMessage(error),
+      );
       setFlowState("failed");
     }
   };
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6">
+      <UsageSummaryBanner
+        bucket={analysisUsage}
+        label="Analyses used this month"
+        resetAt={subscriptionUsageQuery.data?.currentPeriod.endDate}
+      />
+
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_360px]">
         <Card className="overflow-hidden border-slate-200 shadow-sm">
           <CardHeader className="border-b border-slate-200 bg-slate-50/80">
@@ -552,11 +624,21 @@ export function ForensicsWorkspace() {
                       <div className="text-sm font-medium text-slate-500">
                         {selectedAvailability.reason}
                       </div>
+                    ) : !selectedFeatureState.available ? (
+                      <div className="text-sm font-medium text-slate-500">
+                        {selectedFeatureState.message}
+                      </div>
+                    ) : !analysisUsageGate.allowed ? (
+                      <div className="text-sm font-medium text-red-700">
+                        Monthly analysis limit reached
+                      </div>
                     ) : null}
                     <Button
                       onClick={handleRunForensics}
                       disabled={
                         !selectedAvailability.isReady ||
+                        !selectedFeatureState.available ||
+                        !analysisUsageGate.allowed ||
                         startForensics.isPending
                       }
                       className="bg-blue-600 text-white hover:bg-blue-700"
@@ -620,6 +702,15 @@ export function ForensicsWorkspace() {
                   <p>{step}</p>
                 </div>
               ))}
+              {!forensicsAccessState.available ? (
+                <AccessNotice
+                  state={forensicsAccessState}
+                  message={
+                    forensicsAccessState.message ||
+                    "Forensics is currently unavailable."
+                  }
+                />
+              ) : null}
             </CardContent>
           </Card>
 

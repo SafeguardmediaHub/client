@@ -2,9 +2,9 @@
 /** biome-ignore-all lint/a11y/noLabelWithoutControl: <> */
 /** biome-ignore-all lint/suspicious/noArrayIndexKey: <> */
 /** biome-ignore-all lint/a11y/useKeyWithClickEvents: <> */
-'use client';
+"use client";
 
-import { format } from 'date-fns';
+import { format } from "date-fns";
 import {
   AlertCircle,
   ArrowLeft,
@@ -20,36 +20,53 @@ import {
   Video,
   X,
   XCircleIcon,
-} from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { DatePickerDemo } from '@/components/date-picker';
-import MediaSelector from '@/components/media/MediaSelector';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { type Media, useGetMedia } from '@/hooks/useMedia';
-import { formatFileSize, timeAgo } from '@/lib/utils';
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+import { DatePickerDemo } from "@/components/date-picker";
+import MediaSelector from "@/components/media/MediaSelector";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { type Media, useGetMedia } from "@/hooks/useMedia";
+import { useSubscriptionUsage } from "@/hooks/useSubscriptionUsage";
+import {
+  formatResetDate,
+  formatUsageValue,
+  getFeatureState,
+  getUsageGate,
+  getUsageThreshold,
+  getUsageToneClasses,
+} from "@/lib/subscription-access";
+import { formatFileSize, timeAgo } from "@/lib/utils";
 
-type PageState = 'idle' | 'selecting' | 'video-warning' | 'processing';
+type PageState = "idle" | "selecting" | "video-warning" | "processing";
 
 const TimelineVerificationPage = () => {
-  const [state, setState] = useState<PageState>('idle');
+  const [state, setState] = useState<PageState>("idle");
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
   const [claimedDate, setClaimedDate] = useState<Date | null>(null);
 
   const router = useRouter();
+  const subscriptionUsageQuery = useSubscriptionUsage();
   const { data, isLoading } = useGetMedia();
   const media = data?.media || [];
+  const timelineAccessState = getFeatureState(
+    subscriptionUsageQuery.data,
+    "timelineVerification",
+  );
+  const analysisUsage = subscriptionUsageQuery.data?.usage.analyses;
+  const analysisUsageGate = getUsageGate(analysisUsage);
+  const analysisUsageThreshold = getUsageThreshold(analysisUsage);
 
   const timelineVerifications = media.filter(
     (item) =>
-      item.timeline?.status === 'completed' ||
-      item.timeline?.status === 'failed',
+      item.timeline?.status === "completed" ||
+      item.timeline?.status === "failed",
   );
 
   const handleMediaSelection = (mediaFile: Media) => {
@@ -57,30 +74,44 @@ const TimelineVerificationPage = () => {
 
     if (selectedFile) {
       // Check if it's a video or non-image file
-      const isImage = selectedFile.mimeType.startsWith('image/');
+      const isImage = selectedFile.mimeType.startsWith("image/");
 
       if (!isImage) {
         setSelectedMedia(selectedFile);
-        setState('video-warning');
+        setState("video-warning");
       } else {
         setSelectedMedia(selectedFile);
-        setState('selecting');
+        setState("selecting");
       }
     }
   };
 
   const handleReset = () => {
-    setState('idle');
+    setState("idle");
     setSelectedMedia(null);
     setClaimedDate(null);
   };
 
   const handleStartVerification = () => {
     if (!claimedDate || !selectedMedia) return;
+    if (!timelineAccessState.available) {
+      toast.error(
+        timelineAccessState.message || "Timeline verification is unavailable.",
+      );
+      return;
+    }
+    if (!analysisUsageGate.allowed) {
+      toast.error(
+        `You have reached your monthly analysis limit. Your limit resets on ${formatResetDate(
+          subscriptionUsageQuery.data?.currentPeriod.endDate,
+        )}.`,
+      );
+      return;
+    }
 
-    setState('processing');
+    setState("processing");
 
-    const shortDate = format(claimedDate, 'yyyy-MM-dd');
+    const shortDate = format(claimedDate, "yyyy-MM-dd");
 
     // Simulate processing for a moment, then navigate
     setTimeout(() => {
@@ -97,7 +128,7 @@ const TimelineVerificationPage = () => {
     });
 
     if (claimedDate) {
-      queryParams.append('claimedDate', claimedDate);
+      queryParams.append("claimedDate", claimedDate);
     }
 
     router.push(`/dashboard/timeline/results?${queryParams.toString()}`);
@@ -105,9 +136,9 @@ const TimelineVerificationPage = () => {
 
   const getTimelineStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed':
+      case "completed":
         return <CheckCircleIcon className="w-4 h-4 text-green-600" />;
-      case 'failed':
+      case "failed":
         return <XCircleIcon className="w-4 h-4 text-red-600" />;
       default:
         return <ClockIcon className="w-4 h-4 text-yellow-600" />;
@@ -116,12 +147,12 @@ const TimelineVerificationPage = () => {
 
   const getTimelineStatusColor = (status: string) => {
     switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-700 border-green-200';
-      case 'failed':
-        return 'bg-red-100 text-red-700 border-red-200';
+      case "completed":
+        return "bg-green-100 text-green-700 border-green-200";
+      case "failed":
+        return "bg-red-100 text-red-700 border-red-200";
       default:
-        return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+        return "bg-yellow-100 text-yellow-700 border-yellow-200";
     }
   };
 
@@ -133,7 +164,7 @@ const TimelineVerificationPage = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => router.push('/dashboard')}
+            onClick={() => router.push("/dashboard")}
           >
             <ArrowLeft className="size-4 mr-1" />
             Back
@@ -156,8 +187,33 @@ const TimelineVerificationPage = () => {
             </p>
           </div>
 
+          <div
+            className={`mb-6 rounded-lg border px-4 py-3 text-sm ${getUsageToneClasses(
+              analysisUsageThreshold,
+            )}`}
+          >
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+              <span>
+                {formatUsageValue(analysisUsage)} analyses used this month
+              </span>
+              <span>
+                Resets{" "}
+                {formatResetDate(
+                  subscriptionUsageQuery.data?.currentPeriod.endDate,
+                )}
+              </span>
+            </div>
+          </div>
+
+          {!timelineAccessState.available && (
+            <div className="mb-6 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+              {timelineAccessState.message ||
+                "Timeline verification is currently unavailable."}
+            </div>
+          )}
+
           {/* State: Idle - Show info cards and selector */}
-          {state === 'idle' && (
+          {state === "idle" && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               {/* Info Cards Row */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -253,13 +309,13 @@ const TimelineVerificationPage = () => {
                     <AlertCircle className="size-4 text-amber-600 mt-0.5 flex-shrink-0" />
                     <div className="text-sm text-amber-800">
                       <span className="font-medium">Tip:</span> For video files,
-                      you can also extract keyframes using the{' '}
+                      you can also extract keyframes using the{" "}
                       <Link
                         href="/dashboard/keyframe"
                         className="underline font-medium hover:text-amber-900"
                       >
                         Keyframe Extraction
-                      </Link>{' '}
+                      </Link>{" "}
                       feature for frame-by-frame analysis.
                     </div>
                   </div>
@@ -286,7 +342,7 @@ const TimelineVerificationPage = () => {
           )}
 
           {/* State: Video Warning */}
-          {state === 'video-warning' && selectedMedia && (
+          {state === "video-warning" && selectedMedia && (
             <Card className="animate-in fade-in slide-in-from-bottom-4 border-amber-200 bg-amber-50/50">
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -317,7 +373,7 @@ const TimelineVerificationPage = () => {
                         {selectedMedia.filename}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {formatFileSize(Number(selectedMedia.fileSize))} •{' '}
+                        {formatFileSize(Number(selectedMedia.fileSize))} •{" "}
                         {selectedMedia.mimeType}
                       </p>
                     </div>
@@ -353,7 +409,7 @@ const TimelineVerificationPage = () => {
                 {/* Actions */}
                 <div className="flex gap-3">
                   <Button
-                    onClick={() => setState('selecting')}
+                    onClick={() => setState("selecting")}
                     variant="outline"
                     className="flex-1"
                   >
@@ -374,7 +430,7 @@ const TimelineVerificationPage = () => {
           )}
 
           {/* State: Selecting - Media selected, need date */}
-          {state === 'selecting' && selectedMedia && (
+          {state === "selecting" && selectedMedia && (
             <Card className="animate-in fade-in slide-in-from-bottom-4">
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -408,10 +464,10 @@ const TimelineVerificationPage = () => {
                         {selectedMedia.filename}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {formatFileSize(Number(selectedMedia.fileSize))} •{' '}
-                        {selectedMedia.mimeType.startsWith('image/')
-                          ? 'Image'
-                          : 'Video'}
+                        {formatFileSize(Number(selectedMedia.fileSize))} •{" "}
+                        {selectedMedia.mimeType.startsWith("image/")
+                          ? "Image"
+                          : "Video"}
                       </p>
                       <div className="flex items-center gap-2 mt-2">
                         <CheckCircle className="size-4 text-green-600" />
@@ -426,7 +482,7 @@ const TimelineVerificationPage = () => {
                 {/* Date Picker */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Claimed Creation Date{' '}
+                    Claimed Creation Date{" "}
                     <span className="text-red-500">*</span>
                   </label>
                   <DatePickerDemo
@@ -452,11 +508,24 @@ const TimelineVerificationPage = () => {
                   <Button
                     onClick={handleStartVerification}
                     className="w-full"
-                    disabled={!claimedDate}
+                    disabled={
+                      !claimedDate ||
+                      !timelineAccessState.available ||
+                      !analysisUsageGate.allowed
+                    }
                   >
                     <Clock className="size-4 mr-2" />
                     Start Timeline Verification
                   </Button>
+                  {!analysisUsageGate.allowed && (
+                    <p className="text-sm text-red-700">
+                      Monthly analysis limit reached. Resets{" "}
+                      {formatResetDate(
+                        subscriptionUsageQuery.data?.currentPeriod.endDate,
+                      )}
+                      .
+                    </p>
+                  )}
                   <Button
                     variant="outline"
                     onClick={handleReset}
@@ -470,7 +539,7 @@ const TimelineVerificationPage = () => {
           )}
 
           {/* State: Processing */}
-          {state === 'processing' && selectedMedia && claimedDate && (
+          {state === "processing" && selectedMedia && claimedDate && (
             <Card className="animate-in fade-in slide-in-from-bottom-4">
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -496,7 +565,7 @@ const TimelineVerificationPage = () => {
                         {selectedMedia.filename}
                       </p>
                       <p className="text-sm text-gray-500">
-                        Claimed: {format(claimedDate, 'MMM dd, yyyy')}
+                        Claimed: {format(claimedDate, "MMM dd, yyyy")}
                       </p>
                     </div>
                   </div>
@@ -576,7 +645,7 @@ const TimelineVerificationPage = () => {
                     <div className="relative">
                       <AspectRatio ratio={16 / 9} className="bg-muted">
                         <Image
-                          src={item.thumbnailUrl || '/file.svg'}
+                          src={item.thumbnailUrl || "/file.svg"}
                           alt={item.filename}
                           fill
                           className="h-full w-full object-cover rounded-t-md"
@@ -585,17 +654,17 @@ const TimelineVerificationPage = () => {
                       <div className="absolute top-3 right-3">
                         <Badge
                           className={`px-2 py-0.5 text-xs rounded border flex items-center gap-1 ${getTimelineStatusColor(
-                            item.timeline?.status || 'pending',
+                            item.timeline?.status || "pending",
                           )}`}
                         >
                           {getTimelineStatusIcon(
-                            item.timeline?.status || 'pending',
+                            item.timeline?.status || "pending",
                           )}
-                          {item.timeline?.status === 'completed'
-                            ? 'Verified'
-                            : item.timeline?.status === 'failed'
-                              ? 'Failed'
-                              : 'Processing'}
+                          {item.timeline?.status === "completed"
+                            ? "Verified"
+                            : item.timeline?.status === "failed"
+                              ? "Failed"
+                              : "Processing"}
                         </Badge>
                       </div>
                     </div>

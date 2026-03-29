@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   FileSearch,
@@ -6,11 +6,11 @@ import {
   Lightbulb,
   Loader2,
   ShieldCheck,
-} from 'lucide-react';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+} from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -18,26 +18,32 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { useSubmitClaim } from '@/hooks/useClaimResearch';
-import type { ClaimResearchError } from '@/types/claim-research';
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useSubmitClaim } from "@/hooks/useClaimResearch";
+import type { ClaimResearchError } from "@/types/claim-research";
 
 interface ClaimResearchFormProps {
   onSuccess: (jobId: string) => void;
+  disabled?: boolean;
+  disabledMessage?: string;
 }
 
 const EXAMPLE_CLAIMS = [
-  'ICE agents shoots woman in Minneapolis',
-  'New tax law passed today affecting remote workers',
-  'Video claims Mars has water flowing on the surface',
-  'Rumor: Celebrity X arrested for tax evasion',
+  "ICE agents shoots woman in Minneapolis",
+  "New tax law passed today affecting remote workers",
+  "Video claims Mars has water flowing on the surface",
+  "Rumor: Celebrity X arrested for tax evasion",
 ];
 
-export function ClaimResearchForm({ onSuccess }: ClaimResearchFormProps) {
-  const [claimText, setClaimText] = useState('');
-  const [context, setContext] = useState('');
+export function ClaimResearchForm({
+  onSuccess,
+  disabled = false,
+  disabledMessage,
+}: ClaimResearchFormProps) {
+  const [claimText, setClaimText] = useState("");
+  const [context, setContext] = useState("");
   const submitClaim = useSubmitClaim();
 
   const handleExampleClick = (text: string) => {
@@ -48,7 +54,13 @@ export function ClaimResearchForm({ onSuccess }: ClaimResearchFormProps) {
     e.preventDefault();
 
     if (claimText.length < 10) {
-      toast.error('Claim must be at least 10 characters long');
+      toast.error("Claim must be at least 10 characters long");
+      return;
+    }
+    if (disabled) {
+      toast.error(
+        disabledMessage || "Claim research is unavailable right now.",
+      );
       return;
     }
 
@@ -58,25 +70,25 @@ export function ClaimResearchForm({ onSuccess }: ClaimResearchFormProps) {
         context: context || undefined,
       });
 
-      toast.success('Investigation opened successfully!');
+      toast.success("Investigation opened successfully!");
       onSuccess(result.job_id);
     } catch (error: unknown) {
-      console.error('Failed to submit claim:', error);
+      console.error("Failed to submit claim:", error);
       // biome-ignore lint/suspicious/noExplicitAny: error handling fallback
       const errorData = (error as any).response?.data as ClaimResearchError;
 
       // biome-ignore lint/suspicious/noExplicitAny: error handling fallback
       if ((error as any).response?.status === 429) {
-        toast.error('Rate limit exceeded', {
+        toast.error("Rate limit exceeded", {
           description:
             errorData.message ||
-            'You have reached your daily limit for claim research.',
+            "You have reached your daily limit for claim research.",
         });
       } else {
-        toast.error('Failed to open investigation', {
+        toast.error("Failed to open investigation", {
           description:
             errorData?.message ||
-            'An unexpected error occurred. Please try again.',
+            "An unexpected error occurred. Please try again.",
         });
       }
     }
@@ -105,7 +117,7 @@ export function ClaimResearchForm({ onSuccess }: ClaimResearchFormProps) {
             <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-3 py-2 rounded-md text-xs flex items-start gap-2">
               <Info className="w-4 h-4 mt-0.5 shrink-0" />
               <p>
-                This tool checks if a statement is true or false. It is{' '}
+                This tool checks if a statement is true or false. It is{" "}
                 <strong>not a search engine</strong> for general questions
                 (e.g., "what is the price of gold").
               </p>
@@ -129,7 +141,7 @@ export function ClaimResearchForm({ onSuccess }: ClaimResearchFormProps) {
                   Try an example:
                 </span>
                 <span
-                  className={`text-xs ${claimText.length >= 1000 ? 'text-red-500' : 'text-zinc-400'}`}
+                  className={`text-xs ${claimText.length >= 1000 ? "text-red-500" : "text-zinc-400"}`}
                 >
                   {claimText.length}/1000
                 </span>
@@ -178,12 +190,19 @@ export function ClaimResearchForm({ onSuccess }: ClaimResearchFormProps) {
               </p>
             </div>
           )}
+          {disabled && (
+            <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              {disabledMessage || "Claim research is currently unavailable."}
+            </div>
+          )}
         </CardContent>
         <CardFooter>
           <Button
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 transition-all duration-300"
-            disabled={submitClaim.isPending || claimText.length < 10}
+            disabled={
+              disabled || submitClaim.isPending || claimText.length < 10
+            }
           >
             {submitClaim.isPending ? (
               <>

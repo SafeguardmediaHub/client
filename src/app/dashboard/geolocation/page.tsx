@@ -2,7 +2,7 @@
 /** biome-ignore-all lint/a11y/noLabelWithoutControl: <> */
 /** biome-ignore-all lint/a11y/noStaticElementInteractions: <> */
 /** biome-ignore-all lint/a11y/useKeyWithClickEvents: <> */
-'use client';
+"use client";
 
 import {
   AlertCircle,
@@ -19,43 +19,61 @@ import {
   Upload,
   Video,
   X,
-} from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
-import { toast } from 'sonner';
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import {
   FEATURE_INFO,
   FeatureInfoDialog,
-} from '@/components/FeatureInfoDialog';
-import MediaSelector from '@/components/media/MediaSelector';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+} from "@/components/FeatureInfoDialog";
+import MediaSelector from "@/components/media/MediaSelector";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   type GeoVerificationResult,
   useDeleteGeoVerification,
   useStartGeoVerification,
   useUserGeoVerifications,
-} from '@/hooks/useGeolocation';
-import { type Media, useGetMedia } from '@/hooks/useMedia';
-import { formatFileSize } from '@/lib/utils';
+} from "@/hooks/useGeolocation";
+import { type Media, useGetMedia } from "@/hooks/useMedia";
+import { useSubscriptionUsage } from "@/hooks/useSubscriptionUsage";
+import {
+  formatResetDate,
+  formatUsageValue,
+  getDeniedStateFromError,
+  getFeatureState,
+  getUsageGate,
+  getUsageThreshold,
+  getUsageToneClasses,
+} from "@/lib/subscription-access";
+import { formatFileSize } from "@/lib/utils";
 
-type PageState = 'idle' | 'selecting' | 'video-warning' | 'processing';
+type PageState = "idle" | "selecting" | "video-warning" | "processing";
 
 const GeolocationVerificationPage = () => {
-  const [state, setState] = useState<PageState>('idle');
+  const [state, setState] = useState<PageState>("idle");
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
-  const [locationInput, setLocationInput] = useState('');
+  const [locationInput, setLocationInput] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('newest');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("newest");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [showInfoDialog, setShowInfoDialog] = useState(false);
 
   const router = useRouter();
   const startGeoMutation = useStartGeoVerification();
   const deleteMutation = useDeleteGeoVerification();
+  const subscriptionUsageQuery = useSubscriptionUsage();
+  const geolocationAccessState = getFeatureState(
+    subscriptionUsageQuery.data,
+    "geolocationVerification",
+  );
+  const analysisUsage = subscriptionUsageQuery.data?.usage.analyses;
+  const analysisUsageGate = getUsageGate(analysisUsage);
+  const analysisUsageThreshold = getUsageThreshold(analysisUsage);
 
   // Show dialog on first visit
   useEffect(() => {
@@ -75,7 +93,7 @@ const GeolocationVerificationPage = () => {
   );
 
   const [filteredVerifications, setFilteredVerifications] = useState<
-    GeoVerificationResult['data'][]
+    GeoVerificationResult["data"][]
   >([]);
 
   // Filter and sort verifications based on search, status, and sort order
@@ -94,17 +112,17 @@ const GeolocationVerificationPage = () => {
     }
 
     // Apply status filter
-    if (statusFilter !== 'all') {
+    if (statusFilter !== "all") {
       filtered = filtered.filter((v) => {
-        if (statusFilter === 'verified') {
+        if (statusFilter === "verified") {
           return v.verification.match === true;
-        } else if (statusFilter === 'pending') {
+        } else if (statusFilter === "pending") {
           return (
-            v.verification.status === 'queued' ||
-            v.verification.status === 'processing'
+            v.verification.status === "queued" ||
+            v.verification.status === "processing"
           );
-        } else if (statusFilter === 'failed') {
-          return v.verification.status === 'failed';
+        } else if (statusFilter === "failed") {
+          return v.verification.status === "failed";
         }
         return true;
       });
@@ -114,7 +132,7 @@ const GeolocationVerificationPage = () => {
     filtered.sort((a, b) => {
       const dateA = new Date(a.createdAt).getTime();
       const dateB = new Date(b.createdAt).getTime();
-      return sortBy === 'newest' ? dateB - dateA : dateA - dateB;
+      return sortBy === "newest" ? dateB - dateA : dateA - dateB;
     });
 
     setFilteredVerifications(filtered);
@@ -125,48 +143,72 @@ const GeolocationVerificationPage = () => {
 
     if (selectedFile) {
       // Check if it's a video or non-image file
-      const isImage = selectedFile.mimeType.startsWith('image/');
+      const isImage = selectedFile.mimeType.startsWith("image/");
 
       if (!isImage) {
         setSelectedMedia(selectedFile);
-        setState('video-warning');
+        setState("video-warning");
       } else {
         setSelectedMedia(selectedFile);
-        setState('selecting');
+        setState("selecting");
       }
     }
   };
 
   const handleReset = () => {
-    setState('idle');
+    setState("idle");
     setSelectedMedia(null);
-    setLocationInput('');
+    setLocationInput("");
   };
 
   const handleStartGeoVerification = () => {
     if (!selectedMedia || !locationInput.trim()) return;
+    if (!geolocationAccessState.available) {
+      toast.error(
+        geolocationAccessState.message ||
+          "Geolocation verification is unavailable.",
+      );
+      return;
+    }
+    if (!analysisUsageGate.allowed) {
+      toast.error(
+        `You have reached your monthly analysis limit. Your limit resets on ${formatResetDate(
+          subscriptionUsageQuery.data?.currentPeriod.endDate,
+        )}.`,
+      );
+      return;
+    }
 
-    setState('processing');
+    setState("processing");
 
     startGeoMutation.mutate(
       { id: selectedMedia.id, claimedLocation: locationInput },
       {
         onSuccess: (response) => {
           if (response.success && response.data.verificationId) {
-            toast.success('Verification started!');
+            toast.success("Verification started!");
             router.push(
               `/dashboard/geolocation/results?verificationId=${response.data.verificationId}`,
             );
           }
         },
         onError: (error: any) => {
-          console.error('Error initiating verification:', error);
+          console.error("Error initiating verification:", error);
+          const denialState = getDeniedStateFromError(error);
           const errorMessage =
-            error?.response?.data?.message ||
-            error?.message ||
-            'Failed to start verification. Please try again.';
+            denialState.kind === "limit"
+              ? `You have reached your monthly analysis limit. Used ${denialState.used ?? analysisUsage?.used ?? 0} of ${denialState.limit ?? analysisUsage?.limit ?? 0}. Your limit resets on ${formatResetDate(
+                  denialState.resetsAt ||
+                    subscriptionUsageQuery.data?.currentPeriod.endDate,
+                )}.`
+              : denialState.kind === "plan" ||
+                  denialState.kind === "unavailable"
+                ? denialState.message
+                : error?.response?.data?.message ||
+                  error?.message ||
+                  "Failed to start verification. Please try again.";
           toast.error(errorMessage);
-          setState('selecting');
+          setState("selecting");
         },
       },
     );
@@ -181,29 +223,29 @@ const GeolocationVerificationPage = () => {
   const handleDelete = async (verificationId: string) => {
     try {
       await deleteMutation.mutateAsync(verificationId);
-      toast.success('Verification deleted successfully');
+      toast.success("Verification deleted successfully");
       setDeletingId(null);
     } catch (error: any) {
       const errorMessage =
         error?.response?.data?.message ||
         error?.message ||
-        'Failed to delete verification';
+        "Failed to delete verification";
       toast.error(errorMessage);
     }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
-  const getStatusBadge = (verification: GeoVerificationResult['data']) => {
+  const getStatusBadge = (verification: GeoVerificationResult["data"]) => {
     const status = verification.verification.status;
 
-    if (status === 'completed' || status === 'partial') {
+    if (status === "completed" || status === "partial") {
       return verification.verification.match ? (
         <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
           Verified
@@ -213,13 +255,13 @@ const GeolocationVerificationPage = () => {
           Mismatch
         </span>
       );
-    } else if (status === 'queued' || status === 'processing') {
+    } else if (status === "queued" || status === "processing") {
       return (
         <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
           Processing
         </span>
       );
-    } else if (status === 'failed') {
+    } else if (status === "failed") {
       return (
         <span className="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">
           Failed
@@ -242,7 +284,7 @@ const GeolocationVerificationPage = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => router.push('/dashboard')}
+            onClick={() => router.push("/dashboard")}
           >
             <ArrowLeft className="size-4 mr-1" />
             Back
@@ -274,6 +316,31 @@ const GeolocationVerificationPage = () => {
             </Button>
           </div>
 
+          <div
+            className={`mb-6 rounded-lg border px-4 py-3 text-sm ${getUsageToneClasses(
+              analysisUsageThreshold,
+            )}`}
+          >
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+              <span>
+                {formatUsageValue(analysisUsage)} analyses used this month
+              </span>
+              <span>
+                Resets{" "}
+                {formatResetDate(
+                  subscriptionUsageQuery.data?.currentPeriod.endDate,
+                )}
+              </span>
+            </div>
+          </div>
+
+          {!geolocationAccessState.available && (
+            <div className="mb-6 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+              {geolocationAccessState.message ||
+                "Geolocation verification is currently unavailable."}
+            </div>
+          )}
+
           <FeatureInfoDialog
             open={showInfoDialog}
             onOpenChange={setShowInfoDialog}
@@ -281,7 +348,7 @@ const GeolocationVerificationPage = () => {
           />
 
           {/* State: Idle - Show info cards and selector */}
-          {state === 'idle' && (
+          {state === "idle" && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               {/* Info Cards Row */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -374,13 +441,13 @@ const GeolocationVerificationPage = () => {
                     <AlertCircle className="size-4 text-amber-600 mt-0.5 flex-shrink-0" />
                     <div className="text-sm text-amber-800">
                       <span className="font-medium">Tip:</span> Only images with
-                      GPS metadata can be verified. If you have videos, use the{' '}
+                      GPS metadata can be verified. If you have videos, use the{" "}
                       <Link
                         href="/dashboard/keyframe"
                         className="underline font-medium hover:text-amber-900"
                       >
                         Keyframe Extraction
-                      </Link>{' '}
+                      </Link>{" "}
                       feature first.
                     </div>
                   </div>
@@ -407,7 +474,7 @@ const GeolocationVerificationPage = () => {
           )}
 
           {/* State: Video Warning */}
-          {state === 'video-warning' && selectedMedia && (
+          {state === "video-warning" && selectedMedia && (
             <Card className="animate-in fade-in slide-in-from-bottom-4 border-amber-200 bg-amber-50/50">
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -438,7 +505,7 @@ const GeolocationVerificationPage = () => {
                         {selectedMedia.filename}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {formatFileSize(Number(selectedMedia.fileSize))} •{' '}
+                        {formatFileSize(Number(selectedMedia.fileSize))} •{" "}
                         {selectedMedia.mimeType}
                       </p>
                     </div>
@@ -480,7 +547,7 @@ const GeolocationVerificationPage = () => {
           )}
 
           {/* State: Selecting - Image selected, need location */}
-          {state === 'selecting' && selectedMedia && (
+          {state === "selecting" && selectedMedia && (
             <Card className="animate-in fade-in slide-in-from-bottom-4">
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -562,12 +629,24 @@ const GeolocationVerificationPage = () => {
                     onClick={handleStartGeoVerification}
                     className="w-full"
                     disabled={
-                      !locationInput.trim() || startGeoMutation.isPending
+                      !locationInput.trim() ||
+                      !geolocationAccessState.available ||
+                      !analysisUsageGate.allowed ||
+                      startGeoMutation.isPending
                     }
                   >
                     <MapPin className="size-4 mr-2" />
                     Start Geolocation Verification
                   </Button>
+                  {!analysisUsageGate.allowed && (
+                    <p className="text-sm text-red-700">
+                      Monthly analysis limit reached. Resets{" "}
+                      {formatResetDate(
+                        subscriptionUsageQuery.data?.currentPeriod.endDate,
+                      )}
+                      .
+                    </p>
+                  )}
                   <Button
                     variant="outline"
                     onClick={handleReset}
@@ -582,7 +661,7 @@ const GeolocationVerificationPage = () => {
           )}
 
           {/* State: Processing */}
-          {state === 'processing' && selectedMedia && (
+          {state === "processing" && selectedMedia && (
             <Card className="animate-in fade-in slide-in-from-bottom-4">
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -723,9 +802,9 @@ const GeolocationVerificationPage = () => {
                             colSpan={6}
                             className="px-3 sm:px-6 py-12 text-center text-gray-500 text-sm"
                           >
-                            {searchQuery || statusFilter !== 'all'
-                              ? 'No verifications match your filters'
-                              : 'No verifications found. Start your first verification above!'}
+                            {searchQuery || statusFilter !== "all"
+                              ? "No verifications match your filters"
+                              : "No verifications found. Start your first verification above!"}
                           </td>
                         </tr>
                       ) : (
@@ -740,7 +819,7 @@ const GeolocationVerificationPage = () => {
                             <td className="px-3 sm:px-6 py-4">
                               <p className="text-xs sm:text-sm font-medium text-gray-900">
                                 {verification.mediaId?.originalFilename ||
-                                  'Media deleted'}
+                                  "Media deleted"}
                               </p>
                             </td>
                             <td className="px-3 sm:px-6 py-4">
@@ -749,7 +828,7 @@ const GeolocationVerificationPage = () => {
                               </p>
                               {verification.claimedLocation.parsed && (
                                 <p className="text-xs text-gray-500">
-                                  {verification.claimedLocation.parsed.region},{' '}
+                                  {verification.claimedLocation.parsed.region},{" "}
                                   {verification.claimedLocation.parsed.country}
                                 </p>
                               )}
@@ -759,9 +838,9 @@ const GeolocationVerificationPage = () => {
                             </td>
                             <td className="px-3 sm:px-6 py-4">
                               {verification.verification?.status ===
-                                'completed' ||
+                                "completed" ||
                               verification.verification?.status ===
-                                'partial' ? (
+                                "partial" ? (
                                 <div className="flex items-center gap-2">
                                   <div className="flex-1">
                                     <div className="flex items-center gap-2">
@@ -774,11 +853,11 @@ const GeolocationVerificationPage = () => {
                                         className={`h-1.5 rounded-full ${
                                           verification.verification
                                             .confidence >= 80
-                                            ? 'bg-green-600'
+                                            ? "bg-green-600"
                                             : verification.verification
                                                   .confidence >= 50
-                                              ? 'bg-yellow-600'
-                                              : 'bg-red-600'
+                                              ? "bg-yellow-600"
+                                              : "bg-red-600"
                                         }`}
                                         style={{
                                           width: `${verification.verification.confidence}%`,
@@ -813,8 +892,8 @@ const GeolocationVerificationPage = () => {
                                     className="text-xs cursor-pointer"
                                   >
                                     {deleteMutation.isPending
-                                      ? 'Deleting...'
-                                      : 'Confirm'}
+                                      ? "Deleting..."
+                                      : "Confirm"}
                                   </Button>
                                   <Button
                                     variant="ghost"
@@ -870,7 +949,7 @@ const GeolocationVerificationPage = () => {
                     className="px-6 py-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors cursor-pointer"
                     variant="outline"
                     onClick={() => {
-                      toast.info('Pagination coming soon');
+                      toast.info("Pagination coming soon");
                     }}
                   >
                     Load More

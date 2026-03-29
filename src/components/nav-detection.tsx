@@ -23,6 +23,8 @@ export function NavDetectionTools({
     url: string;
     icon: LucideIcon;
     featureId?: string;
+    disabled?: boolean;
+    disabledReason?: string;
   }[];
 }) {
   const [previewFeatureId, setPreviewFeatureId] = useState<string | null>(null);
@@ -49,7 +51,7 @@ export function NavDetectionTools({
         <SidebarGroupLabel>Detection</SidebarGroupLabel>
         <SidebarMenu>
           {projects.map((item) => {
-            const isLocked = item.url === "#";
+            const isLocked = item.url === "#" || item.disabled;
             // const feature = item.featureId
             //   ? getFeatureById(item.featureId)
             //   : null;
@@ -61,12 +63,18 @@ export function NavDetectionTools({
                     onClick={(e) =>
                       handleItemClick(e, item.url, item.featureId)
                     }
+                    title={item.disabledReason || undefined}
                     className={cn(
                       "opacity-60 cursor-pointer hover:opacity-80 transition-opacity",
                     )}
                   >
                     <item.icon className="text-primary" />
                     <span>{item.name}</span>
+                    {item.disabledReason ? (
+                      <span className="ml-auto hidden text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500 xl:inline">
+                        {item.disabledReason}
+                      </span>
+                    ) : null}
                     <Lock className="ml-auto w-3.5 h-3.5 text-gray-400 shrink-0" />
                   </SidebarMenuButton>
                 ) : (

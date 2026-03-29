@@ -1,40 +1,56 @@
-'use client';
+"use client";
 
-import { AlertCircle, ArrowLeft, FileText, Info } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { ClaimDetail } from '@/components/fact-check/ClaimDetail';
-import { ClaimList } from '@/components/fact-check/ClaimList';
-import { FactCheckForm } from '@/components/fact-check/FactCheckForm';
-import { FactCheckProcessing } from '@/components/fact-check/FactCheckProcessing';
-import { LoadingState } from '@/components/fact-check/LoadingState';
+import { AlertCircle, FileText } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
-  FeatureInfoDialog,
   FEATURE_INFO,
-} from '@/components/FeatureInfoDialog';
-import { Button } from '@/components/ui/button';
-import { useAnalyzeContent, useJobStatus } from '@/hooks/useFactCheck';
-import type { AnalyzeContentRequest } from '@/types/fact-check';
+  FeatureInfoDialog,
+} from "@/components/FeatureInfoDialog";
+import { ClaimDetail } from "@/components/fact-check/ClaimDetail";
+import { FactCheckForm } from "@/components/fact-check/FactCheckForm";
+import { FactCheckProcessing } from "@/components/fact-check/FactCheckProcessing";
+import { LoadingState } from "@/components/fact-check/LoadingState";
+import { Button } from "@/components/ui/button";
+import { useAnalyzeContent } from "@/hooks/useFactCheck";
+import { useSubscriptionUsage } from "@/hooks/useSubscriptionUsage";
+import {
+  formatResetDate,
+  formatUsageValue,
+  getDeniedStateFromError,
+  getFeatureState,
+  getUsageGate,
+  getUsageThreshold,
+  getUsageToneClasses,
+} from "@/lib/subscription-access";
+import type { AnalyzeContentRequest } from "@/types/fact-check";
 
 const FactCheckContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const jobIdFromUrl = searchParams.get('jobId');
-  const claimIdFromUrl = searchParams.get('claimId');
+  const jobIdFromUrl = searchParams.get("jobId");
+  const claimIdFromUrl = searchParams.get("claimId");
 
   const [currentJobId, setCurrentJobId] = useState<string | null>(jobIdFromUrl);
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(
-    claimIdFromUrl
+    claimIdFromUrl,
   );
   const [showInfoDialog, setShowInfoDialog] = useState(false);
+  const subscriptionUsageQuery = useSubscriptionUsage();
+  const factCheckAccessState = getFeatureState(
+    subscriptionUsageQuery.data,
+    "factCheck",
+  );
+  const analysisUsage = subscriptionUsageQuery.data?.usage.analyses;
+  const analysisUsageGate = getUsageGate(analysisUsage);
+  const analysisUsageThreshold = getUsageThreshold(analysisUsage);
 
   const analyzeContentMutation = useAnalyzeContent();
-  const jobStatusQuery = useJobStatus(currentJobId || '', {
-    enabled: !!currentJobId && !selectedClaimId,
-  });
-
+  const mutationError = analyzeContentMutation.error as
+    | { response?: { data?: { message?: string; error?: string } } }
+    | undefined;
   // Show dialog on first visit (only when no job is active)
   useEffect(() => {
     if (!currentJobId) {
@@ -43,6 +59,21 @@ const FactCheckContent = () => {
   }, [currentJobId]);
 
   const handleFormSubmit = (data: AnalyzeContentRequest) => {
+    if (!factCheckAccessState.available) {
+      toast.error(
+        factCheckAccessState.message || "Fact-checking is unavailable.",
+      );
+      return;
+    }
+    if (!analysisUsageGate.allowed) {
+      toast.error(
+        `You have reached your monthly analysis limit. Your limit resets on ${formatResetDate(
+          subscriptionUsageQuery.data?.currentPeriod.endDate,
+        )}.`,
+      );
+      return;
+    }
+
     analyzeContentMutation.mutate(data, {
       onSuccess: (response) => {
         if (response.success && response.data.job_id) {
@@ -53,17 +84,28 @@ const FactCheckContent = () => {
           // Update URL with job ID
           router.push(`/dashboard/fact-check?jobId=${jobId}`);
 
-          toast.success(response.message || 'Fact-check analysis started successfully!', {
-            description: `Estimated completion: ~${response.data.estimated_completion_seconds}s`,
-          });
+          toast.success(
+            response.message || "Fact-check analysis started successfully!",
+            {
+              description: `Estimated completion: ~${response.data.estimated_completion_seconds}s`,
+            },
+          );
         }
       },
-      onError: (error: any) => {
-        console.error('Failed to start fact-check:', error);
+      onError: (error: unknown) => {
+        console.error("Failed to start fact-check:", error);
+        const denialState = getDeniedStateFromError(error);
         const errorMessage =
-          error?.response?.data?.message ||
-          error?.response?.data?.error ||
-          (error instanceof Error ? error.message : 'Unknown error');
+          denialState.kind === "limit"
+            ? `You have reached your monthly analysis limit. Used ${denialState.used ?? analysisUsage?.used ?? 0} of ${denialState.limit ?? analysisUsage?.limit ?? 0}. Your limit resets on ${formatResetDate(
+                denialState.resetsAt ||
+                  subscriptionUsageQuery.data?.currentPeriod.endDate,
+              )}.`
+            : denialState.kind === "plan" || denialState.kind === "unavailable"
+              ? denialState.message
+              : mutationError?.response?.data?.message ||
+                mutationError?.response?.data?.error ||
+                (error instanceof Error ? error.message : "Unknown error");
         toast.error(`Failed to start fact-check: ${errorMessage}`);
       },
     });
@@ -72,7 +114,7 @@ const FactCheckContent = () => {
   const handleViewClaimDetail = (claimId: string) => {
     setSelectedClaimId(claimId);
     router.push(
-      `/dashboard/fact-check?jobId=${currentJobId}&claimId=${claimId}`
+      `/dashboard/fact-check?jobId=${currentJobId}&claimId=${claimId}`,
     );
   };
 
@@ -84,12 +126,8 @@ const FactCheckContent = () => {
   const handleStartNew = () => {
     setCurrentJobId(null);
     setSelectedClaimId(null);
-    router.push('/dashboard/fact-check');
+    router.push("/dashboard/fact-check");
   };
-
-  const jobStatus = jobStatusQuery.data?.data.status;
-  const claims = jobStatusQuery.data?.data.claims || [];
-  const summary = jobStatusQuery.data?.data.summary;
 
   return (
     <div className="w-full flex flex-col gap-6 p-4 sm:p-6 md:p-8 bg-gray-50">
@@ -143,6 +181,41 @@ const FactCheckContent = () => {
           featureInfo={FEATURE_INFO.factCheck}
         />
 
+        <div
+          className={`rounded-lg border px-4 py-3 text-sm ${getUsageToneClasses(
+            analysisUsageThreshold,
+          )}`}
+        >
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <span>
+              {formatUsageValue(analysisUsage)} analyses used this month
+            </span>
+            <span>
+              Resets{" "}
+              {formatResetDate(
+                subscriptionUsageQuery.data?.currentPeriod.endDate,
+              )}
+            </span>
+          </div>
+        </div>
+
+        {!factCheckAccessState.available && (
+          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+            {factCheckAccessState.message ||
+              "Fact-checking is currently unavailable."}
+          </div>
+        )}
+
+        {factCheckAccessState.available && !analysisUsageGate.allowed && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            You have reached your monthly analysis limit. Your limit resets on{" "}
+            {formatResetDate(
+              subscriptionUsageQuery.data?.currentPeriod.endDate,
+            )}
+            .
+          </div>
+        )}
+
         {!currentJobId ? (
           <div className="p-8 bg-white border border-gray-200 rounded-lg">
             <div className="mb-6">
@@ -159,6 +232,17 @@ const FactCheckContent = () => {
             <FactCheckForm
               onSubmit={handleFormSubmit}
               isLoading={analyzeContentMutation.isPending}
+              disabled={
+                !factCheckAccessState.available || !analysisUsageGate.allowed
+              }
+              disabledMessage={
+                factCheckAccessState.message ||
+                (analysisUsageGate.allowed
+                  ? undefined
+                  : `Monthly analysis limit reached. Resets ${formatResetDate(
+                      subscriptionUsageQuery.data?.currentPeriod.endDate,
+                    )}.`)
+              }
             />
 
             <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">

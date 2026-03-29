@@ -1,21 +1,30 @@
 /** biome-ignore-all lint/suspicious/noArrayIndexKey: <> */
 /** biome-ignore-all lint/style/noNonNullAssertion: <> */
 /** biome-ignore-all lint/complexity/noUselessFragments: <> */
-'use client';
+"use client";
 
-import { Plus, Search } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { BatchStatusBadge } from '@/components/batches/BatchStatusBadge';
-import { BatchUploadModal } from '@/components/batches/BatchUploadModal';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useBatches } from '@/hooks/batches/useBatches';
-import { useBatchStats } from '@/hooks/batches/useBatchStats';
-import { formatDate, formatFileSize } from '@/lib/batch-utils';
-import type { BatchListParams, BatchStatus } from '@/types/batch';
+import { Plus, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { BatchStatusBadge } from "@/components/batches/BatchStatusBadge";
+import { BatchUploadModal } from "@/components/batches/BatchUploadModal";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useBatches } from "@/hooks/batches/useBatches";
+import { useBatchStats } from "@/hooks/batches/useBatchStats";
+import { useSubscriptionUsage } from "@/hooks/useSubscriptionUsage";
+import { formatDate, formatFileSize } from "@/lib/batch-utils";
+import {
+  formatResetDate,
+  formatUsageValue,
+  getFeatureState,
+  getUsageGate,
+  getUsageThreshold,
+  getUsageToneClasses,
+} from "@/lib/subscription-access";
+import type { BatchListParams, BatchStatus } from "@/types/batch";
 
 export default function BatchesPage() {
   const router = useRouter();
@@ -23,10 +32,18 @@ export default function BatchesPage() {
   const [filters, setFilters] = useState<BatchListParams>({
     page: 1,
     limit: 10,
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
+    sortBy: "createdAt",
+    sortOrder: "desc",
   });
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const subscriptionUsageQuery = useSubscriptionUsage();
+  const batchAccessState = getFeatureState(
+    subscriptionUsageQuery.data,
+    "batchUpload",
+  );
+  const batchUsage = subscriptionUsageQuery.data?.usage.batches;
+  const batchUsageGate = getUsageGate(batchUsage);
+  const batchUsageThreshold = getUsageThreshold(batchUsage);
 
   const { data: batchesData, isLoading } = useBatches(filters);
   const { data: stats, isLoading: statsLoading } = useBatchStats();
@@ -72,11 +89,48 @@ export default function BatchesPage() {
               Manage and process media files in bulk
             </p>
           </div>
-          <Button onClick={() => setUploadModalOpen(true)} size="lg">
+          <Button
+            onClick={() => setUploadModalOpen(true)}
+            size="lg"
+            disabled={!batchAccessState.available || !batchUsageGate.allowed}
+          >
             <Plus className="mr-2 h-5 w-5" />
             New Batch
           </Button>
         </div>
+
+        <div
+          className={`rounded-lg border px-4 py-3 text-sm ${getUsageToneClasses(
+            batchUsageThreshold,
+          )}`}
+        >
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <span>{formatUsageValue(batchUsage)} batches used this month</span>
+            <span>
+              Resets{" "}
+              {formatResetDate(
+                subscriptionUsageQuery.data?.currentPeriod.endDate,
+              )}
+            </span>
+          </div>
+        </div>
+
+        {!batchAccessState.available && (
+          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+            {batchAccessState.message ||
+              "Batch upload is currently unavailable."}
+          </div>
+        )}
+
+        {batchAccessState.available && !batchUsageGate.allowed && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            You have reached your monthly batch limit. Your limit resets on{" "}
+            {formatResetDate(
+              subscriptionUsageQuery.data?.currentPeriod.endDate,
+            )}
+            .
+          </div>
+        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
@@ -127,13 +181,13 @@ export default function BatchesPage() {
                 <p className="text-3xl font-bold text-gray-900">
                   {stats?.storageUsed
                     ? formatFileSize(stats.storageUsed)
-                    : '0 B'}
+                    : "0 B"}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
-                  of{' '}
+                  of{" "}
                   {stats?.storageLimit
                     ? formatFileSize(stats.storageLimit)
-                    : '0 B'}
+                    : "0 B"}
                 </p>
               </Card>
             </>
@@ -155,7 +209,7 @@ export default function BatchesPage() {
 
             <div className="flex flex-wrap gap-2">
               <Button
-                variant={!filters.status ? 'default' : 'outline'}
+                variant={!filters.status ? "default" : "outline"}
                 onClick={() => handleStatusFilter(undefined)}
                 size="sm"
                 className="whitespace-nowrap"
@@ -164,25 +218,25 @@ export default function BatchesPage() {
               </Button>
               <Button
                 variant={
-                  filters.status === 'PROCESSING' ? 'default' : 'outline'
+                  filters.status === "PROCESSING" ? "default" : "outline"
                 }
-                onClick={() => handleStatusFilter('PROCESSING')}
+                onClick={() => handleStatusFilter("PROCESSING")}
                 size="sm"
                 className="whitespace-nowrap"
               >
                 Processing
               </Button>
               <Button
-                variant={filters.status === 'COMPLETED' ? 'default' : 'outline'}
-                onClick={() => handleStatusFilter('COMPLETED')}
+                variant={filters.status === "COMPLETED" ? "default" : "outline"}
+                onClick={() => handleStatusFilter("COMPLETED")}
                 size="sm"
                 className="whitespace-nowrap"
               >
                 Completed
               </Button>
               <Button
-                variant={filters.status === 'FAILED' ? 'default' : 'outline'}
-                onClick={() => handleStatusFilter('FAILED')}
+                variant={filters.status === "FAILED" ? "default" : "outline"}
+                onClick={() => handleStatusFilter("FAILED")}
                 size="sm"
                 className="whitespace-nowrap"
               >
@@ -235,7 +289,13 @@ export default function BatchesPage() {
                     <p className="text-gray-600">
                       Start by uploading your first batch of media files
                     </p>
-                    <Button onClick={() => setUploadModalOpen(true)} size="lg">
+                    <Button
+                      onClick={() => setUploadModalOpen(true)}
+                      size="lg"
+                      disabled={
+                        !batchAccessState.available || !batchUsageGate.allowed
+                      }
+                    >
                       <Plus className="mr-2 h-5 w-5" />
                       Create Your First Batch
                     </Button>
@@ -262,13 +322,13 @@ export default function BatchesPage() {
                     </div>
 
                     <p className="text-sm text-gray-600 mb-3 break-words">
-                      {batch.description || 'No description'}
+                      {batch.description || "No description"}
                     </p>
 
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
                       <span className="whitespace-nowrap">
                         {batch.totalItems} file
-                        {batch.totalItems !== 1 ? 's' : ''}
+                        {batch.totalItems !== 1 ? "s" : ""}
                       </span>
                       <span className="hidden sm:inline">•</span>
                       <span className="whitespace-nowrap">
@@ -308,7 +368,9 @@ export default function BatchesPage() {
                   </div>
 
                   <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 sm:gap-0 pt-3 sm:pt-0 border-t sm:border-t-0 sm:text-right">
-                    <span className="text-xs text-gray-500 sm:hidden">Progress</span>
+                    <span className="text-xs text-gray-500 sm:hidden">
+                      Progress
+                    </span>
                     <div className="flex flex-col items-end">
                       <div className="text-2xl sm:text-3xl font-bold text-gray-900">
                         {Math.round(batch.progress)}%
@@ -328,12 +390,12 @@ export default function BatchesPage() {
         {pagination && pagination.totalPages > 1 && (
           <div className="flex items-center justify-between">
             <p className="text-sm text-gray-600">
-              Showing{' '}
-              {(pagination.currentPage - 1) * pagination.itemsPerPage + 1} to{' '}
+              Showing{" "}
+              {(pagination.currentPage - 1) * pagination.itemsPerPage + 1} to{" "}
               {Math.min(
                 pagination.currentPage * pagination.itemsPerPage,
-                pagination.totalItems
-              )}{' '}
+                pagination.totalItems,
+              )}{" "}
               of {pagination.totalItems} batches
             </p>
 
@@ -366,6 +428,15 @@ export default function BatchesPage() {
         <BatchUploadModal
           open={uploadModalOpen}
           onOpenChange={setUploadModalOpen}
+          disabled={!batchAccessState.available || !batchUsageGate.allowed}
+          disabledMessage={
+            batchAccessState.message ||
+            (batchUsageGate.allowed
+              ? undefined
+              : `Monthly batch limit reached. Resets ${formatResetDate(
+                  subscriptionUsageQuery.data?.currentPeriod.endDate,
+                )}.`)
+          }
         />
       </div>
     </div>

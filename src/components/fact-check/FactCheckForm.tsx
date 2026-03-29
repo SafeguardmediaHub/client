@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { AlertCircle } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import type { AnalyzeContentRequest, ContentType } from "@/types/fact-check";
@@ -9,9 +9,16 @@ import type { AnalyzeContentRequest, ContentType } from "@/types/fact-check";
 interface FactCheckFormProps {
   onSubmit: (data: AnalyzeContentRequest) => void;
   isLoading?: boolean;
+  disabled?: boolean;
+  disabledMessage?: string;
 }
 
-export const FactCheckForm = ({ onSubmit, isLoading }: FactCheckFormProps) => {
+export const FactCheckForm = ({
+  onSubmit,
+  isLoading,
+  disabled = false,
+  disabledMessage,
+}: FactCheckFormProps) => {
   const [content, setContent] = useState("");
   const [contentType, setContentType] = useState<ContentType>("text");
   const [mediaId, setMediaId] = useState("");
@@ -54,6 +61,9 @@ export const FactCheckForm = ({ onSubmit, isLoading }: FactCheckFormProps) => {
     e.preventDefault();
 
     if (!validateForm()) {
+      return;
+    }
+    if (disabled) {
       return;
     }
 
@@ -196,10 +206,16 @@ export const FactCheckForm = ({ onSubmit, isLoading }: FactCheckFormProps) => {
         </div>
       </div>
 
+      {disabled && (
+        <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+          {disabledMessage || "Fact-checking is currently unavailable."}
+        </div>
+      )}
+
       <div className="flex gap-4">
         <Button
           type="submit"
-          disabled={isLoading || !isValid}
+          disabled={disabled || isLoading || !isValid}
           className="px-8 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? "Analyzing..." : "Start Fact-Check"}

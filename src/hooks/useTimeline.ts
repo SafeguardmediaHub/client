@@ -1,5 +1,9 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
-import api from '@/lib/api';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import api from "@/lib/api";
+import {
+  getDeniedStateFromError,
+  invalidateSubscriptionUsage,
+} from "@/lib/subscription-access";
 
 export interface VerifyTimelineJobResponse {
   success: boolean;
@@ -7,18 +11,18 @@ export interface VerifyTimelineJobResponse {
   data: {
     jobId: string;
     mediaId: string;
-    status: 'processing' | 'success' | 'failed';
+    status: "processing" | "success" | "failed";
     estimatedTime: string;
   };
 }
 
 export type VerificationStatus =
-  | 'idle'
-  | 'processing'
-  | 'partial'
-  | 'completed'
-  | 'failed'
-  | 'cancelled';
+  | "idle"
+  | "processing"
+  | "partial"
+  | "completed"
+  | "failed"
+  | "cancelled";
 
 export interface TimelineVerificationState {
   status: VerificationStatus;
@@ -93,29 +97,49 @@ const verifyTimeline = async ({
     `/api/timeline/verify/${mediaId}`,
     { claimedTakenAt },
     {
-      headers: { 'Content-Type': 'application/json' },
-    }
+      headers: { "Content-Type": "application/json" },
+    },
   );
 
   return response.data;
 };
 
 const fetchVerificationResult = async (
-  mediaId: string
+  mediaId: string,
 ): Promise<TimelineVerificationState> => {
   const response = await api.get(`/api/timeline/result/${mediaId}`);
   return response.data.data;
 };
 
 export const useTimeline = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: verifyTimeline,
+    onSuccess: () => {
+      invalidateSubscriptionUsage(queryClient);
+    },
+    onError: (error) => {
+      if (getDeniedStateFromError(error).kind === "limit") {
+        invalidateSubscriptionUsage(queryClient);
+      }
+    },
   });
 };
 
 export const useStartTimelineVerification = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: verifyTimeline,
+    onSuccess: () => {
+      invalidateSubscriptionUsage(queryClient);
+    },
+    onError: (error) => {
+      if (getDeniedStateFromError(error).kind === "limit") {
+        invalidateSubscriptionUsage(queryClient);
+      }
+    },
   });
 };
 
@@ -123,15 +147,15 @@ export const useTimelineVerificationResult = (
   mediaId: string,
   options?: {
     enabled?: boolean;
-  }
+  },
 ) => {
   return useQuery({
-    queryKey: ['timeline-verification-result', mediaId],
+    queryKey: ["timeline-verification-result", mediaId],
     queryFn: () => fetchVerificationResult(mediaId),
     refetchInterval: (query) => {
       const data = query.state.data;
       // Poll every 10 seconds if still processing or partial
-      if (data?.status === 'processing' || data?.status === 'partial') {
+      if (data?.status === "processing" || data?.status === "partial") {
         return 10000;
       }
       // Stop polling if completed, failed, cancelled, or idle

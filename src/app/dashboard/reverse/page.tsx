@@ -1,7 +1,7 @@
 /** biome-ignore-all lint/performance/noImgElement: <> */
 /** biome-ignore-all lint/suspicious/noExplicitAny: <> */
 /** biome-ignore-all lint/a11y/noLabelWithoutControl: <> */
-'use client';
+"use client";
 
 import {
   AlertCircle,
@@ -16,33 +16,51 @@ import {
   Upload,
   Video,
   X,
-} from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
   FEATURE_INFO,
   FeatureInfoDialog,
-} from '@/components/FeatureInfoDialog';
-import MediaSelector from '@/components/media/MediaSelector';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { type Media, useGetMedia } from '@/hooks/useMedia';
-import { useReverseLookup } from '@/hooks/useReverseLookup';
-import { formatFileSize } from '@/lib/utils';
+} from "@/components/FeatureInfoDialog";
+import MediaSelector from "@/components/media/MediaSelector";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { type Media, useGetMedia } from "@/hooks/useMedia";
+import { useReverseLookup } from "@/hooks/useReverseLookup";
+import { useSubscriptionUsage } from "@/hooks/useSubscriptionUsage";
+import {
+  formatResetDate,
+  formatUsageValue,
+  getDeniedStateFromError,
+  getFeatureState,
+  getUsageGate,
+  getUsageThreshold,
+  getUsageToneClasses,
+} from "@/lib/subscription-access";
+import { formatFileSize } from "@/lib/utils";
 
-type PageState = 'idle' | 'selecting' | 'video-warning' | 'processing';
+type PageState = "idle" | "selecting" | "video-warning" | "processing";
 
 const ReverseLookupPage = () => {
-  const [state, setState] = useState<PageState>('idle');
+  const [state, setState] = useState<PageState>("idle");
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
   const [showInfoDialog, setShowInfoDialog] = useState(false);
 
   const router = useRouter();
   const reverseLookupMutation = useReverseLookup();
+  const subscriptionUsageQuery = useSubscriptionUsage();
   const { data } = useGetMedia();
   const media = data?.media || [];
+  const reverseLookupAccessState = getFeatureState(
+    subscriptionUsageQuery.data,
+    "reverseLookup",
+  );
+  const analysisUsage = subscriptionUsageQuery.data?.usage.analyses;
+  const analysisUsageGate = getUsageGate(analysisUsage);
+  const analysisUsageThreshold = getUsageThreshold(analysisUsage);
 
   // Show dialog on first visit
   useEffect(() => {
@@ -54,47 +72,70 @@ const ReverseLookupPage = () => {
 
     if (selectedFile) {
       // Check if it's a video or non-image file
-      const isImage = selectedFile.mimeType.startsWith('image/');
+      const isImage = selectedFile.mimeType.startsWith("image/");
 
       if (!isImage) {
         setSelectedMedia(selectedFile);
-        setState('video-warning');
+        setState("video-warning");
       } else {
         setSelectedMedia(selectedFile);
-        setState('selecting');
+        setState("selecting");
       }
     }
   };
 
   const handleReset = () => {
-    setState('idle');
+    setState("idle");
     setSelectedMedia(null);
   };
 
   const handleStartReverseLookup = () => {
     if (!selectedMedia) return;
+    if (!reverseLookupAccessState.available) {
+      toast.error(
+        reverseLookupAccessState.message || "Reverse lookup is unavailable.",
+      );
+      return;
+    }
+    if (!analysisUsageGate.allowed) {
+      toast.error(
+        `You have reached your monthly analysis limit. Your limit resets on ${formatResetDate(
+          subscriptionUsageQuery.data?.currentPeriod.endDate,
+        )}.`,
+      );
+      return;
+    }
 
-    setState('processing');
+    setState("processing");
 
     reverseLookupMutation.mutate(
       { mediaId: selectedMedia.id },
       {
         onSuccess: (data) => {
           if (data.success && data.data.jobId) {
-            toast.success('Reverse lookup started!');
+            toast.success("Reverse lookup started!");
             router.push(
               `/dashboard/reverse/results?mediaId=${selectedMedia.id}&jobId=${data.data.jobId}`,
             );
           }
         },
         onError: (error: any) => {
-          console.error('Failed to start reverse lookup:', error);
+          console.error("Failed to start reverse lookup:", error);
+          const denialState = getDeniedStateFromError(error);
           const errorMessage =
-            error?.response?.data?.message ||
-            error?.message ||
-            'Failed to start reverse lookup';
+            denialState.kind === "limit"
+              ? `You have reached your monthly analysis limit. Used ${denialState.used ?? analysisUsage?.used ?? 0} of ${denialState.limit ?? analysisUsage?.limit ?? 0}. Your limit resets on ${formatResetDate(
+                  denialState.resetsAt ||
+                    subscriptionUsageQuery.data?.currentPeriod.endDate,
+                )}.`
+              : denialState.kind === "plan" ||
+                  denialState.kind === "unavailable"
+                ? denialState.message
+                : error?.response?.data?.message ||
+                  error?.message ||
+                  "Failed to start reverse lookup";
           toast.error(errorMessage);
-          setState('selecting');
+          setState("selecting");
         },
       },
     );
@@ -108,7 +149,7 @@ const ReverseLookupPage = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => router.push('/dashboard')}
+            onClick={() => router.push("/dashboard")}
           >
             <ArrowLeft className="size-4 mr-1" />
             Back
@@ -140,6 +181,31 @@ const ReverseLookupPage = () => {
             </Button>
           </div>
 
+          <div
+            className={`mb-6 rounded-lg border px-4 py-3 text-sm ${getUsageToneClasses(
+              analysisUsageThreshold,
+            )}`}
+          >
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+              <span>
+                {formatUsageValue(analysisUsage)} analyses used this month
+              </span>
+              <span>
+                Resets{" "}
+                {formatResetDate(
+                  subscriptionUsageQuery.data?.currentPeriod.endDate,
+                )}
+              </span>
+            </div>
+          </div>
+
+          {!reverseLookupAccessState.available && (
+            <div className="mb-6 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+              {reverseLookupAccessState.message ||
+                "Reverse lookup is currently unavailable."}
+            </div>
+          )}
+
           <FeatureInfoDialog
             open={showInfoDialog}
             onOpenChange={setShowInfoDialog}
@@ -147,7 +213,7 @@ const ReverseLookupPage = () => {
           />
 
           {/* State: Idle - Show info cards and selector */}
-          {state === 'idle' && (
+          {state === "idle" && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               {/* Info Cards Row */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -245,13 +311,13 @@ const ReverseLookupPage = () => {
                     <AlertCircle className="size-4 text-amber-600 mt-0.5 flex-shrink-0" />
                     <div className="text-sm text-amber-800">
                       <span className="font-medium">Tip:</span> Only images can
-                      be analyzed. If you have videos, use the{' '}
+                      be analyzed. If you have videos, use the{" "}
                       <Link
                         href="/dashboard/keyframe"
                         className="underline font-medium hover:text-amber-900"
                       >
                         Keyframe Extraction
-                      </Link>{' '}
+                      </Link>{" "}
                       feature first.
                     </div>
                   </div>
@@ -275,7 +341,7 @@ const ReverseLookupPage = () => {
           )}
 
           {/* State: Video Warning */}
-          {state === 'video-warning' && selectedMedia && (
+          {state === "video-warning" && selectedMedia && (
             <Card className="animate-in fade-in slide-in-from-bottom-4 border-amber-200 bg-amber-50/50">
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -306,7 +372,7 @@ const ReverseLookupPage = () => {
                         {selectedMedia.filename}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {formatFileSize(Number(selectedMedia.fileSize))} •{' '}
+                        {formatFileSize(Number(selectedMedia.fileSize))} •{" "}
                         {selectedMedia.mimeType}
                       </p>
                     </div>
@@ -348,7 +414,7 @@ const ReverseLookupPage = () => {
           )}
 
           {/* State: Selecting - Image selected, ready to proceed */}
-          {state === 'selecting' && selectedMedia && (
+          {state === "selecting" && selectedMedia && (
             <Card className="animate-in fade-in slide-in-from-bottom-4">
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -402,7 +468,7 @@ const ReverseLookupPage = () => {
                   </p>
                   <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                     <p className="text-sm text-blue-800">
-                      <span className="font-medium">What we'll search:</span>{' '}
+                      <span className="font-medium">What we'll search:</span>{" "}
                       Multiple image databases, news sources, and web archives
                       to find where this image has been published.
                     </p>
@@ -414,11 +480,24 @@ const ReverseLookupPage = () => {
                   <Button
                     onClick={handleStartReverseLookup}
                     className="w-full"
-                    disabled={reverseLookupMutation.isPending}
+                    disabled={
+                      reverseLookupMutation.isPending ||
+                      !reverseLookupAccessState.available ||
+                      !analysisUsageGate.allowed
+                    }
                   >
                     <ScanSearch className="size-4 mr-2" />
                     Start Reverse Lookup
                   </Button>
+                  {!analysisUsageGate.allowed && (
+                    <p className="text-sm text-red-700">
+                      Monthly analysis limit reached. Resets{" "}
+                      {formatResetDate(
+                        subscriptionUsageQuery.data?.currentPeriod.endDate,
+                      )}
+                      .
+                    </p>
+                  )}
                   <Button
                     variant="outline"
                     onClick={handleReset}
@@ -433,7 +512,7 @@ const ReverseLookupPage = () => {
           )}
 
           {/* State: Processing */}
-          {state === 'processing' && selectedMedia && (
+          {state === "processing" && selectedMedia && (
             <Card className="animate-in fade-in slide-in-from-bottom-4">
               <CardHeader>
                 <div className="flex items-center justify-between">

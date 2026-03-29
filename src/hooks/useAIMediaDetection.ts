@@ -1,5 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
+import {
+  getDeniedStateFromError,
+  invalidateSubscriptionUsage,
+} from "@/lib/subscription-access";
 
 export type AIMediaType = "image" | "video" | "audio";
 
@@ -125,6 +129,12 @@ export function useStartAIMediaDetection() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["analysisHistory"] });
       queryClient.invalidateQueries({ queryKey: ["userMedia"] });
+      invalidateSubscriptionUsage(queryClient);
+    },
+    onError: (error) => {
+      if (getDeniedStateFromError(error).kind === "limit") {
+        invalidateSubscriptionUsage(queryClient);
+      }
     },
   });
 }

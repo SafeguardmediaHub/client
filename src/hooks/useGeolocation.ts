@@ -1,12 +1,16 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import api from '@/lib/api';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import api from "@/lib/api";
+import {
+  getDeniedStateFromError,
+  invalidateSubscriptionUsage,
+} from "@/lib/subscription-access";
 
 export interface InitiateGeoVerificationResponse {
   success: boolean;
   message: string;
   data: {
     verificationId: string;
-    status: 'queued' | 'processing' | 'completed' | 'failed';
+    status: "queued" | "processing" | "completed" | "failed";
     estimatedTime: number;
   };
 }
@@ -80,7 +84,7 @@ export interface UserGeoVerifications {
   success: boolean;
   message: string;
   data: {
-    verifications: GeoVerificationResult['data'][];
+    verifications: GeoVerificationResult["data"][];
     pagination: {
       page: number;
       limit: number;
@@ -94,7 +98,7 @@ export interface UserGeoVerifications {
 
 const initiateVerification = async (
   id: string,
-  claimedLocation: string
+  claimedLocation: string,
 ): Promise<InitiateGeoVerificationResponse> => {
   const response = await api.post(
     `/api/geolocation/verify/${id}`,
@@ -103,9 +107,9 @@ const initiateVerification = async (
     },
     {
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-    }
+    },
   );
 
   //
@@ -114,21 +118,21 @@ const initiateVerification = async (
 };
 
 const fetchGeoVerificationResult = async (
-  verificationId: string
+  verificationId: string,
 ): Promise<GeoVerificationResult> => {
   const response = await api.get(`/api/geolocation/verify/${verificationId}`);
   return response.data;
 };
 
 const fetchUserVerifications = async (): Promise<UserGeoVerifications> => {
-  const response = await api.get('/api/geolocation/verify');
+  const response = await api.get("/api/geolocation/verify");
 
   return response.data;
 };
 
 const fetchGeoVerificationByMedia = async (mediaId: string) => {
   const response = await api.get(
-    `/api/geolocation/media/${mediaId}/verification`
+    `/api/geolocation/media/${mediaId}/verification`,
   );
 
   return response.data;
@@ -136,12 +140,14 @@ const fetchGeoVerificationByMedia = async (mediaId: string) => {
 
 const deleteGeoVerification = async (verificationId: string) => {
   const response = await api.delete(
-    `/api/geolocation/verify/${verificationId}`
+    `/api/geolocation/verify/${verificationId}`,
   );
   return response.data;
 };
 
 export const useStartGeoVerification = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: ({
       id,
@@ -150,6 +156,14 @@ export const useStartGeoVerification = () => {
       id: string;
       claimedLocation: string;
     }) => initiateVerification(id, claimedLocation),
+    onSuccess: () => {
+      invalidateSubscriptionUsage(queryClient);
+    },
+    onError: (error) => {
+      if (getDeniedStateFromError(error).kind === "limit") {
+        invalidateSubscriptionUsage(queryClient);
+      }
+    },
   });
 };
 
@@ -158,12 +172,12 @@ export const useGeoVerificationResult = (
   options?: {
     pollingInterval?: number;
     enabled?: boolean;
-  }
+  },
 ) => {
   const pollingInterval = options?.pollingInterval ?? 10000; // 10 seconds default
 
   return useQuery({
-    queryKey: ['geoVerificationResult', verificationId],
+    queryKey: ["geoVerificationResult", verificationId],
     queryFn: () => fetchGeoVerificationResult(verificationId),
     enabled: options?.enabled ?? !!verificationId,
     refetchInterval: (query) => {
@@ -178,7 +192,7 @@ export const useGeoVerificationResult = (
       const status = data.data.verification.status;
 
       // Only poll when status is queued or processing
-      if (['queued', 'processing'].includes(status)) {
+      if (["queued", "processing"].includes(status)) {
         return pollingInterval;
       }
 
@@ -199,7 +213,7 @@ export const useGeoVerificationResult = (
 
 export const useUserGeoVerifications = () => {
   return useQuery({
-    queryKey: ['userGeoVerifications'],
+    queryKey: ["userGeoVerifications"],
     queryFn: fetchUserVerifications,
     staleTime: 60 * 1000, // cache for 1 minute
   });
@@ -207,7 +221,7 @@ export const useUserGeoVerifications = () => {
 
 export const useGeoVerificationByMedia = (mediaId: string) => {
   return useQuery({
-    queryKey: ['geoVerificationByMedia', mediaId],
+    queryKey: ["geoVerificationByMedia", mediaId],
     queryFn: () => fetchGeoVerificationByMedia(mediaId),
     enabled: !!mediaId,
   });
@@ -222,8 +236,8 @@ export const useDeleteGeoVerification = () => {
     onSuccess: () => {
       // Invalidate and refetch user verifications list
       queryClient.invalidateQueries({
-        queryKey: ['userGeoVerifications'],
-        refetchType: 'active',
+        queryKey: ["userGeoVerifications"],
+        refetchType: "active",
       });
     },
   });
