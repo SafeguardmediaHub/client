@@ -1,19 +1,17 @@
-'use client';
+"use client";
 
-import { Lock } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
-import { usePathname } from 'next/navigation';
-import { useState } from 'react';
-import { FeaturePreviewModal } from '@/components/feature-preview-modal';
+import type { LucideIcon } from "lucide-react";
+import { Lock } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { toast } from "sonner";
 import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from '@/components/ui/sidebar';
-import { getFeatureById } from '@/lib/features';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 
 export function NavReporting({
   projects,
@@ -23,70 +21,70 @@ export function NavReporting({
     url: string;
     icon: LucideIcon;
     featureId?: string;
+    disabled?: boolean;
+    disabledReason?: string;
+    disabledMessage?: string;
   }[];
 }) {
   const pathname = usePathname();
-  const [previewFeatureId, setPreviewFeatureId] = useState<string | null>(null);
 
   const handleItemClick = (
     e: React.MouseEvent,
     url: string,
-    featureId?: string,
+    disabledMessage?: string,
+    itemName?: string,
   ) => {
-    if (url === '#' && featureId) {
+    if (url === "#") {
       e.preventDefault();
-      setPreviewFeatureId(featureId);
+      toast(
+        disabledMessage || `${itemName || "This feature"} is unavailable.`,
+        {
+          duration: 3500,
+        },
+      );
     }
   };
 
-  const previewFeature = previewFeatureId
-    ? getFeatureById(previewFeatureId)
-    : null;
-
   return (
-    <>
-      <SidebarGroup suppressHydrationWarning>
-        <SidebarGroupLabel>Reporting & Collaboration</SidebarGroupLabel>
-        <SidebarMenu>
-          {projects.map((item) => {
-            const isLocked = item.url === '#';
+    <SidebarGroup suppressHydrationWarning>
+      <SidebarGroupLabel>Reporting & Collaboration</SidebarGroupLabel>
+      <SidebarMenu>
+        {projects.map((item) => {
+          const isLocked = item.url === "#" || item.disabled;
 
-            return (
-              <SidebarMenuItem key={item.name}>
-                {isLocked ? (
-                  <SidebarMenuButton
-                    onClick={(e) =>
-                      handleItemClick(e, item.url, item.featureId)
-                    }
-                    className={cn(
-                      'opacity-60 cursor-pointer hover:opacity-80 transition-opacity',
-                    )}
-                  >
+          return (
+            <SidebarMenuItem key={item.name}>
+              {isLocked ? (
+                <SidebarMenuButton
+                  title={item.disabledReason || undefined}
+                  onClick={(e) =>
+                    handleItemClick(
+                      e,
+                      item.url,
+                      item.disabledMessage,
+                      item.name,
+                    )
+                  }
+                  className={cn(
+                    "opacity-60 cursor-pointer hover:opacity-80 transition-opacity",
+                  )}
+                >
+                  <item.icon className="text-primary" />
+                  <span>{item.name}</span>
+                  <Lock className="ml-auto w-3.5 h-3.5 text-gray-400 shrink-0" />
+                </SidebarMenuButton>
+              ) : (
+                <SidebarMenuButton asChild isActive={pathname === item.url}>
+                  <a href={item.url}>
                     <item.icon className="text-primary" />
                     <span>{item.name}</span>
-                    <Lock className="ml-auto w-3.5 h-3.5 text-gray-400 shrink-0" />
-                  </SidebarMenuButton>
-                ) : (
-                  <SidebarMenuButton asChild isActive={pathname === item.url}>
-                    <a href={item.url}>
-                      <item.icon className="text-primary" />
-                      <span>{item.name}</span>
-                    </a>
-                  </SidebarMenuButton>
-                )}
-              </SidebarMenuItem>
-            );
-          })}
-        </SidebarMenu>
-      </SidebarGroup>
-
-      {previewFeature && (
-        <FeaturePreviewModal
-          feature={previewFeature}
-          isOpen={!!previewFeatureId}
-          onClose={() => setPreviewFeatureId(null)}
-        />
-      )}
-    </>
+                  </a>
+                </SidebarMenuButton>
+              )}
+            </SidebarMenuItem>
+          );
+        })}
+      </SidebarMenu>
+    </SidebarGroup>
   );
 }

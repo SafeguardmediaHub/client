@@ -1,23 +1,17 @@
 "use client";
 
 import {
-  Award,
-  BookCheck,
   BookOpen,
-  CalendarClock,
   FileBarChart,
   Layers,
   LayoutDashboard,
   LifeBuoy,
-  MapPin,
   Scissors,
   SearchCheck,
   Send,
   Shield,
   ShieldCheck,
   ShieldIcon,
-  Sparkles,
-  Upload,
   Users,
 } from "lucide-react";
 import type * as React from "react";
@@ -33,16 +27,16 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { useSubscriptionUsage } from "@/hooks/useSubscriptionUsage";
 import {
+  type FeatureAccessState,
   getCombinedFeatureState,
   getFeatureStateShortLabel,
   type ProductFeatureKey,
 } from "@/lib/subscription-access";
 import { NavAdmin } from "./nav-admin";
-import { NavDetectionTools } from "./nav-detection";
+import { NavFeatureSections } from "./nav-feature-sections";
 import { NavOverview } from "./nav-overview";
 import { NavReporting } from "./nav-reporting";
 import { NavUser } from "./nav-user";
-import { NavVerificationTools } from "./nav-verification";
 
 const data = {
   user: {
@@ -69,96 +63,15 @@ const data = {
       icon: BookOpen,
     },
     {
+      name: "Keyframe Extraction",
+      url: "/dashboard/keyframe",
+      icon: Scissors,
+    },
+    {
       name: "Batch Processing",
       url: "/dashboard/batches",
       icon: Layers,
       accessFeatures: ["batchUpload"] as ProductFeatureKey[],
-    },
-  ],
-
-  detection: [
-    {
-      name: "AI Media Detection",
-      url: "/dashboard/ai-media-detection",
-      icon: ShieldIcon,
-      featureId: "ai_generated_media_detection",
-      accessFeatures: [
-        "deepfakeImage",
-        "deepfakeVideo",
-        "deepfakeAudio",
-      ] as ProductFeatureKey[],
-    },
-    {
-      name: "Forensics",
-      url: "/dashboard/forensics",
-      icon: Shield,
-      featureId: "forensics",
-      accessFeatures: [
-        "forensicsImage",
-        "forensicsAudio",
-      ] as ProductFeatureKey[],
-    },
-    // {
-    //   name: 'Cheapfake Detection',
-    //   url: '#',
-    //   icon: Film,
-    //   featureId: 'cheapfake_detection',
-    // },
-    {
-      name: "Keyframe Extraction",
-      url: "/dashboard/keyframe",
-      icon: Scissors,
-      featureId: "keyframe_extraction",
-    },
-  ],
-
-  verification: [
-    {
-      name: "Reverse Lookup",
-      url: "/dashboard/reverse",
-      icon: SearchCheck,
-      featureId: "reverse_lookup",
-      accessFeatures: ["reverseLookup"] as ProductFeatureKey[],
-    },
-    {
-      name: "Geolocation Verification",
-      url: "/dashboard/geolocation",
-      icon: MapPin,
-      featureId: "geolocation_verification",
-      accessFeatures: ["geolocationVerification"] as ProductFeatureKey[],
-    },
-    {
-      name: "Timeline Verification",
-      url: "/dashboard/timeline",
-      icon: CalendarClock,
-      featureId: "timeline_verification",
-      accessFeatures: ["timelineVerification"] as ProductFeatureKey[],
-    },
-    {
-      name: "Tamper Detection",
-      url: "/dashboard/tamper-detection",
-      icon: Shield,
-      featureId: "tamper_detection",
-    },
-    {
-      name: "Fact Checking",
-      url: "/dashboard/fact-check",
-      icon: BookCheck,
-      featureId: "fact_checking",
-      accessFeatures: ["factCheck"] as ProductFeatureKey[],
-    },
-    // {
-    //   name: 'SM Source Tracing',
-    //   url:'/dashboard/trace',
-    //   icon: Share2,
-    //   featureId: 'social_media_tracing',
-    // },
-    {
-      name: "Claim Research",
-      url: "/dashboard/claim-research",
-      icon: Sparkles,
-      featureId: "claim_research",
-      accessFeatures: ["claimResearch"] as ProductFeatureKey[],
     },
   ],
 
@@ -174,38 +87,8 @@ const data = {
       url: "#",
       icon: Users,
       featureId: "team_collaboration",
+      disabledMessage: "Team collaboration is not available yet.",
     },
-  ],
-
-  authenticity: [
-    {
-      name: "Overview",
-      url: "/dashboard/authenticity",
-      icon: ShieldCheck,
-      featureId: "c2pa_overview",
-      accessFeatures: ["c2pa"] as ProductFeatureKey[],
-    },
-    {
-      name: "Verify",
-      url: "/dashboard/authenticity/verify",
-      icon: Upload,
-      featureId: "c2pa_verify",
-      accessFeatures: ["c2pa"] as ProductFeatureKey[],
-    },
-    {
-      name: "Badges",
-      url: "/dashboard/authenticity/badges",
-      icon: Award,
-      featureId: "c2pa_badges",
-      accessFeatures: ["c2pa"] as ProductFeatureKey[],
-    },
-    // {
-    //   name: 'Admin Panel',
-    //   url: '/dashboard/authenticity/admin',
-    //   icon: Settings,
-    //   featureId: 'c2pa_admin',
-    //   adminOnly: true,
-    // },
   ],
   navSecondary: [
     {
@@ -221,9 +104,23 @@ const data = {
   ],
 };
 
+function getDisabledMessage(label: string, state: FeatureAccessState) {
+  if (state.reason === "plan") {
+    return `${label} is not available on your current plan.`;
+  }
+
+  if (state.reason === "disabled") {
+    return `${label} is currently unavailable.`;
+  }
+
+  return `${label} is unavailable right now.`;
+}
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useAuth();
   const subscriptionUsageQuery = useSubscriptionUsage();
+  const isFreePlan =
+    subscriptionUsageQuery.data?.tier?.toLowerCase() === "free";
 
   const gatedOverview = data.overview.map((item) => {
     if (!("accessFeatures" in item) || !item.accessFeatures) {
@@ -241,11 +138,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       disabledReason: !state.available
         ? getFeatureStateShortLabel(state)
         : undefined,
+      disabledMessage: !state.available
+        ? getDisabledMessage(item.name, state)
+        : undefined,
     };
   });
 
-  const gatedDetection = data.detection.map((item) => {
-    if (!("accessFeatures" in item) || !item.accessFeatures) {
+  const getGatedItem = (item: {
+    title: string;
+    url: string;
+    featureId?: string;
+    accessFeatures?: ProductFeatureKey[];
+    activePrefixes?: string[];
+  }) => {
+    if (!item.accessFeatures?.length) {
       return item;
     }
 
@@ -260,25 +166,143 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       disabledReason: !state.available
         ? getFeatureStateShortLabel(state)
         : undefined,
+      disabledMessage: !state.available
+        ? getDisabledMessage(item.title, state)
+        : undefined,
     };
-  });
+  };
 
-  const gatedVerification = data.verification.map((item) => {
-    if (!("accessFeatures" in item) || !item.accessFeatures) {
+  const featureSections = [
+    {
+      title: "AI Media Detection",
+      icon: ShieldIcon,
+      activePrefixes: ["/dashboard/ai-media-detection"],
+      items: [
+        getGatedItem({
+          title: "Images",
+          url: "/dashboard/ai-media-detection?media=image",
+          accessFeatures: ["deepfakeImage"],
+        }),
+        getGatedItem({
+          title: "Videos",
+          url: "/dashboard/ai-media-detection?media=video",
+          accessFeatures: ["deepfakeVideo"],
+        }),
+        getGatedItem({
+          title: "Audio",
+          url: "/dashboard/ai-media-detection?media=audio",
+          accessFeatures: ["deepfakeAudio"],
+        }),
+      ],
+    },
+    {
+      title: "Forensics",
+      icon: Shield,
+      activePrefixes: ["/dashboard/forensics"],
+      items: [
+        getGatedItem({
+          title: "Images",
+          url: "/dashboard/forensics?media=image",
+          accessFeatures: ["forensicsImage"],
+        }),
+        getGatedItem({
+          title: "Videos",
+          url: "/dashboard/forensics?media=video",
+          accessFeatures: ["forensicsVideo"],
+        }),
+        getGatedItem({
+          title: "Audio",
+          url: "/dashboard/forensics?media=audio",
+          accessFeatures: ["forensicsAudio"],
+        }),
+      ],
+    },
+    {
+      title: "Authenticity",
+      icon: ShieldCheck,
+      activePrefixes: [
+        "/dashboard/authenticity",
+        "/dashboard/geolocation",
+        "/dashboard/timeline",
+        "/dashboard/tamper-detection",
+      ],
+      items: [
+        // getGatedItem({
+        //   title: "Overview",
+        //   url: "/dashboard/authenticity",
+        //   accessFeatures: ["c2pa"],
+        // }),
+        // getGatedItem({
+        //   title: "Verify",
+        //   url: "/dashboard/authenticity/verify",
+        //   accessFeatures: ["c2pa"],
+        // }),
+        // getGatedItem({
+        //   title: "Badges",
+        //   url: "/dashboard/authenticity/badges",
+        //   accessFeatures: ["c2pa"],
+        // }),
+        getGatedItem({
+          title: "Geolocation",
+          url: "/dashboard/geolocation",
+          accessFeatures: ["geolocationVerification"],
+          activePrefixes: ["/dashboard/geolocation"],
+        }),
+        getGatedItem({
+          title: "Timeline",
+          url: "/dashboard/timeline",
+          accessFeatures: ["timelineVerification"],
+          activePrefixes: ["/dashboard/timeline"],
+        }),
+        {
+          title: "Tamper Detection",
+          url: "/dashboard/tamper-detection",
+          activePrefixes: ["/dashboard/tamper-detection"],
+        },
+      ],
+    },
+    {
+      title: "Content Verification",
+      icon: SearchCheck,
+      activePrefixes: [
+        "/dashboard/reverse",
+        "/dashboard/fact-check",
+        "/dashboard/claim-research",
+        "/dashboard/keyframe",
+      ],
+      items: [
+        getGatedItem({
+          title: "Reverse Lookup",
+          url: "/dashboard/reverse",
+          accessFeatures: ["reverseLookup"],
+          activePrefixes: ["/dashboard/reverse"],
+        }),
+        getGatedItem({
+          title: "Fact Checking",
+          url: "/dashboard/fact-check",
+          accessFeatures: ["factCheck"],
+          activePrefixes: ["/dashboard/fact-check"],
+        }),
+        getGatedItem({
+          title: "Claim Research",
+          url: "/dashboard/claim-research",
+          accessFeatures: ["claimResearch"],
+          activePrefixes: ["/dashboard/claim-research"],
+        }),
+      ],
+    },
+  ];
+
+  const reportingItems = data.reporting.map((item) => {
+    if (item.name !== "Reports" || !isFreePlan) {
       return item;
     }
 
-    const state = getCombinedFeatureState(
-      subscriptionUsageQuery.data,
-      item.accessFeatures,
-    );
-
     return {
       ...item,
-      disabled: !state.available,
-      disabledReason: !state.available
-        ? getFeatureStateShortLabel(state)
-        : undefined,
+      disabled: true,
+      disabledReason: "Plan",
+      disabledMessage: "Reports are not available on the free plan.",
     };
   });
 
@@ -304,12 +328,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent className="pb-4">
         <NavOverview projects={gatedOverview} />
-        <NavDetectionTools projects={gatedDetection} />
-        <NavVerificationTools projects={gatedVerification} />
-        {/* <NavAuthenticity items={data.authenticity} /> */}
-        <NavReporting projects={data.reporting} />
+        <NavFeatureSections sections={featureSections} />
+        <NavReporting projects={reportingItems} />
         {user?.role === "admin" && <NavAdmin />}
-        <NavOverview projects={data.navSecondary} />
+        <NavOverview label="Support" projects={data.navSecondary} />
       </SidebarContent>
       {/* <SidebarFooter className="sm:hidden">
         <SidebarMenu>

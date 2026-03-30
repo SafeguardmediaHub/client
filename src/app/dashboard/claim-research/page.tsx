@@ -6,15 +6,14 @@ import { ClaimResearchForm } from "@/components/claim-research/ClaimResearchForm
 import { ClaimResearchResults } from "@/components/claim-research/ClaimResearchResults";
 import { HowItWorksPanel } from "@/components/claim-research/HowItWorksPanel";
 import { ResearchHistory } from "@/components/claim-research/ResearchHistory";
+import { AccessNotice } from "@/components/subscription/AccessNotice";
+import { UsageSummaryBanner } from "@/components/subscription/UsageSummaryBanner";
 import { Button } from "@/components/ui/button";
 import { useSubscriptionUsage } from "@/hooks/useSubscriptionUsage";
 import {
-  formatResetDate,
-  formatUsageValue,
   getFeatureState,
+  getLimitReachedMessage,
   getUsageGate,
-  getUsageThreshold,
-  getUsageToneClasses,
 } from "@/lib/subscription-access";
 
 export default function ClaimResearchPage() {
@@ -26,7 +25,6 @@ export default function ClaimResearchPage() {
   );
   const analysisUsage = subscriptionUsageQuery.data?.usage.analyses;
   const analysisUsageGate = getUsageGate(analysisUsage);
-  const analysisUsageThreshold = getUsageThreshold(analysisUsage);
 
   if (currentJobId) {
     return (
@@ -70,39 +68,33 @@ export default function ClaimResearchPage() {
           </div>
         </div>
 
-        <div
-          className={`rounded-2xl border px-4 py-3 text-sm ${getUsageToneClasses(
-            analysisUsageThreshold,
-          )}`}
-        >
-          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <span>
-              {formatUsageValue(analysisUsage)} analyses used this month
-            </span>
-            <span>
-              Resets{" "}
-              {formatResetDate(
-                subscriptionUsageQuery.data?.currentPeriod.endDate,
-              )}
-            </span>
-          </div>
-        </div>
+        <UsageSummaryBanner
+          bucket={analysisUsage}
+          label="Analysis usage"
+          resetAt={subscriptionUsageQuery.data?.currentPeriod.endDate}
+        />
 
         {!claimResearchAccessState.available && (
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-            {claimResearchAccessState.message ||
-              "Claim research is currently unavailable."}
-          </div>
+          <AccessNotice
+            state={claimResearchAccessState}
+            message={
+              claimResearchAccessState.message ||
+              "Claim research is currently unavailable."
+            }
+          />
         )}
 
         {claimResearchAccessState.available && !analysisUsageGate.allowed && (
-          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-            You have reached your monthly analysis limit. Your limit resets on{" "}
-            {formatResetDate(
+          <AccessNotice
+            tone="limit"
+            title="Analysis limit reached"
+            message={getLimitReachedMessage(
+              "analysis",
               subscriptionUsageQuery.data?.currentPeriod.endDate,
+              analysisUsage?.used,
+              analysisUsage?.limit,
             )}
-            .
-          </div>
+          />
         )}
 
         {/* Top Grid: Form + How It Works */}
@@ -118,10 +110,14 @@ export default function ClaimResearchPage() {
                 claimResearchAccessState.message ||
                 (analysisUsageGate.allowed
                   ? undefined
-                  : `Monthly analysis limit reached. Resets ${formatResetDate(
+                  : getLimitReachedMessage(
+                      "analysis",
                       subscriptionUsageQuery.data?.currentPeriod.endDate,
-                    )}.`)
+                      analysisUsage?.used,
+                      analysisUsage?.limit,
+                    ))
               }
+              disabledTone={analysisUsageGate.allowed ? "feature" : "limit"}
             />
           </div>
           <div className="lg:col-span-2">

@@ -3,6 +3,7 @@
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { AccessNotice } from "@/components/subscription/AccessNotice";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -27,6 +28,7 @@ interface BatchUploadModalProps {
   onOpenChange: (open: boolean) => void;
   disabled?: boolean;
   disabledMessage?: string;
+  disabledTone?: "feature" | "limit";
 }
 
 type UploadStep = "details" | "files" | "uploading" | "complete";
@@ -36,6 +38,7 @@ export function BatchUploadModal({
   onOpenChange,
   disabled = false,
   disabledMessage,
+  disabledTone = "feature",
 }: BatchUploadModalProps) {
   const router = useRouter();
   const [step, setStep] = useState<UploadStep>("details");
@@ -186,10 +189,18 @@ export function BatchUploadModal({
 
             <div className="space-y-4 py-4">
               {disabled && (
-                <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-                  {disabledMessage ||
-                    "Batch creation is currently unavailable."}
-                </div>
+                <AccessNotice
+                  tone={disabledTone}
+                  message={
+                    disabledMessage ||
+                    "Batch creation is currently unavailable."
+                  }
+                  title={
+                    disabledTone === "limit"
+                      ? "Batch limit reached"
+                      : "Batch creation unavailable"
+                  }
+                />
               )}
               {/* Batch Name */}
               <div className="space-y-2">

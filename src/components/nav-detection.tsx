@@ -71,7 +71,7 @@ export function NavDetectionTools({
                     <item.icon className="text-primary" />
                     <span>{item.name}</span>
                     {item.disabledReason ? (
-                      <span className="ml-auto hidden text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500 xl:inline">
+                      <span className="ml-auto hidden items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 xl:inline-flex">
                         {item.disabledReason}
                       </span>
                     ) : null}

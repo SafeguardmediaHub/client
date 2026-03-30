@@ -28,6 +28,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { DatePickerDemo } from "@/components/date-picker";
 import MediaSelector from "@/components/media/MediaSelector";
+import { AccessNotice } from "@/components/subscription/AccessNotice";
+import { UsageSummaryBanner } from "@/components/subscription/UsageSummaryBanner";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,11 +38,9 @@ import { type Media, useGetMedia } from "@/hooks/useMedia";
 import { useSubscriptionUsage } from "@/hooks/useSubscriptionUsage";
 import {
   formatResetDate,
-  formatUsageValue,
   getFeatureState,
+  getLimitReachedMessage,
   getUsageGate,
-  getUsageThreshold,
-  getUsageToneClasses,
 } from "@/lib/subscription-access";
 import { formatFileSize, timeAgo } from "@/lib/utils";
 
@@ -61,7 +61,6 @@ const TimelineVerificationPage = () => {
   );
   const analysisUsage = subscriptionUsageQuery.data?.usage.analyses;
   const analysisUsageGate = getUsageGate(analysisUsage);
-  const analysisUsageThreshold = getUsageThreshold(analysisUsage);
 
   const timelineVerifications = media.filter(
     (item) =>
@@ -187,28 +186,38 @@ const TimelineVerificationPage = () => {
             </p>
           </div>
 
-          <div
-            className={`mb-6 rounded-lg border px-4 py-3 text-sm ${getUsageToneClasses(
-              analysisUsageThreshold,
-            )}`}
-          >
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-              <span>
-                {formatUsageValue(analysisUsage)} analyses used this month
-              </span>
-              <span>
-                Resets{" "}
-                {formatResetDate(
-                  subscriptionUsageQuery.data?.currentPeriod.endDate,
-                )}
-              </span>
-            </div>
+          <div className="mb-6">
+            <UsageSummaryBanner
+              bucket={analysisUsage}
+              label="Analysis usage"
+              resetAt={subscriptionUsageQuery.data?.currentPeriod.endDate}
+            />
           </div>
 
           {!timelineAccessState.available && (
-            <div className="mb-6 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-              {timelineAccessState.message ||
-                "Timeline verification is currently unavailable."}
+            <div className="mb-6">
+              <AccessNotice
+                state={timelineAccessState}
+                message={
+                  timelineAccessState.message ||
+                  "Timeline verification is currently unavailable."
+                }
+              />
+            </div>
+          )}
+
+          {timelineAccessState.available && !analysisUsageGate.allowed && (
+            <div className="mb-6">
+              <AccessNotice
+                tone="limit"
+                title="Analysis limit reached"
+                message={getLimitReachedMessage(
+                  "analysis",
+                  subscriptionUsageQuery.data?.currentPeriod.endDate,
+                  analysisUsage?.used,
+                  analysisUsage?.limit,
+                )}
+              />
             </div>
           )}
 

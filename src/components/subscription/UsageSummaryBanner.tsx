@@ -31,9 +31,11 @@ export function UsageSummaryBanner({
     >
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="font-medium">{label}</p>
-            <p className="text-xs opacity-80">
+          <div className="space-y-1">
+            <span className="inline-flex items-center rounded-full border border-current/15 bg-white/60 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] opacity-90">
+              {label}
+            </span>
+            <p className="text-sm font-medium">
               {formatUsageValue(bucket)} used
             </p>
           </div>

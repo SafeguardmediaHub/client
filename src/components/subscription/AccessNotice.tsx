@@ -1,5 +1,6 @@
 "use client";
 
+import { AlertTriangle, Lock } from "lucide-react";
 import type { FeatureAccessState } from "@/lib/subscription-access";
 import {
   getFeatureStateTitle,
@@ -38,10 +39,19 @@ export function AccessNotice({
           },
         ));
 
+  const Icon = tone === "limit" ? AlertTriangle : Lock;
+
   return (
     <div className={`rounded-2xl border px-4 py-3 text-sm ${classes}`}>
-      <p className="font-semibold">{heading}</p>
-      <p className="mt-1 leading-6">{message}</p>
+      <div className="flex items-start gap-3">
+        <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full border border-current/15 bg-white/60">
+          <Icon className="size-4" />
+        </div>
+        <div className="min-w-0">
+          <p className="font-semibold tracking-[-0.01em]">{heading}</p>
+          <p className="mt-1 leading-6 opacity-95">{message}</p>
+        </div>
+      </div>
     </div>
   );
 }

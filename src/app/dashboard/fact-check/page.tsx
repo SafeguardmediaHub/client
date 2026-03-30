@@ -12,17 +12,17 @@ import { ClaimDetail } from "@/components/fact-check/ClaimDetail";
 import { FactCheckForm } from "@/components/fact-check/FactCheckForm";
 import { FactCheckProcessing } from "@/components/fact-check/FactCheckProcessing";
 import { LoadingState } from "@/components/fact-check/LoadingState";
+import { AccessNotice } from "@/components/subscription/AccessNotice";
+import { UsageSummaryBanner } from "@/components/subscription/UsageSummaryBanner";
 import { Button } from "@/components/ui/button";
 import { useAnalyzeContent } from "@/hooks/useFactCheck";
 import { useSubscriptionUsage } from "@/hooks/useSubscriptionUsage";
 import {
   formatResetDate,
-  formatUsageValue,
   getDeniedStateFromError,
   getFeatureState,
+  getLimitReachedMessage,
   getUsageGate,
-  getUsageThreshold,
-  getUsageToneClasses,
 } from "@/lib/subscription-access";
 import type { AnalyzeContentRequest } from "@/types/fact-check";
 
@@ -45,7 +45,6 @@ const FactCheckContent = () => {
   );
   const analysisUsage = subscriptionUsageQuery.data?.usage.analyses;
   const analysisUsageGate = getUsageGate(analysisUsage);
-  const analysisUsageThreshold = getUsageThreshold(analysisUsage);
 
   const analyzeContentMutation = useAnalyzeContent();
   const mutationError = analyzeContentMutation.error as
@@ -181,39 +180,33 @@ const FactCheckContent = () => {
           featureInfo={FEATURE_INFO.factCheck}
         />
 
-        <div
-          className={`rounded-lg border px-4 py-3 text-sm ${getUsageToneClasses(
-            analysisUsageThreshold,
-          )}`}
-        >
-          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <span>
-              {formatUsageValue(analysisUsage)} analyses used this month
-            </span>
-            <span>
-              Resets{" "}
-              {formatResetDate(
-                subscriptionUsageQuery.data?.currentPeriod.endDate,
-              )}
-            </span>
-          </div>
-        </div>
+        <UsageSummaryBanner
+          bucket={analysisUsage}
+          label="Analysis usage"
+          resetAt={subscriptionUsageQuery.data?.currentPeriod.endDate}
+        />
 
         {!factCheckAccessState.available && (
-          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-            {factCheckAccessState.message ||
-              "Fact-checking is currently unavailable."}
-          </div>
+          <AccessNotice
+            state={factCheckAccessState}
+            message={
+              factCheckAccessState.message ||
+              "Fact-checking is currently unavailable."
+            }
+          />
         )}
 
         {factCheckAccessState.available && !analysisUsageGate.allowed && (
-          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-            You have reached your monthly analysis limit. Your limit resets on{" "}
-            {formatResetDate(
+          <AccessNotice
+            tone="limit"
+            title="Analysis limit reached"
+            message={getLimitReachedMessage(
+              "analysis",
               subscriptionUsageQuery.data?.currentPeriod.endDate,
+              analysisUsage?.used,
+              analysisUsage?.limit,
             )}
-            .
-          </div>
+          />
         )}
 
         {!currentJobId ? (
@@ -239,10 +232,14 @@ const FactCheckContent = () => {
                 factCheckAccessState.message ||
                 (analysisUsageGate.allowed
                   ? undefined
-                  : `Monthly analysis limit reached. Resets ${formatResetDate(
+                  : getLimitReachedMessage(
+                      "analysis",
                       subscriptionUsageQuery.data?.currentPeriod.endDate,
-                    )}.`)
+                      analysisUsage?.used,
+                      analysisUsage?.limit,
+                    ))
               }
+              disabledTone={analysisUsageGate.allowed ? "feature" : "limit"}
             />
 
             <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">

@@ -29,6 +29,8 @@ import {
   FeatureInfoDialog,
 } from "@/components/FeatureInfoDialog";
 import MediaSelector from "@/components/media/MediaSelector";
+import { AccessNotice } from "@/components/subscription/AccessNotice";
+import { UsageSummaryBanner } from "@/components/subscription/UsageSummaryBanner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -42,12 +44,10 @@ import { type Media, useGetMedia } from "@/hooks/useMedia";
 import { useSubscriptionUsage } from "@/hooks/useSubscriptionUsage";
 import {
   formatResetDate,
-  formatUsageValue,
   getDeniedStateFromError,
   getFeatureState,
+  getLimitReachedMessage,
   getUsageGate,
-  getUsageThreshold,
-  getUsageToneClasses,
 } from "@/lib/subscription-access";
 import { formatFileSize } from "@/lib/utils";
 
@@ -73,7 +73,6 @@ const GeolocationVerificationPage = () => {
   );
   const analysisUsage = subscriptionUsageQuery.data?.usage.analyses;
   const analysisUsageGate = getUsageGate(analysisUsage);
-  const analysisUsageThreshold = getUsageThreshold(analysisUsage);
 
   // Show dialog on first visit
   useEffect(() => {
@@ -316,28 +315,38 @@ const GeolocationVerificationPage = () => {
             </Button>
           </div>
 
-          <div
-            className={`mb-6 rounded-lg border px-4 py-3 text-sm ${getUsageToneClasses(
-              analysisUsageThreshold,
-            )}`}
-          >
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-              <span>
-                {formatUsageValue(analysisUsage)} analyses used this month
-              </span>
-              <span>
-                Resets{" "}
-                {formatResetDate(
-                  subscriptionUsageQuery.data?.currentPeriod.endDate,
-                )}
-              </span>
-            </div>
+          <div className="mb-6">
+            <UsageSummaryBanner
+              bucket={analysisUsage}
+              label="Analysis usage"
+              resetAt={subscriptionUsageQuery.data?.currentPeriod.endDate}
+            />
           </div>
 
           {!geolocationAccessState.available && (
-            <div className="mb-6 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-              {geolocationAccessState.message ||
-                "Geolocation verification is currently unavailable."}
+            <div className="mb-6">
+              <AccessNotice
+                state={geolocationAccessState}
+                message={
+                  geolocationAccessState.message ||
+                  "Geolocation verification is currently unavailable."
+                }
+              />
+            </div>
+          )}
+
+          {geolocationAccessState.available && !analysisUsageGate.allowed && (
+            <div className="mb-6">
+              <AccessNotice
+                tone="limit"
+                title="Analysis limit reached"
+                message={getLimitReachedMessage(
+                  "analysis",
+                  subscriptionUsageQuery.data?.currentPeriod.endDate,
+                  analysisUsage?.used,
+                  analysisUsage?.limit,
+                )}
+              />
             </div>
           )}
 

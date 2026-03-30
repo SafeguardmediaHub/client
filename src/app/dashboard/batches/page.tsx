@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { BatchStatusBadge } from "@/components/batches/BatchStatusBadge";
 import { BatchUploadModal } from "@/components/batches/BatchUploadModal";
+import { AccessNotice } from "@/components/subscription/AccessNotice";
+import { UsageSummaryBanner } from "@/components/subscription/UsageSummaryBanner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,12 +19,9 @@ import { useBatchStats } from "@/hooks/batches/useBatchStats";
 import { useSubscriptionUsage } from "@/hooks/useSubscriptionUsage";
 import { formatDate, formatFileSize } from "@/lib/batch-utils";
 import {
-  formatResetDate,
-  formatUsageValue,
   getFeatureState,
+  getLimitReachedMessage,
   getUsageGate,
-  getUsageThreshold,
-  getUsageToneClasses,
 } from "@/lib/subscription-access";
 import type { BatchListParams, BatchStatus } from "@/types/batch";
 
@@ -43,7 +42,6 @@ export default function BatchesPage() {
   );
   const batchUsage = subscriptionUsageQuery.data?.usage.batches;
   const batchUsageGate = getUsageGate(batchUsage);
-  const batchUsageThreshold = getUsageThreshold(batchUsage);
 
   const { data: batchesData, isLoading } = useBatches(filters);
   const { data: stats, isLoading: statsLoading } = useBatchStats();
@@ -99,37 +97,33 @@ export default function BatchesPage() {
           </Button>
         </div>
 
-        <div
-          className={`rounded-lg border px-4 py-3 text-sm ${getUsageToneClasses(
-            batchUsageThreshold,
-          )}`}
-        >
-          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <span>{formatUsageValue(batchUsage)} batches used this month</span>
-            <span>
-              Resets{" "}
-              {formatResetDate(
-                subscriptionUsageQuery.data?.currentPeriod.endDate,
-              )}
-            </span>
-          </div>
-        </div>
+        <UsageSummaryBanner
+          bucket={batchUsage}
+          label="Batch usage"
+          resetAt={subscriptionUsageQuery.data?.currentPeriod.endDate}
+        />
 
         {!batchAccessState.available && (
-          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-            {batchAccessState.message ||
-              "Batch upload is currently unavailable."}
-          </div>
+          <AccessNotice
+            state={batchAccessState}
+            message={
+              batchAccessState.message ||
+              "Batch upload is currently unavailable."
+            }
+          />
         )}
 
         {batchAccessState.available && !batchUsageGate.allowed && (
-          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-            You have reached your monthly batch limit. Your limit resets on{" "}
-            {formatResetDate(
+          <AccessNotice
+            tone="limit"
+            title="Batch limit reached"
+            message={getLimitReachedMessage(
+              "batch",
               subscriptionUsageQuery.data?.currentPeriod.endDate,
+              batchUsage?.used,
+              batchUsage?.limit,
             )}
-            .
-          </div>
+          />
         )}
 
         {/* Stats Cards */}
@@ -433,10 +427,14 @@ export default function BatchesPage() {
             batchAccessState.message ||
             (batchUsageGate.allowed
               ? undefined
-              : `Monthly batch limit reached. Resets ${formatResetDate(
+              : getLimitReachedMessage(
+                  "batch",
                   subscriptionUsageQuery.data?.currentPeriod.endDate,
-                )}.`)
+                  batchUsage?.used,
+                  batchUsage?.limit,
+                ))
           }
+          disabledTone={batchUsageGate.allowed ? "feature" : "limit"}
         />
       </div>
     </div>

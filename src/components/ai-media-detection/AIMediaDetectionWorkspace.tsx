@@ -17,6 +17,7 @@ import {
   Upload,
 } from "lucide-react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { AccessNotice } from "@/components/subscription/AccessNotice";
@@ -265,6 +266,58 @@ function getMediaAvailability(media: Media) {
   };
 }
 
+function getPresetModeLabel(filter: MediaFilter) {
+  switch (filter) {
+    case "image":
+      return "Images";
+    case "video":
+      return "Videos";
+    case "audio":
+      return "Audio";
+    default:
+      return null;
+  }
+}
+
+function getPresetModeDescription(filter: MediaFilter) {
+  switch (filter) {
+    case "image":
+      return "Analyze image files from your library for signs of AI generation or manipulation.";
+    case "video":
+      return "Analyze video files from your library for signs of AI generation or manipulation.";
+    case "audio":
+      return "Analyze audio files from your library for signs of AI generation or manipulation.";
+    default:
+      return "Analyze images, videos, and audio from your library for signs of AI generation or manipulation.";
+  }
+}
+
+function getScopedStatsLabel(filter: MediaFilter) {
+  switch (filter) {
+    case "image":
+      return "Supported images";
+    case "video":
+      return "Supported videos";
+    case "audio":
+      return "Supported audio";
+    default:
+      return "Supported files";
+  }
+}
+
+function getScopedReadyLabel(filter: MediaFilter) {
+  switch (filter) {
+    case "image":
+      return "Images ready";
+    case "video":
+      return "Videos ready";
+    case "audio":
+      return "Audio ready";
+    default:
+      return "Ready to analyze";
+  }
+}
+
 function humanizeAnalysisError(error?: string, mediaType?: AIMediaType | null) {
   if (!error) {
     return "The analysis could not be completed for this file. Please try another file or check again later.";
@@ -364,6 +417,9 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 }
 
 export function AIMediaDetectionWorkspace() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [librarySearch, setLibrarySearch] = useState("");
   const deferredLibrarySearch = useDeferredValue(librarySearch);
   const [mediaFilter, setMediaFilter] = useState<MediaFilter>("all");
@@ -406,6 +462,24 @@ export function AIMediaDetectionWorkspace() {
   const detailQuery = useAnalysisDetail(detailAnalysisId, {
     enabled: Boolean(detailAnalysisId),
   });
+  const presetModeLabel = getPresetModeLabel(mediaFilter);
+  const lockedMediaMode = useMemo(() => {
+    const mediaParam = searchParams.get("media");
+    return mediaParam === "image" ||
+      mediaParam === "video" ||
+      mediaParam === "audio"
+      ? mediaParam
+      : null;
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (lockedMediaMode) {
+      setMediaFilter(lockedMediaMode);
+      return;
+    }
+
+    setMediaFilter("all");
+  }, [lockedMediaMode]);
 
   useEffect(() => {
     if (!pollUntil) return undefined;
@@ -472,6 +546,13 @@ export function AIMediaDetectionWorkspace() {
 
     for (const item of mediaItems) {
       const availability = getMediaAvailability(item);
+      const matchesFilter =
+        mediaFilter === "all" || availability.mediaType === mediaFilter;
+
+      if (!matchesFilter) {
+        continue;
+      }
+
       if (availability.isSupported) supported += 1;
       if (availability.isReady) ready += 1;
     }
@@ -480,7 +561,7 @@ export function AIMediaDetectionWorkspace() {
       supported,
       ready,
     };
-  }, [mediaItems]);
+  }, [mediaFilter, mediaItems]);
 
   const filteredMedia = useMemo(() => {
     const query = deferredLibrarySearch.trim().toLowerCase();
@@ -552,6 +633,46 @@ export function AIMediaDetectionWorkspace() {
   ]);
 
   const analysisPagination = analysisHistoryQuery.data?.pagination;
+
+  const updateMediaFilter = (nextFilter: MediaFilter) => {
+    setMediaFilter(nextFilter);
+    setAnalysisPage(1);
+
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (nextFilter === "all") {
+      params.delete("media");
+    } else {
+      params.set("media", nextFilter);
+    }
+
+    const nextQuery = params.toString();
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
+      scroll: false,
+    });
+  };
+
+  useEffect(() => {
+    if (!selectedMedia || !selectedMediaAvailability) {
+      return;
+    }
+
+    const isCompatible =
+      mediaFilter === "all" ||
+      selectedMediaAvailability.mediaType === mediaFilter;
+
+    if (isCompatible) {
+      return;
+    }
+
+    setSelectedMediaId(null);
+    setFlowState("idle");
+    setActiveAnalysisId(null);
+    setActiveResult(null);
+    setFlowError(null);
+    setPollUntil(null);
+    setPollTimedOut(false);
+  }, [mediaFilter, selectedMedia, selectedMediaAvailability]);
 
   const handleSelectMedia = (mediaId: string) => {
     setSelectedMediaId(mediaId);
@@ -1026,16 +1147,23 @@ export function AIMediaDetectionWorkspace() {
     <>
       <section className="flex flex-1 flex-col gap-6 px-4 py-4 sm:px-6 md:px-8">
         <header className="flex flex-col gap-2">
-          <div className="inline-flex w-fit items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-sm text-blue-700">
-            <Bot className="size-4" />
-            AI Media Detection
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-sm text-blue-700">
+              <Bot className="size-4" />
+              AI Media Detection
+            </div>
+            {presetModeLabel ? (
+              <div className="inline-flex w-fit items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-sm text-slate-600">
+                <Sparkles className="size-4" />
+                {presetModeLabel} Mode
+              </div>
+            ) : null}
           </div>
           <h1 className="text-responsive-2xl font-medium text-slate-950">
             AI-Generated Media Detection
           </h1>
           <p className="max-w-3xl text-sm text-slate-500">
-            Analyze images, videos, and audio from your library for signs of AI
-            generation or manipulation.
+            {getPresetModeDescription(mediaFilter)}
           </p>
         </header>
 
@@ -1052,8 +1180,9 @@ export function AIMediaDetectionWorkspace() {
                 <div>
                   <CardTitle>Select media from your library</CardTitle>
                   <CardDescription>
-                    Search your uploaded media, filter by type, and choose a
-                    file to analyze.
+                    {presetModeLabel
+                      ? `Browse your ${presetModeLabel.toLowerCase()} library and choose a file to analyze.`
+                      : "Search your uploaded media, filter by type, and choose a file to analyze."}
                   </CardDescription>
                 </div>
                 <Button asChild variant="outline" className="w-full sm:w-auto">
@@ -1067,13 +1196,17 @@ export function AIMediaDetectionWorkspace() {
             <CardContent className="space-y-5 px-6 py-6">
               <div className="grid gap-3 sm:grid-cols-3">
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-sm text-slate-500">Supported files</p>
+                  <p className="text-sm text-slate-500">
+                    {getScopedStatsLabel(mediaFilter)}
+                  </p>
                   <p className="mt-2 text-2xl font-semibold text-slate-900">
                     {libraryStats.supported}
                   </p>
                 </div>
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-sm text-slate-500">Ready to analyze</p>
+                  <p className="text-sm text-slate-500">
+                    {getScopedReadyLabel(mediaFilter)}
+                  </p>
                   <p className="mt-2 text-2xl font-semibold text-slate-900">
                     {libraryStats.ready}
                   </p>
@@ -1100,21 +1233,25 @@ export function AIMediaDetectionWorkspace() {
                   />
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {MEDIA_FILTERS.map((filter) => (
-                    <Button
-                      key={filter.value}
-                      variant={
-                        mediaFilter === filter.value ? "default" : "outline"
-                      }
-                      onClick={() => {
-                        setMediaFilter(filter.value);
-                        setAnalysisPage(1);
-                      }}
-                      className="min-w-20"
-                    >
-                      {filter.label}
-                    </Button>
-                  ))}
+                  {lockedMediaMode ? (
+                    <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700">
+                      <Filter className="size-4" />
+                      {getPresetModeLabel(lockedMediaMode)}
+                    </div>
+                  ) : (
+                    MEDIA_FILTERS.map((filter) => (
+                      <Button
+                        key={filter.value}
+                        variant={
+                          mediaFilter === filter.value ? "default" : "outline"
+                        }
+                        onClick={() => updateMediaFilter(filter.value)}
+                        className="min-w-20"
+                      >
+                        {filter.label}
+                      </Button>
+                    ))
+                  )}
                 </div>
               </div>
 
