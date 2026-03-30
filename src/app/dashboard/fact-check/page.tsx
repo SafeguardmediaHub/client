@@ -1,11 +1,19 @@
-import { Suspense } from "react";
 import { FactCheckPageClient } from "@/components/fact-check/FactCheckPageClient";
-import { LoadingState } from "@/components/fact-check/LoadingState";
 
-export default function FactCheckPage() {
+export default async function FactCheckPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    jobId?: string;
+    claimId?: string;
+  }>;
+}) {
+  const params = await searchParams;
+
   return (
-    <Suspense fallback={<LoadingState message="Loading fact-check..." />}>
-      <FactCheckPageClient />
-    </Suspense>
+    <FactCheckPageClient
+      initialJobId={params.jobId}
+      initialClaimId={params.claimId}
+    />
   );
 }

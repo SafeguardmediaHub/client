@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertCircle, FileText } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -25,16 +25,19 @@ import { ClaimDetail } from "./ClaimDetail";
 import { FactCheckForm } from "./FactCheckForm";
 import { FactCheckProcessing } from "./FactCheckProcessing";
 
-export function FactCheckPageClient() {
+export function FactCheckPageClient({
+  initialJobId,
+  initialClaimId,
+}: {
+  initialJobId?: string;
+  initialClaimId?: string;
+}) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const jobIdFromUrl = searchParams.get("jobId");
-  const claimIdFromUrl = searchParams.get("claimId");
-
-  const [currentJobId, setCurrentJobId] = useState<string | null>(jobIdFromUrl);
+  const [currentJobId, setCurrentJobId] = useState<string | null>(
+    initialJobId ?? null,
+  );
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(
-    claimIdFromUrl,
+    initialClaimId ?? null,
   );
   const [showInfoDialog, setShowInfoDialog] = useState(false);
   const subscriptionUsageQuery = useSubscriptionUsage();
@@ -55,6 +58,11 @@ export function FactCheckPageClient() {
       setShowInfoDialog(true);
     }
   }, [currentJobId]);
+
+  useEffect(() => {
+    setCurrentJobId(initialJobId ?? null);
+    setSelectedClaimId(initialClaimId ?? null);
+  }, [initialClaimId, initialJobId]);
 
   const handleFormSubmit = (data: AnalyzeContentRequest) => {
     if (!factCheckAccessState.available) {
