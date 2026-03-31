@@ -1,7 +1,16 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { LinkIcon, Loader2, UploadIcon } from "lucide-react";
+import {
+  CalendarClock,
+  FileUp,
+  FlaskConical,
+  Layers,
+  LinkIcon,
+  Loader2,
+  type LucideIcon,
+  UploadIcon,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { FC } from "react";
 import { useCallback, useId, useMemo, useRef, useState } from "react";
@@ -16,6 +25,8 @@ import {
   getSubscriptionBadgeColor,
 } from "@/lib/dashboard-utils";
 import {
+  type UsageBucket,
+  type UsageThresholdState,
   formatResetDate,
   formatUsageValue,
   getUsageGate,
@@ -29,6 +40,8 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { Input } from "./ui/input";
+import { Progress } from "./ui/progress";
+import { Skeleton } from "./ui/skeleton";
 
 type UploadPhase =
   | "idle"
@@ -61,6 +74,68 @@ const ALLOWED_EXTENSIONS = [
   "aac",
   "ogg",
 ];
+
+function getProgressColor(threshold: UsageThresholdState) {
+  switch (threshold) {
+    case "warning":
+      return "[&>div]:bg-amber-500";
+    case "critical":
+    case "reached":
+      return "[&>div]:bg-red-500";
+    default:
+      return "[&>div]:bg-emerald-500";
+  }
+}
+
+function getIconBg(threshold: UsageThresholdState) {
+  switch (threshold) {
+    case "warning":
+      return "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400";
+    case "critical":
+    case "reached":
+      return "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400";
+    default:
+      return "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400";
+  }
+}
+
+function UsageCard({
+  icon: Icon,
+  label,
+  sublabel,
+  bucket,
+}: {
+  icon: LucideIcon;
+  label: string;
+  sublabel: string;
+  bucket?: UsageBucket;
+}) {
+  const threshold = getUsageThreshold(bucket);
+  const percentage = bucket?.unlimited ? 0 : (bucket?.percentage ?? 0);
+
+  return (
+    <Card className="border-slate-200 dark:border-slate-700">
+      <CardContent className="p-4 flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium text-muted-foreground">{label}</p>
+          <div className={`rounded-md p-1.5 ${getIconBg(threshold)}`}>
+            <Icon className="h-4 w-4" />
+          </div>
+        </div>
+        <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+          {formatUsageValue(bucket)}
+        </p>
+        {!bucket?.unlimited && (
+          <Progress
+            value={percentage}
+            className={`h-1.5 bg-slate-100 dark:bg-slate-800 ${getProgressColor(threshold)}`}
+          />
+        )}
+        <p className="text-xs text-muted-foreground">{sublabel}</p>
+      </CardContent>
+    </Card>
+  );
+}
 
 const Dashboard: FC<DashboardProps> = ({
   userName = "there",
@@ -370,44 +445,63 @@ const Dashboard: FC<DashboardProps> = ({
         )}
       </header>
 
-      {subscriptionUsageQuery.data ? (
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card className="border-slate-200">
-            <CardContent className="space-y-2 p-4">
-              <p className="text-sm text-muted-foreground">Uploads</p>
-              <p className="text-2xl font-semibold text-slate-900">
-                {formatUsageValue(fileUsage)}
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border-slate-200">
-            <CardContent className="space-y-2 p-4">
-              <p className="text-sm text-muted-foreground">Analyses</p>
-              <p className="text-2xl font-semibold text-slate-900">
-                {formatUsageValue(analysisUsage)}
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border-slate-200">
-            <CardContent className="space-y-2 p-4">
-              <p className="text-sm text-muted-foreground">Batches</p>
-              <p className="text-2xl font-semibold text-slate-900">
-                {formatUsageValue(batchUsage)}
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border-slate-200">
-            <CardContent className="space-y-2 p-4">
-              <p className="text-sm text-muted-foreground">Resets</p>
-              <p className="text-2xl font-semibold text-slate-900">
-                {formatResetDate(
-                  subscriptionUsageQuery.data.currentPeriod.endDate,
-                )}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      ) : null}
+      <div className="grid gap-4 md:grid-cols-4">
+        {subscriptionUsageQuery.data ? (
+          <>
+            <UsageCard
+              icon={FileUp}
+              label="Uploads"
+              sublabel="This month"
+              bucket={fileUsage}
+            />
+            <UsageCard
+              icon={FlaskConical}
+              label="Analyses"
+              sublabel="This month"
+              bucket={analysisUsage}
+            />
+            <UsageCard
+              icon={Layers}
+              label="Batches"
+              sublabel="This month"
+              bucket={batchUsage}
+            />
+            <Card className="border-slate-200 dark:border-slate-700">
+              <CardContent className="p-4 flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Usage Resets
+                  </p>
+                  <div className="rounded-md bg-slate-100 dark:bg-slate-800 p-1.5">
+                    <CalendarClock className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                  </div>
+                </div>
+                <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                  {formatResetDate(
+                    subscriptionUsageQuery.data.currentPeriod.endDate,
+                  )}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Next billing cycle
+                </p>
+              </CardContent>
+            </Card>
+          </>
+        ) : (
+          Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i} className="border-slate-200 dark:border-slate-700">
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-7 w-7 rounded-md" />
+                </div>
+                <Skeleton className="h-7 w-24" />
+                <Skeleton className="h-2 w-full rounded-full" />
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
 
       <Card className="p-4 sm:p-6">
         <CardContent className="p-0 w-full space-y-6">
