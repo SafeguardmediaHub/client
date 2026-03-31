@@ -14,6 +14,7 @@ import {
   ShieldIcon,
   Users,
 } from "lucide-react";
+import { Suspense } from "react";
 import type * as React from "react";
 import {
   Sidebar,
@@ -328,7 +329,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent className="pb-4">
         <NavOverview projects={gatedOverview} />
-        <NavFeatureSections sections={featureSections} />
+        <Suspense>
+          <NavFeatureSections sections={featureSections} />
+        </Suspense>
         <NavReporting projects={reportingItems} />
         {user?.role === "admin" && <NavAdmin />}
         <NavOverview label="Support" projects={data.navSecondary} />
