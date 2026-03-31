@@ -83,7 +83,7 @@ function getProgressColor(threshold: UsageThresholdState) {
     case "reached":
       return "[&>div]:bg-red-500";
     default:
-      return "[&>div]:bg-emerald-500";
+      return "[&>div]:bg-blue-500";
   }
 }
 
@@ -95,7 +95,7 @@ function getIconBg(threshold: UsageThresholdState) {
     case "reached":
       return "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400";
     default:
-      return "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400";
+      return "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400";
   }
 }
 
