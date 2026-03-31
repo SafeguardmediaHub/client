@@ -1,5 +1,10 @@
+import { Suspense } from "react";
 import { AIMediaDetectionWorkspace } from "@/components/ai-media-detection/AIMediaDetectionWorkspace";
 
 export default function AIMediaDetectionPage() {
-  return <AIMediaDetectionWorkspace />;
+  return (
+    <Suspense>
+      <AIMediaDetectionWorkspace />
+    </Suspense>
+  );
 }

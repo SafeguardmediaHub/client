@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type React from "react";
 import AppNavbar from "@/components/app-navbar";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -19,7 +20,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       
       {/* AI Assistant - available on all dashboard pages */}
       <AssistantErrorBoundary>
-        <AssistantPanel />
+        <Suspense>
+          <AssistantPanel />
+        </Suspense>
       </AssistantErrorBoundary>
     </div>
     // </Protected>

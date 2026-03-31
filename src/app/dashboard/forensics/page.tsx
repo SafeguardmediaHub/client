@@ -1,5 +1,10 @@
+import { Suspense } from "react";
 import { ForensicsWorkspace } from "@/components/forensics/ForensicsWorkspace";
 
 export default function ForensicsPage() {
-  return <ForensicsWorkspace />;
+  return (
+    <Suspense>
+      <ForensicsWorkspace />
+    </Suspense>
+  );
 }
