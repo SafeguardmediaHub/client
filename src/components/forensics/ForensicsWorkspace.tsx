@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   FileAudio,
   FileImage,
+  FileVideo,
   Filter,
   Loader2,
   Search,
@@ -15,7 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { AccessNotice } from "@/components/subscription/AccessNotice";
 import { UsageSummaryBanner } from "@/components/subscription/UsageSummaryBanner";
 import {
@@ -40,6 +41,7 @@ import {
   type ForensicsMediaType,
   getForensicsMediaType,
   useForensicsDetail,
+  useForensicsStatus,
   useStartForensics,
 } from "@/hooks/useForensics";
 import { type Media, useGetMedia } from "@/hooks/useMedia";
@@ -54,11 +56,13 @@ import {
 } from "@/lib/subscription-access";
 import { cn, formatFileSize, timeAgo } from "@/lib/utils";
 
-type MediaFilter = "all" | ForensicsMediaType | "video";
+type MediaFilter = "all" | ForensicsMediaType;
 type FlowState =
   | "idle"
   | "media_selected"
   | "creating_forensic_analysis"
+  | "analysis_pending"
+  | "analysis_processing"
   | "completed"
   | "failed";
 
@@ -69,6 +73,7 @@ const MEDIA_FILTERS: Array<{ label: string; value: MediaFilter }> = [
   { label: "Images", value: "image" },
   { label: "Videos", value: "video" },
   { label: "Audio", value: "audio" },
+  { label: "Frames", value: "frames" },
 ];
 
 function getForensicsFeatureKey(
@@ -79,22 +84,39 @@ function getForensicsFeatureKey(
       return "forensicsImage";
     case "audio":
       return "forensicsAudio";
+    case "video":
+      return "forensicsVideo";
+    case "frames":
+      return "forensicsFrames";
     default:
       return null;
   }
 }
 
-function getMediaTypeLabel(mediaType: ForensicsMediaType) {
-  return mediaType === "image" ? "Image" : "Audio";
+function getMediaTypeLabel(mediaType: Exclude<ForensicsMediaType, "frames">) {
+  switch (mediaType) {
+    case "image":
+      return "Image";
+    case "audio":
+      return "Audio";
+    case "video":
+      return "Video";
+  }
 }
 
-function getMediaTypeIcon(mediaType: ForensicsMediaType, className?: string) {
+function getMediaTypeIcon(
+  mediaType: Exclude<ForensicsMediaType, "frames">,
+  className?: string,
+) {
   const iconClassName = cn("size-4", className);
-  return mediaType === "image" ? (
-    <FileImage className={iconClassName} />
-  ) : (
-    <FileAudio className={iconClassName} />
-  );
+  switch (mediaType) {
+    case "image":
+      return <FileImage className={iconClassName} />;
+    case "audio":
+      return <FileAudio className={iconClassName} />;
+    case "video":
+      return <FileVideo className={iconClassName} />;
+  }
 }
 
 function getPresetModeLabel(filter: MediaFilter) {
@@ -105,6 +127,8 @@ function getPresetModeLabel(filter: MediaFilter) {
       return "Videos";
     case "audio":
       return "Audio";
+    case "frames":
+      return "Frames";
     default:
       return null;
   }
@@ -117,9 +141,11 @@ function getPresetModeDescription(filter: MediaFilter) {
     case "audio":
       return "Run forensic analysis on audio files from your library.";
     case "video":
-      return "Browse video files in your library. Video forensics is not available yet.";
+      return "Run full-video forensic analysis on video files from your library.";
+    case "frames":
+      return "Run frame-level forensic analysis on video files from your library.";
     default:
-      return "Run forensic analysis on existing image and audio files from your library. Video forensics is planned later.";
+      return "Run forensic analysis on image, audio, video, and frame workflows from your library.";
   }
 }
 
@@ -131,6 +157,8 @@ function getScopedLibraryLabel(filter: MediaFilter) {
       return "Video files";
     case "audio":
       return "Audio files";
+    case "frames":
+      return "Frame-source videos";
     default:
       return "Library files";
   }
@@ -141,9 +169,11 @@ function getScopedSupportedLabel(filter: MediaFilter) {
     case "image":
       return "Supported images";
     case "video":
-      return "Supported now";
+      return "Supported videos";
     case "audio":
       return "Supported audio";
+    case "frames":
+      return "Frame-ready videos";
     default:
       return "Supported";
   }
@@ -157,6 +187,8 @@ function getScopedReadyLabel(filter: MediaFilter) {
       return "Videos ready";
     case "audio":
       return "Audio ready";
+    case "frames":
+      return "Videos ready";
     default:
       return "Ready now";
   }
@@ -170,9 +202,7 @@ function getMediaAvailability(media: Media) {
 
   let reason = "";
   if (!isSupported) {
-    reason = media.mimeType.startsWith("video/")
-      ? "Video forensics is not available yet"
-      : "Unsupported media type";
+    reason = "Unsupported media type";
   } else if (!isReady) {
     reason = "Still processing in library";
   }
@@ -183,6 +213,66 @@ function getMediaAvailability(media: Media) {
     isReady,
     reason,
   };
+}
+
+function matchesForensicsMode(
+  mode: MediaFilter,
+  media: Media,
+  availability: ReturnType<typeof getMediaAvailability>,
+) {
+  if (mode === "all") return true;
+  if (mode === "frames") return media.mimeType.startsWith("video/");
+  return availability.mediaType === mode;
+}
+
+function getWorkflowLabel(mode: ForensicsMediaType) {
+  switch (mode) {
+    case "image":
+      return "image";
+    case "audio":
+      return "audio";
+    case "video":
+      return "video";
+    case "frames":
+      return "frame";
+  }
+}
+
+function getWorkflowTitle(mode: ForensicsMediaType) {
+  switch (mode) {
+    case "image":
+      return "Image";
+    case "audio":
+      return "Audio";
+    case "video":
+      return "Video";
+    case "frames":
+      return "Frames";
+  }
+}
+
+function getAnalysisTypeLabel(mediaType: ForensicsMediaType) {
+  return mediaType === "frames" ? "Frames" : getMediaTypeLabel(mediaType);
+}
+
+function getAnalysisTypeIcon(
+  mediaType: ForensicsMediaType,
+  className?: string,
+) {
+  return mediaType === "frames" ? (
+    <FileVideo className={cn("size-4", className)} />
+  ) : (
+    getMediaTypeIcon(mediaType, className)
+  );
+}
+
+function getAsyncStateMessage(mode: ForensicsMediaType, flowState: FlowState) {
+  const label = getWorkflowLabel(mode);
+  if (flowState === "analysis_processing") {
+    return `We are actively processing the selected ${label} forensic analysis. This can take a little longer than image and audio workflows.`;
+  }
+
+  return `Your ${label} forensic analysis has been queued. We will keep checking until the result is ready.`;
 }
 
 function formatDateTime(value?: string) {
@@ -273,9 +363,13 @@ function renderMediaPreview(media: Media, className?: string) {
     >
       {forensicMediaType === "image" ? (
         <FileImage className="size-8 text-slate-500" />
-      ) : (
+      ) : null}
+      {forensicMediaType === "audio" ? (
         <FileAudio className="size-8 text-slate-500" />
-      )}
+      ) : null}
+      {forensicMediaType === "video" ? (
+        <FileVideo className="size-8 text-slate-500" />
+      ) : null}
     </div>
   );
 }
@@ -331,6 +425,10 @@ export function ForensicsWorkspace() {
   const [latestAnalysis, setLatestAnalysis] =
     useState<ForensicsAnalysisDetail | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [frameSamplingMode, setFrameSamplingMode] = useState<
+    "default" | "uniform"
+  >("default");
+  const currentAnalysisRef = useRef<HTMLDivElement | null>(null);
 
   const deferredSearchValue = useDeferredValue(searchValue);
   const subscriptionUsageQuery = useSubscriptionUsage();
@@ -343,6 +441,10 @@ export function ForensicsWorkspace() {
   const detailQuery = useForensicsDetail(analysisId, {
     enabled: flowState === "completed",
   });
+  const statusQuery = useForensicsStatus(analysisId, {
+    enabled:
+      flowState === "analysis_pending" || flowState === "analysis_processing",
+  });
   const presetModeLabel = getPresetModeLabel(mediaFilter);
 
   useEffect(() => {
@@ -351,7 +453,8 @@ export function ForensicsWorkspace() {
     if (
       mediaParam === "image" ||
       mediaParam === "video" ||
-      mediaParam === "audio"
+      mediaParam === "audio" ||
+      mediaParam === "frames"
     ) {
       setMediaFilter(mediaParam);
       return;
@@ -366,16 +469,20 @@ export function ForensicsWorkspace() {
   const selectedAvailability = selectedMedia
     ? getMediaAvailability(selectedMedia)
     : null;
+  const selectedWorkflowMode =
+    mediaFilter === "all"
+      ? selectedAvailability?.mediaType || null
+      : mediaFilter === "frames"
+        ? "frames"
+        : mediaFilter;
   const forensicsAccessState = getCombinedFeatureState(
     subscriptionUsageQuery.data,
-    ["forensicsImage", "forensicsAudio"],
+    ["forensicsImage", "forensicsAudio", "forensicsVideo", "forensicsFrames"],
   );
-  const selectedFeatureState = selectedAvailability?.mediaType
+  const selectedFeatureState = selectedWorkflowMode
     ? getFeatureState(
         subscriptionUsageQuery.data,
-        getForensicsFeatureKey(
-          selectedAvailability.mediaType,
-        ) as ProductFeatureKey,
+        getForensicsFeatureKey(selectedWorkflowMode) as ProductFeatureKey,
       )
     : forensicsAccessState;
   const analysisUsage = subscriptionUsageQuery.data?.usage.analyses;
@@ -389,10 +496,11 @@ export function ForensicsWorkspace() {
       const matchesSearch =
         normalizedSearch.length === 0 ||
         media.filename.toLowerCase().includes(normalizedSearch);
-      const matchesFilter =
-        mediaFilter === "all" ||
-        availability.mediaType === mediaFilter ||
-        (mediaFilter === "video" && media.mimeType.startsWith("video/"));
+      const matchesFilter = matchesForensicsMode(
+        mediaFilter,
+        media,
+        availability,
+      );
 
       return matchesSearch && matchesFilter;
     });
@@ -400,31 +508,34 @@ export function ForensicsWorkspace() {
 
   const scopedLibraryCount = allMedia.filter((media) => {
     const availability = getMediaAvailability(media);
-    return (
-      mediaFilter === "all" ||
-      availability.mediaType === mediaFilter ||
-      (mediaFilter === "video" && media.mimeType.startsWith("video/"))
-    );
+    return matchesForensicsMode(mediaFilter, media, availability);
   }).length;
   const supportedMediaCount = allMedia.filter((media) => {
     const availability = getMediaAvailability(media);
-    const matchesFilter =
-      mediaFilter === "all" ||
-      availability.mediaType === mediaFilter ||
-      (mediaFilter === "video" && media.mimeType.startsWith("video/"));
+    const matchesFilter = matchesForensicsMode(
+      mediaFilter,
+      media,
+      availability,
+    );
 
     return matchesFilter && availability.isSupported;
   }).length;
   const readyMediaCount = allMedia.filter((media) => {
     const availability = getMediaAvailability(media);
-    const matchesFilter =
-      mediaFilter === "all" ||
-      availability.mediaType === mediaFilter ||
-      (mediaFilter === "video" && media.mimeType.startsWith("video/"));
+    const matchesFilter = matchesForensicsMode(
+      mediaFilter,
+      media,
+      availability,
+    );
 
     return matchesFilter && availability.isReady;
   }).length;
   const activeAnalysis = detailQuery.data ?? latestAnalysis;
+  const isLockedMode = mediaFilter !== "all";
+  const visibleFilters = isLockedMode
+    ? MEDIA_FILTERS.filter((filter) => filter.value === mediaFilter)
+    : MEDIA_FILTERS;
+  const asyncStatusDetails = statusQuery.data?.analysis;
 
   const updateMediaFilter = (nextFilter: MediaFilter) => {
     setMediaFilter(nextFilter);
@@ -443,16 +554,25 @@ export function ForensicsWorkspace() {
     });
   };
 
+  const scrollToCurrentAnalysis = () => {
+    window.requestAnimationFrame(() => {
+      currentAnalysisRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+  };
+
   useEffect(() => {
     if (!selectedMedia || !selectedAvailability) {
       return;
     }
 
-    const isVideoSelection = selectedMedia.mimeType.startsWith("video/");
-    const isCompatible =
-      mediaFilter === "all" ||
-      selectedAvailability.mediaType === mediaFilter ||
-      (mediaFilter === "video" && isVideoSelection);
+    const isCompatible = matchesForensicsMode(
+      mediaFilter,
+      selectedMedia,
+      selectedAvailability,
+    );
 
     if (isCompatible) {
       return;
@@ -474,7 +594,11 @@ export function ForensicsWorkspace() {
       setLatestAnalysis(null);
       setAnalysisId(null);
     }
-    if (flowState !== "creating_forensic_analysis") {
+    if (
+      flowState !== "creating_forensic_analysis" &&
+      flowState !== "analysis_pending" &&
+      flowState !== "analysis_processing"
+    ) {
       setFlowState("media_selected");
     }
   };
@@ -483,6 +607,7 @@ export function ForensicsWorkspace() {
     if (
       !selectedMedia ||
       !selectedAvailability?.mediaType ||
+      !selectedWorkflowMode ||
       !selectedAvailability.isReady
     ) {
       return;
@@ -509,15 +634,33 @@ export function ForensicsWorkspace() {
     setErrorMessage(null);
     setLatestAnalysis(null);
     setAnalysisId(null);
+    scrollToCurrentAnalysis();
 
     try {
       const analysis = await startForensics.mutateAsync({
         mediaId: selectedMedia.id,
-        mediaType: selectedAvailability.mediaType,
+        mediaType: selectedWorkflowMode,
+        options:
+          selectedWorkflowMode === "frames" && frameSamplingMode === "uniform"
+            ? { sampling_mode: "uniform" }
+            : undefined,
       });
 
       setLatestAnalysis(analysis);
       setAnalysisId(analysis.id);
+
+      if (
+        analysis.processing.processingMode === "async" &&
+        analysis.status !== "completed"
+      ) {
+        setFlowState(
+          analysis.status === "processing"
+            ? "analysis_processing"
+            : "analysis_pending",
+        );
+        return;
+      }
+
       setFlowState("completed");
     } catch (error) {
       const denialState = getDeniedStateFromError(error);
@@ -534,6 +677,44 @@ export function ForensicsWorkspace() {
       setFlowState("failed");
     }
   };
+
+  useEffect(() => {
+    if (!statusQuery.data) {
+      return;
+    }
+
+    const effectiveStatus = statusQuery.data.analysis.effectiveStatus;
+
+    if (effectiveStatus === "completed") {
+      setFlowState("completed");
+      detailQuery.refetch();
+      return;
+    }
+
+    if (effectiveStatus === "failed") {
+      setFlowState("failed");
+      setErrorMessage(
+        statusQuery.data.analysis.errorInfo?.message ||
+          "The forensic analysis could not be completed for this file.",
+      );
+      return;
+    }
+
+    if (effectiveStatus === "processing") {
+      setFlowState("analysis_processing");
+      return;
+    }
+
+    setFlowState("analysis_pending");
+  }, [detailQuery, statusQuery.data]);
+
+  useEffect(() => {
+    if (!detailQuery.data) {
+      return;
+    }
+
+    setLatestAnalysis(detailQuery.data);
+  }, [detailQuery.data]);
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6">
@@ -575,7 +756,7 @@ export function ForensicsWorkspace() {
                 <CardDescription className="max-w-2xl text-sm leading-7 text-slate-600">
                   {presetModeLabel
                     ? `${getPresetModeDescription(mediaFilter)} Select a file to continue.`
-                    : "Run forensic analysis on existing image and audio files from your library. Video forensics is planned later."}
+                    : "Run forensic analysis on existing image, audio, and video files from your library, including frame-level workflows."}
                 </CardDescription>
               </div>
               <Button asChild variant="outline" className="shrink-0">
@@ -630,7 +811,7 @@ export function ForensicsWorkspace() {
                   <Filter className="size-3.5" />
                   Filter
                 </div>
-                {MEDIA_FILTERS.map((filter) => (
+                {visibleFilters.map((filter) => (
                   <button
                     key={filter.value}
                     type="button"
@@ -647,6 +828,51 @@ export function ForensicsWorkspace() {
                 ))}
               </div>
             </div>
+
+            {mediaFilter === "frames" ? (
+              <div className="rounded-[1.25rem] border border-slate-200 bg-slate-50/80 p-4">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="space-y-1">
+                    <div className="text-sm font-semibold text-slate-900">
+                      Frame analysis options
+                    </div>
+                    <p className="text-sm leading-7 text-slate-600">
+                      Keep the default backend sampling, or request uniform
+                      frame sampling when the forensic service supports it.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      {
+                        label: "Default",
+                        value: "default" as const,
+                        description: "Let the backend choose the sampling mode",
+                      },
+                      {
+                        label: "Uniform",
+                        value: "uniform" as const,
+                        description: "Request uniform frame sampling",
+                      },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setFrameSamplingMode(option.value)}
+                        className={cn(
+                          "rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
+                          frameSamplingMode === option.value
+                            ? "border-blue-200 bg-blue-50 text-blue-700"
+                            : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900",
+                        )}
+                        title={option.description}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : null}
 
             <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50/70 p-3">
               {mediaQuery.isLoading ? (
@@ -689,8 +915,8 @@ export function ForensicsWorkspace() {
                                 variant="outline"
                                 className="border-white/80 bg-white/90 text-slate-700"
                               >
-                                {getMediaTypeIcon(availability.mediaType)}
-                                {getMediaTypeLabel(availability.mediaType)}
+                                {getAnalysisTypeIcon(availability.mediaType)}
+                                {getAnalysisTypeLabel(availability.mediaType)}
                               </Badge>
                             ) : (
                               <Badge
@@ -743,8 +969,11 @@ export function ForensicsWorkspace() {
                     No supported media found
                   </h3>
                   <p className="mt-2 max-w-md text-sm leading-7 text-slate-500">
-                    Upload an image or audio file to your library first, then
-                    return here to run forensic analysis.
+                    {mediaFilter === "frames"
+                      ? "Upload a video file to your library first, then return here to run frame-level forensic analysis."
+                      : mediaFilter === "all"
+                        ? "Upload an image, audio, or video file to your library first, then return here to run forensic analysis."
+                        : `Upload a ${getWorkflowLabel(mediaFilter)} file to your library first, then return here to run forensic analysis.`}
                   </p>
                   <Button asChild className="mt-4">
                     <Link href="/dashboard">
@@ -774,10 +1003,10 @@ export function ForensicsWorkspace() {
                         {selectedMedia.filename}
                       </div>
                       <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500">
-                        {selectedAvailability.mediaType ? (
+                        {selectedWorkflowMode ? (
                           <span className="inline-flex items-center gap-1.5">
-                            {getMediaTypeIcon(selectedAvailability.mediaType)}
-                            {getMediaTypeLabel(selectedAvailability.mediaType)}
+                            {getAnalysisTypeIcon(selectedWorkflowMode)}
+                            {getAnalysisTypeLabel(selectedWorkflowMode)}
                           </span>
                         ) : null}
                         <span>•</span>
@@ -820,7 +1049,10 @@ export function ForensicsWorkspace() {
                       ) : (
                         <>
                           <Sparkles className="size-4" />
-                          Run Forensic Analysis
+                          Run{" "}
+                          {selectedWorkflowMode
+                            ? `${getWorkflowTitle(selectedWorkflowMode)} Analysis`
+                            : "Forensic Analysis"}
                         </>
                       )}
                     </Button>
@@ -833,7 +1065,11 @@ export function ForensicsWorkspace() {
                       Choose a file to continue
                     </div>
                     <p className="mt-1 text-sm leading-7 text-slate-500">
-                      Select an image or audio file from your library to begin.
+                      {mediaFilter === "frames"
+                        ? "Select a video file from your library to begin frame-level forensic analysis."
+                        : mediaFilter === "all"
+                          ? "Select an image, audio, or video file from your library to begin."
+                          : `Select a ${getWorkflowLabel(mediaFilter)} file from your library to begin.`}
                     </p>
                   </div>
                   <Button disabled className="bg-blue-600 text-white">
@@ -859,10 +1095,10 @@ export function ForensicsWorkspace() {
             </CardHeader>
             <CardContent className="space-y-4 text-sm leading-7 text-slate-600">
               {[
-                "Select an image or audio file from your library.",
+                "Select an image, audio, or video file from your library.",
                 "We submit the selected media record to the forensic service.",
+                "Image and audio analyses usually complete in one response, while video and frame analyses continue through a queued async workflow.",
                 "You receive a verdict, summary, confidence, probability, and findings.",
-                "Video and frame forensics are planned later and are not part of Phase 1.",
               ].map((step, index) => (
                 <div key={step} className="flex gap-3">
                   <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 text-sm font-semibold text-blue-700">
@@ -914,13 +1150,24 @@ export function ForensicsWorkspace() {
               </div>
               <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                 <span className="text-sm font-medium text-slate-700">
-                  Video and frame forensics
+                  Video forensics
                 </span>
                 <Badge
-                  className="border-amber-200 bg-amber-50 text-amber-700"
+                  className="border-emerald-200 bg-emerald-50 text-emerald-700"
                   variant="outline"
                 >
-                  Planned later
+                  Available
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <span className="text-sm font-medium text-slate-700">
+                  Frame forensics
+                </span>
+                <Badge
+                  className="border-emerald-200 bg-emerald-50 text-emerald-700"
+                  variant="outline"
+                >
+                  Available
                 </Badge>
               </div>
             </CardContent>
@@ -928,7 +1175,10 @@ export function ForensicsWorkspace() {
         </div>
       </div>
 
-      <Card className="border-slate-200 shadow-sm">
+      <Card
+        ref={currentAnalysisRef}
+        className="scroll-mt-24 border-slate-200 shadow-sm"
+      >
         <CardHeader>
           <CardTitle className="text-2xl text-slate-900">
             Forensic Analysis
@@ -946,8 +1196,7 @@ export function ForensicsWorkspace() {
                 Select media to begin
               </div>
               <p className="mt-2 text-sm leading-7 text-slate-500">
-                Choose an image or audio file from your library to run forensic
-                analysis.
+                Choose a file from your library to run forensic analysis.
               </p>
             </div>
           )}
@@ -963,15 +1212,19 @@ export function ForensicsWorkspace() {
                     {selectedMedia.filename} is selected. Run forensic analysis
                     to review verdict, summary, confidence, probability, and
                     findings.
+                    {selectedWorkflowMode === "frames" &&
+                    frameSamplingMode === "uniform"
+                      ? " Uniform frame sampling will be requested for this run."
+                      : null}
                   </p>
                 </div>
-                {selectedAvailability?.mediaType ? (
+                {selectedWorkflowMode ? (
                   <Badge
                     variant="outline"
                     className="border-slate-200 bg-white text-slate-700"
                   >
-                    {getMediaTypeIcon(selectedAvailability.mediaType)}
-                    {getMediaTypeLabel(selectedAvailability.mediaType)}
+                    {getAnalysisTypeIcon(selectedWorkflowMode)}
+                    {getAnalysisTypeLabel(selectedWorkflowMode)}
                   </Badge>
                 ) : null}
               </div>
@@ -985,12 +1238,70 @@ export function ForensicsWorkspace() {
                 Running forensic analysis
               </div>
               <p className="mt-2 text-sm leading-7 text-slate-600">
-                We are submitting the selected media for forensic review. This
-                Phase 1 flow is synchronous, so the result should return here
-                directly.
+                We are submitting the selected media for forensic review and
+                preparing the analysis workflow.
               </p>
             </div>
           )}
+
+          {(flowState === "analysis_pending" ||
+            flowState === "analysis_processing") &&
+          selectedWorkflowMode ? (
+            <div className="rounded-[1.5rem] border border-blue-200 bg-blue-50/70 px-6 py-12 text-center">
+              <Loader2 className="mx-auto size-10 animate-spin text-blue-600" />
+              <div className="mt-4 text-lg font-semibold text-slate-900">
+                {flowState === "analysis_processing"
+                  ? "Processing forensic analysis"
+                  : "Forensic analysis queued"}
+              </div>
+              <p className="mt-2 text-sm leading-7 text-slate-600">
+                {getAsyncStateMessage(selectedWorkflowMode, flowState)}
+              </p>
+              {asyncStatusDetails ? (
+                <div className="mx-auto mt-6 grid max-w-3xl gap-3 text-left sm:grid-cols-3">
+                  <div className="rounded-2xl border border-blue-100 bg-white/80 px-4 py-3">
+                    <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                      Effective status
+                    </div>
+                    <div className="mt-1 text-sm font-medium capitalize text-slate-900">
+                      {asyncStatusDetails.effectiveStatus}
+                    </div>
+                  </div>
+                  <div className="rounded-2xl border border-blue-100 bg-white/80 px-4 py-3">
+                    <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                      Started
+                    </div>
+                    <div className="mt-1 text-sm font-medium text-slate-900">
+                      {formatDateTime(asyncStatusDetails.analysisStartedAt)}
+                    </div>
+                  </div>
+                  <div className="rounded-2xl border border-blue-100 bg-white/80 px-4 py-3">
+                    <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                      Last updated
+                    </div>
+                    <div className="mt-1 text-sm font-medium text-slate-900">
+                      {formatDateTime(asyncStatusDetails.updatedAt)}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+              {statusQuery.isError ? (
+                <div className="mt-4 flex flex-col items-center gap-3">
+                  <p className="text-sm font-medium text-amber-700">
+                    Unable to refresh status right now. We will keep the last
+                    known state until a new update arrives.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => void statusQuery.refetch()}
+                  >
+                    Refresh status
+                  </Button>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
 
           {flowState === "failed" && (
             <div className="rounded-[1.5rem] border border-red-200 bg-red-50/70 px-6 py-8">
@@ -1024,8 +1335,10 @@ export function ForensicsWorkspace() {
                       <div className="flex h-full w-full items-center justify-center bg-slate-100">
                         {activeAnalysis.mediaType === "image" ? (
                           <FileImage className="size-10 text-slate-500" />
-                        ) : (
+                        ) : activeAnalysis.mediaType === "audio" ? (
                           <FileAudio className="size-10 text-slate-500" />
+                        ) : (
+                          <FileVideo className="size-10 text-slate-500" />
                         )}
                       </div>
                     )}
@@ -1057,12 +1370,8 @@ export function ForensicsWorkspace() {
                       variant="outline"
                       className="border-slate-200 bg-slate-50 text-slate-700"
                     >
-                      {activeAnalysis.mediaType === "image" ? (
-                        <FileImage className="size-4" />
-                      ) : (
-                        <FileAudio className="size-4" />
-                      )}
-                      {activeAnalysis.mediaType === "image" ? "Image" : "Audio"}
+                      {getAnalysisTypeIcon(activeAnalysis.mediaType)}
+                      {getAnalysisTypeLabel(activeAnalysis.mediaType)}
                     </Badge>
                   </div>
 

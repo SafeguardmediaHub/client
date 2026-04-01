@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { AccessNotice } from "@/components/subscription/AccessNotice";
 import { UsageSummaryBanner } from "@/components/subscription/UsageSummaryBanner";
@@ -436,6 +436,7 @@ export function AIMediaDetectionWorkspace() {
   const [pollUntil, setPollUntil] = useState<number | null>(null);
   const [pollTimedOut, setPollTimedOut] = useState(false);
   const [detailAnalysisId, setDetailAnalysisId] = useState<string | null>(null);
+  const currentAnalysisRef = useRef<HTMLDivElement | null>(null);
 
   const mediaQuery = useGetMedia({ page: 1, limit: 100, sort: "createdAt" });
   const subscriptionUsageQuery = useSubscriptionUsage();
@@ -652,6 +653,15 @@ export function AIMediaDetectionWorkspace() {
     });
   };
 
+  const scrollToCurrentAnalysis = () => {
+    window.requestAnimationFrame(() => {
+      currentAnalysisRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+  };
+
   useEffect(() => {
     if (!selectedMedia || !selectedMediaAvailability) {
       return;
@@ -708,6 +718,7 @@ export function AIMediaDetectionWorkspace() {
     setActiveResult(null);
     setPollUntil(null);
     setPollTimedOut(false);
+    scrollToCurrentAnalysis();
 
     try {
       const result = await startDetection.mutateAsync({
@@ -1515,7 +1526,7 @@ export function AIMediaDetectionWorkspace() {
           </Card>
         </div>
 
-        <Card className="py-0">
+        <Card ref={currentAnalysisRef} className="scroll-mt-24 py-0">
           <CardHeader className="border-b border-slate-200 bg-slate-50/70 py-5">
             <CardTitle>Current analysis</CardTitle>
             <CardDescription>

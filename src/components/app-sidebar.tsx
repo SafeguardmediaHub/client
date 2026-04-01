@@ -14,8 +14,8 @@ import {
   ShieldIcon,
   Users,
 } from "lucide-react";
-import { Suspense } from "react";
 import type * as React from "react";
+import { Suspense } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -172,6 +172,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         : undefined,
     };
   };
+  const forensicsSectionState = getCombinedFeatureState(
+    subscriptionUsageQuery.data,
+    ["forensicsImage", "forensicsAudio", "forensicsVideo", "forensicsFrames"],
+  );
 
   const featureSections = [
     {
@@ -200,6 +204,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       title: "Forensics",
       icon: Shield,
       activePrefixes: ["/dashboard/forensics"],
+      disabled: !forensicsSectionState.available,
+      disabledReason: !forensicsSectionState.available
+        ? getFeatureStateShortLabel(forensicsSectionState)
+        : undefined,
+      disabledMessage: !forensicsSectionState.available
+        ? getDisabledMessage("Forensics", forensicsSectionState)
+        : undefined,
       items: [
         getGatedItem({
           title: "Images",
@@ -215,6 +226,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           title: "Audio",
           url: "/dashboard/forensics?media=audio",
           accessFeatures: ["forensicsAudio"],
+        }),
+        getGatedItem({
+          title: "Frames",
+          url: "/dashboard/forensics?media=frames",
+          accessFeatures: ["forensicsFrames"],
         }),
       ],
     },

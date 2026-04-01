@@ -5,7 +5,10 @@ import {
   invalidateSubscriptionUsage,
 } from "@/lib/subscription-access";
 
-export type ForensicsMediaType = "image" | "audio";
+export type ForensicsMediaType = "image" | "audio" | "video" | "frames";
+export type FrameForensicsOptions = {
+  sampling_mode?: string;
+};
 
 export type ForensicsFinding = {
   title: string;
@@ -95,14 +98,19 @@ export interface ForensicsStatusData {
 interface StartForensicsParams {
   mediaId: string;
   mediaType: ForensicsMediaType;
+  options?: FrameForensicsOptions;
 }
 
 function startForensics({
   mediaId,
   mediaType,
+  options,
 }: StartForensicsParams): Promise<ForensicsAnalysisDetail> {
   return api
-    .post(`/api/forensics/${mediaType}`, { mediaId })
+    .post(`/api/forensics/${mediaType}`, {
+      mediaId,
+      ...(options ? { options } : {}),
+    })
     .then((response) => response.data.data.analysis);
 }
 
@@ -127,6 +135,7 @@ export function getForensicsMediaType(
 ): ForensicsMediaType | null {
   if (mimeType.startsWith("image/")) return "image";
   if (mimeType.startsWith("audio/")) return "audio";
+  if (mimeType.startsWith("video/")) return "video";
   return null;
 }
 
@@ -172,5 +181,6 @@ export function useForensicsStatus(
     queryFn: () => fetchForensicsStatus(analysisId as string),
     enabled: Boolean(analysisId && options?.enabled),
     staleTime: 15000,
+    refetchInterval: options?.enabled ? 4000 : false,
   });
 }
