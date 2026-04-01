@@ -1,6 +1,5 @@
 import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
-import Script from "next/script";
 import "cal-sans/index.css";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
@@ -114,11 +113,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <Script
-          async
+        <script
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3526860570408649"
+          async
           crossOrigin="anonymous"
-          strategy="afterInteractive"
         />
       </head>
       <body
