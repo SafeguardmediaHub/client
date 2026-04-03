@@ -41,7 +41,9 @@ import {
   type ForensicsMediaType,
   getForensicsMediaType,
   useForensicsDetail,
+  useForensicsHistoryForMedia,
   useForensicsStatus,
+  useLatestForensicsForMedia,
   useStartForensics,
 } from "@/hooks/useForensics";
 import { type Media, useGetMedia } from "@/hooks/useMedia";
@@ -65,6 +67,7 @@ type FlowState =
   | "analysis_processing"
   | "completed"
   | "failed";
+type ForensicsRunIntent = "default" | "rerun" | "retry";
 
 const READY_MEDIA_STATUSES = new Set(["uploaded", "processed"]);
 
@@ -340,6 +343,31 @@ function getForensicsErrorMessage(error: unknown) {
   return "The forensic analysis could not be completed for this file.";
 }
 
+function getTriggerTypeLabel(triggerType?: string) {
+  switch (triggerType) {
+    case "rerun":
+      return "Rerun";
+    case "retry":
+      return "Retry";
+    case "initial":
+      return "Initial run";
+    default:
+      return "Saved result";
+  }
+}
+
+function getSavedResultDescription(analysis: ForensicsAnalysisDetail) {
+  if (analysis.reusedExistingResult) {
+    return "Showing saved result";
+  }
+
+  if (analysis.isFreshRun) {
+    return "Fresh result";
+  }
+
+  return "Latest saved result";
+}
+
 function renderMediaPreview(media: Media, className?: string) {
   const forensicMediaType = getForensicsMediaType(media.mimeType);
   const thumbnailUrl = media.thumbnailUrl || media.publicUrl;
@@ -428,6 +456,10 @@ export function ForensicsWorkspace() {
   const [frameSamplingMode, setFrameSamplingMode] = useState<
     "default" | "uniform"
   >("default");
+  const [showingSavedResult, setShowingSavedResult] = useState(false);
+  const [openDetailSections, setOpenDetailSections] = useState<string[]>([
+    "file",
+  ]);
   const currentAnalysisRef = useRef<HTMLDivElement | null>(null);
 
   const deferredSearchValue = useDeferredValue(searchValue);
@@ -475,6 +507,18 @@ export function ForensicsWorkspace() {
       : mediaFilter === "frames"
         ? "frames"
         : mediaFilter;
+  const latestForensicsQuery = useLatestForensicsForMedia(
+    selectedMedia?.id || null,
+    selectedWorkflowMode,
+    {
+      enabled: Boolean(selectedMedia?.id && selectedWorkflowMode),
+    },
+  );
+  const historyQuery = useForensicsHistoryForMedia(selectedMedia?.id || null, {
+    mediaType: selectedWorkflowMode,
+    limit: 5,
+    enabled: Boolean(selectedMedia?.id && selectedWorkflowMode),
+  });
   const forensicsAccessState = getCombinedFeatureState(
     subscriptionUsageQuery.data,
     ["forensicsImage", "forensicsAudio", "forensicsVideo", "forensicsFrames"],
@@ -536,6 +580,16 @@ export function ForensicsWorkspace() {
     ? MEDIA_FILTERS.filter((filter) => filter.value === mediaFilter)
     : MEDIA_FILTERS;
   const asyncStatusDetails = statusQuery.data?.analysis;
+  const canShowRerun =
+    Boolean(activeAnalysis?.freshness?.rerunnable) ||
+    activeAnalysis?.status === "completed";
+  const historyItems = useMemo(
+    () =>
+      (historyQuery.data?.analyses || []).filter(
+        (item) => item.id !== activeAnalysis?.id,
+      ),
+    [activeAnalysis?.id, historyQuery.data?.analyses],
+  );
 
   const updateMediaFilter = (nextFilter: MediaFilter) => {
     setMediaFilter(nextFilter);
@@ -583,13 +637,83 @@ export function ForensicsWorkspace() {
     setAnalysisId(null);
     setLatestAnalysis(null);
     setErrorMessage(null);
+    setShowingSavedResult(false);
   }, [mediaFilter, selectedAvailability, selectedMedia]);
+
+  useEffect(() => {
+    if (
+      !selectedMedia ||
+      !selectedWorkflowMode ||
+      flowState === "creating_forensic_analysis" ||
+      flowState === "analysis_pending" ||
+      flowState === "analysis_processing" ||
+      latestForensicsQuery.isLoading
+    ) {
+      return;
+    }
+
+    const latestResult = latestForensicsQuery.data;
+
+    if (!latestResult) {
+      if (flowState !== "media_selected") {
+        setLatestAnalysis(null);
+        setAnalysisId(null);
+        setErrorMessage(null);
+        setShowingSavedResult(false);
+        setFlowState("media_selected");
+      }
+      return;
+    }
+
+    if (analysisId && !showingSavedResult && latestResult.id !== analysisId) {
+      return;
+    }
+
+    setLatestAnalysis(latestResult);
+    setAnalysisId(latestResult.id);
+    setShowingSavedResult(
+      latestResult.status === "completed" || latestResult.status === "failed",
+    );
+
+    if (latestResult.status === "failed") {
+      setErrorMessage(
+        latestResult.errorInfo?.message ||
+          "The latest forensic analysis for this file failed.",
+      );
+      setFlowState("failed");
+      return;
+    }
+
+    if (latestResult.status === "processing") {
+      setErrorMessage(null);
+      setFlowState("analysis_processing");
+      return;
+    }
+
+    if (latestResult.status === "pending") {
+      setErrorMessage(null);
+      setFlowState("analysis_pending");
+      return;
+    }
+
+    setErrorMessage(null);
+    setFlowState("completed");
+  }, [
+    analysisId,
+    flowState,
+    latestForensicsQuery.data,
+    latestForensicsQuery.isLoading,
+    selectedMedia,
+    selectedWorkflowMode,
+    showingSavedResult,
+  ]);
 
   const handleSelectMedia = (media: Media) => {
     const isDifferentSelection = media.id !== selectedMediaId;
 
     setSelectedMediaId(media.id);
     setErrorMessage(null);
+    setShowingSavedResult(false);
     if (isDifferentSelection) {
       setLatestAnalysis(null);
       setAnalysisId(null);
@@ -603,7 +727,7 @@ export function ForensicsWorkspace() {
     }
   };
 
-  const handleRunForensics = async () => {
+  const handleRunForensics = async (intent: ForensicsRunIntent = "default") => {
     if (
       !selectedMedia ||
       !selectedAvailability?.mediaType ||
@@ -634,6 +758,7 @@ export function ForensicsWorkspace() {
     setErrorMessage(null);
     setLatestAnalysis(null);
     setAnalysisId(null);
+    setShowingSavedResult(false);
     scrollToCurrentAnalysis();
 
     try {
@@ -644,10 +769,13 @@ export function ForensicsWorkspace() {
           selectedWorkflowMode === "frames" && frameSamplingMode === "uniform"
             ? { sampling_mode: "uniform" }
             : undefined,
+        rerun: intent === "rerun" ? true : undefined,
+        retry: intent === "retry" ? true : undefined,
       });
 
       setLatestAnalysis(analysis);
       setAnalysisId(analysis.id);
+      setShowingSavedResult(Boolean(analysis.reusedExistingResult));
 
       if (
         analysis.processing.processingMode === "async" &&
@@ -715,6 +843,14 @@ export function ForensicsWorkspace() {
 
     setLatestAnalysis(detailQuery.data);
   }, [detailQuery.data]);
+
+  useEffect(() => {
+    if (flowState !== "completed" || !activeAnalysis) {
+      return;
+    }
+
+    setOpenDetailSections(["file"]);
+  }, [activeAnalysis, flowState]);
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6">
@@ -1018,6 +1154,22 @@ export function ForensicsWorkspace() {
                   </div>
 
                   <div className="flex flex-col items-stretch gap-2 lg:items-end">
+                    {selectedAvailability.isReady &&
+                    !startForensics.isPending &&
+                    latestForensicsQuery.data ? (
+                      <div className="max-w-sm text-right text-sm text-slate-500">
+                        {latestForensicsQuery.data.status === "failed"
+                          ? "The latest forensic run for this file failed. You can retry it below."
+                          : `${getSavedResultDescription(
+                              latestForensicsQuery.data,
+                            )} available from ${formatDateTime(
+                              latestForensicsQuery.data.freshness
+                                ?.resultGeneratedAt ||
+                                latestForensicsQuery.data.analysisCompletedAt ||
+                                latestForensicsQuery.data.updatedAt,
+                            )}.`}
+                      </div>
+                    ) : null}
                     {!selectedAvailability.isReady ? (
                       <div className="text-sm font-medium text-slate-500">
                         {selectedAvailability.reason}
@@ -1032,7 +1184,7 @@ export function ForensicsWorkspace() {
                       </div>
                     ) : null}
                     <Button
-                      onClick={handleRunForensics}
+                      onClick={() => handleRunForensics()}
                       disabled={
                         !selectedAvailability.isReady ||
                         !selectedFeatureState.available ||
@@ -1314,6 +1466,49 @@ export function ForensicsWorkspace() {
                   <p className="mt-2 text-sm leading-7 text-red-700/90">
                     {errorMessage}
                   </p>
+                  {activeAnalysis?.freshness?.triggerType ? (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Badge
+                        variant="outline"
+                        className="border-red-200 bg-white/80 text-red-700"
+                      >
+                        {getTriggerTypeLabel(
+                          activeAnalysis.freshness.triggerType,
+                        )}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className="border-red-200 bg-white/80 text-red-700"
+                      >
+                        Generated{" "}
+                        {formatDateTime(
+                          activeAnalysis.freshness.resultGeneratedAt ||
+                            activeAnalysis.updatedAt,
+                        )}
+                      </Badge>
+                    </div>
+                  ) : null}
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    {selectedAvailability?.isReady ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleRunForensics("retry")}
+                        disabled={startForensics.isPending}
+                      >
+                        Retry
+                      </Button>
+                    ) : null}
+                    {canShowRerun && selectedAvailability?.isReady ? (
+                      <Button
+                        type="button"
+                        onClick={() => handleRunForensics("rerun")}
+                        disabled={startForensics.isPending}
+                      >
+                        Run Again
+                      </Button>
+                    ) : null}
+                  </div>
                 </div>
               </div>
             </div>
@@ -1348,6 +1543,39 @@ export function ForensicsWorkspace() {
                 <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div>
+                      {(showingSavedResult ||
+                        activeAnalysis.reusedExistingResult ||
+                        activeAnalysis.freshness) && (
+                        <div className="mb-4 flex flex-wrap items-center gap-2">
+                          <Badge
+                            variant="outline"
+                            className="border-blue-200 bg-blue-50 text-blue-700"
+                          >
+                            {getSavedResultDescription(activeAnalysis)}
+                          </Badge>
+                          {activeAnalysis.freshness?.triggerType ? (
+                            <Badge
+                              variant="outline"
+                              className="border-slate-200 bg-slate-50 text-slate-700"
+                            >
+                              {getTriggerTypeLabel(
+                                activeAnalysis.freshness.triggerType,
+                              )}
+                            </Badge>
+                          ) : null}
+                          <Badge
+                            variant="outline"
+                            className="border-slate-200 bg-slate-50 text-slate-700"
+                          >
+                            Generated{" "}
+                            {formatDateTime(
+                              activeAnalysis.freshness?.resultGeneratedAt ||
+                                activeAnalysis.analysisCompletedAt ||
+                                activeAnalysis.updatedAt,
+                            )}
+                          </Badge>
+                        </div>
+                      )}
                       <Badge
                         variant="outline"
                         className={cn(
@@ -1384,21 +1612,21 @@ export function ForensicsWorkspace() {
                         ),
                       },
                       {
-                        label: "Probability",
-                        value: formatPercentage(
-                          activeAnalysis.forensics.probability,
-                        ),
-                      },
-                      {
                         label: "Findings",
                         value: String(activeAnalysis.forensics.findings.length),
                       },
-                      {
-                        label: "Mode",
-                        value:
-                          activeAnalysis.processing.processingMode ||
-                          "Not available",
-                      },
+                      // {
+                      //   label: "Probability",
+                      //   value: formatPercentage(
+                      //     activeAnalysis.forensics.probability,
+                      //   ),
+                      // },
+                      // {
+                      //   label: "Mode",
+                      //   value:
+                      //     activeAnalysis.processing.processingMode ||
+                      //     "Not available",
+                      // },
                     ].map((metric) => (
                       <div
                         key={metric.label}
@@ -1412,6 +1640,29 @@ export function ForensicsWorkspace() {
                         </div>
                       </div>
                     ))}
+                  </div>
+
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    {canShowRerun && selectedAvailability?.isReady ? (
+                      <Button
+                        type="button"
+                        onClick={() => handleRunForensics("rerun")}
+                        disabled={startForensics.isPending}
+                      >
+                        Run Again
+                      </Button>
+                    ) : null}
+                    {activeAnalysis.status === "failed" &&
+                    selectedAvailability?.isReady ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleRunForensics("retry")}
+                        disabled={startForensics.isPending}
+                      >
+                        Retry
+                      </Button>
+                    ) : null}
                   </div>
                 </div>
               </div>
@@ -1503,7 +1754,12 @@ export function ForensicsWorkspace() {
                       ))}
                     </div>
 
-                    <Accordion type="multiple" className="w-full">
+                    <Accordion
+                      type="multiple"
+                      value={openDetailSections}
+                      onValueChange={setOpenDetailSections}
+                      className="w-full"
+                    >
                       <AccordionItem value="file">
                         <AccordionTrigger>File and processing</AccordionTrigger>
                         <AccordionContent>
@@ -1547,6 +1803,62 @@ export function ForensicsWorkspace() {
                   </CardContent>
                 </Card>
               </div>
+
+              {historyItems.length > 0 ? (
+                <Card className="border-slate-200 shadow-none">
+                  <CardHeader>
+                    <CardTitle className="text-xl text-slate-900">
+                      Previous runs
+                    </CardTitle>
+                    <CardDescription>
+                      Recent forensic runs for this media and workflow.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {historyItems.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                      >
+                        <div>
+                          <div className="text-sm font-semibold text-slate-900">
+                            {getTriggerTypeLabel(item.freshness?.triggerType)}
+                          </div>
+                          <div className="mt-1 text-sm text-slate-500">
+                            Generated{" "}
+                            {formatDateTime(
+                              item.freshness?.resultGeneratedAt || undefined,
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "border",
+                              item.status === "failed"
+                                ? "border-red-200 bg-red-50 text-red-700"
+                                : item.status === "completed"
+                                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                                  : "border-amber-200 bg-amber-50 text-amber-700",
+                            )}
+                          >
+                            {item.status}
+                          </Badge>
+                          {item.freshness?.rerunnable ? (
+                            <Badge
+                              variant="outline"
+                              className="border-slate-200 bg-white text-slate-600"
+                            >
+                              Rerunnable
+                            </Badge>
+                          ) : null}
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              ) : null}
             </div>
           ) : null}
         </CardContent>

@@ -10,6 +10,14 @@ export type FrameForensicsOptions = {
   sampling_mode?: string;
 };
 
+export type ForensicsTriggerType = "initial" | "rerun" | "retry";
+
+export type ForensicsFreshness = {
+  resultGeneratedAt?: string | null;
+  rerunnable: boolean;
+  triggerType?: ForensicsTriggerType;
+};
+
 export type ForensicsFinding = {
   title: string;
   module: string;
@@ -35,6 +43,9 @@ export interface ForensicsAnalysisDetail {
   updatedAt: string;
   thumbnailUrl?: string | null;
   previewUrl?: string | null;
+  freshness?: ForensicsFreshness;
+  reusedExistingResult?: boolean;
+  isFreshRun?: boolean;
   processing: {
     processingMode: "sync" | "async";
     processingMetadata?: {
@@ -73,6 +84,9 @@ export interface ForensicsStatusData {
     mediaType: "image" | "audio" | "video" | "frames";
     status: string;
     effectiveStatus: "pending" | "processing" | "completed" | "failed";
+    resultGeneratedAt?: string | null;
+    rerunnable?: boolean;
+    triggerType?: ForensicsTriggerType;
     analysisStartedAt?: string;
     analysisCompletedAt?: string;
     createdAt: string;
@@ -92,26 +106,113 @@ export interface ForensicsStatusData {
     confidence?: number;
     findings: ForensicsFinding[];
     summary?: string;
-  };
+  } | null;
 }
+
+export type ForensicsHistoryItem = {
+  id: string;
+  mediaId: string;
+  mediaType: ForensicsMediaType;
+  status: "pending" | "processing" | "completed" | "failed" | "expired";
+  freshness?: ForensicsFreshness;
+};
+
+export type ForensicsHistoryResponse = {
+  analyses: ForensicsHistoryItem[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+  };
+};
 
 interface StartForensicsParams {
   mediaId: string;
   mediaType: ForensicsMediaType;
   options?: FrameForensicsOptions;
+  rerun?: boolean;
+  retry?: boolean;
+}
+
+function normalizeForensicsAnalysis(
+  analysis: ForensicsAnalysisDetail,
+  payload?: Record<string, unknown>,
+): ForensicsAnalysisDetail {
+  const payloadFreshness =
+    payload && typeof payload.freshness === "object" && payload.freshness
+      ? (payload.freshness as Record<string, unknown>)
+      : null;
+
+  const mergedFreshness =
+    analysis.freshness || payloadFreshness
+      ? {
+          resultGeneratedAt:
+            (analysis.freshness?.resultGeneratedAt ??
+              (typeof payload?.resultGeneratedAt === "string"
+                ? payload.resultGeneratedAt
+                : undefined) ??
+              (typeof payloadFreshness?.resultGeneratedAt === "string"
+                ? payloadFreshness.resultGeneratedAt
+                : undefined)) ||
+            null,
+          rerunnable:
+            analysis.freshness?.rerunnable ??
+            (typeof payload?.rerunnable === "boolean"
+              ? payload.rerunnable
+              : undefined) ??
+            (typeof payloadFreshness?.rerunnable === "boolean"
+              ? payloadFreshness.rerunnable
+              : false),
+          triggerType:
+            analysis.freshness?.triggerType ??
+            (typeof payload?.triggerType === "string"
+              ? (payload.triggerType as ForensicsTriggerType)
+              : undefined) ??
+            (typeof payloadFreshness?.triggerType === "string"
+              ? (payloadFreshness.triggerType as ForensicsTriggerType)
+              : undefined),
+        }
+      : undefined;
+
+  return {
+    ...analysis,
+    freshness: mergedFreshness,
+    reusedExistingResult:
+      analysis.reusedExistingResult ??
+      (typeof payload?.reusedExistingResult === "boolean"
+        ? payload.reusedExistingResult
+        : undefined),
+    isFreshRun:
+      analysis.isFreshRun ??
+      (typeof payload?.isFreshRun === "boolean"
+        ? payload.isFreshRun
+        : undefined),
+  };
 }
 
 function startForensics({
   mediaId,
   mediaType,
   options,
+  rerun,
+  retry,
 }: StartForensicsParams): Promise<ForensicsAnalysisDetail> {
   return api
     .post(`/api/forensics/${mediaType}`, {
       mediaId,
       ...(options ? { options } : {}),
+      ...(rerun ? { rerun } : {}),
+      ...(retry ? { retry } : {}),
     })
-    .then((response) => response.data.data.analysis);
+    .then((response) =>
+      normalizeForensicsAnalysis(
+        response.data.data.analysis,
+        response.data.data as Record<string, unknown>,
+      ),
+    );
 }
 
 function fetchForensicsDetail(
@@ -119,7 +220,12 @@ function fetchForensicsDetail(
 ): Promise<ForensicsAnalysisDetail> {
   return api
     .get(`/api/forensics/${analysisId}`)
-    .then((response) => response.data.data.analysis);
+    .then((response) =>
+      normalizeForensicsAnalysis(
+        response.data.data.analysis,
+        response.data.data as Record<string, unknown>,
+      ),
+    );
 }
 
 function fetchForensicsStatus(
@@ -127,6 +233,55 @@ function fetchForensicsStatus(
 ): Promise<ForensicsStatusData> {
   return api
     .get(`/api/forensics/${analysisId}/status`)
+    .then((response) => response.data.data);
+}
+
+function fetchLatestForensicsForMedia(
+  mediaId: string,
+  mediaType?: ForensicsMediaType,
+): Promise<ForensicsAnalysisDetail | null> {
+  const params = new URLSearchParams();
+  if (mediaType) {
+    params.set("mediaType", mediaType);
+  }
+
+  const suffix = params.toString() ? `?${params.toString()}` : "";
+
+  return api
+    .get(`/api/forensics/media/${mediaId}/latest${suffix}`)
+    .then((response) => {
+      const analysis = response.data.data?.analysis;
+      if (!analysis) return null;
+      return normalizeForensicsAnalysis(
+        analysis,
+        response.data.data as Record<string, unknown>,
+      );
+    });
+}
+
+function fetchForensicsHistoryForMedia(
+  mediaId: string,
+  options?: {
+    mediaType?: ForensicsMediaType;
+    page?: number;
+    limit?: number;
+  },
+): Promise<ForensicsHistoryResponse> {
+  const params = new URLSearchParams();
+  if (options?.mediaType) {
+    params.set("mediaType", options.mediaType);
+  }
+  if (options?.page) {
+    params.set("page", String(options.page));
+  }
+  if (options?.limit) {
+    params.set("limit", String(options.limit));
+  }
+
+  const suffix = params.toString() ? `?${params.toString()}` : "";
+
+  return api
+    .get(`/api/forensics/media/${mediaId}/history${suffix}`)
     .then((response) => response.data.data);
 }
 
@@ -182,5 +337,51 @@ export function useForensicsStatus(
     enabled: Boolean(analysisId && options?.enabled),
     staleTime: 15000,
     refetchInterval: options?.enabled ? 4000 : false,
+  });
+}
+
+export function useLatestForensicsForMedia(
+  mediaId: string | null,
+  mediaType?: ForensicsMediaType | null,
+  options?: {
+    enabled?: boolean;
+  },
+) {
+  return useQuery({
+    queryKey: ["forensics", "media", mediaId, "latest", mediaType],
+    queryFn: () =>
+      fetchLatestForensicsForMedia(mediaId as string, mediaType || undefined),
+    enabled: Boolean(mediaId && options?.enabled),
+    staleTime: 30000,
+  });
+}
+
+export function useForensicsHistoryForMedia(
+  mediaId: string | null,
+  options?: {
+    mediaType?: ForensicsMediaType | null;
+    page?: number;
+    limit?: number;
+    enabled?: boolean;
+  },
+) {
+  return useQuery({
+    queryKey: [
+      "forensics",
+      "media",
+      mediaId,
+      "history",
+      options?.mediaType,
+      options?.page ?? 1,
+      options?.limit ?? 5,
+    ],
+    queryFn: () =>
+      fetchForensicsHistoryForMedia(mediaId as string, {
+        mediaType: options?.mediaType || undefined,
+        page: options?.page,
+        limit: options?.limit,
+      }),
+    enabled: Boolean(mediaId && options?.enabled),
+    staleTime: 30000,
   });
 }
