@@ -19,18 +19,18 @@ Do not call the forensic service directly from the browser.
 
 The following are new updates to the forensic contract and should be treated as frontend changes, not just documentation notes:
 
-- forensic create requests now support:
-  - `rerun`
-  - `retry`
+- forensic create requests no longer reuse previous runs
+- every forensic create request now creates a fresh analysis run
 - forensic create responses now include freshness metadata:
   - `resultGeneratedAt`
-  - `reusedExistingResult`
   - `isFreshRun`
   - `rerunnable`
 - forensic status responses now include:
   - `resultGeneratedAt`
   - `triggerType`
   - `rerunnable`
+- image forensic responses now include a detailed image-only evidence block:
+  - `forensics.imageDetail`
 - new media-scoped history endpoints now exist:
   - `GET /api/forensics/media/:mediaId/latest`
   - `GET /api/forensics/media/:mediaId/history`
@@ -95,7 +95,12 @@ Do not render forensic results using deepfake-specific language like:
 - `synthetic`
 - `real`
 
-The forensic result model is:
+The forensic result model is now split into:
+
+- common forensic fields for all media types
+- image-only detailed forensic evidence for image analyses
+
+Common fields:
 
 - `verdict`
 - `verdictLabel`
@@ -103,6 +108,16 @@ The forensic result model is:
 - `confidence`
 - `findings`
 - `summary`
+- `file`
+
+Image-only detailed field:
+
+- `imageDetail`
+
+Important:
+
+- for image forensics, the frontend should not treat `probability` and `confidence` as the primary result content
+- the primary detailed forensic payload for images is now `analysis.forensics.imageDetail`
 
 ## Auth Requirements
 
@@ -207,30 +222,22 @@ All forensic create endpoints accept:
 ```json
 {
   "mediaId": "69c54169c7bf039a59c4a2db",
-  "options": {},
-  "rerun": false,
-  "retry": false
+  "options": {}
 }
 ```
 
 `options` is optional.
 
-`rerun` and `retry` are also optional.
+### Update: every create request is a fresh run
 
-### Update: `rerun` and `retry`
+The backend no longer reuses previous forensic results during create requests.
 
-- `rerun: true`
-  - always create a fresh forensic run
-- `retry: true`
-  - intended for rerunning a failed analysis
-- if both are omitted:
-  - the backend reuses the latest matching result by default
+That means:
 
-This means the frontend now has a clean way to distinguish:
-
-- normal open/use flow
-- run again
-- retry failed run
+- the same `mediaId` can be analyzed multiple times
+- every create request creates a new forensic run
+- latest/history endpoints are now the correct way to inspect prior runs
+- the frontend should not send `rerun` or `retry`
 
 For:
 
@@ -300,20 +307,13 @@ POST /api/forensics/video
 
 Typical behavior:
 
-- backend creates or reuses a forensic analysis
+- backend creates a new forensic analysis
 - new work is queued asynchronously
 - frontend must poll status until terminal
 
 Typical success status:
 
-- `202 Accepted` for new or in-progress work
-- `200 OK` if the backend is reusing an already completed result
-
-### Update: cached reuse behavior
-
-By default, if the same user runs the same media and same effective options again, the backend may return the previously generated result instead of creating a new run.
-
-The frontend should use the returned freshness fields to communicate that clearly.
+- `202 Accepted`
 
 Typical `202` response:
 
@@ -375,16 +375,7 @@ Typical behavior:
 
 Typical success status:
 
-- `202 Accepted` for queued or in-progress work
-- `200 OK` if a completed result is being reused
-
-### Update: frames also support rerun/retry
-
-Frames follow the same create semantics:
-
-- default request may reuse a stored result
-- `rerun: true` forces a new run
-- `retry: true` reruns a failed one
+- `202 Accepted`
 
 Example request with options:
 
@@ -479,8 +470,7 @@ The frontend should also pay attention to:
 These are useful for showing:
 
 - when a completed result was actually produced
-- whether the result came from an initial run, rerun, or retry
-- whether the UI should show a `Run Again` action
+- whether the UI should show a `Run Again` action later if product wants it
 
 ## Polling recommendation
 
@@ -598,6 +588,259 @@ The frontend should not expect:
 
 The frontend should use only the product-safe public fields already returned.
 
+## Update: Detailed Image Forensics Payload
+
+Image forensic responses now include a much richer public-safe block at:
+
+- `analysis.forensics.imageDetail`
+
+This block is only present when:
+
+- `analysis.mediaType === "image"`
+
+The frontend must treat this block as the primary evidence payload for image forensics.
+
+### New image detail structure
+
+`analysis.forensics.imageDetail` contains:
+
+- `assessment`
+- `issues`
+- `checks`
+- `metadata`
+- `manipulationDetection`
+- `enhancementAnalysis`
+- `verification`
+- `reverseSearch`
+- `artifacts`
+
+### assessment
+
+Fields:
+
+- `analysisTimestamp`
+- `analyzerVersion`
+- `aiDetectionEnabled`
+- `isVideoFrame`
+- `status`
+- `trustLevel`
+- `tamperingProbability`
+- `recommendation`
+- `note`
+- `overallAssessment`
+
+`overallAssessment` contains:
+
+- `tamperingLikelihood`
+- `verdict`
+- `confidence`
+- `note`
+
+Frontend guidance:
+
+- render this as the main summary card/header for image forensics
+- prefer `status`, `trustLevel`, `tamperingProbability`, and `recommendation`
+- treat `probability` and `confidence` from the top-level forensic object as secondary fields
+
+### issues
+
+Fields:
+
+- `issuesFound`
+- `positiveFindings`
+
+Frontend guidance:
+
+- render `issuesFound` as suspicious indicators
+- render `positiveFindings` as reassuring indicators
+- these are more important than the old empty `findings` array
+
+### checks
+
+Fields:
+
+- `whatWeChecked`
+- `howToRead`
+
+Frontend guidance:
+
+- use this section to explain the forensic process to the user
+- `whatWeChecked` should render as a flat list
+- `howToRead` should render as label/value guidance text
+
+### metadata
+
+Fields:
+
+- `filename`
+- `fileSizeBytes`
+- `fileSizeMb`
+- `format`
+- `dimensions`
+- `mode`
+- `created`
+- `modified`
+- `hasExif`
+- `hasGps`
+
+Frontend guidance:
+
+- render this as file evidence / media facts
+- `hasExif` and `hasGps` are especially important signals for trust workflows
+
+### manipulationDetection
+
+Fields:
+
+- `ela`
+- `noise`
+- `copyMove`
+- `jpegCompression`
+- `aiGenerated`
+
+`ela` contains:
+
+- `score`
+- `interpretation`
+- `artifactAvailable`
+
+`noise` contains:
+
+- `score`
+- `interpretation`
+- `artifactAvailable`
+
+`copyMove` contains:
+
+- `cloneScore`
+- `matchesFound`
+- `method`
+- `interpretation`
+- `keypointsDetected`
+- `artifactAvailable`
+
+`jpegCompression` contains:
+
+- `format`
+- `message`
+
+`aiGenerated` contains:
+
+- `enabled`
+- `note`
+
+Frontend guidance:
+
+- render these as technical signal cards or rows
+- `copyMove.matchesFound` and `copyMove.interpretation` are high-value indicators
+- `artifactAvailable` means the backend has a generated artifact internally, not that a frontend URL is available
+
+### enhancementAnalysis
+
+Fields:
+
+- `histogramAnalysis`
+- `artifacts`
+
+`histogramAnalysis` contains:
+
+- `peaks`
+- `meanBrightness`
+- `stdBrightness`
+- `interpretation`
+
+`artifacts` contains:
+
+- `enhancedLuminanceAvailable`
+- `edgeDetectionAvailable`
+- `frequencyAnalysisAvailable`
+
+Frontend guidance:
+
+- render histogram analysis as supporting technical evidence
+- artifact flags are availability flags only, not image URLs
+
+### verification
+
+Fields:
+
+- `md5`
+- `sha1`
+- `sha256`
+
+Frontend guidance:
+
+- render these in a technical details / chain-of-custody section
+- allow easy copy for power users if the UI supports it
+
+### reverseSearch
+
+Fields:
+
+- `imageHash`
+- `dimensions`
+- `searchEngines`
+- `instructions`
+- `note`
+
+Frontend guidance:
+
+- these are product-safe and can be rendered
+- `searchEngines` may be shown as external action links if desired
+- if not rendering links yet, still preserve the block in frontend state
+
+### artifacts
+
+Fields:
+
+- `combinedHeatmapAvailable`
+- `elaHeatmapAvailable`
+- `noiseHeatmapAvailable`
+- `cloneHeatmapAvailable`
+- `enhancedLuminanceAvailable`
+- `edgeDetectionAvailable`
+- `frequencyAnalysisAvailable`
+
+Important:
+
+- these are availability flags only
+- the backend does not currently expose public URLs for these generated artifacts
+- do not assume they are directly viewable images
+
+### Update: `findings` is now synthesized for images
+
+For image forensics, the backend now derives `forensics.findings` from the detailed image report when the upstream top-level `findings` array is empty.
+
+That means:
+
+- `findings` should no longer always be empty for image analyses
+- but the frontend should still treat `imageDetail` as the richer source of truth
+
+## Recommended Image UI Structure
+
+For image forensics, render in this order:
+
+1. summary header
+   - `verdictLabel`
+   - `imageDetail.assessment.status`
+   - `imageDetail.assessment.tamperingProbability`
+   - `imageDetail.assessment.recommendation`
+2. suspicious indicators
+   - `imageDetail.issues.issuesFound`
+3. positive indicators
+   - `imageDetail.issues.positiveFindings`
+4. technical signals
+   - `imageDetail.manipulationDetection`
+   - `imageDetail.enhancementAnalysis.histogramAnalysis`
+5. file / metadata evidence
+   - `imageDetail.metadata`
+   - `imageDetail.verification`
+6. methodology / explanation
+   - `imageDetail.checks.whatWeChecked`
+   - `imageDetail.checks.howToRead`
+7. optional reverse-search helpers
+   - `imageDetail.reverseSearch`
+
 ## Update: Latest And History Endpoints
 
 The frontend can now fetch latest and historical runs for a media item.
@@ -619,7 +862,7 @@ GET /api/forensics/media/:mediaId/latest?mediaType=video
 Use cases:
 
 - preload the latest result when opening a forensic tab for a media item
-- decide whether to show an existing result before prompting for rerun
+- show the most recently generated forensic result for that media item
 
 ### Get forensic history for a media item
 
@@ -657,7 +900,7 @@ Typical response shape:
         "freshness": {
           "resultGeneratedAt": "2026-04-03T12:01:10.000Z",
           "rerunnable": true,
-          "triggerType": "rerun"
+          "triggerType": "initial"
         }
       }
     ],
@@ -677,7 +920,7 @@ Use cases:
 
 - show previous forensic runs
 - show whether the current result is old
-- let users compare old vs new runs later
+- let users compare different runs later
 
 ## UI State Machine
 
@@ -691,14 +934,6 @@ Recommended state machine:
 - `polling_forensic_status`
 - `completed`
 - `failed`
-
-### Update: additional UX states worth modeling
-
-The frontend should now also be prepared to represent:
-
-- `showing_cached_result`
-- `rerunning_forensics`
-- `retrying_failed_forensics`
 
 Recommended flow:
 
@@ -729,15 +964,22 @@ Show these first:
 
 - `forensics.verdictLabel`
 - `forensics.summary`
-- `forensics.confidence`
-- `forensics.probability`
 - `forensics.findings`
+
+For image forensics, also show:
+
+- `forensics.imageDetail.assessment.status`
+- `forensics.imageDetail.assessment.tamperingProbability`
+- `forensics.imageDetail.assessment.recommendation`
+- `forensics.imageDetail.issues.issuesFound`
 
 Recommended result card:
 
 - Title: `verdictLabel`
 - Subtitle: `summary`
 - Meta:
+  - `Status` from `imageDetail.assessment.status` for images
+  - `Tampering Probability` from `imageDetail.assessment.tamperingProbability` for images
   - `Confidence`
   - `Probability`
 
@@ -793,50 +1035,13 @@ The create request can fail with:
 
 The frontend should treat `403`, `429`, and `503` as normal product states, not generic backend failures.
 
-## Update: Suggested UI Behavior For Cached Results
-
-If a create request returns a reused result:
-
-- show that it is a saved result
-- show when it was generated
-- show a `Run Again` action
-
-Suggested UI copy:
-
-- `Showing saved result`
-- `Generated on Apr 3, 2026`
-- `Run again for a fresh result`
-
-If a result failed previously:
-
-- show the failure state
-- show `Retry`
-
-The `Retry` action should call the same endpoint with:
-
-```json
-{
-  "mediaId": "...",
-  "retry": true
-}
-```
-
-The `Run Again` action should call:
-
-```json
-{
-  "mediaId": "...",
-  "rerun": true
-}
-```
-
 ### Create-request failures
 
 If create fails:
 
 - show backend message
 - keep the user on the current screen
-- allow retry only when the error is retryable from a product perspective
+- allow the user to submit a new request again if product wants a retry action
 
 ### Status failures
 
@@ -852,7 +1057,7 @@ If `effectiveStatus === "failed"`:
 
 - stop polling
 - show `analysis.errorInfo.message`
-- optionally show a retry button if product wants one later
+- allow the user to start a fresh forensic run again if product wants a retry action
 
 ## Suggested TypeScript Contracts
 
@@ -860,8 +1065,6 @@ If `effectiveStatus === "failed"`:
 type CreateForensicsRequest = {
   mediaId: string;
   options?: Record<string, unknown>;
-  rerun?: boolean;
-  retry?: boolean;
 };
 
 type ForensicsFinding = {
@@ -871,6 +1074,108 @@ type ForensicsFinding = {
   confidence: number;
   description: string;
   timestamp_s?: number;
+};
+
+type ImageForensicsDetail = {
+  assessment?: {
+    analysisTimestamp?: string;
+    analyzerVersion?: string;
+    aiDetectionEnabled?: boolean;
+    isVideoFrame?: boolean;
+    status?: string;
+    trustLevel?: string;
+    tamperingProbability?: string;
+    recommendation?: string;
+    note?: string;
+    overallAssessment?: {
+      tamperingLikelihood?: number;
+      verdict?: string;
+      confidence?: string;
+      note?: string;
+    };
+  };
+  issues?: {
+    issuesFound: string[];
+    positiveFindings: string[];
+  };
+  checks?: {
+    whatWeChecked: string[];
+    howToRead: Record<string, string>;
+  };
+  metadata?: {
+    filename?: string;
+    fileSizeBytes?: number;
+    fileSizeMb?: number;
+    format?: string;
+    dimensions?: string;
+    mode?: string;
+    created?: string;
+    modified?: string;
+    hasExif?: boolean;
+    hasGps?: boolean;
+  };
+  manipulationDetection?: {
+    ela?: {
+      score?: number;
+      interpretation?: string;
+      artifactAvailable?: boolean;
+    };
+    noise?: {
+      score?: number;
+      interpretation?: string;
+      artifactAvailable?: boolean;
+    };
+    copyMove?: {
+      cloneScore?: number;
+      matchesFound?: number;
+      method?: string;
+      interpretation?: string;
+      keypointsDetected?: number;
+      artifactAvailable?: boolean;
+    };
+    jpegCompression?: {
+      format?: string;
+      message?: string;
+    };
+    aiGenerated?: {
+      enabled?: boolean;
+      note?: string;
+    };
+  };
+  enhancementAnalysis?: {
+    histogramAnalysis?: {
+      peaks?: number;
+      meanBrightness?: number;
+      stdBrightness?: number;
+      interpretation?: string;
+    };
+    artifacts?: {
+      enhancedLuminanceAvailable?: boolean;
+      edgeDetectionAvailable?: boolean;
+      frequencyAnalysisAvailable?: boolean;
+    };
+  };
+  verification?: {
+    md5?: string;
+    sha1?: string;
+    sha256?: string;
+  };
+  reverseSearch?: {
+    imageHash?: string;
+    dimensions?: string;
+    searchEngines?: Record<string, string>;
+    instructions?: string;
+    note?: string;
+  };
+  artifacts?: {
+    combinedHeatmapAvailable?: boolean;
+    elaHeatmapAvailable?: boolean;
+    noiseHeatmapAvailable?: boolean;
+    cloneHeatmapAvailable?: boolean;
+    enhancedLuminanceAvailable?: boolean;
+    edgeDetectionAvailable?: boolean;
+    frequencyAnalysisAvailable?: boolean;
+  };
 };
 
 type PublicForensicAnalysis = {
@@ -903,7 +1208,7 @@ type PublicForensicAnalysis = {
   freshness?: {
     resultGeneratedAt?: string | null;
     rerunnable: boolean;
-    triggerType?: 'initial' | 'rerun' | 'retry';
+    triggerType?: 'initial';
   };
   forensics: {
     verdict?: string;
@@ -916,6 +1221,7 @@ type PublicForensicAnalysis = {
       filename?: string;
       sha256?: string | null;
     };
+    imageDetail?: ImageForensicsDetail;
   };
   errorInfo?: {
     code: string;
@@ -934,7 +1240,7 @@ type ForensicStatusResponse = {
     effectiveStatus: 'pending' | 'processing' | 'completed' | 'failed' | 'expired';
     resultGeneratedAt?: string | null;
     rerunnable: boolean;
-    triggerType?: 'initial' | 'rerun' | 'retry';
+    triggerType?: 'initial';
     analysisStartedAt?: string | null;
     analysisCompletedAt?: string | null;
     createdAt: string;
@@ -957,6 +1263,11 @@ type ForensicStatusResponse = {
         confidence?: number;
         findings: ForensicsFinding[];
         summary?: string;
+        file?: {
+          filename?: string;
+          sha256?: string | null;
+        };
+        imageDetail?: ImageForensicsDetail;
       }
     | null;
 };
@@ -1034,7 +1345,7 @@ async function runVideoForensics(file: File, token: string) {
 
   const created = await api.post(
     '/api/forensics/video',
-    { mediaId, rerun: false },
+    { mediaId },
     token
   );
 
@@ -1073,12 +1384,13 @@ async function runVideoForensics(file: File, token: string) {
 
 Frontend additions you should implement now:
 
-- support `rerun` and `retry` in create requests
+- remove any `rerun` / `retry` fields from forensic create requests
 - show freshness metadata from create/detail/status responses
 - use `GET /api/forensics/media/:mediaId/latest`
 - use `GET /api/forensics/media/:mediaId/history` where history UI is needed
-- show `Run Again` for cached or completed results
-- show `Retry` for failed results
+- render `analysis.forensics.imageDetail` for image forensic detail pages
+- treat image `issuesFound`, `positiveFindings`, `manipulationDetection`, `metadata`, and `verification` as first-class UI sections
+- do not assume artifact availability flags are image URLs
 
 ## Summary
 

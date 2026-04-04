@@ -27,6 +27,128 @@ export type ForensicsFinding = {
   timestamp_s?: number;
 };
 
+export type ImageForensicsDetail = {
+  userFriendlySummary?: {
+    status?: string;
+    trustLevel?: string;
+    tamperingProbability?: string;
+    issuesFound?: string[];
+    positiveFindings?: string[];
+    recommendation?: string;
+    imageInfo?: {
+      format?: string;
+      dimensions?: string;
+      fileSize?: number;
+      hasGps?: boolean;
+    };
+    explanation?: {
+      whatWeChecked?: string[];
+      howToRead?: Record<string, string>;
+    };
+    note?: string;
+    combinedHeatmapAvailable?: boolean;
+  };
+  assessment?: {
+    analysisTimestamp?: string;
+    analyzerVersion?: string;
+    aiDetectionEnabled?: boolean;
+    isVideoFrame?: boolean;
+    status?: string;
+    trustLevel?: string;
+    tamperingProbability?: string;
+    recommendation?: string;
+    note?: string;
+    overallAssessment?: {
+      tamperingLikelihood?: number;
+      verdict?: string;
+      confidence?: string;
+      note?: string;
+    };
+  };
+  issues?: {
+    issuesFound: string[];
+    positiveFindings: string[];
+  };
+  checks?: {
+    whatWeChecked: string[];
+    howToRead: Record<string, string>;
+  };
+  metadata?: {
+    filename?: string;
+    fileSizeBytes?: number;
+    fileSizeMb?: number;
+    format?: string;
+    dimensions?: string;
+    mode?: string;
+    created?: string;
+    modified?: string;
+    hasExif?: boolean;
+    hasGps?: boolean;
+  };
+  manipulationDetection?: {
+    ela?: {
+      score?: number;
+      interpretation?: string;
+      artifactAvailable?: boolean;
+    };
+    noise?: {
+      score?: number;
+      interpretation?: string;
+      artifactAvailable?: boolean;
+    };
+    copyMove?: {
+      cloneScore?: number;
+      matchesFound?: number;
+      method?: string;
+      interpretation?: string;
+      keypointsDetected?: number;
+      artifactAvailable?: boolean;
+    };
+    jpegCompression?: {
+      format?: string;
+      message?: string;
+    };
+    aiGenerated?: {
+      enabled?: boolean;
+      note?: string;
+    };
+  };
+  enhancementAnalysis?: {
+    histogramAnalysis?: {
+      peaks?: number;
+      meanBrightness?: number;
+      stdBrightness?: number;
+      interpretation?: string;
+    };
+    artifacts?: {
+      enhancedLuminanceAvailable?: boolean;
+      edgeDetectionAvailable?: boolean;
+      frequencyAnalysisAvailable?: boolean;
+    };
+  };
+  verification?: {
+    md5?: string;
+    sha1?: string;
+    sha256?: string;
+  };
+  reverseSearch?: {
+    imageHash?: string;
+    dimensions?: string;
+    searchEngines?: string[];
+    instructions?: string;
+    note?: string;
+  };
+  artifacts?: {
+    combinedHeatmapAvailable?: boolean;
+    elaHeatmapAvailable?: boolean;
+    noiseHeatmapAvailable?: boolean;
+    cloneHeatmapAvailable?: boolean;
+    enhancedLuminanceAvailable?: boolean;
+    edgeDetectionAvailable?: boolean;
+    frequencyAnalysisAvailable?: boolean;
+  };
+};
+
 export interface ForensicsAnalysisDetail {
   id: string;
   mediaId: string;
@@ -68,6 +190,7 @@ export interface ForensicsAnalysisDetail {
       filename?: string;
       sha256?: string | null;
     };
+    imageDetail?: ImageForensicsDetail;
   };
   errorInfo?: {
     code: string;
@@ -106,6 +229,7 @@ export interface ForensicsStatusData {
     confidence?: number;
     findings: ForensicsFinding[];
     summary?: string;
+    imageDetail?: ImageForensicsDetail;
   } | null;
 }
 
@@ -133,8 +257,6 @@ interface StartForensicsParams {
   mediaId: string;
   mediaType: ForensicsMediaType;
   options?: FrameForensicsOptions;
-  rerun?: boolean;
-  retry?: boolean;
 }
 
 function normalizeForensicsAnalysis(
@@ -197,15 +319,11 @@ function startForensics({
   mediaId,
   mediaType,
   options,
-  rerun,
-  retry,
 }: StartForensicsParams): Promise<ForensicsAnalysisDetail> {
   return api
     .post(`/api/forensics/${mediaType}`, {
       mediaId,
       ...(options ? { options } : {}),
-      ...(rerun ? { rerun } : {}),
-      ...(retry ? { retry } : {}),
     })
     .then((response) =>
       normalizeForensicsAnalysis(

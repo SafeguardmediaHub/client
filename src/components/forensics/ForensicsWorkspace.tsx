@@ -40,10 +40,9 @@ import {
   type ForensicsFinding,
   type ForensicsMediaType,
   getForensicsMediaType,
+  type ImageForensicsDetail,
   useForensicsDetail,
-  useForensicsHistoryForMedia,
   useForensicsStatus,
-  useLatestForensicsForMedia,
   useStartForensics,
 } from "@/hooks/useForensics";
 import { type Media, useGetMedia } from "@/hooks/useMedia";
@@ -67,7 +66,6 @@ type FlowState =
   | "analysis_processing"
   | "completed"
   | "failed";
-type ForensicsRunIntent = "default" | "rerun" | "retry";
 
 const READY_MEDIA_STATUSES = new Set(["uploaded", "processed"]);
 
@@ -356,16 +354,26 @@ function getTriggerTypeLabel(triggerType?: string) {
   }
 }
 
-function getSavedResultDescription(analysis: ForensicsAnalysisDetail) {
-  if (analysis.reusedExistingResult) {
-    return "Showing saved result";
+function getImageAssessmentClasses(status?: string) {
+  const normalized = (status || "").toLowerCase();
+
+  if (
+    normalized.includes("tamper") ||
+    normalized.includes("suspect") ||
+    normalized.includes("manip")
+  ) {
+    return "border-amber-200 bg-amber-50 text-amber-800";
   }
 
-  if (analysis.isFreshRun) {
-    return "Fresh result";
+  if (
+    normalized.includes("clear") ||
+    normalized.includes("clean") ||
+    normalized.includes("authentic")
+  ) {
+    return "border-emerald-200 bg-emerald-50 text-emerald-800";
   }
 
-  return "Latest saved result";
+  return "border-slate-200 bg-slate-50 text-slate-800";
 }
 
 function renderMediaPreview(media: Media, className?: string) {
@@ -441,6 +449,616 @@ function FindingCard({ finding }: { finding: ForensicsFinding }) {
   );
 }
 
+function EvidenceListCard({
+  title,
+  items,
+  emptyLabel,
+  tone = "neutral",
+}: {
+  title: string;
+  items: string[];
+  emptyLabel: string;
+  tone?: "neutral" | "warning" | "positive";
+}) {
+  const toneClasses =
+    tone === "warning"
+      ? "border-amber-200 bg-amber-50"
+      : tone === "positive"
+        ? "border-emerald-200 bg-emerald-50"
+        : "border-slate-200 bg-slate-50/80";
+
+  return (
+    <Card className={cn("shadow-none", toneClasses)}>
+      <CardHeader>
+        <CardTitle className="text-lg text-slate-900">{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {items.length > 0 ? (
+          <div className="space-y-2">
+            {items.map((item) => (
+              <div
+                key={item}
+                className="rounded-2xl border border-white/70 bg-white/80 px-4 py-3 text-sm leading-7 text-slate-700"
+              >
+                {item}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-white/70 bg-white/80 px-4 py-3 text-sm text-slate-500">
+            {emptyLabel}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function DetailListCard({
+  title,
+  rows,
+}: {
+  title: string;
+  rows: Array<{
+    label: string;
+    value: string;
+    scrollable?: boolean;
+  }>;
+}) {
+  const populatedRows = rows.filter(
+    (row) => row.value && row.value !== "Not available",
+  );
+
+  return (
+    <Card className="border-slate-200 shadow-none">
+      <CardHeader>
+        <CardTitle className="text-lg text-slate-900">{title}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {populatedRows.length > 0 ? (
+          populatedRows.map((row) => (
+            <div
+              key={row.label}
+              className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3"
+            >
+              <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                {row.label}
+              </div>
+              <div
+                className={cn(
+                  "mt-1 min-w-0 text-sm font-medium text-slate-900",
+                  row.scrollable
+                    ? "overflow-x-auto whitespace-nowrap font-mono text-xs"
+                    : "break-words leading-6",
+                )}
+              >
+                {row.value}
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-500">
+            No detailed evidence available.
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ImageSignalCard({
+  title,
+  score,
+  interpretation,
+  extra,
+}: {
+  title: string;
+  score?: string | number;
+  interpretation?: string;
+  extra?: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+      <div className="text-sm font-semibold text-slate-900">{title}</div>
+      {score !== undefined && score !== null ? (
+        <div className="mt-2 text-xl font-semibold text-slate-900">{score}</div>
+      ) : null}
+      {interpretation ? (
+        <p className="mt-2 text-sm leading-7 text-slate-600">
+          {interpretation}
+        </p>
+      ) : null}
+      {extra ? (
+        <div className="mt-3 text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+          {extra}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function ImageForensicsResult({
+  analysis,
+  selectedAvailabilityReady,
+  startPending,
+  onRunNewAnalysis,
+}: {
+  analysis: ForensicsAnalysisDetail;
+  selectedAvailabilityReady: boolean;
+  startPending: boolean;
+  onRunNewAnalysis: () => void;
+}) {
+  const imageDetail: ImageForensicsDetail | undefined =
+    analysis.forensics.imageDetail;
+  const assessment = imageDetail?.assessment;
+  const issues = imageDetail?.issues;
+  const checks = imageDetail?.checks;
+  const metadata = imageDetail?.metadata;
+  const manipulation = imageDetail?.manipulationDetection;
+  const histogram = imageDetail?.enhancementAnalysis?.histogramAnalysis;
+  const verification = imageDetail?.verification;
+  const userSummary = imageDetail?.userFriendlySummary;
+  const userExplanation = userSummary?.explanation;
+  const cleanedUserSummaryNote = userSummary?.note
+    ?.replace(/\s*\(AI detection disabled\)\s*/i, "")
+    .replace(/\bAI detection disabled\b/i, "")
+    .trim();
+  const primaryIssues =
+    userSummary?.issuesFound && userSummary.issuesFound.length > 0
+      ? userSummary.issuesFound
+      : issues?.issuesFound || [];
+  const primaryPositives =
+    userSummary?.positiveFindings && userSummary.positiveFindings.length > 0
+      ? userSummary.positiveFindings
+      : issues?.positiveFindings || [];
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)]">
+        <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-slate-50">
+          <div className="aspect-[4/3] overflow-hidden">
+            {analysis.previewUrl ? (
+              <img
+                src={analysis.previewUrl}
+                alt={analysis.fileName}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-slate-100">
+                <FileImage className="size-10 text-slate-500" />
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                {analysis.isFreshRun || analysis.freshness ? (
+                  <Badge
+                    variant="outline"
+                    className="border-blue-200 bg-blue-50 text-blue-700"
+                  >
+                    Fresh analysis result
+                  </Badge>
+                ) : null}
+                {assessment?.status ? (
+                  <Badge
+                    variant="outline"
+                    className="border-slate-200 bg-slate-50 text-slate-700"
+                  >
+                    Status {userSummary?.status || assessment.status}
+                  </Badge>
+                ) : null}
+                {userSummary?.tamperingProbability ||
+                assessment?.tamperingProbability ? (
+                  <Badge
+                    variant="outline"
+                    className="border-amber-200 bg-amber-50 text-amber-700"
+                  >
+                    Tampering possibility{" "}
+                    {userSummary?.tamperingProbability ||
+                      assessment?.tamperingProbability}
+                  </Badge>
+                ) : null}
+                <Badge
+                  variant="outline"
+                  className="border-slate-200 bg-slate-50 text-slate-700"
+                >
+                  Generated{" "}
+                  {formatDateTime(
+                    analysis.freshness?.resultGeneratedAt ||
+                      analysis.analysisCompletedAt ||
+                      analysis.updatedAt,
+                  )}
+                </Badge>
+              </div>
+
+              <Badge
+                variant="outline"
+                className={cn(
+                  "border px-3 py-1 text-sm font-semibold",
+                  getVerdictClasses(analysis.forensics.verdict),
+                )}
+              >
+                {analysis.forensics.verdictLabel || "No verdict"}
+              </Badge>
+              <h3 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">
+                {analysis.forensics.verdictLabel ||
+                  "Forensic result unavailable"}
+              </h3>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 md:text-base">
+                {userSummary?.recommendation ||
+                  analysis.forensics.summary ||
+                  assessment?.recommendation ||
+                  "No forensic summary was returned for this image."}
+              </p>
+            </div>
+
+            <Badge
+              variant="outline"
+              className="border-slate-200 bg-slate-50 text-slate-700"
+            >
+              <FileImage className="size-4" />
+              Image
+            </Badge>
+          </div>
+
+          {(userSummary?.recommendation ||
+            cleanedUserSummaryNote ||
+            assessment?.note) && (
+            <div
+              className={cn(
+                "mt-6 rounded-2xl border px-4 py-4",
+                getImageAssessmentClasses(
+                  userSummary?.status || assessment?.status,
+                ),
+              )}
+            >
+              <div className="text-xs font-semibold uppercase tracking-[0.16em]">
+                Human-readable summary
+              </div>
+              {userSummary?.trustLevel ? (
+                <div className="mt-2 text-base font-semibold">
+                  {userSummary.trustLevel}
+                </div>
+              ) : null}
+              {userSummary?.recommendation || assessment?.recommendation ? (
+                <div className="mt-2 text-base font-semibold">
+                  {userSummary?.recommendation || assessment?.recommendation}
+                </div>
+              ) : null}
+              {cleanedUserSummaryNote || assessment?.note ? (
+                <p className="mt-2 text-sm leading-7">
+                  {cleanedUserSummaryNote || assessment?.note}
+                </p>
+              ) : null}
+            </div>
+          )}
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {[
+              {
+                label: "Status",
+                value:
+                  userSummary?.status || assessment?.status || "Not available",
+              },
+              {
+                label: "Trust level",
+                value:
+                  userSummary?.trustLevel ||
+                  assessment?.trustLevel ||
+                  "Not available",
+              },
+              {
+                label: "Tampering possibility",
+                value:
+                  userSummary?.tamperingProbability ||
+                  assessment?.tamperingProbability ||
+                  "Not available",
+              },
+              {
+                label: "Evidence points",
+                value: String(primaryIssues.length + primaryPositives.length),
+              },
+            ].map((metric) => (
+              <div
+                key={metric.label}
+                className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4"
+              >
+                <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  {metric.label}
+                </div>
+                <div className="mt-2 text-base font-semibold text-slate-900">
+                  {metric.value}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            {selectedAvailabilityReady ? (
+              <Button
+                type="button"
+                onClick={onRunNewAnalysis}
+                disabled={startPending}
+              >
+                Start Fresh Analysis
+              </Button>
+            ) : null}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <EvidenceListCard
+          title="Suspicious indicators"
+          items={primaryIssues}
+          emptyLabel="No suspicious indicators were highlighted in the image detail report."
+          tone="warning"
+        />
+        <EvidenceListCard
+          title="Positive indicators"
+          items={primaryPositives}
+          emptyLabel="No positive trust indicators were highlighted in the image detail report."
+          tone="positive"
+        />
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_420px]">
+        <DetailListCard
+          title="Image information"
+          rows={[
+            {
+              label: "Format",
+              value:
+                userSummary?.imageInfo?.format ||
+                metadata?.format ||
+                analysis.mimeType,
+            },
+            {
+              label: "Dimensions",
+              value:
+                userSummary?.imageInfo?.dimensions ||
+                metadata?.dimensions ||
+                "Not available",
+            },
+            {
+              label: "File size",
+              value:
+                userSummary?.imageInfo?.fileSize !== undefined
+                  ? `${userSummary.imageInfo.fileSize} MB`
+                  : metadata?.fileSizeMb !== undefined
+                    ? `${metadata.fileSizeMb} MB`
+                    : formatFileSize(analysis.fileSize),
+            },
+            {
+              label: "GPS metadata",
+              value:
+                userSummary?.imageInfo?.hasGps === undefined
+                  ? metadata?.hasGps === undefined
+                    ? "Not available"
+                    : metadata.hasGps
+                      ? "Present"
+                      : "Not present"
+                  : userSummary.imageInfo.hasGps
+                    ? "Present"
+                    : "Not present",
+            },
+          ]}
+        />
+
+        <DetailListCard
+          title="How to interpret this result"
+          rows={Object.entries(userExplanation?.howToRead || {}).map(
+            ([label, value]) => ({
+              label,
+              value,
+            }),
+          )}
+        />
+      </div>
+
+      <Card className="border-slate-200 shadow-none">
+        <CardHeader>
+          <CardTitle className="text-xl text-slate-900">
+            Technical signals
+          </CardTitle>
+          <CardDescription>
+            Technical evidence from the image forensic analysis.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <ImageSignalCard
+            title="ELA"
+            score={manipulation?.ela?.score}
+            interpretation={manipulation?.ela?.interpretation}
+            extra={
+              manipulation?.ela?.artifactAvailable
+                ? "Artifact available internally"
+                : undefined
+            }
+          />
+          <ImageSignalCard
+            title="Noise"
+            score={manipulation?.noise?.score}
+            interpretation={manipulation?.noise?.interpretation}
+            extra={
+              manipulation?.noise?.artifactAvailable
+                ? "Artifact available internally"
+                : undefined
+            }
+          />
+          <ImageSignalCard
+            title="Copy-move"
+            score={manipulation?.copyMove?.cloneScore}
+            interpretation={manipulation?.copyMove?.interpretation}
+            extra={
+              manipulation?.copyMove?.matchesFound !== undefined
+                ? `${manipulation.copyMove.matchesFound} matches found`
+                : undefined
+            }
+          />
+          <ImageSignalCard
+            title="JPEG compression"
+            score={manipulation?.jpegCompression?.format}
+            interpretation={manipulation?.jpegCompression?.message}
+          />
+          <ImageSignalCard
+            title="Histogram analysis"
+            score={
+              histogram?.peaks !== undefined
+                ? `${histogram.peaks} peaks`
+                : undefined
+            }
+            interpretation={histogram?.interpretation}
+            extra={
+              histogram?.meanBrightness !== undefined &&
+              histogram?.stdBrightness !== undefined
+                ? `Brightness ${histogram.meanBrightness} / ${histogram.stdBrightness}`
+                : undefined
+            }
+          />
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_420px]">
+        <DetailListCard
+          title="File and metadata evidence"
+          rows={[
+            {
+              label: "Filename",
+              value: metadata?.filename || analysis.fileName,
+            },
+            {
+              label: "File size",
+              value:
+                metadata?.fileSizeMb !== undefined
+                  ? `${metadata.fileSizeMb} MB`
+                  : formatFileSize(analysis.fileSize),
+            },
+            { label: "Format", value: metadata?.format || analysis.mimeType },
+            {
+              label: "Dimensions",
+              value: metadata?.dimensions || "Not available",
+            },
+            { label: "Color mode", value: metadata?.mode || "Not available" },
+            {
+              label: "EXIF metadata",
+              value:
+                metadata?.hasExif === undefined
+                  ? "Not available"
+                  : metadata.hasExif
+                    ? "Present"
+                    : "Not present",
+            },
+            {
+              label: "GPS metadata",
+              value:
+                metadata?.hasGps === undefined
+                  ? "Not available"
+                  : metadata.hasGps
+                    ? "Present"
+                    : "Not present",
+            },
+          ]}
+        />
+
+        <DetailListCard
+          title="Verification"
+          rows={[
+            {
+              label: "MD5",
+              value: verification?.md5 || "Not available",
+              scrollable: true,
+            },
+            {
+              label: "SHA1",
+              value: verification?.sha1 || "Not available",
+              scrollable: true,
+            },
+            {
+              label: "SHA256",
+              value:
+                verification?.sha256 ||
+                analysis.forensics.file?.sha256 ||
+                "Not available",
+              scrollable: true,
+            },
+          ]}
+        />
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_420px]">
+        <Card className="border-slate-200 shadow-none">
+          <CardHeader>
+            <CardTitle className="text-xl text-slate-900">
+              What we checked
+            </CardTitle>
+            <CardDescription>
+              A plain-language breakdown of the evidence checks performed by the
+              backend.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {(userExplanation?.whatWeChecked || checks?.whatWeChecked || [])
+              .length > 0 ? (
+              (
+                userExplanation?.whatWeChecked ||
+                checks?.whatWeChecked ||
+                []
+              ).map((item) => (
+                <div
+                  key={item}
+                  className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm leading-7 text-slate-700"
+                >
+                  {item}
+                </div>
+              ))
+            ) : (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-500">
+                No methodology notes were returned for this run.
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <DetailListCard
+          title="How to read the report"
+          rows={Object.entries(
+            userExplanation?.howToRead || checks?.howToRead || {},
+          ).map(([label, value]) => ({
+            label,
+            value,
+          }))}
+        />
+      </div>
+
+      {analysis.forensics.findings.length > 0 && (
+        <Card className="border-slate-200 shadow-none">
+          <CardHeader>
+            <CardTitle className="text-xl text-slate-900">
+              Synthesized findings
+            </CardTitle>
+            <CardDescription>
+              Findings summarized from the detailed image evidence.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {analysis.forensics.findings.map((finding) => (
+              <FindingCard
+                key={`${finding.module}-${finding.title}`}
+                finding={finding}
+              />
+            ))}
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
 export function ForensicsWorkspace() {
   const pathname = usePathname();
   const router = useRouter();
@@ -456,7 +1074,6 @@ export function ForensicsWorkspace() {
   const [frameSamplingMode, setFrameSamplingMode] = useState<
     "default" | "uniform"
   >("default");
-  const [showingSavedResult, setShowingSavedResult] = useState(false);
   const [openDetailSections, setOpenDetailSections] = useState<string[]>([
     "file",
   ]);
@@ -507,18 +1124,6 @@ export function ForensicsWorkspace() {
       : mediaFilter === "frames"
         ? "frames"
         : mediaFilter;
-  const latestForensicsQuery = useLatestForensicsForMedia(
-    selectedMedia?.id || null,
-    selectedWorkflowMode,
-    {
-      enabled: Boolean(selectedMedia?.id && selectedWorkflowMode),
-    },
-  );
-  const historyQuery = useForensicsHistoryForMedia(selectedMedia?.id || null, {
-    mediaType: selectedWorkflowMode,
-    limit: 5,
-    enabled: Boolean(selectedMedia?.id && selectedWorkflowMode),
-  });
   const forensicsAccessState = getCombinedFeatureState(
     subscriptionUsageQuery.data,
     ["forensicsImage", "forensicsAudio", "forensicsVideo", "forensicsFrames"],
@@ -580,16 +1185,6 @@ export function ForensicsWorkspace() {
     ? MEDIA_FILTERS.filter((filter) => filter.value === mediaFilter)
     : MEDIA_FILTERS;
   const asyncStatusDetails = statusQuery.data?.analysis;
-  const canShowRerun =
-    Boolean(activeAnalysis?.freshness?.rerunnable) ||
-    activeAnalysis?.status === "completed";
-  const historyItems = useMemo(
-    () =>
-      (historyQuery.data?.analyses || []).filter(
-        (item) => item.id !== activeAnalysis?.id,
-      ),
-    [activeAnalysis?.id, historyQuery.data?.analyses],
-  );
 
   const updateMediaFilter = (nextFilter: MediaFilter) => {
     setMediaFilter(nextFilter);
@@ -637,83 +1232,13 @@ export function ForensicsWorkspace() {
     setAnalysisId(null);
     setLatestAnalysis(null);
     setErrorMessage(null);
-    setShowingSavedResult(false);
   }, [mediaFilter, selectedAvailability, selectedMedia]);
-
-  useEffect(() => {
-    if (
-      !selectedMedia ||
-      !selectedWorkflowMode ||
-      flowState === "creating_forensic_analysis" ||
-      flowState === "analysis_pending" ||
-      flowState === "analysis_processing" ||
-      latestForensicsQuery.isLoading
-    ) {
-      return;
-    }
-
-    const latestResult = latestForensicsQuery.data;
-
-    if (!latestResult) {
-      if (flowState !== "media_selected") {
-        setLatestAnalysis(null);
-        setAnalysisId(null);
-        setErrorMessage(null);
-        setShowingSavedResult(false);
-        setFlowState("media_selected");
-      }
-      return;
-    }
-
-    if (analysisId && !showingSavedResult && latestResult.id !== analysisId) {
-      return;
-    }
-
-    setLatestAnalysis(latestResult);
-    setAnalysisId(latestResult.id);
-    setShowingSavedResult(
-      latestResult.status === "completed" || latestResult.status === "failed",
-    );
-
-    if (latestResult.status === "failed") {
-      setErrorMessage(
-        latestResult.errorInfo?.message ||
-          "The latest forensic analysis for this file failed.",
-      );
-      setFlowState("failed");
-      return;
-    }
-
-    if (latestResult.status === "processing") {
-      setErrorMessage(null);
-      setFlowState("analysis_processing");
-      return;
-    }
-
-    if (latestResult.status === "pending") {
-      setErrorMessage(null);
-      setFlowState("analysis_pending");
-      return;
-    }
-
-    setErrorMessage(null);
-    setFlowState("completed");
-  }, [
-    analysisId,
-    flowState,
-    latestForensicsQuery.data,
-    latestForensicsQuery.isLoading,
-    selectedMedia,
-    selectedWorkflowMode,
-    showingSavedResult,
-  ]);
 
   const handleSelectMedia = (media: Media) => {
     const isDifferentSelection = media.id !== selectedMediaId;
 
     setSelectedMediaId(media.id);
     setErrorMessage(null);
-    setShowingSavedResult(false);
     if (isDifferentSelection) {
       setLatestAnalysis(null);
       setAnalysisId(null);
@@ -727,7 +1252,7 @@ export function ForensicsWorkspace() {
     }
   };
 
-  const handleRunForensics = async (intent: ForensicsRunIntent = "default") => {
+  const handleRunForensics = async () => {
     if (
       !selectedMedia ||
       !selectedAvailability?.mediaType ||
@@ -758,7 +1283,6 @@ export function ForensicsWorkspace() {
     setErrorMessage(null);
     setLatestAnalysis(null);
     setAnalysisId(null);
-    setShowingSavedResult(false);
     scrollToCurrentAnalysis();
 
     try {
@@ -769,13 +1293,10 @@ export function ForensicsWorkspace() {
           selectedWorkflowMode === "frames" && frameSamplingMode === "uniform"
             ? { sampling_mode: "uniform" }
             : undefined,
-        rerun: intent === "rerun" ? true : undefined,
-        retry: intent === "retry" ? true : undefined,
       });
 
       setLatestAnalysis(analysis);
       setAnalysisId(analysis.id);
-      setShowingSavedResult(Boolean(analysis.reusedExistingResult));
 
       if (
         analysis.processing.processingMode === "async" &&
@@ -1154,22 +1675,6 @@ export function ForensicsWorkspace() {
                   </div>
 
                   <div className="flex flex-col items-stretch gap-2 lg:items-end">
-                    {selectedAvailability.isReady &&
-                    !startForensics.isPending &&
-                    latestForensicsQuery.data ? (
-                      <div className="max-w-sm text-right text-sm text-slate-500">
-                        {latestForensicsQuery.data.status === "failed"
-                          ? "The latest forensic run for this file failed. You can retry it below."
-                          : `${getSavedResultDescription(
-                              latestForensicsQuery.data,
-                            )} available from ${formatDateTime(
-                              latestForensicsQuery.data.freshness
-                                ?.resultGeneratedAt ||
-                                latestForensicsQuery.data.analysisCompletedAt ||
-                                latestForensicsQuery.data.updatedAt,
-                            )}.`}
-                      </div>
-                    ) : null}
                     {!selectedAvailability.isReady ? (
                       <div className="text-sm font-medium text-slate-500">
                         {selectedAvailability.reason}
@@ -1184,7 +1689,7 @@ export function ForensicsWorkspace() {
                       </div>
                     ) : null}
                     <Button
-                      onClick={() => handleRunForensics()}
+                      onClick={handleRunForensics}
                       disabled={
                         !selectedAvailability.isReady ||
                         !selectedFeatureState.available ||
@@ -1201,7 +1706,7 @@ export function ForensicsWorkspace() {
                       ) : (
                         <>
                           <Sparkles className="size-4" />
-                          Run{" "}
+                          Start{" "}
                           {selectedWorkflowMode
                             ? `${getWorkflowTitle(selectedWorkflowMode)} Analysis`
                             : "Forensic Analysis"}
@@ -1354,31 +1859,151 @@ export function ForensicsWorkspace() {
           )}
 
           {flowState === "media_selected" && selectedMedia ? (
-            <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50/70 px-6 py-8">
+            <div className="space-y-6 rounded-[1.5rem] border border-slate-200 bg-slate-50/70 px-6 py-8">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <div className="text-lg font-semibold text-slate-900">
                     Ready to analyze
                   </div>
-                  <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-600">
-                    {selectedMedia.filename} is selected. Run forensic analysis
-                    to review verdict, summary, confidence, probability, and
-                    findings.
-                    {selectedWorkflowMode === "frames" &&
-                    frameSamplingMode === "uniform"
-                      ? " Uniform frame sampling will be requested for this run."
-                      : null}
-                  </p>
+                  {selectedWorkflowMode === "frames" &&
+                  frameSamplingMode === "uniform" ? (
+                    <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-600">
+                      Uniform frame sampling will be requested for this run.
+                    </p>
+                  ) : null}
                 </div>
-                {selectedWorkflowMode ? (
-                  <Badge
-                    variant="outline"
-                    className="border-slate-200 bg-white text-slate-700"
-                  >
-                    {getAnalysisTypeIcon(selectedWorkflowMode)}
-                    {getAnalysisTypeLabel(selectedWorkflowMode)}
-                  </Badge>
-                ) : null}
+              </div>
+
+              <div className="grid gap-6 lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)]">
+                <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white">
+                  <div className="aspect-[4/3] overflow-hidden bg-slate-100">
+                    {selectedAvailability?.mediaType ? (
+                      renderMediaPreview(selectedMedia, "rounded-none")
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center">
+                        <AlertCircle className="size-8 text-slate-400" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge
+                          variant="outline"
+                          className="border-slate-200 bg-slate-50 text-slate-700"
+                        >
+                          {selectedWorkflowMode
+                            ? getAnalysisTypeIcon(selectedWorkflowMode)
+                            : null}
+                          {selectedWorkflowMode
+                            ? getAnalysisTypeLabel(selectedWorkflowMode)
+                            : "Selected media"}
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className="border-slate-200 bg-slate-50 text-slate-700"
+                        >
+                          {selectedMedia.status}
+                        </Badge>
+                      </div>
+                      <h3 className="mt-4 truncate text-2xl font-semibold tracking-tight text-slate-900">
+                        {selectedMedia.filename}
+                      </h3>
+                      <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 md:text-base">
+                        This file is selected and ready for a fresh forensic
+                        run. Once started, the result area below will update
+                        with verdict, summary, and evidence details.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    {[
+                      {
+                        label: "Workflow",
+                        value: selectedWorkflowMode
+                          ? getAnalysisTypeLabel(selectedWorkflowMode)
+                          : "Not available",
+                      },
+                      {
+                        label: "File size",
+                        value: formatFileSize(Number(selectedMedia.fileSize)),
+                      },
+                      {
+                        label: "Library status",
+                        value: selectedMedia.status,
+                      },
+                      {
+                        label: "MIME type",
+                        value: selectedMedia.mimeType,
+                      },
+                    ].map((item) => (
+                      <div
+                        key={item.label}
+                        className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4"
+                      >
+                        <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                          {item.label}
+                        </div>
+                        <div className="mt-2 break-words text-base font-semibold text-slate-900">
+                          {item.value}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <Button
+                      type="button"
+                      onClick={handleRunForensics}
+                      disabled={
+                        !selectedAvailability?.isReady ||
+                        !selectedFeatureState.available ||
+                        !analysisUsageGate.allowed ||
+                        startForensics.isPending
+                      }
+                    >
+                      {startForensics.isPending ? (
+                        <>
+                          <Loader2 className="size-4 animate-spin" />
+                          Running Forensics
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="size-4" />
+                          Start Fresh Analysis
+                        </>
+                      )}
+                    </Button>
+                    {!selectedAvailability?.isReady ? (
+                      <Badge
+                        variant="outline"
+                        className="border-slate-200 bg-white text-slate-600"
+                      >
+                        {selectedAvailability?.reason}
+                      </Badge>
+                    ) : null}
+                    {!selectedFeatureState.available ? (
+                      <Badge
+                        variant="outline"
+                        className="border-slate-200 bg-white text-slate-600"
+                      >
+                        {selectedFeatureState.message}
+                      </Badge>
+                    ) : null}
+                    {!analysisUsageGate.allowed ? (
+                      <Badge
+                        variant="outline"
+                        className="border-red-200 bg-red-50 text-red-700"
+                      >
+                        Monthly analysis limit reached
+                      </Badge>
+                    ) : null}
+                  </div>
+                </div>
               </div>
             </div>
           ) : null}
@@ -1493,19 +2118,10 @@ export function ForensicsWorkspace() {
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() => handleRunForensics("retry")}
+                        onClick={handleRunForensics}
                         disabled={startForensics.isPending}
                       >
-                        Retry
-                      </Button>
-                    ) : null}
-                    {canShowRerun && selectedAvailability?.isReady ? (
-                      <Button
-                        type="button"
-                        onClick={() => handleRunForensics("rerun")}
-                        disabled={startForensics.isPending}
-                      >
-                        Run Again
+                        Start Fresh Analysis
                       </Button>
                     ) : null}
                   </div>
@@ -1515,351 +2131,300 @@ export function ForensicsWorkspace() {
           )}
 
           {flowState === "completed" && activeAnalysis ? (
-            <div className="space-y-6">
-              <div className="grid gap-6 lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)]">
-                <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-slate-50">
-                  <div className="aspect-[4/3] overflow-hidden">
-                    {activeAnalysis.mediaType === "image" &&
-                    activeAnalysis.previewUrl ? (
-                      <img
-                        src={activeAnalysis.previewUrl}
-                        alt={activeAnalysis.fileName}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-slate-100">
-                        {activeAnalysis.mediaType === "image" ? (
-                          <FileImage className="size-10 text-slate-500" />
-                        ) : activeAnalysis.mediaType === "audio" ? (
-                          <FileAudio className="size-10 text-slate-500" />
-                        ) : (
-                          <FileVideo className="size-10 text-slate-500" />
-                        )}
-                      </div>
-                    )}
+            activeAnalysis.mediaType === "image" &&
+            activeAnalysis.forensics.imageDetail ? (
+              <ImageForensicsResult
+                analysis={activeAnalysis}
+                selectedAvailabilityReady={Boolean(
+                  selectedAvailability?.isReady,
+                )}
+                startPending={startForensics.isPending}
+                onRunNewAnalysis={handleRunForensics}
+              />
+            ) : (
+              <div className="space-y-6">
+                <div className="grid gap-6 lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)]">
+                  <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-slate-50">
+                    <div className="aspect-[4/3] overflow-hidden">
+                      {activeAnalysis.mediaType === "image" &&
+                      activeAnalysis.previewUrl ? (
+                        <img
+                          src={activeAnalysis.previewUrl}
+                          alt={activeAnalysis.fileName}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-slate-100">
+                          {activeAnalysis.mediaType === "image" ? (
+                            <FileImage className="size-10 text-slate-500" />
+                          ) : activeAnalysis.mediaType === "audio" ? (
+                            <FileAudio className="size-10 text-slate-500" />
+                          ) : (
+                            <FileVideo className="size-10 text-slate-500" />
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      {(showingSavedResult ||
-                        activeAnalysis.reusedExistingResult ||
-                        activeAnalysis.freshness) && (
-                        <div className="mb-4 flex flex-wrap items-center gap-2">
-                          <Badge
-                            variant="outline"
-                            className="border-blue-200 bg-blue-50 text-blue-700"
-                          >
-                            {getSavedResultDescription(activeAnalysis)}
-                          </Badge>
-                          {activeAnalysis.freshness?.triggerType ? (
+                  <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        {(activeAnalysis.isFreshRun ||
+                          activeAnalysis.freshness) && (
+                          <div className="mb-4 flex flex-wrap items-center gap-2">
+                            <Badge
+                              variant="outline"
+                              className="border-blue-200 bg-blue-50 text-blue-700"
+                            >
+                              Fresh analysis result
+                            </Badge>
+                            {activeAnalysis.freshness?.triggerType ? (
+                              <Badge
+                                variant="outline"
+                                className="border-slate-200 bg-slate-50 text-slate-700"
+                              >
+                                {getTriggerTypeLabel(
+                                  activeAnalysis.freshness.triggerType,
+                                )}
+                              </Badge>
+                            ) : null}
                             <Badge
                               variant="outline"
                               className="border-slate-200 bg-slate-50 text-slate-700"
                             >
-                              {getTriggerTypeLabel(
-                                activeAnalysis.freshness.triggerType,
+                              Generated{" "}
+                              {formatDateTime(
+                                activeAnalysis.freshness?.resultGeneratedAt ||
+                                  activeAnalysis.analysisCompletedAt ||
+                                  activeAnalysis.updatedAt,
                               )}
                             </Badge>
-                          ) : null}
-                          <Badge
-                            variant="outline"
-                            className="border-slate-200 bg-slate-50 text-slate-700"
-                          >
-                            Generated{" "}
-                            {formatDateTime(
-                              activeAnalysis.freshness?.resultGeneratedAt ||
-                                activeAnalysis.analysisCompletedAt ||
-                                activeAnalysis.updatedAt,
-                            )}
-                          </Badge>
-                        </div>
-                      )}
+                          </div>
+                        )}
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "border px-3 py-1 text-sm font-semibold",
+                            getVerdictClasses(activeAnalysis.forensics.verdict),
+                          )}
+                        >
+                          {activeAnalysis.forensics.verdictLabel ||
+                            "No verdict"}
+                        </Badge>
+                        <h3 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">
+                          {activeAnalysis.forensics.verdictLabel ||
+                            "Forensic result unavailable"}
+                        </h3>
+                        <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 md:text-base">
+                          {activeAnalysis.forensics.summary ||
+                            "No forensic summary was returned for this analysis."}
+                        </p>
+                      </div>
                       <Badge
                         variant="outline"
-                        className={cn(
-                          "border px-3 py-1 text-sm font-semibold",
-                          getVerdictClasses(activeAnalysis.forensics.verdict),
-                        )}
+                        className="border-slate-200 bg-slate-50 text-slate-700"
                       >
-                        {activeAnalysis.forensics.verdictLabel || "No verdict"}
+                        {getAnalysisTypeIcon(activeAnalysis.mediaType)}
+                        {getAnalysisTypeLabel(activeAnalysis.mediaType)}
                       </Badge>
-                      <h3 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">
-                        {activeAnalysis.forensics.verdictLabel ||
-                          "Forensic result unavailable"}
-                      </h3>
-                      <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 md:text-base">
-                        {activeAnalysis.forensics.summary ||
-                          "No forensic summary was returned for this analysis."}
-                      </p>
                     </div>
-                    <Badge
-                      variant="outline"
-                      className="border-slate-200 bg-slate-50 text-slate-700"
-                    >
-                      {getAnalysisTypeIcon(activeAnalysis.mediaType)}
-                      {getAnalysisTypeLabel(activeAnalysis.mediaType)}
-                    </Badge>
-                  </div>
 
-                  <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                    {[
-                      {
-                        label: "Confidence",
-                        value: formatPercentage(
-                          activeAnalysis.forensics.confidence,
-                        ),
-                      },
-                      {
-                        label: "Findings",
-                        value: String(activeAnalysis.forensics.findings.length),
-                      },
-                      // {
-                      //   label: "Probability",
-                      //   value: formatPercentage(
-                      //     activeAnalysis.forensics.probability,
-                      //   ),
-                      // },
-                      // {
-                      //   label: "Mode",
-                      //   value:
-                      //     activeAnalysis.processing.processingMode ||
-                      //     "Not available",
-                      // },
-                    ].map((metric) => (
-                      <div
-                        key={metric.label}
-                        className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4"
-                      >
-                        <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                          {metric.label}
-                        </div>
-                        <div className="mt-2 text-xl font-semibold text-slate-900">
-                          {metric.value}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-6 flex flex-wrap gap-3">
-                    {canShowRerun && selectedAvailability?.isReady ? (
-                      <Button
-                        type="button"
-                        onClick={() => handleRunForensics("rerun")}
-                        disabled={startForensics.isPending}
-                      >
-                        Run Again
-                      </Button>
-                    ) : null}
-                    {activeAnalysis.status === "failed" &&
-                    selectedAvailability?.isReady ? (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => handleRunForensics("retry")}
-                        disabled={startForensics.isPending}
-                      >
-                        Retry
-                      </Button>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_420px]">
-                <Card className="border-slate-200 shadow-none">
-                  <CardHeader>
-                    <CardTitle className="text-xl text-slate-900">
-                      Findings
-                    </CardTitle>
-                    <CardDescription>
-                      Review the forensic findings returned for this media.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {activeAnalysis.forensics.findings.length > 0 ? (
-                      activeAnalysis.forensics.findings.map((finding) => (
-                        <FindingCard
-                          key={`${finding.module}-${finding.title}`}
-                          finding={finding}
-                        />
-                      ))
-                    ) : (
-                      <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-5 py-6">
-                        <div className="flex items-start gap-3">
-                          <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600" />
-                          <div>
-                            <div className="text-base font-semibold text-slate-900">
-                              No major findings returned
-                            </div>
-                            <p className="mt-2 text-sm leading-7 text-slate-600">
-                              This analysis completed without detailed forensic
-                              findings in the response payload.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                <Card className="border-slate-200 shadow-none">
-                  <CardHeader>
-                    <CardTitle className="text-xl text-slate-900">
-                      Analysis details
-                    </CardTitle>
-                    <CardDescription>
-                      Processing metadata and file-level forensic details.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-5">
-                    <div className="grid gap-3">
+                    <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                       {[
                         {
-                          label: "Status",
-                          value: activeAnalysis.status,
-                        },
-                        {
-                          label: "Started",
-                          value: formatDateTime(
-                            activeAnalysis.analysisStartedAt,
+                          label: "Confidence",
+                          value: formatPercentage(
+                            activeAnalysis.forensics.confidence,
                           ),
                         },
                         {
-                          label: "Completed",
-                          value: formatDateTime(
-                            activeAnalysis.analysisCompletedAt,
+                          label: "Findings",
+                          value: String(
+                            activeAnalysis.forensics.findings.length,
                           ),
                         },
-                        {
-                          label: "Processing time",
-                          value: activeAnalysis.processing.processingMetadata
-                            ?.processingTimeMs
-                            ? `${activeAnalysis.processing.processingMetadata.processingTimeMs} ms`
-                            : "Not available",
-                        },
-                      ].map((item) => (
+                        // {
+                        //   label: "Probability",
+                        //   value: formatPercentage(
+                        //     activeAnalysis.forensics.probability,
+                        //   ),
+                        // },
+                        // {
+                        //   label: "Mode",
+                        //   value:
+                        //     activeAnalysis.processing.processingMode ||
+                        //     "Not available",
+                        // },
+                      ].map((metric) => (
                         <div
-                          key={item.label}
-                          className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3"
+                          key={metric.label}
+                          className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4"
                         >
                           <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                            {item.label}
+                            {metric.label}
                           </div>
-                          <div className="mt-1 text-sm font-medium text-slate-900">
-                            {item.value}
+                          <div className="mt-2 text-xl font-semibold text-slate-900">
+                            {metric.value}
                           </div>
                         </div>
                       ))}
                     </div>
 
-                    <Accordion
-                      type="multiple"
-                      value={openDetailSections}
-                      onValueChange={setOpenDetailSections}
-                      className="w-full"
-                    >
-                      <AccordionItem value="file">
-                        <AccordionTrigger>File and processing</AccordionTrigger>
-                        <AccordionContent>
-                          <div className="space-y-2 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 text-sm leading-7 text-slate-600">
-                            <div>
-                              <span className="font-semibold text-slate-900">
-                                Filename:
-                              </span>{" "}
-                              {activeAnalysis.fileName}
-                            </div>
-                            <div>
-                              <span className="font-semibold text-slate-900">
-                                File size:
-                              </span>{" "}
-                              {formatFileSize(activeAnalysis.fileSize)}
-                            </div>
-                            <div>
-                              <span className="font-semibold text-slate-900">
-                                MIME type:
-                              </span>{" "}
-                              {activeAnalysis.mimeType}
-                            </div>
-                            <div>
-                              <span className="font-semibold text-slate-900">
-                                Processing mode:
-                              </span>{" "}
-                              {activeAnalysis.processing.processingMode ||
-                                "Not available"}
-                            </div>
-                            <div>
-                              <span className="font-semibold text-slate-900">
-                                SHA-256:
-                              </span>{" "}
-                              {activeAnalysis.forensics.file?.sha256 ||
-                                "Not available"}
-                            </div>
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-                  </CardContent>
-                </Card>
-              </div>
+                    <div className="mt-6 flex flex-wrap gap-3">
+                      {selectedAvailability?.isReady ? (
+                        <Button
+                          type="button"
+                          onClick={handleRunForensics}
+                          disabled={startForensics.isPending}
+                        >
+                          Start Fresh Analysis
+                        </Button>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
 
-              {historyItems.length > 0 ? (
-                <Card className="border-slate-200 shadow-none">
-                  <CardHeader>
-                    <CardTitle className="text-xl text-slate-900">
-                      Previous runs
-                    </CardTitle>
-                    <CardDescription>
-                      Recent forensic runs for this media and workflow.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {historyItems.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
-                      >
-                        <div>
-                          <div className="text-sm font-semibold text-slate-900">
-                            {getTriggerTypeLabel(item.freshness?.triggerType)}
-                          </div>
-                          <div className="mt-1 text-sm text-slate-500">
-                            Generated{" "}
-                            {formatDateTime(
-                              item.freshness?.resultGeneratedAt || undefined,
-                            )}
+                <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_420px]">
+                  <Card className="border-slate-200 shadow-none">
+                    <CardHeader>
+                      <CardTitle className="text-xl text-slate-900">
+                        Findings
+                      </CardTitle>
+                      <CardDescription>
+                        Review the forensic findings returned for this media.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {activeAnalysis.forensics.findings.length > 0 ? (
+                        activeAnalysis.forensics.findings.map((finding) => (
+                          <FindingCard
+                            key={`${finding.module}-${finding.title}`}
+                            finding={finding}
+                          />
+                        ))
+                      ) : (
+                        <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-5 py-6">
+                          <div className="flex items-start gap-3">
+                            <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600" />
+                            <div>
+                              <div className="text-base font-semibold text-slate-900">
+                                No major findings returned
+                              </div>
+                              <p className="mt-2 text-sm leading-7 text-slate-600">
+                                This analysis completed without detailed
+                                forensic findings in the response payload.
+                              </p>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              "border",
-                              item.status === "failed"
-                                ? "border-red-200 bg-red-50 text-red-700"
-                                : item.status === "completed"
-                                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                                  : "border-amber-200 bg-amber-50 text-amber-700",
-                            )}
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-slate-200 shadow-none">
+                    <CardHeader>
+                      <CardTitle className="text-xl text-slate-900">
+                        Analysis details
+                      </CardTitle>
+                      <CardDescription>
+                        Processing metadata and file-level forensic details.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-5">
+                      <div className="grid gap-3">
+                        {[
+                          {
+                            label: "Status",
+                            value: activeAnalysis.status,
+                          },
+                          {
+                            label: "Started",
+                            value: formatDateTime(
+                              activeAnalysis.analysisStartedAt,
+                            ),
+                          },
+                          {
+                            label: "Completed",
+                            value: formatDateTime(
+                              activeAnalysis.analysisCompletedAt,
+                            ),
+                          },
+                          {
+                            label: "Processing time",
+                            value: activeAnalysis.processing.processingMetadata
+                              ?.processingTimeMs
+                              ? `${activeAnalysis.processing.processingMetadata.processingTimeMs} ms`
+                              : "Not available",
+                          },
+                        ].map((item) => (
+                          <div
+                            key={item.label}
+                            className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3"
                           >
-                            {item.status}
-                          </Badge>
-                          {item.freshness?.rerunnable ? (
-                            <Badge
-                              variant="outline"
-                              className="border-slate-200 bg-white text-slate-600"
-                            >
-                              Rerunnable
-                            </Badge>
-                          ) : null}
-                        </div>
+                            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                              {item.label}
+                            </div>
+                            <div className="mt-1 text-sm font-medium text-slate-900">
+                              {item.value}
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              ) : null}
-            </div>
+
+                      <Accordion
+                        type="multiple"
+                        value={openDetailSections}
+                        onValueChange={setOpenDetailSections}
+                        className="w-full"
+                      >
+                        <AccordionItem value="file">
+                          <AccordionTrigger>
+                            File and processing
+                          </AccordionTrigger>
+                          <AccordionContent>
+                            <div className="space-y-2 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 text-sm leading-7 text-slate-600">
+                              <div>
+                                <span className="font-semibold text-slate-900">
+                                  Filename:
+                                </span>{" "}
+                                {activeAnalysis.fileName}
+                              </div>
+                              <div>
+                                <span className="font-semibold text-slate-900">
+                                  File size:
+                                </span>{" "}
+                                {formatFileSize(activeAnalysis.fileSize)}
+                              </div>
+                              <div>
+                                <span className="font-semibold text-slate-900">
+                                  MIME type:
+                                </span>{" "}
+                                {activeAnalysis.mimeType}
+                              </div>
+                              <div>
+                                <span className="font-semibold text-slate-900">
+                                  Processing mode:
+                                </span>{" "}
+                                {activeAnalysis.processing.processingMode ||
+                                  "Not available"}
+                              </div>
+                              <div>
+                                <span className="font-semibold text-slate-900">
+                                  SHA-256:
+                                </span>{" "}
+                                {activeAnalysis.forensics.file?.sha256 ||
+                                  "Not available"}
+                              </div>
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )
           ) : null}
         </CardContent>
       </Card>
