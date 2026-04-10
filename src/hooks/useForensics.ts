@@ -27,6 +27,24 @@ export type ForensicsFinding = {
   timestamp_s?: number;
 };
 
+export type CheckUnavailable = {
+  name: string;
+  reason: string;
+};
+
+export type NextStep = {
+  action: string;
+  label: string;
+  type: "manual" | "platform_feature";
+  feature: string | null;
+};
+
+export type Interpretation = {
+  summary: string;
+  what_this_means: string;
+  next_steps: NextStep[];
+};
+
 export type ImageForensicsDetail = {
   userFriendlySummary?: {
     status?: string;
@@ -180,10 +198,13 @@ export interface ForensicsAnalysisDetail {
     };
   };
   forensics: {
-    verdict?: string;
-    verdictLabel?: string;
-    probability?: number;
-    confidence?: number;
+    riskScore: number;
+    riskBand: "low" | "elevated" | "high";
+    measurementConfidence: number;
+    calibrationStatus: "pre_calibration" | "calibrated" | "recalibrating";
+    elevatedDetectors: string[];
+    checksUnavailable: CheckUnavailable[];
+    interpretation: Interpretation | null;
     findings: ForensicsFinding[];
     summary?: string;
     file?: {
@@ -223,10 +244,13 @@ export interface ForensicsStatusData {
     processingMode?: string;
   };
   forensics: {
-    verdict?: string;
-    verdictLabel?: string;
-    probability?: number;
-    confidence?: number;
+    riskScore: number;
+    riskBand: "low" | "elevated" | "high";
+    measurementConfidence: number;
+    calibrationStatus: "pre_calibration" | "calibrated" | "recalibrating";
+    elevatedDetectors: string[];
+    checksUnavailable: CheckUnavailable[];
+    interpretation: Interpretation | null;
     findings: ForensicsFinding[];
     summary?: string;
     imageDetail?: ImageForensicsDetail;

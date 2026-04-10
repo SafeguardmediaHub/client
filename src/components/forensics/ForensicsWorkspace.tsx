@@ -296,16 +296,29 @@ function formatPercentage(value?: number) {
   return `${Math.round(value * 100)}%`;
 }
 
-function getVerdictClasses(verdict?: string) {
-  switch ((verdict || "").toLowerCase()) {
-    case "likely_authentic":
+function getRiskBandClasses(riskBand?: string) {
+  switch (riskBand) {
+    case "low":
       return "border-emerald-200 bg-emerald-50 text-emerald-700";
-    case "likely_tampered":
+    case "elevated":
       return "border-amber-200 bg-amber-50 text-amber-700";
-    case "tampered":
+    case "high":
       return "border-red-200 bg-red-50 text-red-700";
     default:
       return "border-slate-200 bg-slate-50 text-slate-700";
+  }
+}
+
+function getRiskBandLabel(riskBand?: string) {
+  switch (riskBand) {
+    case "low":
+      return "Low";
+    case "elevated":
+      return "Elevated";
+    case "high":
+      return "High";
+    default:
+      return "Unknown";
   }
 }
 
@@ -679,18 +692,19 @@ function ImageForensicsResult({
                 variant="outline"
                 className={cn(
                   "border px-3 py-1 text-sm font-semibold",
-                  getVerdictClasses(analysis.forensics.verdict),
+                  getRiskBandClasses(analysis.forensics.riskBand),
                 )}
               >
-                {analysis.forensics.verdictLabel || "No verdict"}
+                Risk Level: {getRiskBandLabel(analysis.forensics.riskBand)}
               </Badge>
               <h3 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">
-                {analysis.forensics.verdictLabel ||
+                {analysis.forensics.interpretation?.summary ||
+                  analysis.forensics.summary ||
                   "Forensic result unavailable"}
               </h3>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 md:text-base">
-                {userSummary?.recommendation ||
-                  analysis.forensics.summary ||
+                {analysis.forensics.interpretation?.what_this_means ||
+                  userSummary?.recommendation ||
                   assessment?.recommendation ||
                   "No forensic summary was returned for this image."}
               </p>
@@ -740,27 +754,22 @@ function ImageForensicsResult({
           <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {[
               {
-                label: "Status",
-                value:
-                  userSummary?.status || assessment?.status || "Not available",
+                label: "Signal strength",
+                value: String(analysis.forensics.riskScore),
               },
               {
-                label: "Trust level",
-                value:
-                  userSummary?.trustLevel ||
-                  assessment?.trustLevel ||
-                  "Not available",
+                label: "Risk band",
+                value: getRiskBandLabel(analysis.forensics.riskBand),
               },
               {
-                label: "Tampering possibility",
-                value:
-                  userSummary?.tamperingProbability ||
-                  assessment?.tamperingProbability ||
-                  "Not available",
+                label: "Measurement confidence",
+                value: formatPercentage(
+                  analysis.forensics.measurementConfidence,
+                ),
               },
               {
-                label: "Evidence points",
-                value: String(primaryIssues.length + primaryPositives.length),
+                label: "Findings",
+                value: String(analysis.forensics.findings.length),
               },
             ].map((metric) => (
               <div
@@ -777,6 +786,13 @@ function ImageForensicsResult({
             ))}
           </div>
 
+          {analysis.forensics.calibrationStatus === "pre_calibration" && (
+            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-500">
+              Detector thresholds are provisional and have not yet been
+              empirically calibrated.
+            </div>
+          )}
+
           <div className="mt-6 flex flex-wrap gap-3">
             {selectedAvailabilityReady ? (
               <Button
@@ -790,6 +806,93 @@ function ImageForensicsResult({
           </div>
         </div>
       </div>
+
+      {analysis.forensics.elevatedDetectors.length > 0 && (
+        <Card className="border-slate-200 shadow-none">
+          <CardHeader>
+            <CardTitle className="text-lg text-slate-900">
+              Elevated detectors
+            </CardTitle>
+            <CardDescription>
+              Detectors that crossed their elevated threshold for this file.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {analysis.forensics.elevatedDetectors.map((detector) => (
+                <Badge
+                  key={detector}
+                  variant="outline"
+                  className="border-amber-200 bg-amber-50 text-amber-700"
+                >
+                  {detector}
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {analysis.forensics.checksUnavailable.length > 0 && (
+        <Card className="border-slate-200 shadow-none">
+          <CardHeader>
+            <CardTitle className="text-lg text-slate-900">
+              Checks that could not run
+            </CardTitle>
+            <CardDescription>
+              Some engine-internal checks could not complete for this file.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {analysis.forensics.checksUnavailable.map((check) => (
+              <div
+                key={check.name}
+                className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-700"
+              >
+                <span className="font-semibold">{check.name}:</span>{" "}
+                {check.reason}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {analysis.forensics.interpretation?.next_steps &&
+        analysis.forensics.interpretation.next_steps.length > 0 && (
+          <Card className="border-slate-200 shadow-none">
+            <CardHeader>
+              <CardTitle className="text-lg text-slate-900">
+                Recommended next steps
+              </CardTitle>
+              <CardDescription>
+                Actions to consider based on the forensic signals.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {analysis.forensics.interpretation.next_steps.map((step) => (
+                <div
+                  key={step.action}
+                  className={cn(
+                    "rounded-2xl border px-4 py-3 text-sm",
+                    step.type === "platform_feature"
+                      ? "border-blue-200 bg-blue-50/80 text-blue-800"
+                      : "border-slate-200 bg-slate-50/80 text-slate-700",
+                  )}
+                >
+                  {step.label}
+                  {step.type === "platform_feature" && step.feature ? (
+                    <Badge
+                      variant="outline"
+                      className="ml-2 border-blue-200 bg-white text-blue-600"
+                    >
+                      Platform feature
+                    </Badge>
+                  ) : null}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <EvidenceListCard
@@ -1746,7 +1849,7 @@ export function ForensicsWorkspace() {
               </CardTitle>
               <CardDescription className="leading-7 text-slate-600">
                 Forensics is a separate workflow from AI Media Detection. It
-                focuses on forensic findings, probability, confidence, and
+                focuses on risk signals, interpretation, and
                 evidence-oriented outputs.
               </CardDescription>
             </CardHeader>
@@ -1755,7 +1858,7 @@ export function ForensicsWorkspace() {
                 "Select an image, audio, or video file from your library.",
                 "We submit the selected media record to the forensic service.",
                 "Image and audio analyses usually complete in one response, while video and frame analyses continue through a queued async workflow.",
-                "You receive a verdict, summary, confidence, probability, and findings.",
+                "You receive risk signals, interpretation, and forensic findings.",
               ].map((step, index) => (
                 <div key={step} className="flex gap-3">
                   <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 text-sm font-semibold text-blue-700">
@@ -1915,7 +2018,7 @@ export function ForensicsWorkspace() {
                       <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 md:text-base">
                         This file is selected and ready for a fresh forensic
                         run. Once started, the result area below will update
-                        with verdict, summary, and evidence details.
+                        with risk signals, interpretation, and evidence details.
                       </p>
                     </div>
                   </div>
@@ -2206,18 +2309,23 @@ export function ForensicsWorkspace() {
                           variant="outline"
                           className={cn(
                             "border px-3 py-1 text-sm font-semibold",
-                            getVerdictClasses(activeAnalysis.forensics.verdict),
+                            getRiskBandClasses(
+                              activeAnalysis.forensics.riskBand,
+                            ),
                           )}
                         >
-                          {activeAnalysis.forensics.verdictLabel ||
-                            "No verdict"}
+                          Risk Level:{" "}
+                          {getRiskBandLabel(activeAnalysis.forensics.riskBand)}
                         </Badge>
                         <h3 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">
-                          {activeAnalysis.forensics.verdictLabel ||
+                          {activeAnalysis.forensics.interpretation?.summary ||
+                            activeAnalysis.forensics.summary ||
                             "Forensic result unavailable"}
                         </h3>
                         <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 md:text-base">
-                          {activeAnalysis.forensics.summary ||
+                          {activeAnalysis.forensics.interpretation
+                            ?.what_this_means ||
+                            activeAnalysis.forensics.summary ||
                             "No forensic summary was returned for this analysis."}
                         </p>
                       </div>
@@ -2233,9 +2341,19 @@ export function ForensicsWorkspace() {
                     <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                       {[
                         {
-                          label: "Confidence",
+                          label: "Signal strength",
+                          value: String(activeAnalysis.forensics.riskScore),
+                        },
+                        {
+                          label: "Risk band",
+                          value: getRiskBandLabel(
+                            activeAnalysis.forensics.riskBand,
+                          ),
+                        },
+                        {
+                          label: "Measurement confidence",
                           value: formatPercentage(
-                            activeAnalysis.forensics.confidence,
+                            activeAnalysis.forensics.measurementConfidence,
                           ),
                         },
                         {
@@ -2244,18 +2362,6 @@ export function ForensicsWorkspace() {
                             activeAnalysis.forensics.findings.length,
                           ),
                         },
-                        // {
-                        //   label: "Probability",
-                        //   value: formatPercentage(
-                        //     activeAnalysis.forensics.probability,
-                        //   ),
-                        // },
-                        // {
-                        //   label: "Mode",
-                        //   value:
-                        //     activeAnalysis.processing.processingMode ||
-                        //     "Not available",
-                        // },
                       ].map((metric) => (
                         <div
                           key={metric.label}
@@ -2271,6 +2377,14 @@ export function ForensicsWorkspace() {
                       ))}
                     </div>
 
+                    {activeAnalysis.forensics.calibrationStatus ===
+                      "pre_calibration" && (
+                      <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-500">
+                        Detector thresholds are provisional and have not yet
+                        been empirically calibrated.
+                      </div>
+                    )}
+
                     <div className="mt-6 flex flex-wrap gap-3">
                       {selectedAvailability?.isReady ? (
                         <Button
@@ -2284,6 +2398,103 @@ export function ForensicsWorkspace() {
                     </div>
                   </div>
                 </div>
+
+                {activeAnalysis.forensics.elevatedDetectors.length > 0 && (
+                  <Card className="border-slate-200 shadow-none">
+                    <CardHeader>
+                      <CardTitle className="text-lg text-slate-900">
+                        Elevated detectors
+                      </CardTitle>
+                      <CardDescription>
+                        Detectors that crossed their elevated threshold for this
+                        file.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        {activeAnalysis.forensics.elevatedDetectors.map(
+                          (detector) => (
+                            <Badge
+                              key={detector}
+                              variant="outline"
+                              className="border-amber-200 bg-amber-50 text-amber-700"
+                            >
+                              {detector}
+                            </Badge>
+                          ),
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {activeAnalysis.forensics.checksUnavailable.length > 0 && (
+                  <Card className="border-slate-200 shadow-none">
+                    <CardHeader>
+                      <CardTitle className="text-lg text-slate-900">
+                        Checks that could not run
+                      </CardTitle>
+                      <CardDescription>
+                        Some engine-internal checks could not complete for this
+                        file.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      {activeAnalysis.forensics.checksUnavailable.map(
+                        (check) => (
+                          <div
+                            key={check.name}
+                            className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-700"
+                          >
+                            <span className="font-semibold">{check.name}:</span>{" "}
+                            {check.reason}
+                          </div>
+                        ),
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+
+                {activeAnalysis.forensics.interpretation?.next_steps &&
+                  activeAnalysis.forensics.interpretation.next_steps.length >
+                    0 && (
+                    <Card className="border-slate-200 shadow-none">
+                      <CardHeader>
+                        <CardTitle className="text-lg text-slate-900">
+                          Recommended next steps
+                        </CardTitle>
+                        <CardDescription>
+                          Actions to consider based on the forensic signals.
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-2">
+                        {activeAnalysis.forensics.interpretation.next_steps.map(
+                          (step) => (
+                            <div
+                              key={step.action}
+                              className={cn(
+                                "rounded-2xl border px-4 py-3 text-sm",
+                                step.type === "platform_feature"
+                                  ? "border-blue-200 bg-blue-50/80 text-blue-800"
+                                  : "border-slate-200 bg-slate-50/80 text-slate-700",
+                              )}
+                            >
+                              {step.label}
+                              {step.type === "platform_feature" &&
+                              step.feature ? (
+                                <Badge
+                                  variant="outline"
+                                  className="ml-2 border-blue-200 bg-white text-blue-600"
+                                >
+                                  Platform feature
+                                </Badge>
+                              ) : null}
+                            </div>
+                          ),
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
 
                 <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_420px]">
                   <Card className="border-slate-200 shadow-none">
