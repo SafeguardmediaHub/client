@@ -697,12 +697,7 @@ function ImageForensicsResult({
               >
                 Risk Level: {getRiskBandLabel(analysis.forensics.riskBand)}
               </Badge>
-              <h3 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">
-                {analysis.forensics.interpretation?.summary ||
-                  analysis.forensics.summary ||
-                  "Forensic result unavailable"}
-              </h3>
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 md:text-base">
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 md:text-base">
                 {analysis.forensics.interpretation?.what_this_means ||
                   userSummary?.recommendation ||
                   assessment?.recommendation ||
@@ -719,38 +714,6 @@ function ImageForensicsResult({
             </Badge>
           </div>
 
-          {(userSummary?.recommendation ||
-            cleanedUserSummaryNote ||
-            assessment?.note) && (
-            <div
-              className={cn(
-                "mt-6 rounded-2xl border px-4 py-4",
-                getImageAssessmentClasses(
-                  userSummary?.status || assessment?.status,
-                ),
-              )}
-            >
-              <div className="text-xs font-semibold uppercase tracking-[0.16em]">
-                Human-readable summary
-              </div>
-              {userSummary?.trustLevel ? (
-                <div className="mt-2 text-base font-semibold">
-                  {userSummary.trustLevel}
-                </div>
-              ) : null}
-              {userSummary?.recommendation || assessment?.recommendation ? (
-                <div className="mt-2 text-base font-semibold">
-                  {userSummary?.recommendation || assessment?.recommendation}
-                </div>
-              ) : null}
-              {cleanedUserSummaryNote || assessment?.note ? (
-                <p className="mt-2 text-sm leading-7">
-                  {cleanedUserSummaryNote || assessment?.note}
-                </p>
-              ) : null}
-            </div>
-          )}
-
           <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {[
               {
@@ -760,12 +723,6 @@ function ImageForensicsResult({
               {
                 label: "Risk band",
                 value: getRiskBandLabel(analysis.forensics.riskBand),
-              },
-              {
-                label: "Measurement confidence",
-                value: formatPercentage(
-                  analysis.forensics.measurementConfidence,
-                ),
               },
               {
                 label: "Findings",
@@ -786,13 +743,6 @@ function ImageForensicsResult({
             ))}
           </div>
 
-          {analysis.forensics.calibrationStatus === "pre_calibration" && (
-            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-500">
-              Detector thresholds are provisional and have not yet been
-              empirically calibrated.
-            </div>
-          )}
-
           <div className="mt-6 flex flex-wrap gap-3">
             {selectedAvailabilityReady ? (
               <Button
@@ -806,6 +756,69 @@ function ImageForensicsResult({
           </div>
         </div>
       </div>
+
+      <Card className="border-slate-200 shadow-none">
+        <CardHeader>
+          <CardTitle className="text-xl text-slate-900">
+            Technical signals
+          </CardTitle>
+          <CardDescription>
+            Technical evidence from the image forensic analysis.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <ImageSignalCard
+            title="ELA"
+            score={manipulation?.ela?.score}
+            interpretation={manipulation?.ela?.interpretation}
+            extra={
+              manipulation?.ela?.artifactAvailable
+                ? "Artifact available internally"
+                : undefined
+            }
+          />
+          <ImageSignalCard
+            title="Noise"
+            score={manipulation?.noise?.score}
+            interpretation={manipulation?.noise?.interpretation}
+            extra={
+              manipulation?.noise?.artifactAvailable
+                ? "Artifact available internally"
+                : undefined
+            }
+          />
+          <ImageSignalCard
+            title="Copy-move"
+            score={manipulation?.copyMove?.cloneScore}
+            interpretation={manipulation?.copyMove?.interpretation}
+            extra={
+              manipulation?.copyMove?.matchesFound !== undefined
+                ? `${manipulation.copyMove.matchesFound} matches found`
+                : undefined
+            }
+          />
+          <ImageSignalCard
+            title="JPEG compression"
+            score={manipulation?.jpegCompression?.format}
+            interpretation={manipulation?.jpegCompression?.message}
+          />
+          <ImageSignalCard
+            title="Histogram analysis"
+            score={
+              histogram?.peaks !== undefined
+                ? `${histogram.peaks} peaks`
+                : undefined
+            }
+            interpretation={histogram?.interpretation}
+            extra={
+              histogram?.meanBrightness !== undefined &&
+              histogram?.stdBrightness !== undefined
+                ? `Brightness ${histogram.meanBrightness} / ${histogram.stdBrightness}`
+                : undefined
+            }
+          />
+        </CardContent>
+      </Card>
 
       {analysis.forensics.elevatedDetectors.length > 0 && (
         <Card className="border-slate-200 shadow-none">
@@ -909,7 +922,7 @@ function ImageForensicsResult({
         />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_420px]">
+      <div className="grid gap-6 lg:grid-cols-2">
         <DetailListCard
           title="Image information"
           rows={[
@@ -951,82 +964,6 @@ function ImageForensicsResult({
             },
           ]}
         />
-
-        <DetailListCard
-          title="How to interpret this result"
-          rows={Object.entries(userExplanation?.howToRead || {}).map(
-            ([label, value]) => ({
-              label,
-              value,
-            }),
-          )}
-        />
-      </div>
-
-      <Card className="border-slate-200 shadow-none">
-        <CardHeader>
-          <CardTitle className="text-xl text-slate-900">
-            Technical signals
-          </CardTitle>
-          <CardDescription>
-            Technical evidence from the image forensic analysis.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <ImageSignalCard
-            title="ELA"
-            score={manipulation?.ela?.score}
-            interpretation={manipulation?.ela?.interpretation}
-            extra={
-              manipulation?.ela?.artifactAvailable
-                ? "Artifact available internally"
-                : undefined
-            }
-          />
-          <ImageSignalCard
-            title="Noise"
-            score={manipulation?.noise?.score}
-            interpretation={manipulation?.noise?.interpretation}
-            extra={
-              manipulation?.noise?.artifactAvailable
-                ? "Artifact available internally"
-                : undefined
-            }
-          />
-          <ImageSignalCard
-            title="Copy-move"
-            score={manipulation?.copyMove?.cloneScore}
-            interpretation={manipulation?.copyMove?.interpretation}
-            extra={
-              manipulation?.copyMove?.matchesFound !== undefined
-                ? `${manipulation.copyMove.matchesFound} matches found`
-                : undefined
-            }
-          />
-          <ImageSignalCard
-            title="JPEG compression"
-            score={manipulation?.jpegCompression?.format}
-            interpretation={manipulation?.jpegCompression?.message}
-          />
-          <ImageSignalCard
-            title="Histogram analysis"
-            score={
-              histogram?.peaks !== undefined
-                ? `${histogram.peaks} peaks`
-                : undefined
-            }
-            interpretation={histogram?.interpretation}
-            extra={
-              histogram?.meanBrightness !== undefined &&
-              histogram?.stdBrightness !== undefined
-                ? `Brightness ${histogram.meanBrightness} / ${histogram.stdBrightness}`
-                : undefined
-            }
-          />
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_420px]">
         <DetailListCard
           title="File and metadata evidence"
           rows={[
@@ -1066,75 +1003,6 @@ function ImageForensicsResult({
                     : "Not present",
             },
           ]}
-        />
-
-        <DetailListCard
-          title="Verification"
-          rows={[
-            {
-              label: "MD5",
-              value: verification?.md5 || "Not available",
-              scrollable: true,
-            },
-            {
-              label: "SHA1",
-              value: verification?.sha1 || "Not available",
-              scrollable: true,
-            },
-            {
-              label: "SHA256",
-              value:
-                verification?.sha256 ||
-                analysis.forensics.file?.sha256 ||
-                "Not available",
-              scrollable: true,
-            },
-          ]}
-        />
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_420px]">
-        <Card className="border-slate-200 shadow-none">
-          <CardHeader>
-            <CardTitle className="text-xl text-slate-900">
-              What we checked
-            </CardTitle>
-            <CardDescription>
-              A plain-language breakdown of the evidence checks performed by the
-              backend.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {(userExplanation?.whatWeChecked || checks?.whatWeChecked || [])
-              .length > 0 ? (
-              (
-                userExplanation?.whatWeChecked ||
-                checks?.whatWeChecked ||
-                []
-              ).map((item) => (
-                <div
-                  key={item}
-                  className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm leading-7 text-slate-700"
-                >
-                  {item}
-                </div>
-              ))
-            ) : (
-              <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-500">
-                No methodology notes were returned for this run.
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <DetailListCard
-          title="How to read the report"
-          rows={Object.entries(
-            userExplanation?.howToRead || checks?.howToRead || {},
-          ).map(([label, value]) => ({
-            label,
-            value,
-          }))}
         />
       </div>
 
@@ -2351,12 +2219,6 @@ export function ForensicsWorkspace() {
                           ),
                         },
                         {
-                          label: "Measurement confidence",
-                          value: formatPercentage(
-                            activeAnalysis.forensics.measurementConfidence,
-                          ),
-                        },
-                        {
                           label: "Findings",
                           value: String(
                             activeAnalysis.forensics.findings.length,
@@ -2376,14 +2238,6 @@ export function ForensicsWorkspace() {
                         </div>
                       ))}
                     </div>
-
-                    {activeAnalysis.forensics.calibrationStatus ===
-                      "pre_calibration" && (
-                      <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-500">
-                        Detector thresholds are provisional and have not yet
-                        been empirically calibrated.
-                      </div>
-                    )}
 
                     <div className="mt-6 flex flex-wrap gap-3">
                       {selectedAvailability?.isReady ? (
