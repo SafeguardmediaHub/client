@@ -296,32 +296,6 @@ function formatPercentage(value?: number) {
   return `${Math.round(value * 100)}%`;
 }
 
-function getRiskBandClasses(riskBand?: string) {
-  switch (riskBand) {
-    case "low":
-      return "border-emerald-200 bg-emerald-50 text-emerald-700";
-    case "elevated":
-      return "border-amber-200 bg-amber-50 text-amber-700";
-    case "high":
-      return "border-red-200 bg-red-50 text-red-700";
-    default:
-      return "border-slate-200 bg-slate-50 text-slate-700";
-  }
-}
-
-function getRiskBandLabel(riskBand?: string) {
-  switch (riskBand) {
-    case "low":
-      return "Low";
-    case "elevated":
-      return "Elevated";
-    case "high":
-      return "High";
-    default:
-      return "Unknown";
-  }
-}
-
 function getSeverityClasses(severity?: string) {
   switch ((severity || "").toLowerCase()) {
     case "high":
@@ -688,15 +662,6 @@ function ImageForensicsResult({
                 </Badge>
               </div>
 
-              <Badge
-                variant="outline"
-                className={cn(
-                  "border px-3 py-1 text-sm font-semibold",
-                  getRiskBandClasses(analysis.forensics.riskBand),
-                )}
-              >
-                Risk Level: {getRiskBandLabel(analysis.forensics.riskBand)}
-              </Badge>
               <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 md:text-base">
                 {analysis.forensics.interpretation?.what_this_means ||
                   userSummary?.recommendation ||
@@ -719,10 +684,6 @@ function ImageForensicsResult({
               {
                 label: "Signal strength",
                 value: String(analysis.forensics.riskScore),
-              },
-              {
-                label: "Risk band",
-                value: getRiskBandLabel(analysis.forensics.riskBand),
               },
               {
                 label: "Findings",
@@ -2173,18 +2134,6 @@ export function ForensicsWorkspace() {
                             </Badge>
                           </div>
                         )}
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            "border px-3 py-1 text-sm font-semibold",
-                            getRiskBandClasses(
-                              activeAnalysis.forensics.riskBand,
-                            ),
-                          )}
-                        >
-                          Risk Level:{" "}
-                          {getRiskBandLabel(activeAnalysis.forensics.riskBand)}
-                        </Badge>
                         <h3 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">
                           {activeAnalysis.forensics.interpretation?.summary ||
                             activeAnalysis.forensics.summary ||
@@ -2211,12 +2160,6 @@ export function ForensicsWorkspace() {
                         {
                           label: "Signal strength",
                           value: String(activeAnalysis.forensics.riskScore),
-                        },
-                        {
-                          label: "Risk band",
-                          value: getRiskBandLabel(
-                            activeAnalysis.forensics.riskBand,
-                          ),
                         },
                         {
                           label: "Findings",
