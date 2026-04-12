@@ -12,24 +12,26 @@ import { WebSocketProvider } from "@/context/WebSocketContext";
 export const metadata: Metadata = {
   title: {
     default:
-      "Safeguardmedia Technologies - AI-Powered Misinformation Detection",
+      "Safeguardmedia Technologies - Media Authenticity & Verification Platform",
     template: "%s | Safeguardmedia Technologies",
   },
   description:
-    "Advanced AI-powered platform for detecting misinformation, AI-generated media, and manipulated content. Features include fact-checking, social media tracing, forensic analysis, and C2PA verification.",
+    "Safeguardmedia is a media authenticity and verification platform designed to help teams assess content credibility and reduce the risk of manipulation before they publish, escalate, or act.",
   keywords: [
-    "misinformation detection",
-    "fact checking",
     "AI-generated media detection",
+    "fact checking",
+    "media authenticity",
+    "content verification",
     "media verification",
-    "AI fact checker",
+    "content credibility",
+    "manipulated media detection",
     "social media tracing",
     "forensic analysis",
     "C2PA verification",
     "content authenticity",
-    "fake news detection",
     "media forensics",
     "digital verification",
+    "verification workflows",
   ],
   authors: [{ name: "Safeguardmedia Technologies Team" }],
   creator: "Safeguardmedia Technologies",
@@ -47,15 +49,15 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "/",
     siteName: "Safeguardmedia Technologies",
-    title: "Safeguardmedia Technologies - AI-Powered Misinformation Detection",
+    title: "Safeguardmedia Technologies - Media Authenticity & Verification Platform",
     description:
-      "Advanced AI-powered platform for detecting misinformation, AI-generated media, and manipulated content. Features include fact-checking, social media tracing, forensic analysis, and C2PA verification.",
+      "Safeguardmedia is a media authenticity and verification platform designed to help teams assess content credibility and reduce the risk of manipulation before they publish, escalate, or act.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Safeguardmedia Technologies - AI-Powered Misinformation Detection Platform",
+        alt: "Safeguardmedia Technologies - Media Authenticity & Verification Platform",
       },
     ],
   },
@@ -63,9 +65,9 @@ export const metadata: Metadata = {
   // Twitter Card metadata
   twitter: {
     card: "summary_large_image",
-    title: "Safeguardmedia Technologies - AI-Powered Misinformation Detection",
+    title: "Safeguardmedia Technologies - Media Authenticity & Verification Platform",
     description:
-      "Advanced AI-powered platform for detecting misinformation, AI-generated media, and manipulated content.",
+      "Safeguardmedia is a media authenticity and verification platform designed to help teams assess content credibility and reduce the risk of manipulation.",
     images: ["/og-image.png"],
     creator: "@safeguardmedia",
   },
