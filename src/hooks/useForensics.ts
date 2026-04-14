@@ -24,7 +24,7 @@ export type ForensicsFinding = {
   severity: string;
   confidence: number;
   description: string;
-  timestamp_s?: number;
+  timestamp_s?: number | null;
 };
 
 export type CheckUnavailable = {
@@ -36,7 +36,7 @@ export type NextStep = {
   action: string;
   label: string;
   type: "manual" | "platform_feature";
-  feature: string | null;
+  feature?: string | null;
 };
 
 export type Interpretation = {
@@ -61,7 +61,7 @@ export type ImageForensicsDetail = {
     };
     explanation?: {
       whatWeChecked?: string[];
-      howToRead?: Record<string, string>;
+      howToRead?: Record<string, unknown>;
     };
     note?: string;
     combinedHeatmapAvailable?: boolean;
@@ -89,7 +89,7 @@ export type ImageForensicsDetail = {
   };
   checks?: {
     whatWeChecked: string[];
-    howToRead: Record<string, string>;
+    howToRead: Record<string, unknown>;
   };
   metadata?: {
     filename?: string;
@@ -101,6 +101,7 @@ export type ImageForensicsDetail = {
     created?: string;
     modified?: string;
     hasExif?: boolean;
+    exifFieldCount?: number;
     hasGps?: boolean;
   };
   manipulationDetection?: {
@@ -125,6 +126,24 @@ export type ImageForensicsDetail = {
     jpegCompression?: {
       format?: string;
       message?: string;
+      doubleCompressionLikelihood?: string;
+    };
+    exifMetadata?: {
+      fieldsPresent?: number;
+      detectorUnavailableReason?: string;
+    };
+    cropDetection?: {
+      score?: number;
+      interpretation?: string;
+      signals?: string[];
+    };
+    screenshotDetection?: {
+      score?: number;
+      interpretation?: string;
+      signals?: string[];
+      software?: string;
+      softwareTagMatch?: boolean;
+      resolutionProfile?: string;
     };
     aiGenerated?: {
       enabled?: boolean;
@@ -152,7 +171,7 @@ export type ImageForensicsDetail = {
   reverseSearch?: {
     imageHash?: string;
     dimensions?: string;
-    searchEngines?: string[];
+    searchEngines?: Record<string, unknown>;
     instructions?: string;
     note?: string;
   };
@@ -177,8 +196,8 @@ export interface ForensicsAnalysisDetail {
   mimeType: string;
   uploadDate: string;
   status: "pending" | "processing" | "completed" | "failed" | "expired";
-  analysisStartedAt?: string;
-  analysisCompletedAt?: string;
+  analysisStartedAt?: string | null;
+  analysisCompletedAt?: string | null;
   createdAt: string;
   updatedAt: string;
   thumbnailUrl?: string | null;
@@ -198,10 +217,10 @@ export interface ForensicsAnalysisDetail {
     };
   };
   forensics: {
-    riskScore: number;
-    riskBand: "low" | "elevated" | "high";
-    measurementConfidence: number;
-    calibrationStatus: "pre_calibration" | "calibrated" | "recalibrating";
+    riskScore?: number;
+    riskBand?: "low" | "elevated" | "high";
+    measurementConfidence?: number;
+    calibrationStatus?: "pre_calibration" | "calibrated" | "recalibrating";
     elevatedDetectors: string[];
     checksUnavailable: CheckUnavailable[];
     interpretation: Interpretation | null;
@@ -231,42 +250,40 @@ export interface ForensicsStatusData {
     resultGeneratedAt?: string | null;
     rerunnable?: boolean;
     triggerType?: ForensicsTriggerType;
-    analysisStartedAt?: string;
-    analysisCompletedAt?: string;
+    analysisStartedAt?: string | null;
+    analysisCompletedAt?: string | null;
     createdAt: string;
     updatedAt: string;
     errorInfo?: {
       code?: string;
       message?: string;
+      details?: unknown;
+      retryCount?: number;
     } | null;
   };
   processing: {
-    processingMode?: string;
+    processingMode?: "sync" | "async";
   };
   forensics: {
-    riskScore: number;
-    riskBand: "low" | "elevated" | "high";
-    measurementConfidence: number;
-    calibrationStatus: "pre_calibration" | "calibrated" | "recalibrating";
+    riskScore?: number;
+    riskBand?: "low" | "elevated" | "high";
+    measurementConfidence?: number;
+    calibrationStatus?: "pre_calibration" | "calibrated" | "recalibrating";
     elevatedDetectors: string[];
     checksUnavailable: CheckUnavailable[];
     interpretation: Interpretation | null;
     findings: ForensicsFinding[];
     summary?: string;
+    file?: {
+      filename?: string;
+      sha256?: string | null;
+    };
     imageDetail?: ImageForensicsDetail;
   } | null;
 }
 
-export type ForensicsHistoryItem = {
-  id: string;
-  mediaId: string;
-  mediaType: ForensicsMediaType;
-  status: "pending" | "processing" | "completed" | "failed" | "expired";
-  freshness?: ForensicsFreshness;
-};
-
 export type ForensicsHistoryResponse = {
-  analyses: ForensicsHistoryItem[];
+  analyses: ForensicsAnalysisDetail[];
   pagination: {
     page: number;
     limit: number;
@@ -281,6 +298,25 @@ interface StartForensicsParams {
   mediaId: string;
   mediaType: ForensicsMediaType;
   options?: FrameForensicsOptions;
+}
+
+function normalizeForensicsPayload(
+  forensics: ForensicsAnalysisDetail["forensics"] | ForensicsStatusData["forensics"],
+) {
+  if (!forensics) {
+    return null;
+  }
+
+  return {
+    ...forensics,
+    elevatedDetectors: Array.isArray(forensics.elevatedDetectors)
+      ? forensics.elevatedDetectors
+      : [],
+    checksUnavailable: Array.isArray(forensics.checksUnavailable)
+      ? forensics.checksUnavailable
+      : [],
+    findings: Array.isArray(forensics.findings) ? forensics.findings : [],
+  };
 }
 
 function normalizeForensicsAnalysis(
@@ -326,6 +362,14 @@ function normalizeForensicsAnalysis(
   return {
     ...analysis,
     freshness: mergedFreshness,
+    forensics:
+      normalizeForensicsPayload(analysis.forensics) ||
+      ({
+        elevatedDetectors: [],
+        checksUnavailable: [],
+        interpretation: null,
+        findings: [],
+      } as ForensicsAnalysisDetail["forensics"]),
     reusedExistingResult:
       analysis.reusedExistingResult ??
       (typeof payload?.reusedExistingResult === "boolean"
@@ -375,7 +419,14 @@ function fetchForensicsStatus(
 ): Promise<ForensicsStatusData> {
   return api
     .get(`/api/forensics/${analysisId}/status`)
-    .then((response) => response.data.data);
+    .then((response) => {
+      const data = response.data.data as ForensicsStatusData;
+
+      return {
+        ...data,
+        forensics: normalizeForensicsPayload(data.forensics),
+      };
+    });
 }
 
 function fetchLatestForensicsForMedia(
@@ -424,7 +475,14 @@ function fetchForensicsHistoryForMedia(
 
   return api
     .get(`/api/forensics/media/${mediaId}/history${suffix}`)
-    .then((response) => response.data.data);
+    .then((response) => ({
+      ...response.data.data,
+      analyses: Array.isArray(response.data.data?.analyses)
+        ? response.data.data.analyses.map((analysis: ForensicsAnalysisDetail) =>
+            normalizeForensicsAnalysis(analysis),
+          )
+        : [],
+    }));
 }
 
 export function getForensicsMediaType(
@@ -443,6 +501,7 @@ export function useStartForensics() {
     mutationFn: startForensics,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["userMedia"] });
+      queryClient.invalidateQueries({ queryKey: ["forensics"] });
       invalidateSubscriptionUsage(queryClient);
     },
     onError: (error) => {

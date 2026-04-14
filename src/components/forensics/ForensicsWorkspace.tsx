@@ -42,10 +42,13 @@ import {
   getForensicsMediaType,
   type ImageForensicsDetail,
   useForensicsDetail,
+  useForensicsHistoryForMedia,
   useForensicsStatus,
+  useLatestForensicsForMedia,
   useStartForensics,
 } from "@/hooks/useForensics";
 import { type Media, useGetMedia } from "@/hooks/useMedia";
+import { getForensicsFeatureLink } from "@/lib/forensics-feature-map";
 import { useSubscriptionUsage } from "@/hooks/useSubscriptionUsage";
 import {
   formatResetDate,
@@ -61,11 +64,14 @@ type MediaFilter = "all" | ForensicsMediaType;
 type FlowState =
   | "idle"
   | "media_selected"
+  | "loading_saved_analysis"
   | "creating_forensic_analysis"
   | "analysis_pending"
   | "analysis_processing"
   | "completed"
   | "failed";
+
+type AnalysisSource = "created" | "latest" | "history";
 
 const READY_MEDIA_STATUSES = new Set(["uploaded", "processed"]);
 
@@ -75,6 +81,16 @@ const MEDIA_FILTERS: Array<{ label: string; value: MediaFilter }> = [
   { label: "Videos", value: "video" },
   { label: "Audio", value: "audio" },
   { label: "Frames", value: "frames" },
+];
+
+const FORENSICS_SCOPE_ITEMS: Array<{
+  label: string;
+  featureKey: ProductFeatureKey;
+}> = [
+  { label: "Image forensics", featureKey: "forensicsImage" },
+  { label: "Audio forensics", featureKey: "forensicsAudio" },
+  { label: "Video forensics", featureKey: "forensicsVideo" },
+  { label: "Frame forensics", featureKey: "forensicsFrames" },
 ];
 
 function getForensicsFeatureKey(
@@ -276,7 +292,7 @@ function getAsyncStateMessage(mode: ForensicsMediaType, flowState: FlowState) {
   return `Your ${label} forensic analysis has been queued. We will keep checking until the result is ready.`;
 }
 
-function formatDateTime(value?: string) {
+function formatDateTime(value?: string | null) {
   if (!value) return "Not available";
 
   return new Date(value).toLocaleString("en-US", {
@@ -294,6 +310,51 @@ function formatPercentage(value?: number) {
   }
 
   return `${Math.round(value * 100)}%`;
+}
+
+function formatNumericValue(value?: number, decimals = 0) {
+  if (value === undefined || value === null || Number.isNaN(value)) {
+    return "Not available";
+  }
+
+  return value.toFixed(decimals);
+}
+
+function formatDetectorName(value: string) {
+  return value
+    .split("_")
+    .join(" ")
+    .replace(/\b\w/g, (match) => match.toUpperCase());
+}
+
+function getAnalysisSourceBadge(
+  source: AnalysisSource | null,
+  analysis?: ForensicsAnalysisDetail | null,
+) {
+  if (!source) {
+    return null;
+  }
+
+  if (source === "created") {
+    return {
+      label: "Fresh analysis result",
+      className: "border-blue-200 bg-blue-50 text-blue-700",
+    };
+  }
+
+  if (source === "latest") {
+    return {
+      label: "Latest saved run",
+      className: "border-slate-200 bg-slate-50 text-slate-700",
+    };
+  }
+
+  return {
+    label: analysis?.freshness?.triggerType
+      ? `${getTriggerTypeLabel(analysis.freshness.triggerType)} from history`
+      : "History run",
+    className: "border-slate-200 bg-slate-50 text-slate-700",
+  };
 }
 
 function getSeverityClasses(severity?: string) {
@@ -339,28 +400,6 @@ function getTriggerTypeLabel(triggerType?: string) {
     default:
       return "Saved result";
   }
-}
-
-function getImageAssessmentClasses(status?: string) {
-  const normalized = (status || "").toLowerCase();
-
-  if (
-    normalized.includes("tamper") ||
-    normalized.includes("suspect") ||
-    normalized.includes("manip")
-  ) {
-    return "border-amber-200 bg-amber-50 text-amber-800";
-  }
-
-  if (
-    normalized.includes("clear") ||
-    normalized.includes("clean") ||
-    normalized.includes("authentic")
-  ) {
-    return "border-emerald-200 bg-emerald-50 text-emerald-800";
-  }
-
-  return "border-slate-200 bg-slate-50 text-slate-800";
 }
 
 function renderMediaPreview(media: Media, className?: string) {
@@ -427,11 +466,51 @@ function FindingCard({ finding }: { finding: ForensicsFinding }) {
       <p className="mt-3 text-sm leading-7 text-slate-600">
         {finding.description}
       </p>
-      {finding.timestamp_s !== undefined ? (
+      {typeof finding.timestamp_s === "number" ? (
         <div className="mt-3 text-xs font-medium uppercase tracking-[0.16em] text-slate-500">
           Timestamp {finding.timestamp_s}s
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function NextStepCard({ step }: { step: NonNullable<ForensicsAnalysisDetail["forensics"]["interpretation"]>["next_steps"][number] }) {
+  const featureLink = getForensicsFeatureLink(step.feature);
+
+  return (
+    <div
+      className={cn(
+        "rounded-2xl border px-4 py-3 text-sm",
+        step.type === "platform_feature"
+          ? "border-blue-200 bg-blue-50/80 text-blue-800"
+          : "border-slate-200 bg-slate-50/80 text-slate-700",
+      )}
+    >
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div className="min-w-0">
+          <div>{step.label}</div>
+          {step.type === "platform_feature" && featureLink?.description ? (
+            <div className="mt-1 text-xs leading-6 text-slate-600">
+              {featureLink.description}
+            </div>
+          ) : null}
+        </div>
+        {step.type === "platform_feature" ? (
+          featureLink?.status === "supported" && featureLink.href ? (
+            <Button asChild size="sm" variant="outline" className="shrink-0">
+              <Link href={featureLink.href}>Open tool</Link>
+            </Button>
+          ) : (
+            <Badge
+              variant="outline"
+              className="shrink-0 border-slate-200 bg-white text-slate-600"
+            >
+              {featureLink?.status === "coming_soon" ? "Coming soon" : "Not available here"}
+            </Badge>
+          )
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -566,11 +645,13 @@ function ImageSignalCard({
 
 function ImageForensicsResult({
   analysis,
+  analysisSource,
   selectedAvailabilityReady,
   startPending,
   onRunNewAnalysis,
 }: {
   analysis: ForensicsAnalysisDetail;
+  analysisSource: AnalysisSource | null;
   selectedAvailabilityReady: boolean;
   startPending: boolean;
   onRunNewAnalysis: () => void;
@@ -598,6 +679,7 @@ function ImageForensicsResult({
     userSummary?.positiveFindings && userSummary.positiveFindings.length > 0
       ? userSummary.positiveFindings
       : issues?.positiveFindings || [];
+  const sourceBadge = getAnalysisSourceBadge(analysisSource, analysis);
 
   return (
     <div className="space-y-6">
@@ -622,12 +704,12 @@ function ImageForensicsResult({
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <div className="mb-4 flex flex-wrap items-center gap-2">
-                {analysis.isFreshRun || analysis.freshness ? (
+                {sourceBadge ? (
                   <Badge
                     variant="outline"
-                    className="border-blue-200 bg-blue-50 text-blue-700"
+                    className={sourceBadge.className}
                   >
-                    Fresh analysis result
+                    {sourceBadge.label}
                   </Badge>
                 ) : null}
                 {assessment?.status ? (
@@ -662,10 +744,14 @@ function ImageForensicsResult({
                 </Badge>
               </div>
 
+              <h3 className="text-3xl font-semibold tracking-tight text-slate-900">
+                {analysis.forensics.interpretation?.summary ||
+                  analysis.forensics.summary ||
+                  "Forensic result unavailable"}
+              </h3>
               <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 md:text-base">
                 {analysis.forensics.interpretation?.what_this_means ||
-                  userSummary?.recommendation ||
-                  assessment?.recommendation ||
+                  analysis.forensics.summary ||
                   "No forensic summary was returned for this image."}
               </p>
             </div>
@@ -683,11 +769,23 @@ function ImageForensicsResult({
             {[
               {
                 label: "Signal strength",
-                value: String(analysis.forensics.riskScore),
+                value: formatNumericValue(analysis.forensics.riskScore, 2),
               },
               {
                 label: "Findings",
                 value: String(analysis.forensics.findings.length),
+              },
+              {
+                label: "Risk band",
+                value: analysis.forensics.riskBand
+                  ? formatDetectorName(analysis.forensics.riskBand)
+                  : "Not available",
+              },
+              {
+                label: "Measurement confidence",
+                value: formatPercentage(
+                  analysis.forensics.measurementConfidence,
+                ),
               },
             ].map((metric) => (
               <div
@@ -721,10 +819,10 @@ function ImageForensicsResult({
       <Card className="border-slate-200 shadow-none">
         <CardHeader>
           <CardTitle className="text-xl text-slate-900">
-            Technical signals
+            Supplemental image detail
           </CardTitle>
           <CardDescription>
-            Technical evidence from the image forensic analysis.
+            Technical evidence attached to the canonical image analysis result.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -761,7 +859,30 @@ function ImageForensicsResult({
           <ImageSignalCard
             title="JPEG compression"
             score={manipulation?.jpegCompression?.format}
-            interpretation={manipulation?.jpegCompression?.message}
+            interpretation={
+              manipulation?.jpegCompression?.message ||
+              manipulation?.jpegCompression?.doubleCompressionLikelihood
+            }
+          />
+          <ImageSignalCard
+            title="EXIF metadata"
+            score={manipulation?.exifMetadata?.fieldsPresent}
+            interpretation={manipulation?.exifMetadata?.detectorUnavailableReason}
+          />
+          <ImageSignalCard
+            title="Crop detection"
+            score={manipulation?.cropDetection?.score}
+            interpretation={manipulation?.cropDetection?.interpretation}
+            extra={manipulation?.cropDetection?.signals?.join(" • ")}
+          />
+          <ImageSignalCard
+            title="Screenshot detection"
+            score={manipulation?.screenshotDetection?.score}
+            interpretation={manipulation?.screenshotDetection?.interpretation}
+            extra={
+              manipulation?.screenshotDetection?.signals?.join(" • ") ||
+              manipulation?.screenshotDetection?.software
+            }
           />
           <ImageSignalCard
             title="Histogram analysis"
@@ -799,7 +920,7 @@ function ImageForensicsResult({
                   variant="outline"
                   className="border-amber-200 bg-amber-50 text-amber-700"
                 >
-                  {detector}
+                  {formatDetectorName(detector)}
                 </Badge>
               ))}
             </div>
@@ -844,25 +965,7 @@ function ImageForensicsResult({
             </CardHeader>
             <CardContent className="space-y-2">
               {analysis.forensics.interpretation.next_steps.map((step) => (
-                <div
-                  key={step.action}
-                  className={cn(
-                    "rounded-2xl border px-4 py-3 text-sm",
-                    step.type === "platform_feature"
-                      ? "border-blue-200 bg-blue-50/80 text-blue-800"
-                      : "border-slate-200 bg-slate-50/80 text-slate-700",
-                  )}
-                >
-                  {step.label}
-                  {step.type === "platform_feature" && step.feature ? (
-                    <Badge
-                      variant="outline"
-                      className="ml-2 border-blue-200 bg-white text-blue-600"
-                    >
-                      Platform feature
-                    </Badge>
-                  ) : null}
-                </div>
+                <NextStepCard key={step.action} step={step} />
               ))}
             </CardContent>
           </Card>
@@ -991,6 +1094,78 @@ function ImageForensicsResult({
   );
 }
 
+function RunHistoryCard({
+  analyses,
+  selectedAnalysisId,
+  onSelectAnalysis,
+  isLoading,
+}: {
+  analyses: ForensicsAnalysisDetail[];
+  selectedAnalysisId: string | null;
+  onSelectAnalysis: (analysis: ForensicsAnalysisDetail) => void;
+  isLoading?: boolean;
+}) {
+  return (
+    <Card className="border-slate-200 shadow-sm">
+      <CardHeader>
+        <CardTitle className="text-xl text-slate-900">Run history</CardTitle>
+        <CardDescription>
+          Previous forensic runs for the selected media and workflow.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {isLoading ? (
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-6 text-sm text-slate-500">
+            Loading saved runs
+          </div>
+        ) : analyses.length > 0 ? (
+          analyses.map((analysis) => (
+            <button
+              key={analysis.id}
+              type="button"
+              onClick={() => onSelectAnalysis(analysis)}
+              className={cn(
+                "w-full rounded-2xl border px-4 py-3 text-left transition-colors",
+                selectedAnalysisId === analysis.id
+                  ? "border-blue-200 bg-blue-50"
+                  : "border-slate-200 bg-slate-50/80 hover:border-slate-300",
+              )}
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div className="text-sm font-semibold text-slate-900">
+                    {analysis.forensics.interpretation?.summary ||
+                      analysis.forensics.summary ||
+                      analysis.originalFileName ||
+                      analysis.fileName}
+                  </div>
+                  <div className="mt-1 text-xs leading-6 text-slate-500">
+                    {formatDateTime(
+                      analysis.analysisCompletedAt ||
+                        analysis.freshness?.resultGeneratedAt ||
+                        analysis.updatedAt,
+                    )}
+                  </div>
+                </div>
+                <Badge
+                  variant="outline"
+                  className="border-slate-200 bg-white text-slate-700"
+                >
+                  {analysis.status}
+                </Badge>
+              </div>
+            </button>
+          ))
+        ) : (
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-6 text-sm text-slate-500">
+            No prior runs found for this media yet.
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export function ForensicsWorkspace() {
   const pathname = usePathname();
   const router = useRouter();
@@ -1002,6 +1177,9 @@ export function ForensicsWorkspace() {
   const [analysisId, setAnalysisId] = useState<string | null>(null);
   const [latestAnalysis, setLatestAnalysis] =
     useState<ForensicsAnalysisDetail | null>(null);
+  const [analysisSource, setAnalysisSource] = useState<AnalysisSource | null>(
+    null,
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [frameSamplingMode, setFrameSamplingMode] = useState<
     "default" | "uniform"
@@ -1068,6 +1246,18 @@ export function ForensicsWorkspace() {
     : forensicsAccessState;
   const analysisUsage = subscriptionUsageQuery.data?.usage.analyses;
   const analysisUsageGate = getUsageGate(analysisUsage);
+  const latestForensicsQuery = useLatestForensicsForMedia(
+    selectedMediaId,
+    selectedWorkflowMode,
+    {
+      enabled: Boolean(selectedMediaId && selectedWorkflowMode),
+    },
+  );
+  const historyQuery = useForensicsHistoryForMedia(selectedMediaId, {
+    mediaType: selectedWorkflowMode,
+    limit: 10,
+    enabled: Boolean(selectedMediaId && selectedWorkflowMode),
+  });
 
   const filteredMedia = useMemo(() => {
     const normalizedSearch = deferredSearchValue.trim().toLowerCase();
@@ -1112,6 +1302,10 @@ export function ForensicsWorkspace() {
     return matchesFilter && availability.isReady;
   }).length;
   const activeAnalysis = detailQuery.data ?? latestAnalysis;
+  const analysisSourceBadge = getAnalysisSourceBadge(
+    analysisSource,
+    activeAnalysis,
+  );
   const isLockedMode = mediaFilter !== "all";
   const visibleFilters = isLockedMode
     ? MEDIA_FILTERS.filter((filter) => filter.value === mediaFilter)
@@ -1163,6 +1357,7 @@ export function ForensicsWorkspace() {
     setFlowState("idle");
     setAnalysisId(null);
     setLatestAnalysis(null);
+    setAnalysisSource(null);
     setErrorMessage(null);
   }, [mediaFilter, selectedAvailability, selectedMedia]);
 
@@ -1174,8 +1369,15 @@ export function ForensicsWorkspace() {
     if (isDifferentSelection) {
       setLatestAnalysis(null);
       setAnalysisId(null);
+      setAnalysisSource(null);
+      setFlowState("loading_saved_analysis");
+    }
+    if (!isDifferentSelection && activeAnalysis) {
+      setFlowState("completed");
+      return;
     }
     if (
+      !isDifferentSelection &&
       flowState !== "creating_forensic_analysis" &&
       flowState !== "analysis_pending" &&
       flowState !== "analysis_processing"
@@ -1215,6 +1417,7 @@ export function ForensicsWorkspace() {
     setErrorMessage(null);
     setLatestAnalysis(null);
     setAnalysisId(null);
+    setAnalysisSource(null);
     scrollToCurrentAnalysis();
 
     try {
@@ -1229,6 +1432,7 @@ export function ForensicsWorkspace() {
 
       setLatestAnalysis(analysis);
       setAnalysisId(analysis.id);
+      setAnalysisSource("created");
 
       if (
         analysis.processing.processingMode === "async" &&
@@ -1257,6 +1461,15 @@ export function ForensicsWorkspace() {
       );
       setFlowState("failed");
     }
+  };
+
+  const handleSelectHistoryRun = (analysis: ForensicsAnalysisDetail) => {
+    setLatestAnalysis(analysis);
+    setAnalysisId(analysis.id);
+    setAnalysisSource("history");
+    setErrorMessage(null);
+    setFlowState("completed");
+    scrollToCurrentAnalysis();
   };
 
   useEffect(() => {
@@ -1288,6 +1501,67 @@ export function ForensicsWorkspace() {
 
     setFlowState("analysis_pending");
   }, [detailQuery, statusQuery.data]);
+
+  useEffect(() => {
+    if (!selectedMediaId || !selectedWorkflowMode) {
+      return;
+    }
+
+    if (
+      flowState === "creating_forensic_analysis" ||
+      flowState === "analysis_pending" ||
+      flowState === "analysis_processing"
+    ) {
+      return;
+    }
+
+    if (latestForensicsQuery.isLoading && !latestForensicsQuery.data) {
+      setFlowState("loading_saved_analysis");
+      return;
+    }
+
+    if (
+      analysisSource &&
+      analysisId &&
+      latestForensicsQuery.data &&
+      latestForensicsQuery.data.id !== analysisId
+    ) {
+      return;
+    }
+
+    if (latestForensicsQuery.data) {
+      setLatestAnalysis(latestForensicsQuery.data);
+      setAnalysisId(latestForensicsQuery.data.id);
+      setAnalysisSource((currentSource) =>
+        currentSource === "created" || currentSource === "history"
+          ? currentSource
+          : "latest",
+      );
+      setFlowState("completed");
+      return;
+    }
+
+    if (latestForensicsQuery.isSuccess) {
+      setLatestAnalysis(null);
+      setAnalysisId(null);
+      setAnalysisSource(null);
+      setFlowState("media_selected");
+    }
+
+    if (latestForensicsQuery.isError) {
+      setFlowState("media_selected");
+    }
+  }, [
+    analysisId,
+    analysisSource,
+    flowState,
+    latestForensicsQuery.data,
+    latestForensicsQuery.isError,
+    latestForensicsQuery.isLoading,
+    latestForensicsQuery.isSuccess,
+    selectedMediaId,
+    selectedWorkflowMode,
+  ]);
 
   useEffect(() => {
     if (!detailQuery.data) {
@@ -1667,6 +1941,15 @@ export function ForensicsWorkspace() {
                 </div>
               )}
             </div>
+
+            {selectedMedia ? (
+              <RunHistoryCard
+                analyses={historyQuery.data?.analyses ?? []}
+                selectedAnalysisId={analysisId}
+                onSelectAnalysis={handleSelectHistoryRun}
+                isLoading={historyQuery.isLoading}
+              />
+            ) : null}
           </CardContent>
         </Card>
 
@@ -1715,50 +1998,38 @@ export function ForensicsWorkspace() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                <span className="text-sm font-medium text-slate-700">
-                  Image forensics
-                </span>
-                <Badge
-                  className="border-emerald-200 bg-emerald-50 text-emerald-700"
-                  variant="outline"
-                >
-                  Available
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                <span className="text-sm font-medium text-slate-700">
-                  Audio forensics
-                </span>
-                <Badge
-                  className="border-emerald-200 bg-emerald-50 text-emerald-700"
-                  variant="outline"
-                >
-                  Available
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                <span className="text-sm font-medium text-slate-700">
-                  Video forensics
-                </span>
-                <Badge
-                  className="border-emerald-200 bg-emerald-50 text-emerald-700"
-                  variant="outline"
-                >
-                  Available
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                <span className="text-sm font-medium text-slate-700">
-                  Frame forensics
-                </span>
-                <Badge
-                  className="border-emerald-200 bg-emerald-50 text-emerald-700"
-                  variant="outline"
-                >
-                  Available
-                </Badge>
-              </div>
+              {FORENSICS_SCOPE_ITEMS.map((item) => {
+                const state = getFeatureState(
+                  subscriptionUsageQuery.data,
+                  item.featureKey,
+                );
+
+                return (
+                  <div
+                    key={item.featureKey}
+                    className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
+                  >
+                    <span className="text-sm font-medium text-slate-700">
+                      {item.label}
+                    </span>
+                    <Badge
+                      className={cn(
+                        "border",
+                        state.available
+                          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                          : state.reason === "plan"
+                            ? "border-amber-200 bg-amber-50 text-amber-800"
+                            : "border-slate-200 bg-white text-slate-600",
+                      )}
+                      variant="outline"
+                    >
+                      {state.available
+                        ? "Available"
+                        : state.message || "Unavailable"}
+                    </Badge>
+                  </div>
+                );
+              })}
             </CardContent>
           </Card>
         </div>
@@ -1789,6 +2060,18 @@ export function ForensicsWorkspace() {
               </p>
             </div>
           )}
+
+          {flowState === "loading_saved_analysis" && selectedMedia ? (
+            <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50/70 px-6 py-12 text-center">
+              <Loader2 className="mx-auto size-10 animate-spin text-slate-500" />
+              <div className="mt-4 text-lg font-semibold text-slate-900">
+                Loading saved analysis
+              </div>
+              <p className="mt-2 text-sm leading-7 text-slate-500">
+                Checking for the latest forensic run for {selectedMedia.filename}.
+              </p>
+            </div>
+          ) : null}
 
           {flowState === "media_selected" && selectedMedia ? (
             <div className="space-y-6 rounded-[1.5rem] border border-slate-200 bg-slate-50/70 px-6 py-8">
@@ -2045,6 +2328,26 @@ export function ForensicsWorkspace() {
                       </Badge>
                     </div>
                   ) : null}
+                  {activeAnalysis?.errorInfo ? (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {activeAnalysis.errorInfo.code ? (
+                        <Badge
+                          variant="outline"
+                          className="border-red-200 bg-white/80 text-red-700"
+                        >
+                          Code {activeAnalysis.errorInfo.code}
+                        </Badge>
+                      ) : null}
+                      {typeof activeAnalysis.errorInfo.retryCount === "number" ? (
+                        <Badge
+                          variant="outline"
+                          className="border-red-200 bg-white/80 text-red-700"
+                        >
+                          Retries {activeAnalysis.errorInfo.retryCount}
+                        </Badge>
+                      ) : null}
+                    </div>
+                  ) : null}
                   <div className="mt-4 flex flex-wrap gap-3">
                     {selectedAvailability?.isReady ? (
                       <Button
@@ -2067,6 +2370,7 @@ export function ForensicsWorkspace() {
             activeAnalysis.forensics.imageDetail ? (
               <ImageForensicsResult
                 analysis={activeAnalysis}
+                analysisSource={analysisSource}
                 selectedAvailabilityReady={Boolean(
                   selectedAvailability?.isReady,
                 )}
@@ -2102,14 +2406,13 @@ export function ForensicsWorkspace() {
                   <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                       <div>
-                        {(activeAnalysis.isFreshRun ||
-                          activeAnalysis.freshness) && (
+                        {analysisSourceBadge && (
                           <div className="mb-4 flex flex-wrap items-center gap-2">
                             <Badge
                               variant="outline"
-                              className="border-blue-200 bg-blue-50 text-blue-700"
+                              className={analysisSourceBadge.className}
                             >
-                              Fresh analysis result
+                              {analysisSourceBadge.label}
                             </Badge>
                             {activeAnalysis.freshness?.triggerType ? (
                               <Badge
@@ -2159,12 +2462,27 @@ export function ForensicsWorkspace() {
                       {[
                         {
                           label: "Signal strength",
-                          value: String(activeAnalysis.forensics.riskScore),
+                          value: formatNumericValue(
+                            activeAnalysis.forensics.riskScore,
+                            2,
+                          ),
                         },
                         {
                           label: "Findings",
                           value: String(
                             activeAnalysis.forensics.findings.length,
+                          ),
+                        },
+                        {
+                          label: "Risk band",
+                          value: activeAnalysis.forensics.riskBand
+                            ? formatDetectorName(activeAnalysis.forensics.riskBand)
+                            : "Not available",
+                        },
+                        {
+                          label: "Measurement confidence",
+                          value: formatPercentage(
+                            activeAnalysis.forensics.measurementConfidence,
                           ),
                         },
                       ].map((metric) => (
@@ -2216,7 +2534,7 @@ export function ForensicsWorkspace() {
                               variant="outline"
                               className="border-amber-200 bg-amber-50 text-amber-700"
                             >
-                              {detector}
+                              {formatDetectorName(detector)}
                             </Badge>
                           ),
                         )}
@@ -2267,26 +2585,7 @@ export function ForensicsWorkspace() {
                       <CardContent className="space-y-2">
                         {activeAnalysis.forensics.interpretation.next_steps.map(
                           (step) => (
-                            <div
-                              key={step.action}
-                              className={cn(
-                                "rounded-2xl border px-4 py-3 text-sm",
-                                step.type === "platform_feature"
-                                  ? "border-blue-200 bg-blue-50/80 text-blue-800"
-                                  : "border-slate-200 bg-slate-50/80 text-slate-700",
-                              )}
-                            >
-                              {step.label}
-                              {step.type === "platform_feature" &&
-                              step.feature ? (
-                                <Badge
-                                  variant="outline"
-                                  className="ml-2 border-blue-200 bg-white text-blue-600"
-                                >
-                                  Platform feature
-                                </Badge>
-                              ) : null}
-                            </div>
+                            <NextStepCard key={step.action} step={step} />
                           ),
                         )}
                       </CardContent>
@@ -2365,6 +2664,14 @@ export function ForensicsWorkspace() {
                               ? `${activeAnalysis.processing.processingMetadata.processingTimeMs} ms`
                               : "Not available",
                           },
+                          {
+                            label: "Calibration",
+                            value: activeAnalysis.forensics.calibrationStatus
+                              ? formatDetectorName(
+                                  activeAnalysis.forensics.calibrationStatus,
+                                )
+                              : "Not available",
+                          },
                         ].map((item) => (
                           <div
                             key={item.label}
@@ -2422,6 +2729,13 @@ export function ForensicsWorkspace() {
                                   SHA-256:
                                 </span>{" "}
                                 {activeAnalysis.forensics.file?.sha256 ||
+                                  "Not available"}
+                              </div>
+                              <div>
+                                <span className="font-semibold text-slate-900">
+                                  Original filename:
+                                </span>{" "}
+                                {activeAnalysis.originalFileName ||
                                   "Not available"}
                               </div>
                             </div>
