@@ -1099,11 +1099,23 @@ function RunHistoryCard({
   selectedAnalysisId,
   onSelectAnalysis,
   isLoading,
+  page,
+  totalPages,
+  onPreviousPage,
+  onNextPage,
+  isPreviousDisabled,
+  isNextDisabled,
 }: {
   analyses: ForensicsAnalysisDetail[];
   selectedAnalysisId: string | null;
   onSelectAnalysis: (analysis: ForensicsAnalysisDetail) => void;
   isLoading?: boolean;
+  page: number;
+  totalPages: number;
+  onPreviousPage: () => void;
+  onNextPage: () => void;
+  isPreviousDisabled: boolean;
+  isNextDisabled: boolean;
 }) {
   return (
     <Card className="border-slate-200 shadow-sm">
@@ -1161,6 +1173,33 @@ function RunHistoryCard({
             No prior runs found for this media yet.
           </div>
         )}
+        {totalPages > 1 ? (
+          <div className="flex items-center justify-between border-t border-slate-200 pt-3">
+            <div className="text-xs font-medium uppercase tracking-[0.16em] text-slate-500">
+              Page {page} of {totalPages}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onPreviousPage}
+                disabled={isPreviousDisabled}
+              >
+                Previous
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onNextPage}
+                disabled={isNextDisabled}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   );
@@ -1181,6 +1220,7 @@ export function ForensicsWorkspace() {
     null,
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [historyPage, setHistoryPage] = useState(1);
   const [frameSamplingMode, setFrameSamplingMode] = useState<
     "default" | "uniform"
   >("default");
@@ -1255,6 +1295,7 @@ export function ForensicsWorkspace() {
   );
   const historyQuery = useForensicsHistoryForMedia(selectedMediaId, {
     mediaType: selectedWorkflowMode,
+    page: historyPage,
     limit: 10,
     enabled: Boolean(selectedMediaId && selectedWorkflowMode),
   });
@@ -1370,6 +1411,7 @@ export function ForensicsWorkspace() {
       setLatestAnalysis(null);
       setAnalysisId(null);
       setAnalysisSource(null);
+      setHistoryPage(1);
       setFlowState("loading_saved_analysis");
     }
     if (!isDifferentSelection && activeAnalysis) {
@@ -1471,6 +1513,8 @@ export function ForensicsWorkspace() {
     setFlowState("completed");
     scrollToCurrentAnalysis();
   };
+
+  const historyPagination = historyQuery.data?.pagination;
 
   useEffect(() => {
     if (!statusQuery.data) {
@@ -1943,12 +1987,39 @@ export function ForensicsWorkspace() {
             </div>
 
             {selectedMedia ? (
-              <RunHistoryCard
-                analyses={historyQuery.data?.analyses ?? []}
-                selectedAnalysisId={analysisId}
-                onSelectAnalysis={handleSelectHistoryRun}
-                isLoading={historyQuery.isLoading}
-              />
+              <div className="space-y-3">
+                {historyQuery.isError ? (
+                  <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                    Saved run history could not be loaded right now.
+                  </div>
+                ) : null}
+                <RunHistoryCard
+                  analyses={historyQuery.data?.analyses ?? []}
+                  selectedAnalysisId={analysisId}
+                  onSelectAnalysis={handleSelectHistoryRun}
+                  isLoading={historyQuery.isLoading}
+                  page={historyPagination?.page ?? historyPage}
+                  totalPages={historyPagination?.totalPages ?? 1}
+                  onPreviousPage={() =>
+                    setHistoryPage((currentPage) => Math.max(currentPage - 1, 1))
+                  }
+                  onNextPage={() =>
+                    setHistoryPage((currentPage) =>
+                      historyPagination?.totalPages
+                        ? Math.min(currentPage + 1, historyPagination.totalPages)
+                        : currentPage + 1,
+                    )
+                  }
+                  isPreviousDisabled={
+                    historyQuery.isLoading ||
+                    (historyPagination?.page ?? 1) <= 1
+                  }
+                  isNextDisabled={
+                    historyQuery.isLoading ||
+                    !historyPagination?.hasNextPage
+                  }
+                />
+              </div>
             ) : null}
           </CardContent>
         </Card>
