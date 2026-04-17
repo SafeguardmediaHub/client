@@ -1,6 +1,6 @@
 # SafeguardMedia Client
 
-**AI-Powered Misinformation Detection Platform**
+**Misinformation Detection Platform**
 
 SafeguardMedia is an advanced media verification platform that helps journalists, investigators, NGOs, and content moderators detect misinformation, AI-generated media, and manipulated content through comprehensive AI-powered analysis tools.
 
