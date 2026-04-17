@@ -128,16 +128,27 @@ export default function HeroSection() {
                     </Button>
                   </motion.div>
                   <motion.div variants={motionSet.item}>
-                    <Button
-                      asChild
-                      size="lg"
-                      variant="outline"
-                      className="h-14 rounded-xl border-slate-300 px-8 text-base text-slate-700 hover:border-blue-300 hover:bg-blue-50"
-                    >
-                      <SmoothScrollLink href="#platform">
-                        Explore the Platform
-                      </SmoothScrollLink>
-                    </Button>
+                    {isAuthenticated ? (
+                      <Button
+                        asChild
+                        size="lg"
+                        variant="outline"
+                        className="h-14 rounded-xl border-slate-300 px-8 text-base text-slate-700 hover:border-blue-300 hover:bg-blue-50"
+                      >
+                        <SmoothScrollLink href="#platform">
+                          Explore the Platform
+                        </SmoothScrollLink>
+                      </Button>
+                    ) : (
+                      <Button
+                        asChild
+                        size="lg"
+                        variant="outline"
+                        className="h-14 rounded-xl border-slate-300 px-8 text-base text-slate-700 hover:border-blue-300 hover:bg-blue-50"
+                      >
+                        <Link href="/try">Try for free →</Link>
+                      </Button>
+                    )}
                   </motion.div>
                 </motion.div>
 

@@ -1,0 +1,134 @@
+"use client";
+
+import {
+  Brain,
+  FileSearch,
+  MapPin,
+  Search,
+  Shield,
+  Sparkles,
+} from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
+import { FeatureCard } from "@/components/try/FeatureCard";
+import { createLandingMotion } from "@/lib/landing-motion";
+
+const features = [
+  {
+    href: "/try/deepfake",
+    icon: <Brain className="h-5 w-5" />,
+    title: "AI Media Detection",
+    description:
+      "Detect AI-generated or manipulated images and short video clips using machine learning analysis.",
+    tags: ["Image", "Video"],
+  },
+  {
+    href: "/try/authenticity",
+    icon: <Shield className="h-5 w-5" />,
+    title: "Authenticity Check",
+    description:
+      "Analyse file metadata integrity — detect editing software traces, timestamp anomalies, and GPS inconsistencies.",
+    tags: ["Image", "Video", "Audio"],
+  },
+  {
+    href: "/try/claim-research",
+    icon: <Search className="h-5 w-5" />,
+    title: "Claim Research",
+    description:
+      "Research any factual claim using web search and AI synthesis to assess credibility with supporting evidence.",
+    tags: ["Text"],
+  },
+  {
+    href: "/try/geolocation",
+    icon: <MapPin className="h-5 w-5" />,
+    title: "Geolocation Verify",
+    description:
+      "Check whether an image's embedded GPS data matches a claimed location with confidence scoring.",
+    tags: ["Image"],
+  },
+  {
+    href: "/try/reverse-lookup",
+    icon: <FileSearch className="h-5 w-5" />,
+    title: "Reverse Lookup",
+    description:
+      "Find where an image appears across the web and discover matching pages using Google Vision.",
+    tags: ["Image"],
+  },
+];
+
+export default function TryPage() {
+  const reducedMotion = useReducedMotion();
+  const motionSet = createLandingMotion(Boolean(reducedMotion));
+
+  return (
+    <div className="relative overflow-hidden">
+      {/* Background */}
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute left-1/2 top-0 h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-blue-100/40 blur-3xl" />
+        <div className="absolute right-0 top-48 h-72 w-72 rounded-full bg-cyan-100/35 blur-3xl" />
+        <div className="absolute bottom-0 left-0 h-64 w-64 rounded-full bg-sky-100/30 blur-3xl" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#7aa6c908_1px,transparent_1px),linear-gradient(to_bottom,#7aa6c908_1px,transparent_1px)] bg-[size:24px_24px]" />
+      </div>
+
+      <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6 sm:py-20">
+        {/* Hero text */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={motionSet.stagger}
+          className="text-center"
+        >
+          <motion.div variants={motionSet.item}>
+            <span className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-1.5 text-sm font-medium text-blue-700">
+              <Sparkles className="h-3.5 w-3.5" />3 free analyses &mdash; no
+              account needed
+            </span>
+          </motion.div>
+
+          <motion.h1
+            variants={motionSet.sectionIntro}
+            className="mt-6 text-4xl font-bold tracking-tight text-[hsl(220,40%,14%)] sm:text-5xl"
+          >
+            Try SafeGuard
+          </motion.h1>
+
+          <motion.p
+            variants={motionSet.item}
+            className="mx-auto mt-4 max-w-xl text-base leading-7 text-slate-500"
+          >
+            Pick a tool. Upload your media or enter a claim. Get
+            evidence-backed results instantly.
+          </motion.p>
+        </motion.div>
+
+        {/* Feature grid */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={motionSet.quickStagger}
+          className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+        >
+          {features.map((feature) => (
+            <motion.div key={feature.href} variants={motionSet.card}>
+              <FeatureCard {...feature} />
+            </motion.div>
+          ))}
+        </motion.div>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.7, duration: 0.5 }}
+          className="mt-10 text-center text-sm text-slate-400"
+        >
+          Already have an account?{" "}
+          <a
+            href="/auth/login"
+            className="font-medium text-blue-600 hover:underline"
+          >
+            Log in for unlimited access
+          </a>
+        </motion.p>
+      </div>
+    </div>
+  );
+}
