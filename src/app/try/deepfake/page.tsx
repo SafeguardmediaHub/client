@@ -367,7 +367,7 @@ export default function DeepfakePage() {
                 acceptLabel="JPEG, PNG, WebP, GIF, TIFF, HEIC"
                 maxSizeMB={10}
                 file={file}
-                onChange={setFile}
+                onChange={(f) => { setFile(f); setResult(null); setError(null); }}
                 disabled={loading}
               />
             </TabsContent>
@@ -378,7 +378,7 @@ export default function DeepfakePage() {
                 acceptLabel="MP4, WebM, MOV, AVI, MKV"
                 maxSizeMB={100}
                 file={file}
-                onChange={setFile}
+                onChange={(f) => { setFile(f); setResult(null); setError(null); }}
                 disabled={loading}
               />
               <p className="flex items-center gap-1.5 text-xs text-slate-400">

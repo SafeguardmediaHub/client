@@ -1,5 +1,6 @@
 import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import "cal-sans/index.css";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
@@ -107,11 +108,13 @@ export const metadata: Metadata = {
   category: "technology",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const nonce = (await headers()).get('x-nonce') ?? '';
+
   return (
     <html lang="en">
       <head>
@@ -119,6 +122,7 @@ export default function RootLayout({
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3526860570408649"
           async
           crossOrigin="anonymous"
+          nonce={nonce}
         />
       </head>
       <body

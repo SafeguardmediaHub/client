@@ -249,7 +249,7 @@ export default function GeolocationPage() {
             acceptLabel="JPEG, PNG, WebP, TIFF, HEIC"
             maxSizeMB={10}
             file={file}
-            onChange={setFile}
+            onChange={(f) => { setFile(f); setResult(null); setError(null); }}
             disabled={loading}
           />
 

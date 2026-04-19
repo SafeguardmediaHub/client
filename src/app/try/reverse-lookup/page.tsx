@@ -201,7 +201,7 @@ export default function ReverseLookupPage() {
             acceptLabel="JPEG, PNG, WebP, GIF, TIFF, HEIC"
             maxSizeMB={10}
             file={file}
-            onChange={setFile}
+            onChange={(f) => { setFile(f); setResult(null); setError(null); }}
             disabled={loading}
           />
 
