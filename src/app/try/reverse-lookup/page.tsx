@@ -175,7 +175,7 @@ export default function ReverseLookupPage() {
 
       <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-          Reverse Lookup
+          Reverse Image Search
         </h1>
         <p className="mt-2 text-sm leading-6 text-slate-500">
           Find where an image appears across the web using Google Vision web

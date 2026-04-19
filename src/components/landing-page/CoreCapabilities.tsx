@@ -11,7 +11,9 @@ import {
   Shield,
 } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
+import Link from "next/link";
 import SmoothScrollLink from "@/components/landing-page/SmoothScrollLink";
+import { Button } from "@/components/ui/button";
 import { createLandingMotion, landingViewport } from "@/lib/landing-motion";
 
 type Capability = {
@@ -21,6 +23,7 @@ type Capability = {
   status: string;
   accent: string;
   surface: string;
+  href: string;
 };
 
 const availableNow: Capability[] = [
@@ -32,6 +35,7 @@ const availableNow: Capability[] = [
     status: "Live now",
     accent: "text-blue-700",
     surface: "from-blue-50 to-cyan-50",
+    href: "/try/ai-detection",
   },
   {
     title: "Authenticity and C2PA",
@@ -41,6 +45,7 @@ const availableNow: Capability[] = [
     status: "Live now",
     accent: "text-emerald-700",
     surface: "from-emerald-50 to-teal-50",
+    href: "/try/authenticity",
   },
   {
     title: "Claim Research",
@@ -50,6 +55,7 @@ const availableNow: Capability[] = [
     status: "Live now",
     accent: "text-sky-700",
     surface: "from-sky-50 to-blue-50",
+    href: "/try/claim-research",
   },
   {
     title: "Tamper Detection",
@@ -59,15 +65,17 @@ const availableNow: Capability[] = [
     status: "Live now",
     accent: "text-violet-700",
     surface: "from-violet-50 to-fuchsia-50",
+    href: "/try/authenticity",
   },
   {
-    title: "Reverse Lookup",
+    title: "Reverse Image Search",
     description:
       "Trace earlier uses of media across the web to recover context and provenance.",
     icon: Search,
     status: "Live now",
     accent: "text-teal-700",
     surface: "from-teal-50 to-emerald-50",
+    href: "/try/reverse-lookup",
   },
   {
     title: "Geolocation and Fact Checking",
@@ -77,6 +85,7 @@ const availableNow: Capability[] = [
     status: "Live now",
     accent: "text-amber-700",
     surface: "from-amber-50 to-orange-50",
+    href: "/try/geolocation",
   },
 ];
 
@@ -175,25 +184,46 @@ export default function CoreCapabilities() {
                     <motion.div
                       key={capability.title}
                       variants={motionSet.card}
-                      className={`rounded-[1.75rem] border border-slate-200 bg-gradient-to-br ${capability.surface} p-6 shadow-sm`}
                     >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="rounded-2xl bg-white/90 p-3 shadow-sm">
-                          <Icon className={`h-5 w-5 ${capability.accent}`} />
+                      <Link
+                        href={capability.href}
+                        className={`group flex h-full flex-col rounded-[1.75rem] border border-slate-200 bg-gradient-to-br ${capability.surface} p-6 shadow-sm transition-shadow hover:shadow-md`}
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="rounded-2xl bg-white/90 p-3 shadow-sm">
+                            <Icon className={`h-5 w-5 ${capability.accent}`} />
+                          </div>
+                          <div className="rounded-full bg-white/85 px-3 py-1 text-xs font-semibold text-slate-600">
+                            {capability.status}
+                          </div>
                         </div>
-                        <div className="rounded-full bg-white/85 px-3 py-1 text-xs font-semibold text-slate-600">
-                          {capability.status}
+                        <h3 className="mt-5 text-lg font-semibold text-slate-900">
+                          {capability.title}
+                        </h3>
+                        <p className="mt-3 text-sm leading-7 text-slate-600">
+                          {capability.description}
+                        </p>
+                        <div className={`mt-4 inline-flex items-center gap-1.5 text-xs font-semibold ${capability.accent} opacity-0 transition-opacity group-hover:opacity-100`}>
+                          Try it free
+                          <ArrowRight className="h-3 w-3" />
                         </div>
-                      </div>
-                      <h3 className="mt-5 text-lg font-semibold text-slate-900">
-                        {capability.title}
-                      </h3>
-                      <p className="mt-3 text-sm leading-7 text-slate-600">
-                        {capability.description}
-                      </p>
+                      </Link>
                     </motion.div>
                   );
                 })}
+              </motion.div>
+
+              <motion.div variants={motionSet.item} className="mt-8 text-center">
+                <Button
+                  asChild
+                  size="lg"
+                  className="rounded-xl bg-blue-600 px-8 text-white shadow-lg shadow-blue-500/20 hover:bg-blue-700"
+                >
+                  <Link href="/try">
+                    Try all tools free — no account needed
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
               </motion.div>
             </motion.div>
           </motion.div>

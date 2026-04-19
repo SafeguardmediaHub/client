@@ -13,6 +13,12 @@ const tools = [
     tags: ["Image", "Video"],
   },
   {
+    href: "/try/reverse-lookup",
+    icon: FileSearch,
+    label: "Reverse Image Search",
+    tags: ["Image"],
+  },
+  {
     href: "/try/authenticity",
     icon: Shield,
     label: "Authenticity Check",
@@ -28,12 +34,6 @@ const tools = [
     href: "/try/geolocation",
     icon: MapPin,
     label: "Geolocation Verify",
-    tags: ["Image"],
-  },
-  {
-    href: "/try/reverse-lookup",
-    icon: FileSearch,
-    label: "Reverse Lookup",
     tags: ["Image"],
   },
 ];

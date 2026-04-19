@@ -22,6 +22,14 @@ const features = [
     tags: ["Image", "Video"],
   },
   {
+    href: "/try/reverse-lookup",
+    icon: <FileSearch className="h-5 w-5" />,
+    title: "Reverse Image Search",
+    description:
+      "Find where an image appears across the web and discover matching pages using Google Vision.",
+    tags: ["Image"],
+  },
+  {
     href: "/try/authenticity",
     icon: <Shield className="h-5 w-5" />,
     title: "Authenticity Check",
@@ -43,14 +51,6 @@ const features = [
     title: "Geolocation Verify",
     description:
       "Check whether an image's embedded GPS data matches a claimed location with confidence scoring.",
-    tags: ["Image"],
-  },
-  {
-    href: "/try/reverse-lookup",
-    icon: <FileSearch className="h-5 w-5" />,
-    title: "Reverse Lookup",
-    description:
-      "Find where an image appears across the web and discover matching pages using Google Vision.",
     tags: ["Image"],
   },
 ];

@@ -125,10 +125,10 @@ export default function HowItWorks() {
             </div>
 
             <Link
-              href="/auth/signup"
+              href="/try"
               className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-cyan-200 transition-colors hover:text-white"
             >
-              Get started
+              Try it free — no account needed
               <ArrowRight className="h-4 w-4" />
             </Link>
           </motion.div>
