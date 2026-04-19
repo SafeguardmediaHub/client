@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
-import GoogleTranslate from "./GoogleTranslate";
+// import GoogleTranslate from "./GoogleTranslate";
 import { NavDropdown } from "./nav-dropdown";
 import {
   Breadcrumb,
@@ -127,7 +127,7 @@ const AppNavbar = () => {
         {/* <BellIcon className="relative w-5 h-5 text-[#5c5c5c]" /> */}
 
         <div className="inline-flex items-center justify-end gap-2 relative flex-[0_0_auto]">
-          <GoogleTranslate />
+          {/* <GoogleTranslate /> */}
           <NavDropdown name={user?.firstName} />
         </div>
       </div>
