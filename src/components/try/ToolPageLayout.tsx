@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 const tools = [
   {
-    href: "/try/deepfake",
+    href: "/try/ai-detection",
     icon: Brain,
     label: "AI Media Detection",
     tags: ["Image", "Video"],

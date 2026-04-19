@@ -14,7 +14,7 @@ import { createLandingMotion } from "@/lib/landing-motion";
 
 const features = [
   {
-    href: "/try/deepfake",
+    href: "/try/ai-detection",
     icon: <Brain className="h-5 w-5" />,
     title: "AI Media Detection",
     description:
@@ -88,7 +88,7 @@ export default function TryPage() {
             variants={motionSet.sectionIntro}
             className="mt-6 text-4xl font-bold tracking-tight text-[hsl(220,40%,14%)] sm:text-5xl"
           >
-            Try SafeGuard
+            Try Safeguardmedia
           </motion.h1>
 
           <motion.p

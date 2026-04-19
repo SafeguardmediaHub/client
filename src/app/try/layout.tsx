@@ -3,7 +3,7 @@ import { SignupModal } from "@/components/try/SignupModal";
 import { TryHeader } from "@/components/try/TryHeader";
 
 export const metadata = {
-  title: "Try SafeGuard — 3 free analyses, no account needed",
+  title: "Try Safeguardmedia — 3 free analyses, no account needed",
   description:
     "Try deepfake detection, authenticity checks, claim research, geolocation verification, and reverse lookup — no login required.",
 };

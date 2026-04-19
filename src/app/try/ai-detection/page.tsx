@@ -329,7 +329,7 @@ export default function DeepfakePage() {
 
       <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-          Deepfake Detection
+          AI-Generated Media Detection
         </h1>
         <p className="mt-2 text-sm leading-6 text-slate-500">
           Upload an image or video clip to check for AI-generated or manipulated
