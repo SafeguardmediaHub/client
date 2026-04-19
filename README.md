@@ -141,13 +141,6 @@ Upload multiple files → Configure verification settings → Process in paralle
 | `NEXT_PUBLIC_APP_URL` | Frontend application URL | Yes |
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Google Maps API key (for geolocation) | Optional |
 
-## 🤝 Contributing
-
-1. Follow the existing code style (enforced by Biome)
-2. Write meaningful commit messages
-3. Test your changes thoroughly
-4. Update documentation as needed
-
 ## 📄 License
 
 [Add your license information here]
