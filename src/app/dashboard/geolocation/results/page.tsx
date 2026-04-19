@@ -14,6 +14,7 @@ import {
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { AnalysisDisclaimer } from '@/components/shared/AnalysisDisclaimer';
 import GeolocationMap from '@/components/maps/GeolocationMap';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -773,6 +774,8 @@ const GeolocationResultContent = () => {
                 </div>
               </div>
             )}
+
+            <AnalysisDisclaimer />
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">

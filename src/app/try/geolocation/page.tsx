@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { AnalysisDisclaimer } from "@/components/shared/AnalysisDisclaimer";
 import { useAnonymousSession } from "@/components/try/AnonymousSessionContext";
 import { ToolPageLayout } from "@/components/try/ToolPageLayout";
 import { UploadZone } from "@/components/try/UploadZone";
@@ -296,6 +297,7 @@ export default function GeolocationPage() {
               onSignup={() => setShowSignupModal(true)}
             />
           )}
+          {result && <AnalysisDisclaimer />}
         </div>
       )}
     </ToolPageLayout>

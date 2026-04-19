@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { AnalysisDisclaimer } from "@/components/shared/AnalysisDisclaimer";
 import { useAnonymousSession } from "@/components/try/AnonymousSessionContext";
 import { ToolPageLayout } from "@/components/try/ToolPageLayout";
 import { Button } from "@/components/ui/button";
@@ -435,6 +436,7 @@ export default function ClaimResearchPage() {
               onSignup={() => setShowSignupModal(true)}
             />
           )}
+          {result && <AnalysisDisclaimer />}
         </div>
       )}
     </ToolPageLayout>

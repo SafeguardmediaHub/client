@@ -1,5 +1,6 @@
 "use client";
 
+import { AnalysisDisclaimer } from "@/components/shared/AnalysisDisclaimer";
 // import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -284,6 +285,8 @@ function ResearchComplete({ data, onReset }: { data: ClaimResearchStatusResponse
            )}
         </div>
       </div>
+
+      <AnalysisDisclaimer />
     </div>
   );
 }

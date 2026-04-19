@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
+import { AnalysisDisclaimer } from '@/components/shared/AnalysisDisclaimer';
 import { toast } from 'sonner';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Button } from '@/components/ui/button';
@@ -661,6 +662,8 @@ const ReverseLookupResultContent = () => {
               </div>
             )}
           </div>
+
+          <AnalysisDisclaimer />
 
           {/* Actions */}
           <div className="mt-6 flex justify-center gap-4">

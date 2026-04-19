@@ -75,6 +75,7 @@ import {
   getUsageGate,
   type ProductFeatureKey,
 } from "@/lib/subscription-access";
+import { AnalysisDisclaimer } from "@/components/shared/AnalysisDisclaimer";
 import { cn, formatFileSize, timeAgo } from "@/lib/utils";
 
 type MediaFilter = "all" | AIMediaType;
@@ -1923,6 +1924,7 @@ export function AIMediaDetectionWorkspace() {
                 We could not load the analysis details for this item.
               </div>
             )}
+            <AnalysisDisclaimer />
           </div>
         </SheetContent>
       </Sheet>

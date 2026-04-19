@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useIntegrityReport } from '@/hooks/useIntegrityReport';
 import { type Media, useGetMedia } from '@/hooks/useMedia';
+import { AnalysisDisclaimer } from '@/components/shared/AnalysisDisclaimer';
 import { formatFileSize } from '@/lib/utils';
 
 type PageState = 'idle' | 'selecting' | 'processing' | 'results' | 'error';
@@ -612,6 +613,7 @@ const AuthenticityCheckContent = () => {
               </CardContent>
             </Card>
           )}
+          <AnalysisDisclaimer />
         </div>
       </div>
     </div>

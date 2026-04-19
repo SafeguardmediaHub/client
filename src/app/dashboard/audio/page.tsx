@@ -1,5 +1,6 @@
 'use client';
 
+import { AnalysisDisclaimer } from '@/components/shared/AnalysisDisclaimer';
 import { LinkIcon, Loader2, UploadIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { FC } from 'react';
@@ -941,6 +942,7 @@ const AudioForensics: FC<DashboardProps> = ({
           </CardContent>
         </Card>
       )}
+      {analysisResult && <AnalysisDisclaimer />}
     </section>
   );
 };

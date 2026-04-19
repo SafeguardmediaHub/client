@@ -26,6 +26,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { type Media, useGetMedia } from '@/hooks/useMedia';
+import { AnalysisDisclaimer } from '@/components/shared/AnalysisDisclaimer';
 import { formatFileSize } from '@/lib/utils';
 
 type PageState = 'idle' | 'viewing';
@@ -403,6 +404,7 @@ const TamperDetectionPage = () => {
 
               {/* Analysis Results */}
               <AnalysisView analysis={selectedMedia.metadata?.analysis} />
+              <AnalysisDisclaimer />
             </div>
           )}
         </div>

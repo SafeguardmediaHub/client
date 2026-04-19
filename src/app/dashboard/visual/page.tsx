@@ -1,5 +1,6 @@
 "use client";
 
+import { AnalysisDisclaimer } from "@/components/shared/AnalysisDisclaimer";
 import { LinkIcon, Loader2, UploadIcon } from "lucide-react";
 import type { FC } from "react";
 import { useCallback, useId, useMemo, useRef, useState } from "react";
@@ -878,6 +879,7 @@ const VisualForensics: FC<DashboardProps> = ({
                 </Card>
 
             )}
+        {analysisResult && <AnalysisDisclaimer />}
         </section>
     );
 };
