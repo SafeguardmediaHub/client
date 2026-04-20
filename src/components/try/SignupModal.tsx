@@ -24,7 +24,7 @@ export function SignupModal() {
   return (
     <Dialog open={showSignupModal} onOpenChange={setShowSignupModal}>
       <DialogContent className="max-w-md overflow-hidden rounded-2xl border-slate-200 p-0 shadow-2xl shadow-slate-900/10">
-        <div className="relative p-8">
+        <div className="relative p-6 sm:p-8">
           {/* Blobs */}
           <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-blue-100/60 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-16 -left-16 h-56 w-56 rounded-full bg-cyan-100/50 blur-3xl" />

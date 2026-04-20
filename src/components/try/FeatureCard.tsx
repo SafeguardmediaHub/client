@@ -21,7 +21,7 @@ export function FeatureCard({
     <Link href={href} className="block h-full">
       <div
         className={cn(
-          "group flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-6 transition-all duration-200",
+          "group flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 transition-all duration-200 sm:p-6",
           "hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-50/80",
         )}
       >

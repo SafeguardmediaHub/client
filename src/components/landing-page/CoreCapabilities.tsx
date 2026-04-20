@@ -2,6 +2,7 @@
 
 import {
   ArrowRight,
+  BadgeCheck,
   CheckCircle2,
   type LucideIcon,
   MapPin,
@@ -78,14 +79,24 @@ const availableNow: Capability[] = [
     href: "/try/reverse-lookup",
   },
   {
-    title: "Geolocation and Fact Checking",
+    title: "Geolocation Verify",
     description:
-      "Verify location claims and compare statements against trusted fact-checking sources.",
+      "Compare embedded GPS metadata against a claimed place to catch location mismatches fast.",
     icon: MapPin,
     status: "Live now",
     accent: "text-amber-700",
     surface: "from-amber-50 to-orange-50",
     href: "/try/geolocation",
+  },
+  {
+    title: "Fact Checking",
+    description:
+      "See whether trusted publishers have already investigated and ruled on a claim.",
+    icon: BadgeCheck,
+    status: "Live now",
+    accent: "text-rose-700",
+    surface: "from-rose-50 to-pink-50",
+    href: "/try/fact-check",
   },
 ];
 

@@ -84,8 +84,8 @@ function ResultCard({
 
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-100 bg-slate-50/50 px-6 py-5">
-        <div className="flex items-start justify-between gap-4">
+      <div className="border-b border-slate-100 bg-slate-50/50 px-4 py-4 sm:px-6 sm:py-5">
+        <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="text-xs font-semibold uppercase tracking-widest text-slate-400">
               Claim
@@ -102,12 +102,12 @@ function ResultCard({
         </div>
       </div>
 
-      <div className="space-y-5 p-6">
+      <div className="space-y-5 p-4 sm:p-6">
         <ConfidencePill value={synthesis.confidence} />
 
         <p className="text-sm leading-7 text-slate-700">{synthesis.summary}</p>
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
           {[
             {
               label: "Supporting",
@@ -130,11 +130,11 @@ function ResultCard({
           ].map(({ label, value, Icon, color }) => (
             <div
               key={label}
-              className="rounded-xl border border-slate-100 bg-slate-50 p-3 text-center"
+              className="rounded-xl border border-slate-100 bg-slate-50 p-2.5 text-center sm:p-3"
             >
               <Icon className={cn("mx-auto mb-1 h-4 w-4", color)} />
-              <div className="text-2xl font-bold text-slate-900">{value}</div>
-              <div className="text-xs text-slate-400">{label}</div>
+              <div className="text-xl font-bold text-slate-900 sm:text-2xl">{value}</div>
+              <div className="truncate text-[10px] text-slate-400 sm:text-xs">{label}</div>
             </div>
           ))}
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  BadgeCheck,
   Brain,
   FileSearch,
   MapPin,
@@ -46,6 +47,14 @@ const features = [
     tags: ["Text"],
   },
   {
+    href: "/try/fact-check",
+    icon: <BadgeCheck className="h-5 w-5" />,
+    title: "Fact Check",
+    description:
+      "Check whether trusted publishers like Snopes or PolitiFact have already ruled on a claim.",
+    tags: ["Text"],
+  },
+  {
     href: "/try/geolocation",
     icon: <MapPin className="h-5 w-5" />,
     title: "Geolocation Verify",
@@ -69,7 +78,7 @@ export default function TryPage() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#7aa6c908_1px,transparent_1px),linear-gradient(to_bottom,#7aa6c908_1px,transparent_1px)] bg-[size:24px_24px]" />
       </div>
 
-      <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6 sm:py-20">
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-16 md:py-20">
         {/* Hero text */}
         <motion.div
           initial="hidden"
@@ -78,7 +87,7 @@ export default function TryPage() {
           className="text-center"
         >
           <motion.div variants={motionSet.item}>
-            <span className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-1.5 text-sm font-medium text-blue-700">
+            <span className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 sm:px-4 sm:text-sm">
               <Sparkles className="h-3.5 w-3.5" />3 free analyses &mdash; no
               account needed
             </span>
@@ -86,14 +95,14 @@ export default function TryPage() {
 
           <motion.h1
             variants={motionSet.sectionIntro}
-            className="mt-6 text-4xl font-bold tracking-tight text-[hsl(220,40%,14%)] sm:text-5xl"
+            className="mt-5 text-3xl font-bold leading-tight tracking-tight text-[hsl(220,40%,14%)] sm:mt-6 sm:text-4xl md:text-5xl"
           >
             Try Safeguardmedia
           </motion.h1>
 
           <motion.p
             variants={motionSet.item}
-            className="mx-auto mt-4 max-w-xl text-base leading-7 text-slate-500"
+            className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-500 sm:mt-4 sm:text-base sm:leading-7"
           >
             Pick a tool. Upload your media or enter a claim. Get
             evidence-backed results instantly.
@@ -105,7 +114,7 @@ export default function TryPage() {
           initial="hidden"
           animate="visible"
           variants={motionSet.quickStagger}
-          className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          className="mt-8 grid gap-3 sm:mt-12 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3"
         >
           {features.map((feature) => (
             <motion.div key={feature.href} variants={motionSet.card}>
@@ -118,7 +127,7 @@ export default function TryPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7, duration: 0.5 }}
-          className="mt-10 text-center text-sm text-slate-400"
+          className="mt-8 text-center text-sm text-slate-400 sm:mt-10"
         >
           Already have an account?{" "}
           <a

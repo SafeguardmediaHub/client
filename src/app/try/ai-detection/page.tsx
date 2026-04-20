@@ -17,6 +17,7 @@ import { UploadZone } from "@/components/try/UploadZone";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { getVerdictLabel } from "@/lib/verdict";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL ?? "";
 
@@ -138,36 +139,38 @@ function ResultCard({
       {/* Verdict header */}
       <div
         className={cn(
-          "border-b border-slate-100 px-6 py-5",
+          "border-b border-slate-100 px-4 py-4 sm:px-6 sm:py-5",
           isDeepfake ? "bg-red-50/60" : "bg-emerald-50/60",
         )}
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
             {isDeepfake ? (
-              <XCircle className="h-6 w-6 text-red-500" />
+              <XCircle className="h-6 w-6 shrink-0 text-red-500" />
             ) : (
-              <CheckCircle2 className="h-6 w-6 text-emerald-500" />
+              <CheckCircle2 className="h-6 w-6 shrink-0 text-emerald-500" />
             )}
-            <div>
+            <div className="min-w-0">
               <div className="text-xs font-semibold uppercase tracking-widest text-slate-400">
                 Verdict
               </div>
               <div
                 className={cn(
-                  "text-xl font-bold capitalize",
+                  "truncate text-lg font-bold sm:text-xl",
                   isDeepfake ? "text-red-700" : "text-emerald-700",
                 )}
               >
-                {result.predictedClass}
+                {getVerdictLabel(result.predictedClass)}
               </div>
             </div>
           </div>
-          <RiskBadge level={result.safeguard_analysis.risk_level} />
+          <div className="shrink-0">
+            <RiskBadge level={result.safeguard_analysis.risk_level} />
+          </div>
         </div>
       </div>
 
-      <div className="space-y-5 p-6">
+      <div className="space-y-5 p-4 sm:p-6">
         {/* Interpretation */}
         <div className="rounded-xl bg-slate-50 px-4 py-3">
           <p className="text-sm leading-6 text-slate-600">
@@ -182,28 +185,28 @@ function ResultCard({
         />
 
         {/* Stats grid */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-xl border border-slate-100 bg-slate-50/50 px-3 py-3">
-            <div className="text-xs font-medium uppercase tracking-widest text-slate-400">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          <div className="rounded-xl border border-slate-100 bg-slate-50/50 px-2.5 py-2.5 sm:px-3 sm:py-3">
+            <div className="text-[10px] font-medium uppercase tracking-widest text-slate-400 sm:text-xs">
               Confidence
             </div>
-            <div className="mt-1 text-xl font-bold text-slate-900">
+            <div className="mt-1 text-base font-bold text-slate-900 sm:text-xl">
               {result.confidenceScore.toFixed(1)}%
             </div>
           </div>
-          <div className="rounded-xl border border-slate-100 bg-slate-50/50 px-3 py-3">
-            <div className="text-xs font-medium uppercase tracking-widest text-slate-400">
+          <div className="rounded-xl border border-slate-100 bg-slate-50/50 px-2.5 py-2.5 sm:px-3 sm:py-3">
+            <div className="text-[10px] font-medium uppercase tracking-widest text-slate-400 sm:text-xs">
               Risk Score
             </div>
-            <div className="mt-1 text-xl font-bold text-slate-900">
+            <div className="mt-1 text-base font-bold text-slate-900 sm:text-xl">
               {result.riskScore.toFixed(1)}
             </div>
           </div>
-          <div className="rounded-xl border border-slate-100 bg-slate-50/50 px-3 py-3">
-            <div className="text-xs font-medium uppercase tracking-widest text-slate-400">
+          <div className="rounded-xl border border-slate-100 bg-slate-50/50 px-2.5 py-2.5 sm:px-3 sm:py-3">
+            <div className="text-[10px] font-medium uppercase tracking-widest text-slate-400 sm:text-xs">
               Time
             </div>
-            <div className="mt-1 text-xl font-bold text-slate-900">
+            <div className="mt-1 text-base font-bold text-slate-900 sm:text-xl">
               {(result.processingTimeMs / 1000).toFixed(1)}s
             </div>
           </div>
@@ -322,14 +325,14 @@ export default function DeepfakePage() {
     <ToolPageLayout>
       <Link
         href="/try"
-        className="mb-8 inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 lg:hidden"
+        className="mb-5 inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 sm:mb-6 lg:hidden"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to tools
       </Link>
 
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-3xl">
           AI-Generated Media Detection
         </h1>
         <p className="mt-2 text-sm leading-6 text-slate-500">
@@ -339,7 +342,7 @@ export default function DeepfakePage() {
       </div>
 
       {!canAnalyze ? (
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-8 text-center">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-center sm:p-8">
           <p className="text-sm text-slate-600">
             You&apos;ve used all 3 free analyses.
           </p>

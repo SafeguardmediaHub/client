@@ -57,7 +57,7 @@ export function UploadZone({
 
   if (file) {
     return (
-      <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4">
+      <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 sm:px-5 sm:py-4">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50">
           <FileIcon className="h-5 w-5 text-blue-600" />
         </div>
@@ -96,7 +96,7 @@ export function UploadZone({
       onDragLeave={() => setIsDragging(false)}
       onDrop={handleDrop}
       className={cn(
-        "flex cursor-pointer select-none flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-14 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40",
+        "flex cursor-pointer select-none flex-col items-center justify-center rounded-2xl border-2 border-dashed px-4 py-10 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 sm:px-6 sm:py-14",
         isDragging
           ? "border-blue-400 bg-blue-50"
           : "border-slate-200 bg-slate-50/50 hover:border-slate-300 hover:bg-slate-50",

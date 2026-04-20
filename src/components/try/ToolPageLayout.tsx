@@ -1,6 +1,13 @@
 "use client";
 
-import { Brain, FileSearch, MapPin, Search, Shield } from "lucide-react";
+import {
+  BadgeCheck,
+  Brain,
+  FileSearch,
+  MapPin,
+  Search,
+  Shield,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -31,6 +38,12 @@ const tools = [
     tags: ["Text"],
   },
   {
+    href: "/try/fact-check",
+    icon: BadgeCheck,
+    label: "Fact Check",
+    tags: ["Text"],
+  },
+  {
     href: "/try/geolocation",
     icon: MapPin,
     label: "Geolocation Verify",
@@ -42,9 +55,9 @@ export function ToolPageLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
+    <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10 lg:py-14">
       {/* Mobile: horizontal scroll nav */}
-      <div className="mb-6 flex gap-2 overflow-x-auto pb-1 lg:hidden">
+      <div className="-mx-4 mb-5 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:-mx-6 sm:mb-6 sm:px-6 lg:hidden">
         {tools.map(({ href, icon: Icon, label }) => {
           const active = pathname === href;
           return (
