@@ -1,55 +1,42 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import LegalPageLayout from "@/components/legal/LegalPageLayout";
 
 export default function PrivacyPolicyPage() {
-  const router = useRouter();
-
-  const handleBack = () => {
-    // Check if there's history to go back to
-    if (window.history.length > 1) {
-      router.back();
-    } else {
-      // If opened in new tab with no history, go to homepage
-      router.push('/');
-    }
-  };
+  const sections = [
+    { id: "introduction", label: "1. Introduction" },
+    { id: "information-collected", label: "2. Information We Collect" },
+    { id: "how-we-use", label: "3. How We Use Information" },
+    { id: "legal-basis", label: "4. Legal Basis (GDPR)" },
+    { id: "storage-security", label: "5. Data Storage and Security" },
+    { id: "sharing", label: "6. Data Sharing and Disclosure" },
+    { id: "rights", label: "7. Your Rights and Choices" },
+    { id: "cookies", label: "8. Cookies and Tracking" },
+    { id: "transfers", label: "9. International Data Transfers" },
+    { id: "children", label: "10. Children's Privacy" },
+    { id: "third-party-links", label: "11. Third-Party Links" },
+    { id: "ccpa", label: "12. California Privacy Rights" },
+    { id: "breach", label: "13. Data Breach Notification" },
+    { id: "changes", label: "14. Changes to Privacy Policy" },
+    { id: "contact", label: "15. Contact Information" },
+    { id: "acknowledgment", label: "16. Acknowledgment" },
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <div className="container mx-auto px-4 py-6 sm:py-8 md:py-12 max-w-5xl">
-        {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <Button
-            variant="ghost"
-            onClick={handleBack}
-            className="mb-4 text-sm sm:text-base cursor-pointer"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-            Privacy Policy
-          </h1>
-          <p className="text-sm sm:text-base text-gray-600">
-            Last Updated: December 26, 2025
-          </p>
-        </div>
-
-        {/* Main Content */}
-        <Card className="p-4 sm:p-6 md:p-8 shadow-lg">
-          <div className="prose prose-sm sm:prose-base max-w-none space-y-6 sm:space-y-8">
+    <LegalPageLayout
+      title="Privacy Policy"
+      summary="This policy explains what data Safeguardmedia collects, why we process it, how we protect it, and the choices and rights available to you."
+      lastUpdated="20 April 2026"
+      sections={sections}
+    >
             {/* 1. Introduction */}
-            <section>
+            <section id="introduction">
               <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
                 1. Introduction
               </h2>
               <div className="space-y-3 sm:space-y-4 text-sm sm:text-base text-gray-700 leading-relaxed">
                 <p>
-                  SafeguardMedia ("we," "our," or "us") is committed to protecting your privacy and personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our media verification platform and related services (collectively, the "Services").
+                  Safeguardmedia ("we," "our," or "us") is committed to protecting your privacy and personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our media verification platform and related services (collectively, the "Services").
                 </p>
                 <p>
                   By accessing or using our Services, you acknowledge that you have read, understood, and agree to be bound by this Privacy Policy. If you do not agree with this Privacy Policy, please do not use our Services.
@@ -61,7 +48,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             {/* 2. Information We Collect */}
-            <section>
+            <section id="information-collected">
               <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
                 2. Information We Collect
               </h2>
@@ -114,7 +101,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             {/* 3. How We Use Your Information */}
-            <section>
+            <section id="how-we-use">
               <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
                 3. How We Use Your Information
               </h2>
@@ -186,7 +173,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             {/* 4. Legal Basis for Processing (GDPR) */}
-            <section>
+            <section id="legal-basis">
               <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
                 4. Legal Basis for Processing (GDPR)
               </h2>
@@ -202,7 +189,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             {/* 5. Data Storage and Security */}
-            <section>
+            <section id="storage-security">
               <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
                 5. Data Storage and Security
               </h2>
@@ -245,7 +232,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             {/* 6. Data Sharing and Disclosure */}
-            <section>
+            <section id="sharing">
               <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
                 6. Data Sharing and Disclosure
               </h2>
@@ -294,7 +281,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             {/* 7. Your Rights and Choices */}
-            <section>
+            <section id="rights">
               <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
                 7. Your Rights and Choices
               </h2>
@@ -352,7 +339,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             {/* 8. Cookies and Tracking Technologies */}
-            <section>
+            <section id="cookies">
               <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
                 8. Cookies and Tracking Technologies
               </h2>
@@ -390,7 +377,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             {/* 9. International Data Transfers */}
-            <section>
+            <section id="transfers">
               <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
                 9. International Data Transfers
               </h2>
@@ -410,19 +397,33 @@ export default function PrivacyPolicyPage() {
             </section>
 
             {/* 10. Children's Privacy */}
-            <section>
+            <section id="children">
               <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
                 10. Children's Privacy
               </h2>
               <div className="space-y-3 sm:space-y-4 text-sm sm:text-base text-gray-700 leading-relaxed">
                 <p>
-                  Our Services are not intended for individuals under the age of 18. We do not knowingly collect personal information from children. If you believe we have inadvertently collected information from a child, please contact us immediately at <strong>privacy@safeguardmedia.com</strong>, and we will promptly delete such information.
+                  Our Services are not intended for children under the age of 14,
+                  and we do not knowingly collect personal information from
+                  children under 14.
+                </p>
+                <p>
+                  If you are at least 14 but under the age of majority in your
+                  jurisdiction, you should use the Services only with permission
+                  from a parent or legal guardian where required by applicable
+                  law.
+                </p>
+                <p>
+                  If you believe we have inadvertently collected information from
+                  a child under 14, please contact us immediately at{" "}
+                  <strong>privacy@safeguardmedia.com</strong>, and we will
+                  promptly investigate and delete such information as required.
                 </p>
               </div>
             </section>
 
             {/* 11. Third-Party Links and Services */}
-            <section>
+            <section id="third-party-links">
               <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
                 11. Third-Party Links and Services
               </h2>
@@ -437,7 +438,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             {/* 12. California Privacy Rights (CCPA) */}
-            <section>
+            <section id="ccpa">
               <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
                 12. California Privacy Rights (CCPA)
               </h2>
@@ -458,7 +459,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             {/* 13. Data Breach Notification */}
-            <section>
+            <section id="breach">
               <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
                 13. Data Breach Notification
               </h2>
@@ -479,7 +480,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             {/* 14. Changes to This Privacy Policy */}
-            <section>
+            <section id="changes">
               <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
                 14. Changes to This Privacy Policy
               </h2>
@@ -499,7 +500,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             {/* 15. Contact Information */}
-            <section>
+            <section id="contact">
               <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
                 15. Contact Information
               </h2>
@@ -508,7 +509,7 @@ export default function PrivacyPolicyPage() {
                   If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:
                 </p>
                 <div className="bg-gray-50 border border-gray-200 rounded-md p-4 mt-3">
-                  <p className="font-medium text-gray-900 mb-2">SafeguardMedia Privacy Team</p>
+                  <p className="font-medium text-gray-900 mb-2">Safeguardmedia Privacy Team</p>
                   <p className="text-gray-700">
                     <strong>Email:</strong> privacy@safeguardmedia.com
                   </p>
@@ -526,7 +527,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             {/* 16. Acknowledgment */}
-            <section>
+            <section id="acknowledgment">
               <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
                 16. Acknowledgment
               </h2>
@@ -543,9 +544,6 @@ export default function PrivacyPolicyPage() {
                 This Privacy Policy is effective as of the date stated above and supersedes all prior versions.
               </p>
             </div>
-          </div>
-        </Card>
-      </div>
-    </div>
+    </LegalPageLayout>
   );
 }

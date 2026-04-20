@@ -12,6 +12,7 @@ import { motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 import SmoothScrollLink from "@/components/landing-page/SmoothScrollLink";
 import { createLandingMotion, landingViewport } from "@/lib/landing-motion";
+import { OPEN_COOKIE_SETTINGS_EVENT } from "@/lib/cookie-consent";
 
 const footerSections = [
   {
@@ -70,6 +71,9 @@ const socialLinks = [
 export default function Footer() {
   const reducedMotion = useReducedMotion();
   const motionSet = createLandingMotion(Boolean(reducedMotion));
+  const openCookieSettings = () => {
+    window.dispatchEvent(new CustomEvent(OPEN_COOKIE_SETTINGS_EVENT));
+  };
 
   return (
     <footer className="relative overflow-hidden bg-[hsl(222,42%,12%)] text-white">
@@ -261,6 +265,13 @@ export default function Footer() {
                 {pill}
               </div>
             ))}
+            <button
+              type="button"
+              onClick={openCookieSettings}
+              className="rounded-full border border-cyan-200/30 bg-cyan-300/10 px-3 py-1.5 text-xs font-medium text-cyan-100 transition-colors hover:bg-cyan-300/20"
+            >
+              Cookie Settings
+            </button>
           </div>
         </motion.div>
       </div>
