@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   ArrowRight,
@@ -10,12 +10,12 @@ import {
   ScanEye,
   Search,
   Shield,
-} from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
-import Link from "next/link";
-import SmoothScrollLink from "@/components/landing-page/SmoothScrollLink";
-import { Button } from "@/components/ui/button";
-import { createLandingMotion, landingViewport } from "@/lib/landing-motion";
+} from 'lucide-react';
+import { motion, useReducedMotion } from 'motion/react';
+import Link from 'next/link';
+import SmoothScrollLink from '@/components/landing-page/SmoothScrollLink';
+import { Button } from '@/components/ui/button';
+import { createLandingMotion, landingViewport } from '@/lib/landing-motion';
 
 type Capability = {
   title: string;
@@ -29,74 +29,74 @@ type Capability = {
 
 const availableNow: Capability[] = [
   {
-    title: "AI Media Detection",
+    title: 'AI Media Detection',
     description:
-      "Detect AI-generated images, audio, and video from a dedicated analysis workspace.",
+      'Detect AI-generated images, audio, and video from a dedicated analysis workspace.',
     icon: Shield,
-    status: "Live now",
-    accent: "text-blue-700",
-    surface: "from-blue-50 to-cyan-50",
-    href: "/try/ai-detection",
+    status: 'Live now',
+    accent: 'text-blue-700',
+    surface: 'from-blue-50 to-cyan-50',
+    href: '/try/ai-detection',
   },
+  // {
+  //   title: "Authenticity and C2PA",
+  //   description:
+  //     "Review content credentials, provenance, and authenticity signals in one flow.",
+  //   icon: CheckCircle2,
+  //   status: "Live now",
+  //   accent: "text-emerald-700",
+  //   surface: "from-emerald-50 to-teal-50",
+  //   href: "/try/authenticity",
+  // },
   {
-    title: "Authenticity and C2PA",
+    title: 'Claim Research',
     description:
-      "Review content credentials, provenance, and authenticity signals in one flow.",
-    icon: CheckCircle2,
-    status: "Live now",
-    accent: "text-emerald-700",
-    surface: "from-emerald-50 to-teal-50",
-    href: "/try/authenticity",
-  },
-  {
-    title: "Claim Research",
-    description:
-      "Investigate claims with cited web research and structured supporting evidence.",
+      'Investigate claims with cited web research and structured supporting evidence.',
     icon: MessageSquareText,
-    status: "Live now",
-    accent: "text-sky-700",
-    surface: "from-sky-50 to-blue-50",
-    href: "/try/claim-research",
+    status: 'Live now',
+    accent: 'text-sky-700',
+    surface: 'from-sky-50 to-blue-50',
+    href: '/try/claim-research',
   },
   {
-    title: "Tamper Detection",
+    title: 'Tamper Detection',
     description:
-      "Check for signs of manipulation, forensic inconsistencies, and integrity risks.",
+      'Check for signs of manipulation, forensic inconsistencies, and integrity risks.',
     icon: ScanEye,
-    status: "Live now",
-    accent: "text-violet-700",
-    surface: "from-violet-50 to-fuchsia-50",
-    href: "/try/authenticity",
+    status: 'Live now',
+    accent: 'text-violet-700',
+    surface: 'from-violet-50 to-fuchsia-50',
+    href: '/try/authenticity',
   },
   {
-    title: "Reverse Image Search",
+    title: 'Reverse Image Search',
     description:
-      "Trace earlier uses of media across the web to recover context and provenance.",
+      'Trace earlier uses of media across the web to recover context and provenance.',
     icon: Search,
-    status: "Live now",
-    accent: "text-teal-700",
-    surface: "from-teal-50 to-emerald-50",
-    href: "/try/reverse-lookup",
+    status: 'Live now',
+    accent: 'text-teal-700',
+    surface: 'from-teal-50 to-emerald-50',
+    href: '/try/reverse-lookup',
   },
   {
-    title: "Geolocation Verify",
+    title: 'Geolocation Verify',
     description:
-      "Compare embedded GPS metadata against a claimed place to catch location mismatches fast.",
+      'Compare embedded GPS metadata against a claimed place to catch location mismatches fast.',
     icon: MapPin,
-    status: "Live now",
-    accent: "text-amber-700",
-    surface: "from-amber-50 to-orange-50",
-    href: "/try/geolocation",
+    status: 'Live now',
+    accent: 'text-amber-700',
+    surface: 'from-amber-50 to-orange-50',
+    href: '/try/geolocation',
   },
   {
-    title: "Fact Checking",
+    title: 'Fact Checking',
     description:
-      "See whether trusted publishers have already investigated and ruled on a claim.",
+      'See whether trusted publishers have already investigated and ruled on a claim.',
     icon: BadgeCheck,
-    status: "Live now",
-    accent: "text-rose-700",
-    surface: "from-rose-50 to-pink-50",
-    href: "/try/fact-check",
+    status: 'Live now',
+    accent: 'text-rose-700',
+    surface: 'from-rose-50 to-pink-50',
+    href: '/try/fact-check',
   },
 ];
 
@@ -214,7 +214,9 @@ export default function CoreCapabilities() {
                         <p className="mt-3 text-sm leading-7 text-slate-600">
                           {capability.description}
                         </p>
-                        <div className={`mt-4 inline-flex items-center gap-1.5 text-xs font-semibold ${capability.accent} opacity-0 transition-opacity group-hover:opacity-100`}>
+                        <div
+                          className={`mt-4 inline-flex items-center gap-1.5 text-xs font-semibold ${capability.accent} opacity-0 transition-opacity group-hover:opacity-100`}
+                        >
                           Try it free
                           <ArrowRight className="h-3 w-3" />
                         </div>
@@ -224,7 +226,10 @@ export default function CoreCapabilities() {
                 })}
               </motion.div>
 
-              <motion.div variants={motionSet.item} className="mt-8 text-center">
+              <motion.div
+                variants={motionSet.item}
+                className="mt-8 text-center"
+              >
                 <Button
                   asChild
                   size="lg"
