@@ -47,7 +47,7 @@ export const FEATURES: Record<string, FeatureMetadata> = {
     id: "authenticity_check",
     name: "Authenticity Check",
     description:
-      "Comprehensive media integrity verification including metadata analysis, cryptographic verification, and forensic examination.",
+      "Review metadata for signs of editing, unusual timestamps, or location issues.",
     status: "available",
     url: "/dashboard/authenticity-check",
     category: "overview",
@@ -63,9 +63,9 @@ export const FEATURES: Record<string, FeatureMetadata> = {
   // Detection Tools
   ai_generated_media_detection: {
     id: "ai_generated_media_detection",
-    name: "AI-Generated Media Detection",
+    name: "AI Media Detection",
     description:
-      "Detect AI-generated faces, voice cloning, and manipulated videos using advanced neural network analysis.",
+      "Check if an image or short video may be AI-generated or manipulated.",
     status: "available",
     url: "/dashboard/ai-media-detection",
     category: "detection",
@@ -173,18 +173,18 @@ export const FEATURES: Record<string, FeatureMetadata> = {
   // Verification Tools
   reverse_lookup: {
     id: "reverse_lookup",
-    name: "Reverse Lookup",
+    name: "Reverse Image Search",
     description:
-      "Search for similar images and videos across the web to find original sources and previous uses.",
+      "See where an image appears online and find clues about its source.",
     status: "available",
     url: "/dashboard/reverse",
     category: "verification",
   },
   geolocation_verification: {
     id: "geolocation_verification",
-    name: "Geolocation Verification",
+    name: "Geolocation Verify",
     description:
-      "Verify the location where media was captured using landmarks, shadows, and metadata analysis.",
+      "Check whether an image's location data matches the claimed place.",
     status: "available",
     url: "/dashboard/geolocation",
     category: "verification",
@@ -217,9 +217,9 @@ export const FEATURES: Record<string, FeatureMetadata> = {
   },
   fact_checking: {
     id: "fact_checking",
-    name: "Fact Checking",
+    name: "Fact Check",
     description:
-      "Verify claims and statements using trusted fact-checking databases and sources.",
+      "Find out whether trusted fact-checkers have already reviewed the claim.",
     status: "available",
     url: "/dashboard/fact-check",
     category: "verification",

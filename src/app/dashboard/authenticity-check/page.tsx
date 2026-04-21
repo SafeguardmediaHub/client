@@ -130,7 +130,8 @@ const AuthenticityCheckContent = () => {
               Authenticity Check
             </h1>
             <p className="text-sm text-gray-500 mt-2">
-              Comprehensive media integrity verification with detailed analysis
+              Review metadata for signs of editing, unusual timestamps, or
+              location issues.
             </p>
           </div>
 

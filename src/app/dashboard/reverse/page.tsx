@@ -163,11 +163,10 @@ const ReverseLookupPage = () => {
               <ScanSearch className="size-8 text-purple-600" />
             </div>
             <h1 className="text-2xl font-semibold text-gray-900">
-              Reverse Image Lookup
+              Reverse Image Search
             </h1>
             <p className="text-sm text-gray-500 mt-2">
-              Trace the origin and history of images across the internet to find
-              original sources
+              See where an image appears online and find clues about its source.
             </p>
             <Button
               variant="outline"

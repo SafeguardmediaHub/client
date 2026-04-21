@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   BadgeCheck,
@@ -8,59 +8,59 @@ import {
   Search,
   Shield,
   Sparkles,
-} from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
-import { FeatureCard } from "@/components/try/FeatureCard";
-import { createLandingMotion } from "@/lib/landing-motion";
+} from 'lucide-react';
+import { motion, useReducedMotion } from 'motion/react';
+import { FeatureCard } from '@/components/try/FeatureCard';
+import { createLandingMotion } from '@/lib/landing-motion';
 
 const features = [
   {
-    href: "/try/ai-detection",
+    href: '/try/ai-detection',
     icon: <Brain className="h-5 w-5" />,
-    title: "AI Media Detection",
+    title: 'AI Media Detection',
     description:
-      "Detect AI-generated or manipulated images and short video clips using machine learning analysis.",
-    tags: ["Image", "Video"],
+      'Check if an image or short video may be AI-generated or manipulated.',
+    tags: ['Image', 'Video'],
   },
   {
-    href: "/try/reverse-lookup",
+    href: '/try/reverse-lookup',
     icon: <FileSearch className="h-5 w-5" />,
-    title: "Reverse Image Search",
+    title: 'Reverse Image Search',
     description:
-      "Find where an image appears across the web and discover matching pages using Google Vision.",
-    tags: ["Image"],
+      'See where an image appears online and find clues about its source.',
+    tags: ['Image'],
   },
   {
-    href: "/try/authenticity",
+    href: '/try/authenticity',
     icon: <Shield className="h-5 w-5" />,
-    title: "Authenticity Check",
+    title: 'Authenticity Check',
     description:
-      "Analyse file metadata integrity — detect editing software traces, timestamp anomalies, and GPS inconsistencies.",
-    tags: ["Image", "Video", "Audio"],
+      'Review metadata for signs of editing, unusual timestamps, or location issues.',
+    tags: ['Image', 'Video', 'Audio'],
   },
   {
-    href: "/try/claim-research",
+    href: '/try/claim-research',
     icon: <Search className="h-5 w-5" />,
-    title: "Claim Research",
+    title: 'Claim Research',
     description:
-      "Research any factual claim using web search and AI synthesis to assess credibility with supporting evidence.",
-    tags: ["Text"],
+      'Explore whether a claim is supported by credible sources and available evidence.',
+    tags: ['Text'],
   },
   {
-    href: "/try/fact-check",
+    href: '/try/fact-check',
     icon: <BadgeCheck className="h-5 w-5" />,
-    title: "Fact Check",
+    title: 'Fact Check',
     description:
-      "Check whether trusted publishers like Snopes or PolitiFact have already ruled on a claim.",
-    tags: ["Text"],
+      'Find out whether trusted fact-checkers have already reviewed the claim.',
+    tags: ['Text'],
   },
   {
-    href: "/try/geolocation",
+    href: '/try/geolocation',
     icon: <MapPin className="h-5 w-5" />,
-    title: "Geolocation Verify",
+    title: 'Geolocation Verify',
     description:
-      "Check whether an image's embedded GPS data matches a claimed location with confidence scoring.",
-    tags: ["Image"],
+      "Check whether an image's location data matches the claimed place.",
+    tags: ['Image'],
   },
 ];
 
@@ -104,8 +104,8 @@ export default function TryPage() {
             variants={motionSet.item}
             className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-500 sm:mt-4 sm:text-base sm:leading-7"
           >
-            Pick a tool. Upload your media or enter a claim. Get
-            evidence-backed results instantly.
+            Use these tools to verify content, check claims, and spot important
+            issues fast.
           </motion.p>
         </motion.div>
 
@@ -129,7 +129,7 @@ export default function TryPage() {
           transition={{ delay: 0.7, duration: 0.5 }}
           className="mt-8 text-center text-sm text-slate-400 sm:mt-10"
         >
-          Already have an account?{" "}
+          Already have an account?{' '}
           <a
             href="/auth/login"
             className="font-medium text-blue-600 hover:underline"

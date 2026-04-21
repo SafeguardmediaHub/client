@@ -1132,7 +1132,7 @@ export function AIMediaDetectionWorkspace() {
             ) : null}
           </div>
           <h1 className="text-responsive-2xl font-medium text-slate-950">
-            AI-Generated Media Detection
+            AI Media Detection
           </h1>
           <p className="max-w-3xl text-sm text-slate-500">
             {getPresetModeDescription(mediaFilter)}
