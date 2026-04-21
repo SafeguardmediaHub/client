@@ -282,6 +282,12 @@ export default function ClaimResearchPage() {
   const claimLen = claim.trim().length;
   const isValid = claimLen >= 10 && claimLen <= 1000;
 
+  const updateClaim = (value: string) => {
+    setClaim(value);
+    setResult(null);
+    setError(null);
+  };
+
   async function handleAnalyze() {
     if (!isValid) return;
     setLoading(true);
@@ -354,7 +360,8 @@ export default function ClaimResearchPage() {
             <Textarea
               placeholder="e.g. The Eiffel Tower was built in 1887."
               value={claim}
-              onChange={(e) => setClaim(e.target.value)}
+              onChange={(e) => updateClaim(e.target.value)}
+              onInput={(e) => updateClaim(e.currentTarget.value)}
               rows={4}
               disabled={loading}
               className="resize-none rounded-2xl border-slate-200 text-sm placeholder:text-slate-400 focus-visible:ring-blue-500/20"

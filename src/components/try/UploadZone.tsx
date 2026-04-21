@@ -1,7 +1,7 @@
 "use client";
 
 import { FileIcon, Upload, X } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useId, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface UploadZoneProps {
@@ -23,6 +23,7 @@ export function UploadZone({
 }: UploadZoneProps) {
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const inputId = useId();
 
   const handleFile = useCallback(
     (f: File) => {
@@ -82,13 +83,8 @@ export function UploadZone({
   }
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={() => !disabled && inputRef.current?.click()}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") inputRef.current?.click();
-      }}
+    <label
+      htmlFor={inputId}
       onDragOver={(e) => {
         e.preventDefault();
         if (!disabled) setIsDragging(true);
@@ -114,13 +110,14 @@ export function UploadZone({
         {acceptLabel} &middot; Max {maxSizeMB}MB
       </p>
       <input
+        id={inputId}
         ref={inputRef}
         type="file"
         accept={accept}
         onChange={handleChange}
-        className="hidden"
+        className="sr-only"
         disabled={disabled}
       />
-    </div>
+    </label>
   );
 }

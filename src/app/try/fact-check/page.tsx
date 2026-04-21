@@ -221,6 +221,12 @@ export default function FactCheckPage() {
   const claimLen = claim.trim().length;
   const isValid = claimLen >= 50 && claimLen <= 500;
 
+  const updateClaim = (value: string) => {
+    setClaim(value);
+    setResult(null);
+    setError(null);
+  };
+
   async function handleAnalyze() {
     if (!isValid) return;
     setLoading(true);
@@ -302,11 +308,8 @@ export default function FactCheckPage() {
             <Textarea
               placeholder="Enter one specific claim to check against published fact-check verdicts."
               value={claim}
-              onChange={(e) => {
-                setClaim(e.target.value);
-                setResult(null);
-                setError(null);
-              }}
+              onChange={(e) => updateClaim(e.target.value)}
+              onInput={(e) => updateClaim(e.currentTarget.value)}
               rows={5}
               disabled={loading}
               className="resize-none rounded-2xl border-slate-200 text-sm placeholder:text-slate-400 focus-visible:ring-blue-500/20"
