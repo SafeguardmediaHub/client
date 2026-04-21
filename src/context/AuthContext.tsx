@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 import { type User, useLogin, useLogout } from "@/hooks/useAuth";
 import api from "@/lib/api";
+import { redirectAfterLogin } from "@/lib/auth-redirect";
 
 interface AuthContextType {
   user: User | null;
@@ -52,7 +53,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       {
         onSuccess: (response) => {
           setUser(response.data.user);
-          router.push("/dashboard");
+          redirectAfterLogin(router);
         },
       },
     );

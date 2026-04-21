@@ -290,7 +290,10 @@ export default function ClaimResearchPage() {
   const [result, setResult] = useState<ClaimResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const canAnalyze = meta.triesRemaining > 0;
+  const canAnalyze =
+    meta.mode === "authenticated"
+      ? meta.analysesRemaining > 0 && !meta.requiresUpgrade
+      : meta.triesRemaining > 0;
   const claimLen = claim.trim().length;
   const isValid = claimLen >= 10 && claimLen <= 1000;
 

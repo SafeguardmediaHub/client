@@ -10,6 +10,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
+import { useAnonymousSession } from '@/components/try/AnonymousSessionContext';
 import { FeatureCard } from '@/components/try/FeatureCard';
 import { createLandingMotion } from '@/lib/landing-motion';
 
@@ -67,6 +68,7 @@ const features = [
 export default function TryPage() {
   const reducedMotion = useReducedMotion();
   const motionSet = createLandingMotion(Boolean(reducedMotion));
+  const { meta } = useAnonymousSession();
 
   return (
     <div className="relative overflow-hidden">
@@ -88,8 +90,10 @@ export default function TryPage() {
         >
           <motion.div variants={motionSet.item}>
             <span className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 sm:px-4 sm:text-sm">
-              <Sparkles className="h-3.5 w-3.5" />3 free analyses. No account
-              needed
+              <Sparkles className="h-3.5 w-3.5" />
+              {meta.mode === "authenticated"
+                ? `${meta.analysesRemaining} ${meta.analysesRemaining === 1 ? "analysis" : "analyses"} remaining this month`
+                : "3 free analyses. No account needed"}
             </span>
           </motion.div>
 
@@ -123,20 +127,22 @@ export default function TryPage() {
           ))}
         </motion.div>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.7, duration: 0.5 }}
-          className="mt-8 text-center text-sm text-slate-400 sm:mt-10"
-        >
-          Already have an account?{' '}
-          <a
-            href="/auth/login"
-            className="font-medium text-blue-600 hover:underline"
+        {meta.mode === "anonymous" && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7, duration: 0.5 }}
+            className="mt-8 text-center text-sm text-slate-400 sm:mt-10"
           >
-            Log in for unlimited access
-          </a>
-        </motion.p>
+            Already have an account?{' '}
+            <a
+              href="/auth/login"
+              className="font-medium text-blue-600 hover:underline"
+            >
+              Log in for unlimited access
+            </a>
+          </motion.p>
+        )}
       </div>
     </div>
   );

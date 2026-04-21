@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { redirectAfterLogin } from '@/lib/auth-redirect';
 
 export default function GoogleOAuthCallback() {
   const router = useRouter();
@@ -11,8 +12,7 @@ export default function GoogleOAuthCallback() {
     // We need to signal to the AuthProvider that a session exists.
     if (typeof window !== 'undefined') {
       window.localStorage.setItem('hasSession', 'true');
-      // Redirect to the dashboard, where AuthProvider will fetch the user
-      router.push('/dashboard');
+      redirectAfterLogin(router);
     }
   }, [router]);
 

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/context/AuthContext';
 import api from '@/lib/api';
+import { redirectAfterLogin } from '@/lib/auth-redirect';
 
 function OAuthCallback() {
   const router = useRouter();
@@ -35,9 +36,8 @@ function OAuthCallback() {
           setStatus('success');
           toast.success('Successfully signed in with Google!');
 
-          // Redirect to dashboard after a brief delay
           setTimeout(() => {
-            router.push('/dashboard');
+            redirectAfterLogin(router);
           }, 1500);
         } else {
           throw new Error('Failed to verify authentication');
@@ -84,7 +84,7 @@ function OAuthCallback() {
                   Sign-in successful!
                 </h2>
                 <p className="text-sm text-gray-600">
-                  Redirecting you to the dashboard...
+                  Redirecting you...
                 </p>
                 <div className="w-full bg-gray-200 rounded-full h-2 mt-4">
                   <div className="bg-green-600 h-2 rounded-full animate-pulse" style={{ width: '100%' }} />

@@ -4,13 +4,16 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
 
+  const isDev = process.env.NODE_ENV === 'development';
+  const backendOrigin = process.env.NEXT_PUBLIC_BACKEND_BASE_URL ?? '';
+
   const csp = [
     `default-src 'self'`,
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
     `style-src 'self' 'nonce-${nonce}' 'unsafe-inline'`,
     `img-src 'self' data: https: blob:`,
     `font-src 'self'`,
-    `connect-src 'self' https:`,
+    `connect-src 'self' https:${isDev && backendOrigin ? ` ${backendOrigin}` : ''}`,
     `media-src 'self' blob:`,
     `object-src 'none'`,
     `base-uri 'self'`,

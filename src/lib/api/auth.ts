@@ -24,7 +24,8 @@ export const register = async (
   password: string,
   firstName: string,
   lastName: string,
-  userType?: string
+  userType?: string,
+  anonymousId?: string,
 ): Promise<RegisterResponse> => {
   const {data} = await api.post("/api/auth/register", {
     email,
@@ -32,6 +33,7 @@ export const register = async (
     firstName,
     lastName,
     ...(userType && {userType}),
+    ...(anonymousId && {anonymousId}),
     agreedToTerms: true,
   });
 

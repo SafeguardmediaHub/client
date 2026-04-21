@@ -11,6 +11,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useAnonymousSession } from "./AnonymousSessionContext";
 
 const tools = [
   {
@@ -53,6 +54,7 @@ const tools = [
 
 export function ToolPageLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { meta } = useAnonymousSession();
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10 lg:py-14">
@@ -121,7 +123,9 @@ export function ToolPageLayout({ children }: { children: React.ReactNode }) {
 
             <div className="mt-6 rounded-xl border border-slate-100 bg-slate-50 px-4 py-4">
               <p className="text-xs leading-5 text-slate-500">
-                3 free analyses shared across all tools.
+                {meta.mode === "authenticated"
+                  ? `${meta.analysesRemaining} ${meta.analysesRemaining === 1 ? "analysis" : "analyses"} remaining this month.`
+                  : "3 free analyses shared across all tools."}
               </p>
               <Link
                 href="/try"

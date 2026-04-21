@@ -8,23 +8,51 @@ import React, {
   useState,
 } from "react";
 
-export interface AnonymousMeta {
+export type AnonymousShape = {
+  mode: "anonymous";
   triesUsed: number;
   triesRemaining: number;
   requiresSignup: boolean;
-}
+  anonymousId?: string;
+};
+
+export type AuthenticatedShape = {
+  mode: "authenticated";
+  analysesUsed: number;
+  analysesRemaining: number;
+  requiresUpgrade: boolean;
+  dashboardMode: "simple" | "full";
+};
+
+export type SessionMeta = AnonymousShape | AuthenticatedShape;
+
+// Raw shapes returned in response.anonymous after analysis calls
+type AnonymousResponseMeta = {
+  triesUsed: number;
+  triesRemaining: number;
+  requiresSignup: boolean;
+};
+type AuthenticatedResponseMeta = {
+  analysesUsed: number;
+  analysesRemaining: number;
+  requiresUpgrade: boolean;
+};
+export type ResponseMeta = AnonymousResponseMeta | AuthenticatedResponseMeta;
 
 interface AnonymousSessionContextValue {
-  meta: AnonymousMeta;
+  meta: SessionMeta;
   isLoading: boolean;
-  updateFromResponse: (anonymous: AnonymousMeta) => void;
+  updateFromResponse: (anonymous: ResponseMeta) => void;
   showSignupModal: boolean;
   setShowSignupModal: (v: boolean) => void;
+  showUpgradeModal: boolean;
+  setShowUpgradeModal: (v: boolean) => void;
 }
 
 const TOTAL_TRIES = 3;
 
-const defaultMeta: AnonymousMeta = {
+const defaultMeta: SessionMeta = {
+  mode: "anonymous",
   triesUsed: 0,
   triesRemaining: TOTAL_TRIES,
   requiresSignup: false,
@@ -36,6 +64,8 @@ const AnonymousSessionContext = createContext<AnonymousSessionContextValue>({
   updateFromResponse: () => {},
   showSignupModal: false,
   setShowSignupModal: () => {},
+  showUpgradeModal: false,
+  setShowUpgradeModal: () => {},
 });
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL ?? "";
@@ -45,9 +75,10 @@ export function AnonymousSessionProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [meta, setMeta] = useState<AnonymousMeta>(defaultMeta);
+  const [meta, setMeta] = useState<SessionMeta>(defaultMeta);
   const [isLoading, setIsLoading] = useState(true);
   const [showSignupModal, setShowSignupModal] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   useEffect(() => {
     fetch(`${BASE_URL}/api/anonymous/status`, { credentials: "include" })
@@ -55,31 +86,57 @@ export function AnonymousSessionProvider({
       .then((json) => {
         if (json.success && json.data) {
           const data = json.data;
-          setMeta({
-            triesUsed: data.triesUsed,
-            triesRemaining: data.triesRemaining,
-            requiresSignup: data.requiresSignup,
-          });
-          if (data.requiresSignup) setShowSignupModal(true);
+          if ("dashboardMode" in data) {
+            setMeta({
+              mode: "authenticated",
+              analysesUsed: data.analysesUsed,
+              analysesRemaining: data.analysesRemaining,
+              requiresUpgrade: data.requiresUpgrade,
+              dashboardMode: data.dashboardMode,
+            });
+            if (data.requiresUpgrade) setShowUpgradeModal(true);
+          } else {
+            setMeta({
+              mode: "anonymous",
+              triesUsed: data.triesUsed,
+              triesRemaining: data.triesRemaining,
+              requiresSignup: data.requiresSignup,
+              anonymousId: data.anonymousId,
+            });
+            if (data.requiresSignup) setShowSignupModal(true);
+          }
         }
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));
   }, []);
 
-  // triesRemaining in response = ground truth after this request
-  // triesUsed in response lags by one; compute from triesRemaining instead
-  const updateFromResponse = useCallback((anonymous: AnonymousMeta) => {
-    const remaining = anonymous.triesRemaining;
-    const updated: AnonymousMeta = {
-      triesUsed: TOTAL_TRIES - remaining,
-      triesRemaining: remaining,
-      requiresSignup: anonymous.requiresSignup,
-    };
-    setMeta(updated);
-    if (remaining <= 0 || anonymous.requiresSignup) {
-      // Delay so results render before the modal appears
-      setTimeout(() => setShowSignupModal(true), 2000);
+  // triesRemaining / analysesRemaining in response = ground truth after this request
+  const updateFromResponse = useCallback((anonymous: ResponseMeta) => {
+    if ("triesRemaining" in anonymous) {
+      const remaining = anonymous.triesRemaining;
+      setMeta((prev) => ({
+        mode: "anonymous",
+        triesUsed: TOTAL_TRIES - remaining,
+        triesRemaining: remaining,
+        requiresSignup: anonymous.requiresSignup,
+        anonymousId: prev.mode === "anonymous" ? prev.anonymousId : undefined,
+      }));
+      if (remaining <= 0 || anonymous.requiresSignup) {
+        setTimeout(() => setShowSignupModal(true), 2000);
+      }
+    } else {
+      setMeta((prev) => ({
+        mode: "authenticated",
+        analysesUsed: anonymous.analysesUsed,
+        analysesRemaining: anonymous.analysesRemaining,
+        requiresUpgrade: anonymous.requiresUpgrade,
+        dashboardMode:
+          prev.mode === "authenticated" ? prev.dashboardMode : "simple",
+      }));
+      if (anonymous.requiresUpgrade) {
+        setTimeout(() => setShowUpgradeModal(true), 2000);
+      }
     }
   }, []);
 
@@ -91,6 +148,8 @@ export function AnonymousSessionProvider({
         updateFromResponse,
         showSignupModal,
         setShowSignupModal,
+        showUpgradeModal,
+        setShowUpgradeModal,
       }}
     >
       {children}

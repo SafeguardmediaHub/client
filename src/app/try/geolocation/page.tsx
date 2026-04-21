@@ -171,7 +171,10 @@ export default function GeolocationPage() {
   const [result, setResult] = useState<GeoResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const canAnalyze = meta.triesRemaining > 0;
+  const canAnalyze =
+    meta.mode === "authenticated"
+      ? meta.analysesRemaining > 0 && !meta.requiresUpgrade
+      : meta.triesRemaining > 0;
   const canSubmit = !!file && location.trim().length >= 2;
 
   async function handleAnalyze() {

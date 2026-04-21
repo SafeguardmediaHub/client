@@ -125,7 +125,10 @@ export default function ReverseLookupPage() {
   const [result, setResult] = useState<ReverseResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const canAnalyze = meta.triesRemaining > 0;
+  const canAnalyze =
+    meta.mode === "authenticated"
+      ? meta.analysesRemaining > 0 && !meta.requiresUpgrade
+      : meta.triesRemaining > 0;
 
   async function handleAnalyze() {
     if (!file) return;

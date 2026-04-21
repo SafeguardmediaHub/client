@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, CheckCircle2, Shield } from "lucide-react";
+import { ArrowRight, Shield, Zap } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,23 +11,15 @@ import {
 } from "@/components/ui/dialog";
 import { useAnonymousSession } from "./AnonymousSessionContext";
 
-const BENEFITS = [
-  "Save all 3 of your analysis results",
-  "Run unlimited analyses",
-  "Access all platform features",
-  "Export reports and findings",
-];
+export function UpgradeModal() {
+  const { showUpgradeModal, setShowUpgradeModal, meta } = useAnonymousSession();
 
-export function SignupModal() {
-  const { showSignupModal, setShowSignupModal, meta } = useAnonymousSession();
-
-  if (meta.mode === "authenticated") return null;
+  if (meta.mode !== "authenticated") return null;
 
   return (
-    <Dialog open={showSignupModal} onOpenChange={setShowSignupModal}>
+    <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
       <DialogContent className="max-w-md overflow-hidden rounded-2xl border-slate-200 p-0 shadow-2xl shadow-slate-900/10">
         <div className="relative p-6 sm:p-8">
-          {/* Blobs */}
           <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-blue-100/60 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-16 -left-16 h-56 w-56 rounded-full bg-cyan-100/50 blur-3xl" />
 
@@ -37,25 +29,22 @@ export function SignupModal() {
                 <Shield className="h-7 w-7 text-white" />
               </div>
               <DialogTitle className="text-xl font-semibold text-slate-900">
-                You&apos;ve used all 3 free analyses
+                You&apos;ve used all your analyses this month
               </DialogTitle>
               <DialogDescription className="mt-2 text-sm text-slate-500">
-                Create a free account to continue — your results will be saved.
+                Upgrade your plan to keep running analyses without waiting for
+                your monthly quota to reset.
               </DialogDescription>
             </div>
 
-            <div className="mt-6 space-y-2">
-              {BENEFITS.map((benefit) => (
-                <div
-                  key={benefit}
-                  className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3"
-                >
-                  <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
-                  <span className="text-sm font-medium text-slate-700">
-                    {benefit}
-                  </span>
-                </div>
-              ))}
+            <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50 px-4 py-4">
+              <div className="flex items-start gap-3">
+                <Zap className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
+                <p className="text-sm text-slate-700">
+                  Upgrading gives you a higher monthly quota and access to
+                  advanced features across all tools.
+                </p>
+              </div>
             </div>
 
             <div className="mt-6 flex flex-col gap-3">
@@ -63,21 +52,20 @@ export function SignupModal() {
                 asChild
                 size="lg"
                 className="w-full rounded-xl bg-blue-600 text-white hover:bg-blue-700"
-                onClick={() => setShowSignupModal(false)}
+                onClick={() => setShowUpgradeModal(false)}
               >
-                <Link href="/auth/signup">
-                  Create free account
+                <Link href="/dashboard">
+                  View upgrade options
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button
-                asChild
                 variant="outline"
                 size="lg"
                 className="w-full rounded-xl border-slate-200 text-slate-700"
-                onClick={() => setShowSignupModal(false)}
+                onClick={() => setShowUpgradeModal(false)}
               >
-                <Link href="/auth/login">Log in to existing account</Link>
+                Maybe later
               </Button>
             </div>
           </div>
