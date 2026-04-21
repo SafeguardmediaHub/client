@@ -15,6 +15,7 @@ import { useClaimDetail } from '@/hooks/useFactCheck';
 import { EmptyState } from './EmptyState';
 import { ErrorState } from './ErrorState';
 import { LoadingState } from './LoadingState';
+import { AnalysisDisclaimer } from '@/components/shared/AnalysisDisclaimer';
 import { VerdictCard } from './VerdictCard';
 
 interface ClaimDetailProps {
@@ -223,6 +224,7 @@ export const ClaimDetail = ({ claimId, onBack }: ClaimDetailProps) => {
           </div>
         )}
       </div>
+      <AnalysisDisclaimer />
     </div>
   );
 };

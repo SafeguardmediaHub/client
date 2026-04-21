@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useIntegrityReport } from '@/hooks/useIntegrityReport';
 import { type Media, useGetMedia } from '@/hooks/useMedia';
+import { AnalysisDisclaimer } from '@/components/shared/AnalysisDisclaimer';
 import { formatFileSize } from '@/lib/utils';
 
 type PageState = 'idle' | 'selecting' | 'processing' | 'results' | 'error';
@@ -129,7 +130,8 @@ const AuthenticityCheckContent = () => {
               Authenticity Check
             </h1>
             <p className="text-sm text-gray-500 mt-2">
-              Comprehensive media integrity verification with detailed analysis
+              Review metadata for signs of editing, unusual timestamps, or
+              location issues.
             </p>
           </div>
 
@@ -612,6 +614,7 @@ const AuthenticityCheckContent = () => {
               </CardContent>
             </Card>
           )}
+          <AnalysisDisclaimer />
         </div>
       </div>
     </div>

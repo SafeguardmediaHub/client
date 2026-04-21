@@ -1,9 +1,12 @@
 import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import "cal-sans/index.css";
 import "./globals.css";
-import { Analytics } from "@vercel/analytics/next";
+import ConsentAwareAdsense from "@/components/privacy/ConsentAwareAdsense";
 import { Toaster } from "sonner";
+import ConsentAwareAnalytics from "@/components/privacy/ConsentAwareAnalytics";
+import CookieConsentManager from "@/components/privacy/CookieConsentManager";
 import QueryProvider from "@/components/providers/QueryProvider";
 import { AssistantProvider } from "@/context/AssistantContext";
 import { AuthProvider } from "@/context/AuthContext";
@@ -107,20 +110,15 @@ export const metadata: Metadata = {
   category: "technology",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const nonce = (await headers()).get("x-nonce") ?? "";
+
   return (
     <html lang="en">
-      <head>
-        <script
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3526860570408649"
-          async
-          crossOrigin="anonymous"
-        />
-      </head>
       <body
         className={`${GeistSans.variable} font-sans antialiased`}
         suppressHydrationWarning
@@ -134,7 +132,9 @@ export default function RootLayout({
         </QueryProvider>
 
         <Toaster richColors expand={true} duration={5000} />
-        <Analytics />
+        <CookieConsentManager />
+        <ConsentAwareAdsense nonce={nonce} />
+        <ConsentAwareAnalytics />
       </body>
     </html>
   );

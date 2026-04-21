@@ -260,7 +260,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         //   accessFeatures: ["c2pa"],
         // }),
         getGatedItem({
-          title: "Geolocation",
+          title: "Geolocation Verify",
           url: "/dashboard/geolocation",
           accessFeatures: ["geolocationVerification"],
           activePrefixes: ["/dashboard/geolocation"],
@@ -289,13 +289,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       ],
       items: [
         getGatedItem({
-          title: "Reverse Lookup",
+          title: "Reverse Image Search",
           url: "/dashboard/reverse",
           accessFeatures: ["reverseLookup"],
           activePrefixes: ["/dashboard/reverse"],
         }),
         getGatedItem({
-          title: "Fact Checking",
+          title: "Fact Check",
           url: "/dashboard/fact-check",
           accessFeatures: ["factCheck"],
           activePrefixes: ["/dashboard/fact-check"],

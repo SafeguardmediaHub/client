@@ -58,6 +58,7 @@ import {
   getUsageGate,
   type ProductFeatureKey,
 } from "@/lib/subscription-access";
+import { AnalysisDisclaimer } from "@/components/shared/AnalysisDisclaimer";
 import { cn, formatFileSize, timeAgo } from "@/lib/utils";
 
 type MediaFilter = "all" | ForensicsMediaType;
@@ -2820,6 +2821,7 @@ export function ForensicsWorkspace() {
             )
           ) : null}
         </CardContent>
+        {activeAnalysis && <div className="px-6 pb-6"><AnalysisDisclaimer /></div>}
       </Card>
     </div>
   );

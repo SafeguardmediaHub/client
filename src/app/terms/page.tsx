@@ -1,61 +1,43 @@
 'use client';
 
-import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import LegalPageLayout from '@/components/legal/LegalPageLayout';
 
 export default function TermsPage() {
-  const router = useRouter();
-
-  const handleBack = () => {
-    // Check if there's history to go back to
-    if (window.history.length > 1) {
-      router.back();
-    } else {
-      // If opened in new tab with no history, go to homepage
-      router.push('/');
-    }
-  };
+  const sections = [
+    { id: 'introduction', label: '1. Introduction' },
+    { id: 'account-registration', label: '2. Account Registration' },
+    { id: 'service-description', label: '3. Service Description' },
+    { id: 'acceptable-use', label: '4. Acceptable Use Policy' },
+    { id: 'intellectual-property', label: '5. Intellectual Property Rights' },
+    { id: 'payment-subscriptions', label: '6. Payment and Subscriptions' },
+    { id: 'data-retention', label: '7. Data Storage and Retention' },
+    { id: 'disclaimers', label: '8. Disclaimers and Limitations' },
+    { id: 'indemnification', label: '9. Indemnification' },
+    { id: 'api-usage', label: '10. API Usage' },
+    { id: 'privacy', label: '11. Privacy and Data Protection' },
+    { id: 'termination', label: '12. Termination' },
+    { id: 'governing-law', label: '13. Governing Law and Disputes' },
+    { id: 'changes', label: '14. Changes to Terms' },
+    { id: 'severability', label: '15. Severability' },
+    { id: 'entire-agreement', label: '16. Entire Agreement' },
+    { id: 'contact', label: '17. Contact Information' },
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="mb-4 cursor-pointer"
-            onClick={handleBack}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
-            Terms and Conditions
-          </h1>
-          <p className="text-sm text-gray-600">
-            Last updated:{' '}
-            {new Date().toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-          </p>
-        </div>
-
-        {/* Content */}
-        <Card className="p-6 sm:p-8 lg:p-10">
-          <div className="prose prose-sm sm:prose max-w-none space-y-8">
+    <LegalPageLayout
+      title="Terms and Conditions"
+      summary="These terms explain how you can use Safeguardmedia, your responsibilities, and the legal framework for using our services."
+      lastUpdated="20 April 2026"
+      sections={sections}
+    >
             {/* Introduction */}
-            <section>
+            <section id="introduction">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 1. Introduction
               </h2>
               <p className="text-gray-700 leading-relaxed">
-                Welcome to SafeguardMedia ("we," "our," or "us"). These Terms
+                Welcome to Safeguardmedia ("we," "our," or "us"). These Terms
                 and Conditions ("Terms") govern your access to and use of our
                 media verification and misinformation detection platform,
                 including our website, API, and related services (collectively,
@@ -69,7 +51,7 @@ export default function TermsPage() {
             </section>
 
             {/* Account Registration */}
-            <section>
+            <section id="account-registration">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 2. Account Registration
               </h2>
@@ -95,19 +77,22 @@ export default function TermsPage() {
                 </li>
               </ul>
               <p className="text-gray-700 leading-relaxed mt-4">
-                You must be at least 18 years old to create an account. By
-                creating an account, you represent that you are of legal age to
-                form a binding contract.
+                You must be at least 14 years old to create an account. If you
+                are under the age of majority in your jurisdiction, you confirm
+                you have permission from a parent or legal guardian where
+                required by law. By creating an account, you represent that you
+                meet these eligibility requirements and can form a binding
+                agreement to use the Service.
               </p>
             </section>
 
             {/* Service Description */}
-            <section>
+            <section id="service-description">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 3. Service Description
               </h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                SafeguardMedia provides AI-powered media verification and
+                Safeguardmedia provides AI-powered media verification and
                 analysis tools, including but not limited to:
               </p>
               <ul className="list-disc pl-6 space-y-2 text-gray-700">
@@ -131,7 +116,7 @@ export default function TermsPage() {
             </section>
 
             {/* Acceptable Use */}
-            <section>
+            <section id="acceptable-use">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 4. Acceptable Use Policy
               </h2>
@@ -168,7 +153,7 @@ export default function TermsPage() {
             </section>
 
             {/* Intellectual Property */}
-            <section>
+            <section id="intellectual-property">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 5. Intellectual Property Rights
               </h2>
@@ -179,7 +164,7 @@ export default function TermsPage() {
                   </h3>
                   <p className="text-gray-700 leading-relaxed">
                     The Service and its original content, features, and
-                    functionality are owned by SafeguardMedia and are protected
+                    functionality are owned by Safeguardmedia and are protected
                     by international copyright, trademark, patent, trade secret,
                     and other intellectual property laws.
                   </p>
@@ -211,7 +196,7 @@ export default function TermsPage() {
             </section>
 
             {/* Payment and Subscriptions */}
-            <section>
+            <section id="payment-subscriptions">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 6. Payment and Subscriptions
               </h2>
@@ -262,7 +247,7 @@ export default function TermsPage() {
             </section>
 
             {/* Data Storage and Retention */}
-            <section>
+            <section id="data-retention">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 7. Data Storage and Retention
               </h2>
@@ -294,7 +279,7 @@ export default function TermsPage() {
             </section>
 
             {/* Disclaimers */}
-            <section>
+            <section id="disclaimers">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 8. Disclaimers and Limitations
               </h2>
@@ -338,12 +323,12 @@ export default function TermsPage() {
             </section>
 
             {/* Indemnification */}
-            <section>
+            <section id="indemnification">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 9. Indemnification
               </h2>
               <p className="text-gray-700 leading-relaxed">
-                You agree to indemnify, defend, and hold harmless SafeguardMedia
+                You agree to indemnify, defend, and hold harmless Safeguardmedia
                 and its officers, directors, employees, and agents from any
                 claims, liabilities, damages, losses, and expenses, including
                 reasonable attorney's fees, arising out of or in any way
@@ -354,7 +339,7 @@ export default function TermsPage() {
             </section>
 
             {/* API Usage */}
-            <section>
+            <section id="api-usage">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 10. API Usage
               </h2>
@@ -369,7 +354,7 @@ export default function TermsPage() {
                 <li>Keep your API keys secure and confidential</li>
                 <li>Not share, sell, or distribute your API access</li>
                 <li>
-                  Properly attribute SafeguardMedia when using our API in
+                  Properly attribute Safeguardmedia when using our API in
                   public-facing applications
                 </li>
                 <li>
@@ -380,7 +365,7 @@ export default function TermsPage() {
             </section>
 
             {/* Privacy and Data Protection */}
-            <section>
+            <section id="privacy">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 11. Privacy and Data Protection
               </h2>
@@ -396,7 +381,7 @@ export default function TermsPage() {
             </section>
 
             {/* Termination */}
-            <section>
+            <section id="termination">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 12. Termination
               </h2>
@@ -420,7 +405,7 @@ export default function TermsPage() {
             </section>
 
             {/* Governing Law */}
-            <section>
+            <section id="governing-law">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 13. Governing Law and Dispute Resolution
               </h2>
@@ -431,7 +416,7 @@ export default function TermsPage() {
                   </h3>
                   <p className="text-gray-700 leading-relaxed">
                     These Terms shall be governed by and construed in accordance
-                    with the laws of the jurisdiction in which SafeguardMedia
+                    with the laws of the jurisdiction in which Safeguardmedia
                     operates, without regard to its conflict of law provisions.
                   </p>
                 </div>
@@ -451,7 +436,7 @@ export default function TermsPage() {
             </section>
 
             {/* Changes to Terms */}
-            <section>
+            <section id="changes">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 14. Changes to Terms
               </h2>
@@ -469,7 +454,7 @@ export default function TermsPage() {
             </section>
 
             {/* Severability */}
-            <section>
+            <section id="severability">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 15. Severability
               </h2>
@@ -483,20 +468,20 @@ export default function TermsPage() {
             </section>
 
             {/* Entire Agreement */}
-            <section>
+            <section id="entire-agreement">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 16. Entire Agreement
               </h2>
               <p className="text-gray-700 leading-relaxed">
                 These Terms, together with our Privacy Policy and any other
                 legal notices published by us on the Service, constitute the
-                entire agreement between you and SafeguardMedia concerning the
+                entire agreement between you and Safeguardmedia concerning the
                 Service and supersede all prior agreements and understandings.
               </p>
             </section>
 
             {/* Contact */}
-            <section>
+            <section id="contact">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 17. Contact Information
               </h2>
@@ -505,7 +490,7 @@ export default function TermsPage() {
                 at:
               </p>
               <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
-                <p className="text-gray-700 font-medium">SafeguardMedia</p>
+                <p className="text-gray-700 font-medium">Safeguardmedia</p>
                 <p className="text-gray-600">Email: legal@safeguardmedia.com</p>
                 <p className="text-gray-600">
                   Support: support@safeguardmedia.com
@@ -525,16 +510,11 @@ export default function TermsPage() {
                 SERVICE.
               </p>
             </section>
-          </div>
-        </Card>
-
-        {/* Footer */}
-        <div className="mt-8 text-center text-sm text-gray-600">
+        <div className="text-center text-sm text-gray-600">
           <p>
-            © {new Date().getFullYear()} SafeguardMedia. All rights reserved.
+            © {new Date().getFullYear()} Safeguardmedia. All rights reserved.
           </p>
         </div>
-      </div>
-    </div>
+    </LegalPageLayout>
   );
 }

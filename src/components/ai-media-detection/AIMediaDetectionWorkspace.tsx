@@ -75,7 +75,13 @@ import {
   getUsageGate,
   type ProductFeatureKey,
 } from "@/lib/subscription-access";
+import { AnalysisDisclaimer } from "@/components/shared/AnalysisDisclaimer";
 import { cn, formatFileSize, timeAgo } from "@/lib/utils";
+import {
+  getVerdictClasses,
+  getVerdictDescription,
+  getVerdictLabel,
+} from "@/lib/verdict";
 
 type MediaFilter = "all" | AIMediaType;
 type AnalysisStatusFilter =
@@ -149,51 +155,6 @@ function getMediaTypeIcon(mediaType: AIMediaType, className?: string) {
       return <FileVideo className={iconClassName} />;
     case "audio":
       return <FileAudio className={iconClassName} />;
-  }
-}
-
-function getVerdictLabel(predictedClass?: string) {
-  switch ((predictedClass || "").toLowerCase()) {
-    case "real":
-      return "Likely Real";
-    case "synthetic":
-      return "AI-Generated";
-    case "manipulated":
-      return "Manipulated";
-    case "deepfake":
-      return "Deepfake";
-    default:
-      return predictedClass || "Unable to Evaluate";
-  }
-}
-
-function getVerdictDescription(predictedClass?: string) {
-  switch ((predictedClass || "").toLowerCase()) {
-    case "real":
-      return "This file appears likely authentic based on the current model output.";
-    case "synthetic":
-      return "This file appears likely AI-generated.";
-    case "manipulated":
-      return "This file shows signals associated with manipulation or suspicious edits.";
-    case "deepfake":
-      return "This file shows signals consistent with deepfake content.";
-    default:
-      return "This file could not be assigned a clear verdict.";
-  }
-}
-
-function getVerdictClasses(predictedClass?: string) {
-  switch ((predictedClass || "").toLowerCase()) {
-    case "real":
-      return "border-emerald-200 bg-emerald-50 text-emerald-700";
-    case "synthetic":
-      return "border-amber-200 bg-amber-50 text-amber-700";
-    case "manipulated":
-      return "border-orange-200 bg-orange-50 text-orange-700";
-    case "deepfake":
-      return "border-red-200 bg-red-50 text-red-700";
-    default:
-      return "border-slate-200 bg-slate-50 text-slate-700";
   }
 }
 
@@ -1171,7 +1132,7 @@ export function AIMediaDetectionWorkspace() {
             ) : null}
           </div>
           <h1 className="text-responsive-2xl font-medium text-slate-950">
-            AI-Generated Media Detection
+            AI Media Detection
           </h1>
           <p className="max-w-3xl text-sm text-slate-500">
             {getPresetModeDescription(mediaFilter)}
@@ -1923,6 +1884,7 @@ export function AIMediaDetectionWorkspace() {
                 We could not load the analysis details for this item.
               </div>
             )}
+            <AnalysisDisclaimer />
           </div>
         </SheetContent>
       </Sheet>

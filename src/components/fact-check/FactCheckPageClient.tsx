@@ -139,11 +139,11 @@ export function FactCheckPageClient({
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div className="flex flex-col gap-1">
             <h1 className="text-2xl font-medium text-gray-900 leading-9">
-              Fact-Check Analysis
+              Fact Check
             </h1>
             <p className="text-sm font-medium text-gray-600 leading-[21px]">
-              Extract and verify claims from text content using trusted
-              fact-checking sources
+              Find out whether trusted fact-checkers have already reviewed the
+              claim.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">

@@ -59,11 +59,11 @@ export default function ClaimResearchPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
-              Claim Investigation
+              Claim Research
             </h1>
             <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-2xl mt-2">
-              Decompose claims, cross-check sources, and score evidence
-              strength.
+              Explore whether a claim is supported by credible sources and
+              available evidence.
             </p>
           </div>
         </div>

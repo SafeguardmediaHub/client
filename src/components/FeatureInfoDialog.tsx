@@ -239,9 +239,9 @@ export const FEATURE_INFO: Record<string, FeatureInfo> = {
     ],
   },
   reverseLookup: {
-    title: 'Reverse Image Lookup',
+    title: 'Reverse Image Search',
     description:
-      'Trace the origin and history of images across the internet to find original sources and detect manipulations.',
+      'See where an image appears online and find clues about its source.',
     icon: <ImageIcon className="size-7" />,
     iconBgColor: 'bg-blue-50',
     iconColor: 'text-blue-600',
@@ -273,9 +273,9 @@ export const FEATURE_INFO: Record<string, FeatureInfo> = {
     ],
   },
   geolocation: {
-    title: 'Geolocation Verification',
+    title: 'Geolocation Verify',
     description:
-      'Verify claimed locations by analyzing GPS metadata and cross-referencing coordinates with real-world data.',
+      "Check whether an image's location data matches the claimed place.",
     icon: <FileImage className="size-7" />,
     iconBgColor: 'bg-emerald-50',
     iconColor: 'text-emerald-600',
@@ -307,9 +307,9 @@ export const FEATURE_INFO: Record<string, FeatureInfo> = {
     ],
   },
   factCheck: {
-    title: 'Fact-Check Analysis',
+    title: 'Fact Check',
     description:
-      'Extract and verify claims from text content using trusted fact-checking sources and databases.',
+      'Find out whether trusted fact-checkers have already reviewed the claim.',
     icon: <FileText className="size-7" />,
     iconBgColor: 'bg-blue-50',
     iconColor: 'text-blue-600',
