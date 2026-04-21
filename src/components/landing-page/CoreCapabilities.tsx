@@ -236,7 +236,7 @@ export default function CoreCapabilities() {
                   className="rounded-xl bg-blue-600 px-8 text-white shadow-lg shadow-blue-500/20 hover:bg-blue-700"
                 >
                   <Link href="/try">
-                    Try all tools free — no account needed
+                    Try all tools free. No account needed
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>

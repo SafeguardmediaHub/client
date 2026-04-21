@@ -1,40 +1,40 @@
-"use client";
+'use client';
 
-import { ArrowRight, CheckCircle2, Shield, Sparkles } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
-import Link from "next/link";
-import { createLandingMotion, landingViewport } from "@/lib/landing-motion";
+import { ArrowRight, CheckCircle2, Shield, Sparkles } from 'lucide-react';
+import { motion, useReducedMotion } from 'motion/react';
+import Link from 'next/link';
+import { createLandingMotion, landingViewport } from '@/lib/landing-motion';
 
 const steps = [
   {
-    number: "01",
-    title: "Bring content into the case",
+    number: '01',
+    title: 'Bring content into the case',
     description:
-      "Start from uploaded media or a verification workflow that fits the question you need answered.",
+      'Start from uploaded media or a verification workflow that fits the question you need answered.',
     detail:
-      "Supports media analysis, provenance checks, and research workflows.",
+      'Supports media analysis, provenance checks, and research workflows.',
   },
   {
-    number: "02",
-    title: "Run the right verification path",
+    number: '02',
+    title: 'Run the right verification path',
     description:
-      "Choose AI media detection, authenticity, reverse lookup, claim research, or another workflow based on the type of evidence.",
-    detail: "Different problems need different verification methods.",
+      'Choose AI media detection, authenticity, reverse lookup, claim research, or another workflow based on the type of evidence.',
+    detail: 'Different problems need different verification methods.',
   },
   {
-    number: "03",
-    title: "Review evidence with confidence",
+    number: '03',
+    title: 'Review evidence with confidence',
     description:
-      "Get verdicts, confidence scores, provenance details, and supporting signals in a structure teams can actually work from.",
-    detail: "Results stay readable for both operators and decision-makers.",
+      'Get verdicts, confidence scores, provenance details, and supporting signals in a structure teams can actually work from.',
+    detail: 'Results stay readable for both operators and decision-makers.',
   },
 ];
 
 const outputs = [
-  "AI-generated media verdicts",
-  "Content credentials and authenticity signals",
-  "Fact-check and research findings",
-  "Structured outputs for team review",
+  'AI-generated media verdicts',
+  'Content credentials and authenticity signals',
+  'Fact-check and research findings',
+  'Structured outputs for team review',
 ];
 
 export default function HowItWorks() {
@@ -128,7 +128,7 @@ export default function HowItWorks() {
               href="/try"
               className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-cyan-200 transition-colors hover:text-white"
             >
-              Try it free — no account needed
+              Try it free. No account needed
               <ArrowRight className="h-4 w-4" />
             </Link>
           </motion.div>
