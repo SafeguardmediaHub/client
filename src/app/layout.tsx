@@ -1,5 +1,6 @@
 import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import "cal-sans/index.css";
 import "./globals.css";
 import ConsentAwareAdsense from "@/components/privacy/ConsentAwareAdsense";
@@ -109,11 +110,13 @@ export const metadata: Metadata = {
   category: "technology",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const nonce = (await headers()).get("x-nonce") ?? "";
+
   return (
     <html lang="en">
       <body
@@ -130,7 +133,7 @@ export default function RootLayout({
 
         <Toaster richColors expand={true} duration={5000} />
         <CookieConsentManager />
-        <ConsentAwareAdsense />
+        <ConsentAwareAdsense nonce={nonce} />
         <ConsentAwareAnalytics />
       </body>
     </html>

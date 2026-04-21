@@ -10,7 +10,7 @@ import {
 const ADSENSE_SRC =
   "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3526860570408649";
 
-export default function ConsentAwareAdsense() {
+export default function ConsentAwareAdsense({ nonce }: { nonce?: string }) {
   const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
@@ -41,6 +41,7 @@ export default function ConsentAwareAdsense() {
       async
       crossOrigin="anonymous"
       strategy="afterInteractive"
+      nonce={nonce}
     />
   );
 }
