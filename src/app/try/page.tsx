@@ -88,8 +88,8 @@ export default function TryPage() {
         >
           <motion.div variants={motionSet.item}>
             <span className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 sm:px-4 sm:text-sm">
-              <Sparkles className="h-3.5 w-3.5" />3 free analyses &mdash; no
-              account needed
+              <Sparkles className="h-3.5 w-3.5" />3 free analyses. No account
+              needed
             </span>
           </motion.div>
 
