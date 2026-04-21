@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   AlertCircle,
@@ -7,17 +7,17 @@ import {
   ExternalLink,
   Loader2,
   Scale,
-} from "lucide-react";
-import Link from "next/link";
-import { useMemo, useState } from "react";
-import { AnalysisDisclaimer } from "@/components/shared/AnalysisDisclaimer";
-import { useAnonymousSession } from "@/components/try/AnonymousSessionContext";
-import { ToolPageLayout } from "@/components/try/ToolPageLayout";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
+} from 'lucide-react';
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
+import { AnalysisDisclaimer } from '@/components/shared/AnalysisDisclaimer';
+import { useAnonymousSession } from '@/components/try/AnonymousSessionContext';
+import { ToolPageLayout } from '@/components/try/ToolPageLayout';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
 
-const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL ?? "";
+const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL ?? '';
 
 interface FactCheckVerdict {
   source: string;
@@ -29,7 +29,7 @@ interface FactCheckVerdict {
 
 interface FactCheckResult {
   resultId: string;
-  feature: "FACT_CHECK";
+  feature: 'FACT_CHECK';
   claimText: string;
   verdictsFound: number;
   verdicts: FactCheckVerdict[];
@@ -40,27 +40,27 @@ interface FactCheckResult {
 function getRatingClasses(rating: string) {
   const normalized = rating.trim().toLowerCase();
 
-  if (normalized.includes("true")) {
-    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  if (normalized.includes('true')) {
+    return 'border-emerald-200 bg-emerald-50 text-emerald-700';
   }
 
-  if (normalized.includes("false")) {
-    return "border-red-200 bg-red-50 text-red-700";
+  if (normalized.includes('false')) {
+    return 'border-red-200 bg-red-50 text-red-700';
   }
 
-  if (normalized.includes("misleading")) {
-    return "border-amber-200 bg-amber-50 text-amber-700";
+  if (normalized.includes('misleading')) {
+    return 'border-amber-200 bg-amber-50 text-amber-700';
   }
 
-  if (normalized.includes("mixed")) {
-    return "border-orange-200 bg-orange-50 text-orange-700";
+  if (normalized.includes('mixed')) {
+    return 'border-orange-200 bg-orange-50 text-orange-700';
   }
 
-  if (normalized.includes("unverifiable")) {
-    return "border-slate-200 bg-slate-100 text-slate-700";
+  if (normalized.includes('unverifiable')) {
+    return 'border-slate-200 bg-slate-100 text-slate-700';
   }
 
-  return "border-blue-200 bg-blue-50 text-blue-700";
+  return 'border-blue-200 bg-blue-50 text-blue-700';
 }
 
 function ResultCard({
@@ -99,7 +99,8 @@ function ResultCard({
             </p>
           </div>
           <div className="shrink-0 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
-            {result.verdictsFound} verdict{result.verdictsFound !== 1 ? "s" : ""}
+            {result.verdictsFound} verdict
+            {result.verdictsFound !== 1 ? 's' : ''}
           </div>
         </div>
       </div>
@@ -112,8 +113,8 @@ function ResultCard({
                 Result
               </div>
               <p className="mt-1 text-sm font-medium text-emerald-900">
-                Found {result.verdictsFound} published fact-check
-                verdict{result.verdictsFound !== 1 ? "s" : ""}.
+                Found {result.verdictsFound} published fact-check verdict
+                {result.verdictsFound !== 1 ? 's' : ''}.
               </p>
             </div>
 
@@ -134,7 +135,7 @@ function ResultCard({
                         </span>
                         <span
                           className={cn(
-                            "rounded-full border px-2.5 py-1 text-xs font-semibold",
+                            'rounded-full border px-2.5 py-1 text-xs font-semibold',
                             getRatingClasses(verdict.rating),
                           )}
                         >
@@ -147,13 +148,13 @@ function ResultCard({
                       <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-400">
                         {verdict.reviewed_at && (
                           <span>
-                            Reviewed{" "}
+                            Reviewed{' '}
                             {new Date(verdict.reviewed_at).toLocaleDateString(
-                              "en-GB",
+                              'en-GB',
                               {
-                                day: "numeric",
-                                month: "short",
-                                year: "numeric",
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric',
                               },
                             )}
                           </span>
@@ -177,14 +178,16 @@ function ResultCard({
             </div>
             <p className="text-sm leading-6 text-amber-900">
               {result.message ??
-                "This claim has not been fact-checked by any known sources yet."}
+                'This claim has not been fact-checked by any known sources yet.'}
             </p>
           </div>
         )}
 
         <div className="flex items-center justify-between gap-3 text-xs text-slate-400">
           <span>Curated fact-check databases</span>
-          <span>Processed in {(result.processingTimeMs / 1000).toFixed(1)}s</span>
+          <span>
+            Processed in {(result.processingTimeMs / 1000).toFixed(1)}s
+          </span>
         </div>
 
         {triesRemaining === 0 && (
@@ -212,7 +215,7 @@ function ResultCard({
 export default function FactCheckPage() {
   const { meta, updateFromResponse, setShowSignupModal } =
     useAnonymousSession();
-  const [claim, setClaim] = useState("");
+  const [claim, setClaim] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<FactCheckResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -235,9 +238,9 @@ export default function FactCheckPage() {
 
     try {
       const res = await fetch(`${BASE_URL}/api/anonymous/fact-check`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ claim_text: claim.trim() }),
       });
 
@@ -252,19 +255,19 @@ export default function FactCheckPage() {
         if (res.status === 429) {
           setError(
             json.message ??
-              "Daily fact-check quota exceeded. Please try again later.",
+              'Daily fact-check quota exceeded. Please try again later.',
           );
           return;
         }
 
-        setError(json.message ?? json.error ?? "Something went wrong.");
+        setError(json.message ?? json.error ?? 'Something went wrong.');
         return;
       }
 
       if (json.anonymous) updateFromResponse(json.anonymous);
       setResult(json.data);
     } catch {
-      setError("Network error. Check your connection and try again.");
+      setError('Network error. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -285,8 +288,8 @@ export default function FactCheckPage() {
           Fact Check
         </h1>
         <p className="mt-2 text-sm leading-6 text-slate-500">
-          Check whether a claim has already been reviewed by trusted
-          fact-checkers like Snopes, PolitiFact, and similar sources.
+          Find out whether trusted fact-checkers have already reviewed the
+          claim.
         </p>
       </div>
 
@@ -318,8 +321,8 @@ export default function FactCheckPage() {
               <span className="text-xs text-slate-400">50–500 characters</span>
               <span
                 className={cn(
-                  "text-xs",
-                  claimLen > 500 ? "text-red-500" : "text-slate-400",
+                  'text-xs',
+                  claimLen > 500 ? 'text-red-500' : 'text-slate-400',
                 )}
               >
                 {claimLen}/500

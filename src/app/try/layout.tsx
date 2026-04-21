@@ -1,18 +1,14 @@
-import { AnonymousSessionProvider } from "@/components/try/AnonymousSessionContext";
-import { SignupModal } from "@/components/try/SignupModal";
-import { TryHeader } from "@/components/try/TryHeader";
+import { AnonymousSessionProvider } from '@/components/try/AnonymousSessionContext';
+import { SignupModal } from '@/components/try/SignupModal';
+import { TryHeader } from '@/components/try/TryHeader';
 
 export const metadata = {
-  title: "Try Safeguardmedia — 3 free analyses, no account needed",
+  title: 'Try Safeguardmedia. 3 free analyses, no account needed',
   description:
-    "Try deepfake detection, authenticity checks, claim research, fact checks, geolocation verification, and reverse lookup — no login required.",
+    'Try deepfake detection, authenticity checks, claim research, fact checks, geolocation verification, and reverse lookup — no login required.',
 };
 
-export default function TryLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function TryLayout({ children }: { children: React.ReactNode }) {
   return (
     <AnonymousSessionProvider>
       <div className="min-h-svh bg-white">

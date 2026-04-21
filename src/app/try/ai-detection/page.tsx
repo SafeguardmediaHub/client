@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   AlertCircle,
@@ -7,24 +7,24 @@ import {
   Info,
   Loader2,
   XCircle,
-} from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
-import { AnalysisDisclaimer } from "@/components/shared/AnalysisDisclaimer";
-import { useAnonymousSession } from "@/components/try/AnonymousSessionContext";
-import { ToolPageLayout } from "@/components/try/ToolPageLayout";
-import { UploadZone } from "@/components/try/UploadZone";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
-import { getVerdictLabel } from "@/lib/verdict";
+} from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
+import { AnalysisDisclaimer } from '@/components/shared/AnalysisDisclaimer';
+import { useAnonymousSession } from '@/components/try/AnonymousSessionContext';
+import { ToolPageLayout } from '@/components/try/ToolPageLayout';
+import { UploadZone } from '@/components/try/UploadZone';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
+import { getVerdictLabel } from '@/lib/verdict';
 
-const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL ?? "";
+const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL ?? '';
 
 const IMAGE_ACCEPT =
-  "image/jpeg,image/jpg,image/png,image/webp,image/gif,image/bmp,image/tiff,image/heic,image/heif";
+  'image/jpeg,image/jpg,image/png,image/webp,image/gif,image/bmp,image/tiff,image/heic,image/heif';
 const VIDEO_ACCEPT =
-  "video/mp4,video/webm,video/quicktime,video/x-msvideo,video/x-matroska,video/mpeg";
+  'video/mp4,video/webm,video/quicktime,video/x-msvideo,video/x-matroska,video/mpeg';
 
 interface DeepfakeResult {
   isDeepfake: boolean;
@@ -52,14 +52,14 @@ interface DeepfakeResult {
 
 function RiskBadge({ level }: { level: string }) {
   const map: Record<string, string> = {
-    High: "border-red-200 bg-red-50 text-red-700",
-    Medium: "border-amber-200 bg-amber-50 text-amber-700",
-    Low: "border-emerald-200 bg-emerald-50 text-emerald-700",
+    High: 'border-red-200 bg-red-50 text-red-700',
+    Medium: 'border-amber-200 bg-amber-50 text-amber-700',
+    Low: 'border-emerald-200 bg-emerald-50 text-emerald-700',
   };
   return (
     <span
       className={cn(
-        "rounded-full border px-2.5 py-0.5 text-xs font-semibold",
+        'rounded-full border px-2.5 py-0.5 text-xs font-semibold',
         map[level] ?? map.Medium,
       )}
     >
@@ -139,8 +139,8 @@ function ResultCard({
       {/* Verdict header */}
       <div
         className={cn(
-          "border-b border-slate-100 px-4 py-4 sm:px-6 sm:py-5",
-          isDeepfake ? "bg-red-50/60" : "bg-emerald-50/60",
+          'border-b border-slate-100 px-4 py-4 sm:px-6 sm:py-5',
+          isDeepfake ? 'bg-red-50/60' : 'bg-emerald-50/60',
         )}
       >
         <div className="flex items-center justify-between gap-3">
@@ -156,8 +156,8 @@ function ResultCard({
               </div>
               <div
                 className={cn(
-                  "truncate text-lg font-bold sm:text-xl",
-                  isDeepfake ? "text-red-700" : "text-emerald-700",
+                  'truncate text-lg font-bold sm:text-xl',
+                  isDeepfake ? 'text-red-700' : 'text-emerald-700',
                 )}
               >
                 {getVerdictLabel(result.predictedClass)}
@@ -259,7 +259,7 @@ function ResultCard({
 export default function DeepfakePage() {
   const { meta, updateFromResponse, setShowSignupModal } =
     useAnonymousSession();
-  const [tab, setTab] = useState<"image" | "video">("image");
+  const [tab, setTab] = useState<'image' | 'video'>('image');
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<DeepfakeResult | null>(null);
@@ -274,17 +274,17 @@ export default function DeepfakePage() {
     setResult(null);
 
     const form = new FormData();
-    form.append("file", file);
+    form.append('file', file);
 
     const endpoint =
-      tab === "image"
+      tab === 'image'
         ? `${BASE_URL}/api/anonymous/deepfake/image`
         : `${BASE_URL}/api/anonymous/deepfake/video`;
 
     try {
       const res = await fetch(endpoint, {
-        method: "POST",
-        credentials: "include",
+        method: 'POST',
+        credentials: 'include',
         body: form,
       });
 
@@ -297,25 +297,25 @@ export default function DeepfakePage() {
         }
         if (res.status === 400 && json.data?.upgradeRequired) {
           setError(
-            "Video exceeds 60-second limit for free analysis. Sign up for full video support.",
+            'Video exceeds 60-second limit for free analysis. Sign up for full video support.',
           );
           return;
         }
-        setError(json.error ?? json.message ?? "Something went wrong.");
+        setError(json.error ?? json.message ?? 'Something went wrong.');
         return;
       }
 
       if (json.anonymous) updateFromResponse(json.anonymous);
       setResult(json.data);
     } catch {
-      setError("Network error. Check your connection and try again.");
+      setError('Network error. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
   }
 
   function handleTabChange(value: string) {
-    setTab(value as "image" | "video");
+    setTab(value as 'image' | 'video');
     setFile(null);
     setResult(null);
     setError(null);
@@ -333,11 +333,10 @@ export default function DeepfakePage() {
 
       <div className="mb-6 sm:mb-8">
         <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-          AI-Generated Media Detection
+          AI Media Detection
         </h1>
         <p className="mt-2 text-sm leading-6 text-slate-500">
-          Upload an image or video clip to check for AI-generated or manipulated
-          content.
+          Check if an image or short video may be AI-generated or manipulated.
         </p>
       </div>
 
@@ -371,7 +370,11 @@ export default function DeepfakePage() {
                 acceptLabel="JPEG, PNG, WebP, GIF, TIFF, HEIC"
                 maxSizeMB={10}
                 file={file}
-                onChange={(f) => { setFile(f); setResult(null); setError(null); }}
+                onChange={(f) => {
+                  setFile(f);
+                  setResult(null);
+                  setError(null);
+                }}
                 disabled={loading}
               />
             </TabsContent>
@@ -382,7 +385,11 @@ export default function DeepfakePage() {
                 acceptLabel="MP4, WebM, MOV, AVI, MKV"
                 maxSizeMB={100}
                 file={file}
-                onChange={(f) => { setFile(f); setResult(null); setError(null); }}
+                onChange={(f) => {
+                  setFile(f);
+                  setResult(null);
+                  setError(null);
+                }}
                 disabled={loading}
               />
               <p className="flex items-center gap-1.5 text-xs text-slate-400">
@@ -411,7 +418,7 @@ export default function DeepfakePage() {
                 Analyzing…
               </>
             ) : (
-              "Analyze"
+              'Analyze'
             )}
           </Button>
 

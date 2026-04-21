@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   AlertCircle,
@@ -7,59 +7,59 @@ import {
   Loader2,
   MapPin,
   XCircle,
-} from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
-import { AnalysisDisclaimer } from "@/components/shared/AnalysisDisclaimer";
-import { useAnonymousSession } from "@/components/try/AnonymousSessionContext";
-import { ToolPageLayout } from "@/components/try/ToolPageLayout";
-import { UploadZone } from "@/components/try/UploadZone";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+} from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
+import { AnalysisDisclaimer } from '@/components/shared/AnalysisDisclaimer';
+import { useAnonymousSession } from '@/components/try/AnonymousSessionContext';
+import { ToolPageLayout } from '@/components/try/ToolPageLayout';
+import { UploadZone } from '@/components/try/UploadZone';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
-const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL ?? "";
+const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL ?? '';
 
 const IMAGE_ACCEPT =
-  "image/jpeg,image/jpg,image/png,image/webp,image/gif,image/bmp,image/tiff,image/heic,image/heif";
+  'image/jpeg,image/jpg,image/png,image/webp,image/gif,image/bmp,image/tiff,image/heic,image/heif';
 
 interface GeoResult {
   fileName: string;
   claimedLocation: string;
   extractedCoordinates: { latitude: number; longitude: number } | null;
   match: { match: boolean; confidence: number; distance: number } | null;
-  verdict: "MATCH" | "MISMATCH" | "NO_GPS_DATA" | "UNVERIFIABLE";
+  verdict: 'MATCH' | 'MISMATCH' | 'NO_GPS_DATA' | 'UNVERIFIABLE';
   confidence: number;
   summary: string;
 }
 
 const VERDICT_CONFIG = {
   MATCH: {
-    label: "Match",
-    color: "text-emerald-700",
-    bg: "bg-emerald-50/60",
-    border: "border-emerald-200",
+    label: 'Match',
+    color: 'text-emerald-700',
+    bg: 'bg-emerald-50/60',
+    border: 'border-emerald-200',
     Icon: CheckCircle2,
   },
   MISMATCH: {
-    label: "Mismatch",
-    color: "text-red-700",
-    bg: "bg-red-50/60",
-    border: "border-red-200",
+    label: 'Mismatch',
+    color: 'text-red-700',
+    bg: 'bg-red-50/60',
+    border: 'border-red-200',
     Icon: XCircle,
   },
   NO_GPS_DATA: {
-    label: "No GPS Data",
-    color: "text-slate-600",
-    bg: "bg-slate-50",
-    border: "border-slate-200",
+    label: 'No GPS Data',
+    color: 'text-slate-600',
+    bg: 'bg-slate-50',
+    border: 'border-slate-200',
     Icon: MapPin,
   },
   UNVERIFIABLE: {
-    label: "Unverifiable",
-    color: "text-amber-700",
-    bg: "bg-amber-50/60",
-    border: "border-amber-200",
+    label: 'Unverifiable',
+    color: 'text-amber-700',
+    bg: 'bg-amber-50/60',
+    border: 'border-amber-200',
     Icon: AlertCircle,
   },
 };
@@ -76,19 +76,19 @@ function ResultCard({
   const config = VERDICT_CONFIG[result.verdict];
   const { Icon } = config;
   const showConfidence =
-    result.verdict !== "NO_GPS_DATA" && result.verdict !== "UNVERIFIABLE";
+    result.verdict !== 'NO_GPS_DATA' && result.verdict !== 'UNVERIFIABLE';
 
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className={cn("border-b border-slate-100 px-6 py-5", config.bg)}>
+      <div className={cn('border-b border-slate-100 px-6 py-5', config.bg)}>
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <Icon className={cn("h-6 w-6", config.color)} />
+            <Icon className={cn('h-6 w-6', config.color)} />
             <div>
               <div className="text-xs font-semibold uppercase tracking-widest text-slate-400">
                 Verdict
               </div>
-              <div className={cn("text-xl font-bold", config.color)}>
+              <div className={cn('text-xl font-bold', config.color)}>
                 {config.label}
               </div>
             </div>
@@ -96,7 +96,7 @@ function ResultCard({
           {showConfidence && (
             <span
               className={cn(
-                "rounded-full border px-2.5 py-0.5 text-xs font-semibold",
+                'rounded-full border px-2.5 py-0.5 text-xs font-semibold',
                 config.border,
                 config.color,
                 config.bg,
@@ -166,7 +166,7 @@ export default function GeolocationPage() {
   const { meta, updateFromResponse, setShowSignupModal } =
     useAnonymousSession();
   const [file, setFile] = useState<File | null>(null);
-  const [location, setLocation] = useState("");
+  const [location, setLocation] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<GeoResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -181,13 +181,13 @@ export default function GeolocationPage() {
     setResult(null);
 
     const form = new FormData();
-    form.append("file", file!);
-    form.append("claimedLocation", location.trim());
+    form.append('file', file!);
+    form.append('claimedLocation', location.trim());
 
     try {
       const res = await fetch(`${BASE_URL}/api/anonymous/geolocation`, {
-        method: "POST",
-        credentials: "include",
+        method: 'POST',
+        credentials: 'include',
         body: form,
       });
 
@@ -198,14 +198,14 @@ export default function GeolocationPage() {
           setShowSignupModal(true);
           return;
         }
-        setError(json.message ?? "Something went wrong.");
+        setError(json.message ?? 'Something went wrong.');
         return;
       }
 
       if (json.anonymous) updateFromResponse(json.anonymous);
       setResult(json.data);
     } catch {
-      setError("Network error. Check your connection and try again.");
+      setError('Network error. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -226,8 +226,7 @@ export default function GeolocationPage() {
           Geolocation Verify
         </h1>
         <p className="mt-2 text-sm leading-6 text-slate-500">
-          Check whether an image&apos;s embedded GPS data matches a claimed
-          location.
+          Check whether an image's location data matches the claimed place.{' '}
         </p>
       </div>
 
@@ -250,7 +249,11 @@ export default function GeolocationPage() {
             acceptLabel="JPEG, PNG, WebP, TIFF, HEIC"
             maxSizeMB={10}
             file={file}
-            onChange={(f) => { setFile(f); setResult(null); setError(null); }}
+            onChange={(f) => {
+              setFile(f);
+              setResult(null);
+              setError(null);
+            }}
             disabled={loading}
           />
 
@@ -286,7 +289,7 @@ export default function GeolocationPage() {
                 Verifying…
               </>
             ) : (
-              "Verify Location"
+              'Verify Location'
             )}
           </Button>
 

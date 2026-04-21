@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   AlertCircle,
@@ -10,17 +10,17 @@ import {
   Minus,
   TrendingDown,
   TrendingUp,
-} from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
-import { AnalysisDisclaimer } from "@/components/shared/AnalysisDisclaimer";
-import { useAnonymousSession } from "@/components/try/AnonymousSessionContext";
-import { ToolPageLayout } from "@/components/try/ToolPageLayout";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
+} from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
+import { AnalysisDisclaimer } from '@/components/shared/AnalysisDisclaimer';
+import { useAnonymousSession } from '@/components/try/AnonymousSessionContext';
+import { ToolPageLayout } from '@/components/try/ToolPageLayout';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
 
-const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL ?? "";
+const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL ?? '';
 
 interface SearchResult {
   source: string;
@@ -55,14 +55,14 @@ interface ClaimResult {
 function ConfidencePill({ value }: { value: number }) {
   const style =
     value >= 70
-      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
       : value >= 40
-        ? "border-amber-200 bg-amber-50 text-amber-700"
-        : "border-red-200 bg-red-50 text-red-700";
+        ? 'border-amber-200 bg-amber-50 text-amber-700'
+        : 'border-red-200 bg-red-50 text-red-700';
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold",
+        'inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold',
         style,
       )}
     >
@@ -110,31 +110,35 @@ function ResultCard({
         <div className="grid grid-cols-3 gap-2 sm:gap-3">
           {[
             {
-              label: "Supporting",
+              label: 'Supporting',
               value: synthesis.evidence_assessment.supporting,
               Icon: TrendingUp,
-              color: "text-emerald-600",
+              color: 'text-emerald-600',
             },
             {
-              label: "Contradicting",
+              label: 'Contradicting',
               value: synthesis.evidence_assessment.contradicting,
               Icon: TrendingDown,
-              color: "text-red-600",
+              color: 'text-red-600',
             },
             {
-              label: "Neutral",
+              label: 'Neutral',
               value: synthesis.evidence_assessment.neutral,
               Icon: Minus,
-              color: "text-slate-500",
+              color: 'text-slate-500',
             },
           ].map(({ label, value, Icon, color }) => (
             <div
               key={label}
               className="rounded-xl border border-slate-100 bg-slate-50 p-2.5 text-center sm:p-3"
             >
-              <Icon className={cn("mx-auto mb-1 h-4 w-4", color)} />
-              <div className="text-xl font-bold text-slate-900 sm:text-2xl">{value}</div>
-              <div className="truncate text-[10px] text-slate-400 sm:text-xs">{label}</div>
+              <Icon className={cn('mx-auto mb-1 h-4 w-4', color)} />
+              <div className="text-xl font-bold text-slate-900 sm:text-2xl">
+                {value}
+              </div>
+              <div className="truncate text-[10px] text-slate-400 sm:text-xs">
+                {label}
+              </div>
             </div>
           ))}
         </div>
@@ -177,7 +181,10 @@ function ResultCard({
             </div>
             <ul className="space-y-1.5">
               {synthesis.limitations.map((l, i) => (
-                <li key={i} className="flex items-start gap-2.5 text-sm text-slate-500">
+                <li
+                  key={i}
+                  className="flex items-start gap-2.5 text-sm text-slate-500"
+                >
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-300" />
                   {l}
                 </li>
@@ -194,7 +201,8 @@ function ResultCard({
                 Sources searched
               </div>
               <span className="text-xs text-slate-400">
-                {result.searchResultCount} result{result.searchResultCount !== 1 ? "s" : ""}
+                {result.searchResultCount} result
+                {result.searchResultCount !== 1 ? 's' : ''}
               </span>
             </div>
             <div className="space-y-2">
@@ -213,7 +221,11 @@ function ResultCard({
                       </span>
                       {s.date && (
                         <span className="text-xs text-slate-400">
-                          {new Date(s.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                          {new Date(s.date).toLocaleDateString('en-GB', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                          })}
                         </span>
                       )}
                     </div>
@@ -273,7 +285,7 @@ function ResultCard({
 export default function ClaimResearchPage() {
   const { meta, updateFromResponse, setShowSignupModal } =
     useAnonymousSession();
-  const [claim, setClaim] = useState("");
+  const [claim, setClaim] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ClaimResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -296,9 +308,9 @@ export default function ClaimResearchPage() {
 
     try {
       const res = await fetch(`${BASE_URL}/api/anonymous/claim-research`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ claim: claim.trim() }),
       });
 
@@ -309,14 +321,14 @@ export default function ClaimResearchPage() {
           setShowSignupModal(true);
           return;
         }
-        setError(json.message ?? "Something went wrong.");
+        setError(json.message ?? 'Something went wrong.');
         return;
       }
 
       if (json.anonymous) updateFromResponse(json.anonymous);
       setResult(json.data);
     } catch {
-      setError("Network error. Check your connection and try again.");
+      setError('Network error. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -337,8 +349,8 @@ export default function ClaimResearchPage() {
           Claim Research
         </h1>
         <p className="mt-2 text-sm leading-6 text-slate-500">
-          Enter a factual claim. We&apos;ll search the web and synthesise
-          evidence-backed findings.
+          Explore whether a claim is supported by credible sources and available
+          evidence.
         </p>
       </div>
 
@@ -370,8 +382,8 @@ export default function ClaimResearchPage() {
               <span className="text-xs text-slate-400">10–1000 characters</span>
               <span
                 className={cn(
-                  "text-xs",
-                  claimLen > 1000 ? "text-red-500" : "text-slate-400",
+                  'text-xs',
+                  claimLen > 1000 ? 'text-red-500' : 'text-slate-400',
                 )}
               >
                 {claimLen}/1000
@@ -383,12 +395,12 @@ export default function ClaimResearchPage() {
           {claimLen >= 10 && (
             <div
               className={cn(
-                "rounded-xl border px-4 py-3 text-sm transition-colors",
+                'rounded-xl border px-4 py-3 text-sm transition-colors',
                 claimLen >= 120
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
                   : claimLen >= 60
-                    ? "border-blue-200 bg-blue-50 text-blue-700"
-                    : "border-amber-200 bg-amber-50 text-amber-700",
+                    ? 'border-blue-200 bg-blue-50 text-blue-700'
+                    : 'border-amber-200 bg-amber-50 text-amber-700',
               )}
             >
               <div className="flex items-center justify-between gap-3">
@@ -396,18 +408,22 @@ export default function ClaimResearchPage() {
                   {claimLen >= 120
                     ? "Good detail — you'll get a thorough result"
                     : claimLen >= 60
-                      ? "Adding more context improves accuracy"
-                      : "Try adding more detail for a stronger result"}
+                      ? 'Adding more context improves accuracy'
+                      : 'Try adding more detail for a stronger result'}
                 </span>
                 <span className="shrink-0 text-xs font-semibold opacity-70">
-                  {claimLen >= 120 ? "Strong" : claimLen >= 60 ? "Moderate" : "Basic"}
+                  {claimLen >= 120
+                    ? 'Strong'
+                    : claimLen >= 60
+                      ? 'Moderate'
+                      : 'Basic'}
                 </span>
               </div>
               {claimLen < 120 && (
                 <p className="mt-1 text-xs opacity-75">
                   {claimLen < 60
-                    ? "Include who, when, or where — e.g. \"The Eiffel Tower was built in 1887 for the Paris World's Fair.\""
-                    : "You can add a date, location, or source to help narrow the search."}
+                    ? 'Include who, when, or where — e.g. "The Eiffel Tower was built in 1887 for the Paris World\'s Fair."'
+                    : 'You can add a date, location, or source to help narrow the search.'}
                 </p>
               )}
             </div>
@@ -432,7 +448,7 @@ export default function ClaimResearchPage() {
                 Researching…
               </>
             ) : (
-              "Research Claim"
+              'Research Claim'
             )}
           </Button>
 

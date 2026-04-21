@@ -1,4 +1,4 @@
-import { Info } from "lucide-react";
+import { Info } from 'lucide-react';
 
 export function AnalysisDisclaimer() {
   return (
@@ -6,7 +6,7 @@ export function AnalysisDisclaimer() {
       <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" />
       <p className="text-xs leading-5 text-slate-500">
         Results are generated using Safeguardmedia&apos;s multi-layer
-        verification process. For informational purposes only — always apply
+        verification process. For informational purposes only. Always apply
         editorial judgement before acting on any finding.
       </p>
     </div>

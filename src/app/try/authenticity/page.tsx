@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   AlertCircle,
@@ -6,20 +6,20 @@ import {
   CheckCircle2,
   Loader2,
   XCircle,
-} from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
-import { AnalysisDisclaimer } from "@/components/shared/AnalysisDisclaimer";
-import { useAnonymousSession } from "@/components/try/AnonymousSessionContext";
-import { ToolPageLayout } from "@/components/try/ToolPageLayout";
-import { UploadZone } from "@/components/try/UploadZone";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+} from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
+import { AnalysisDisclaimer } from '@/components/shared/AnalysisDisclaimer';
+import { useAnonymousSession } from '@/components/try/AnonymousSessionContext';
+import { ToolPageLayout } from '@/components/try/ToolPageLayout';
+import { UploadZone } from '@/components/try/UploadZone';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
-const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL ?? "";
+const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL ?? '';
 
 const ACCEPT =
-  "image/jpeg,image/jpg,image/png,image/webp,image/gif,image/bmp,image/tiff,image/heic,image/heif,video/mp4,video/webm,video/quicktime,audio/mpeg,audio/wav,audio/m4a,audio/ogg";
+  'image/jpeg,image/jpg,image/png,image/webp,image/gif,image/bmp,image/tiff,image/heic,image/heif,video/mp4,video/webm,video/quicktime,audio/mpeg,audio/wav,audio/m4a,audio/ogg';
 
 interface AuthResult {
   fileName: string;
@@ -74,38 +74,38 @@ interface AuthResult {
 
 const STATUS_CONFIG = {
   authentic: {
-    label: "Authentic",
-    color: "text-emerald-700",
-    bg: "bg-emerald-50/60",
-    border: "border-emerald-200",
+    label: 'Authentic',
+    color: 'text-emerald-700',
+    bg: 'bg-emerald-50/60',
+    border: 'border-emerald-200',
     Icon: CheckCircle2,
   },
   likely_authentic: {
-    label: "Likely Authentic",
-    color: "text-teal-700",
-    bg: "bg-teal-50/60",
-    border: "border-teal-200",
+    label: 'Likely Authentic',
+    color: 'text-teal-700',
+    bg: 'bg-teal-50/60',
+    border: 'border-teal-200',
     Icon: CheckCircle2,
   },
   suspicious: {
-    label: "Suspicious",
-    color: "text-amber-700",
-    bg: "bg-amber-50/60",
-    border: "border-amber-200",
+    label: 'Suspicious',
+    color: 'text-amber-700',
+    bg: 'bg-amber-50/60',
+    border: 'border-amber-200',
     Icon: AlertCircle,
   },
   likely_manipulated: {
-    label: "Likely Manipulated",
-    color: "text-orange-700",
-    bg: "bg-orange-50/60",
-    border: "border-orange-200",
+    label: 'Likely Manipulated',
+    color: 'text-orange-700',
+    bg: 'bg-orange-50/60',
+    border: 'border-orange-200',
     Icon: XCircle,
   },
   manipulated: {
-    label: "Manipulated",
-    color: "text-red-700",
-    bg: "bg-red-50/60",
-    border: "border-red-200",
+    label: 'Manipulated',
+    color: 'text-red-700',
+    bg: 'bg-red-50/60',
+    border: 'border-red-200',
     Icon: XCircle,
   },
 } as const;
@@ -126,22 +126,32 @@ function ResultCard({
 
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className={cn("border-b border-slate-100 px-4 py-4 sm:px-6 sm:py-5", config.bg)}>
+      <div
+        className={cn(
+          'border-b border-slate-100 px-4 py-4 sm:px-6 sm:py-5',
+          config.bg,
+        )}
+      >
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
-            <Icon className={cn("h-6 w-6 shrink-0", config.color)} />
+            <Icon className={cn('h-6 w-6 shrink-0', config.color)} />
             <div className="min-w-0">
               <div className="text-xs font-semibold uppercase tracking-widest text-slate-400">
                 Verdict
               </div>
-              <div className={cn("truncate text-lg font-bold sm:text-xl", config.color)}>
+              <div
+                className={cn(
+                  'truncate text-lg font-bold sm:text-xl',
+                  config.color,
+                )}
+              >
                 {config.label}
               </div>
             </div>
           </div>
           <span
             className={cn(
-              "shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-semibold",
+              'shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-semibold',
               config.border,
               config.color,
               config.bg,
@@ -160,23 +170,50 @@ function ResultCard({
         {/* Scores grid */}
         <div className="grid grid-cols-3 gap-2 sm:gap-3">
           {[
-            { label: "Integrity", value: result.tamperAnalysis.details.integrity },
-            { label: "Authenticity", value: result.tamperAnalysis.details.authenticity },
-            { label: "Completeness", value: result.tamperAnalysis.details.completeness },
+            {
+              label: 'Integrity',
+              value: result.tamperAnalysis.details.integrity,
+            },
+            {
+              label: 'Authenticity',
+              value: result.tamperAnalysis.details.authenticity,
+            },
+            {
+              label: 'Completeness',
+              value: result.tamperAnalysis.details.completeness,
+            },
           ].map(({ label, value }) => {
             const pct = Math.round(value * 100);
             const color =
-              pct >= 70 ? "text-emerald-600" : pct >= 40 ? "text-amber-600" : "text-red-600";
+              pct >= 70
+                ? 'text-emerald-600'
+                : pct >= 40
+                  ? 'text-amber-600'
+                  : 'text-red-600';
             const bar =
-              pct >= 70 ? "bg-emerald-400" : pct >= 40 ? "bg-amber-400" : "bg-red-400";
+              pct >= 70
+                ? 'bg-emerald-400'
+                : pct >= 40
+                  ? 'bg-amber-400'
+                  : 'bg-red-400';
             return (
-              <div key={label} className="rounded-xl border border-slate-100 bg-slate-50 px-2.5 py-2.5 sm:px-3 sm:py-3">
+              <div
+                key={label}
+                className="rounded-xl border border-slate-100 bg-slate-50 px-2.5 py-2.5 sm:px-3 sm:py-3"
+              >
                 <div className="truncate text-[10px] font-medium uppercase tracking-widest text-slate-400 sm:text-xs">
                   {label}
                 </div>
-                <div className={cn("mt-1 text-base font-bold sm:text-xl", color)}>{pct}%</div>
+                <div
+                  className={cn('mt-1 text-base font-bold sm:text-xl', color)}
+                >
+                  {pct}%
+                </div>
                 <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
-                  <div className={cn("h-full rounded-full", bar)} style={{ width: `${pct}%` }} />
+                  <div
+                    className={cn('h-full rounded-full', bar)}
+                    style={{ width: `${pct}%` }}
+                  />
                 </div>
               </div>
             );
@@ -185,26 +222,32 @@ function ResultCard({
 
         {/* Risk assessment */}
         {result.tamperAnalysis.summary.riskAssessment && (
-          <div className={cn(
-            "rounded-xl border px-4 py-3",
-            result.tamperAnalysis.summary.riskAssessment.level === "High"
-              ? "border-red-100 bg-red-50/50"
-              : result.tamperAnalysis.summary.riskAssessment.level === "Medium"
-                ? "border-amber-100 bg-amber-50/50"
-                : "border-emerald-100 bg-emerald-50/50",
-          )}>
+          <div
+            className={cn(
+              'rounded-xl border px-4 py-3',
+              result.tamperAnalysis.summary.riskAssessment.level === 'High'
+                ? 'border-red-100 bg-red-50/50'
+                : result.tamperAnalysis.summary.riskAssessment.level ===
+                    'Medium'
+                  ? 'border-amber-100 bg-amber-50/50'
+                  : 'border-emerald-100 bg-emerald-50/50',
+            )}
+          >
             <div className="flex items-center justify-between gap-2">
               <div className="text-xs font-semibold uppercase tracking-widest text-slate-400">
                 Risk Assessment
               </div>
-              <span className={cn(
-                "rounded-full px-2 py-0.5 text-xs font-semibold",
-                result.tamperAnalysis.summary.riskAssessment.level === "High"
-                  ? "bg-red-100 text-red-700"
-                  : result.tamperAnalysis.summary.riskAssessment.level === "Medium"
-                    ? "bg-amber-100 text-amber-700"
-                    : "bg-emerald-100 text-emerald-700",
-              )}>
+              <span
+                className={cn(
+                  'rounded-full px-2 py-0.5 text-xs font-semibold',
+                  result.tamperAnalysis.summary.riskAssessment.level === 'High'
+                    ? 'bg-red-100 text-red-700'
+                    : result.tamperAnalysis.summary.riskAssessment.level ===
+                        'Medium'
+                      ? 'bg-amber-100 text-amber-700'
+                      : 'bg-emerald-100 text-emerald-700',
+                )}
+              >
                 {result.tamperAnalysis.summary.riskAssessment.level}
               </span>
             </div>
@@ -241,15 +284,17 @@ function ResultCard({
               Suspicious Indicators
             </div>
             <ul className="space-y-2">
-              {result.tamperAnalysis.details.suspiciousIndicators.map((s, i) => (
-                <li
-                  key={i}
-                  className="flex items-start gap-2.5 rounded-xl border border-red-100 bg-red-50/50 px-4 py-3"
-                >
-                  <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
-                  <span className="text-sm text-red-800">{s}</span>
-                </li>
-              ))}
+              {result.tamperAnalysis.details.suspiciousIndicators.map(
+                (s, i) => (
+                  <li
+                    key={i}
+                    className="flex items-start gap-2.5 rounded-xl border border-red-100 bg-red-50/50 px-4 py-3"
+                  >
+                    <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
+                    <span className="text-sm text-red-800">{s}</span>
+                  </li>
+                ),
+              )}
             </ul>
           </div>
         )}
@@ -286,7 +331,7 @@ function ResultCard({
             </span>
           )}
           <span>{(result.fileSize / 1024).toFixed(1)} KB</span>
-          <span className="uppercase">{result.mimeType.split("/")[1]}</span>
+          <span className="uppercase">{result.mimeType.split('/')[1]}</span>
           {result.metadata.temporal.datesConsistent ? (
             <span className="flex items-center gap-1 text-emerald-600">
               <CheckCircle2 className="h-3.5 w-3.5" /> Timestamps consistent
@@ -346,12 +391,12 @@ export default function AuthenticityPage() {
     setResult(null);
 
     const form = new FormData();
-    form.append("file", file);
+    form.append('file', file);
 
     try {
       const res = await fetch(`${BASE_URL}/api/anonymous/authenticity`, {
-        method: "POST",
-        credentials: "include",
+        method: 'POST',
+        credentials: 'include',
         body: form,
       });
 
@@ -362,14 +407,14 @@ export default function AuthenticityPage() {
           setShowSignupModal(true);
           return;
         }
-        setError(json.message ?? "Something went wrong.");
+        setError(json.message ?? 'Something went wrong.');
         return;
       }
 
       if (json.anonymous) updateFromResponse(json.anonymous);
       setResult(json.data);
     } catch {
-      setError("Network error. Check your connection and try again.");
+      setError('Network error. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -390,8 +435,8 @@ export default function AuthenticityPage() {
           Authenticity Check
         </h1>
         <p className="mt-2 text-sm leading-6 text-slate-500">
-          Analyse file metadata integrity — detect editing traces, timestamp
-          anomalies, and GPS inconsistencies.
+          Review metadata for signs of editing, unusual timestamps, or location
+          issues.
         </p>
       </div>
 
@@ -414,7 +459,11 @@ export default function AuthenticityPage() {
             acceptLabel="Images, Video, Audio"
             maxSizeMB={10}
             file={file}
-            onChange={(f) => { setFile(f); setResult(null); setError(null); }}
+            onChange={(f) => {
+              setFile(f);
+              setResult(null);
+              setError(null);
+            }}
             disabled={loading}
           />
 
@@ -437,7 +486,7 @@ export default function AuthenticityPage() {
                 Analyzing…
               </>
             ) : (
-              "Analyze"
+              'Analyze'
             )}
           </Button>
 

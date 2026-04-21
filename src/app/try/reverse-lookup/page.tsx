@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { AlertCircle, ArrowLeft, ExternalLink, Loader2 } from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
-import { AnalysisDisclaimer } from "@/components/shared/AnalysisDisclaimer";
-import { useAnonymousSession } from "@/components/try/AnonymousSessionContext";
-import { ToolPageLayout } from "@/components/try/ToolPageLayout";
-import { UploadZone } from "@/components/try/UploadZone";
-import { Button } from "@/components/ui/button";
+import { AlertCircle, ArrowLeft, ExternalLink, Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
+import { AnalysisDisclaimer } from '@/components/shared/AnalysisDisclaimer';
+import { useAnonymousSession } from '@/components/try/AnonymousSessionContext';
+import { ToolPageLayout } from '@/components/try/ToolPageLayout';
+import { UploadZone } from '@/components/try/UploadZone';
+import { Button } from '@/components/ui/button';
 
-const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL ?? "";
+const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL ?? '';
 
 const IMAGE_ACCEPT =
-  "image/jpeg,image/jpg,image/png,image/webp,image/gif,image/bmp,image/tiff,image/heic,image/heif";
+  'image/jpeg,image/jpg,image/png,image/webp,image/gif,image/bmp,image/tiff,image/heic,image/heif';
 
 interface ReverseMatch {
   title: string;
@@ -49,9 +49,9 @@ function ResultCard({
               Results
             </div>
             <div className="mt-1 text-xl font-bold text-slate-900">
-              Found in{" "}
-              <span className="text-blue-600">{result.totalMatches}</span>{" "}
-              location{result.totalMatches !== 1 ? "s" : ""} online
+              Found in{' '}
+              <span className="text-blue-600">{result.totalMatches}</span>{' '}
+              location{result.totalMatches !== 1 ? 's' : ''} online
             </div>
           </div>
         </div>
@@ -92,7 +92,7 @@ function ResultCard({
 
         {result.totalMatches > VISIBLE && (
           <p className="pt-1 text-center text-xs text-slate-400">
-            Showing {VISIBLE} of {result.totalMatches} matches.{" "}
+            Showing {VISIBLE} of {result.totalMatches} matches.{' '}
             <span className="text-blue-500">Sign up to see all results.</span>
           </p>
         )}
@@ -134,12 +134,12 @@ export default function ReverseLookupPage() {
     setResult(null);
 
     const form = new FormData();
-    form.append("file", file);
+    form.append('file', file);
 
     try {
       const res = await fetch(`${BASE_URL}/api/anonymous/reverse-lookup`, {
-        method: "POST",
-        credentials: "include",
+        method: 'POST',
+        credentials: 'include',
         body: form,
       });
 
@@ -150,14 +150,14 @@ export default function ReverseLookupPage() {
           setShowSignupModal(true);
           return;
         }
-        setError(json.message ?? "Something went wrong.");
+        setError(json.message ?? 'Something went wrong.');
         return;
       }
 
       if (json.anonymous) updateFromResponse(json.anonymous);
       setResult(json.data);
     } catch {
-      setError("Network error. Check your connection and try again.");
+      setError('Network error. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -178,8 +178,7 @@ export default function ReverseLookupPage() {
           Reverse Image Search
         </h1>
         <p className="mt-2 text-sm leading-6 text-slate-500">
-          Find where an image appears across the web using Google Vision web
-          detection.
+          See where an image appears online and find clues about its source.
         </p>
       </div>
 
@@ -202,7 +201,11 @@ export default function ReverseLookupPage() {
             acceptLabel="JPEG, PNG, WebP, GIF, TIFF, HEIC"
             maxSizeMB={10}
             file={file}
-            onChange={(f) => { setFile(f); setResult(null); setError(null); }}
+            onChange={(f) => {
+              setFile(f);
+              setResult(null);
+              setError(null);
+            }}
             disabled={loading}
           />
 
@@ -225,7 +228,7 @@ export default function ReverseLookupPage() {
                 Searching…
               </>
             ) : (
-              "Search Web"
+              'Search Web'
             )}
           </Button>
 
