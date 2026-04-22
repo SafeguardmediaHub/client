@@ -12,6 +12,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import TimelineResult from '@/components/timelineResult';
+import { AnalysisDisclaimer } from '@/components/shared/AnalysisDisclaimer';
 import { Button } from '@/components/ui/button';
 import { useGetMedia } from '@/hooks/useMedia';
 import {
@@ -330,12 +331,17 @@ function TimelineResultsContent() {
     };
 
     return (
-      <TimelineResult
-        data={mappedData}
-        media={mediaWithTimeline}
-        onBack={handleBack}
-        claimedDate={claimedDate || ''}
-      />
+      <>
+        <TimelineResult
+          data={mappedData}
+          media={mediaWithTimeline}
+          onBack={handleBack}
+          claimedDate={claimedDate || ''}
+        />
+        <div className="px-6 pb-6">
+          <AnalysisDisclaimer />
+        </div>
+      </>
     );
   }
 

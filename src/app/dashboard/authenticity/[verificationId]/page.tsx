@@ -31,6 +31,7 @@ import {
   useVerificationDetails,
   useVerificationStream,
 } from '@/hooks/useC2PA';
+import { AnalysisDisclaimer } from '@/components/shared/AnalysisDisclaimer';
 import { useReportGeneration } from '@/hooks/useReports';
 import { cn } from '@/lib/utils';
 import type { VerificationStreamUpdate } from '@/types/c2pa';
@@ -859,6 +860,8 @@ export default function VerificationDetailsPage() {
           </div>
         </>
       )}
+
+      <AnalysisDisclaimer />
     </div>
   );
 }

@@ -1099,6 +1099,8 @@ export function AIMediaDetectionWorkspace() {
               Refresh analyses
             </Button>
           </div>
+
+          <AnalysisDisclaimer />
         </div>
       );
     }
