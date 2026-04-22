@@ -376,7 +376,7 @@ export default function FactCheckPage() {
           {result && (
             <ResultCard
               result={result}
-              triesRemaining={meta.triesRemaining}
+              triesRemaining={meta.mode === "anonymous" ? meta.triesRemaining : 0}
               onSignup={() => setShowSignupModal(true)}
             />
           )}
