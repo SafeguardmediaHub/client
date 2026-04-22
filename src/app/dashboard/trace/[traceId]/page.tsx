@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AnalysisDisclaimer } from "@/components/shared/AnalysisDisclaimer";
 import { useReportGeneration } from "@/hooks/useReports";
 import { useTraceDistribution, useTraceResult, useTraceTimeline } from "@/hooks/useTrace";
 import type { TraceStatus } from "@/types/trace";
@@ -544,6 +545,8 @@ const TraceDetailContent = () => {
               )}
             </div>
           </div>
+
+          <AnalysisDisclaimer />
         </div>
       )}
 

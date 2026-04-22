@@ -36,6 +36,7 @@ import { useBatch } from '@/hooks/batches/useBatch';
 import { useBatchResults } from '@/hooks/batches/useBatchResults';
 import { useDeleteBatch } from '@/hooks/batches/useDeleteBatch';
 import { useRetryBatch } from '@/hooks/batches/useRetryBatch';
+import { AnalysisDisclaimer } from '@/components/shared/AnalysisDisclaimer';
 import { formatDate, formatFileSize, getFileIcon } from '@/lib/batch-utils';
 import type { BatchResultItem, BatchResultsParams } from '@/types/batch';
 
@@ -484,6 +485,8 @@ export default function BatchDetailPage({
           </TabsContent>
         </Tabs>
       </Card>
+
+      <AnalysisDisclaimer />
 
       {/* Item Detail Modal */}
       {selectedItemId && (
