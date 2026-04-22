@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertCircle, Eye, EyeOff, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -32,6 +32,19 @@ export function SignupForm({
   const [showPasswordErrors, setShowPasswordErrors] = useState(false);
 
   const registerMutation = useRegister();
+  const anonymousIdRef = useRef<string | undefined>(undefined);
+
+  useEffect(() => {
+    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL ?? "";
+    fetch(`${baseUrl}/api/anonymous/status`, { credentials: "include" })
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.success && json.data?.anonymousId) {
+          anonymousIdRef.current = json.data.anonymousId;
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Validate password on change
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -88,6 +101,7 @@ export function SignupForm({
       firstName,
       lastName,
       ...(userType && { userType }),
+      ...(anonymousIdRef.current && { anonymousId: anonymousIdRef.current }),
     });
   };
 

@@ -68,11 +68,7 @@ export default function HeroSection() {
               >
                 <motion.div variants={motionSet.item}>
                   <Link
-                    href={
-                      isAuthenticated
-                        ? "/dashboard/ai-media-detection"
-                        : "/auth/signup"
-                    }
+                    href={isAuthenticated ? "/try" : "/auth/signup"}
                     className="group inline-flex w-fit items-center gap-3 rounded-full border border-blue-200 bg-white/80 px-4 py-1.5 text-sm font-medium text-blue-700 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-blue-300 hover:shadow-md"
                   >
                     <Sparkles className="h-4 w-4" />
@@ -121,7 +117,7 @@ export default function HeroSection() {
                       className="rounded-xl bg-blue-600 px-8 py-6 text-base text-white shadow-xl shadow-blue-500/20 hover:bg-blue-700"
                     >
                       <Link
-                        href={isAuthenticated ? "/dashboard" : "/auth/signup"}
+                        href={isAuthenticated ? "/try" : "/auth/signup"}
                       >
                         Get Started
                       </Link>

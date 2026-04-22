@@ -10,6 +10,35 @@ export function TryCounter() {
     return <div className="h-7 w-36 animate-pulse rounded-full bg-slate-100" />;
   }
 
+  if (meta.mode === "authenticated") {
+    const { analysesRemaining, requiresUpgrade } = meta;
+    const isExhausted = analysesRemaining === 0 || requiresUpgrade;
+    const isLow = !isExhausted && analysesRemaining <= 5;
+
+    return (
+      <div
+        className={cn(
+          "inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors sm:text-sm",
+          isExhausted
+            ? "border-red-200 bg-red-50 text-red-700"
+            : isLow
+              ? "border-amber-200 bg-amber-50 text-amber-700"
+              : "border-slate-200 bg-white text-slate-600",
+        )}
+      >
+        <span className="hidden sm:inline">
+          {isExhausted
+            ? "No analyses left this month"
+            : `${analysesRemaining} analyses left this month`}
+        </span>
+        <span className="sm:hidden">
+          {isExhausted ? "0 left" : `${analysesRemaining} left`}
+        </span>
+      </div>
+    );
+  }
+
+  // Anonymous mode
   const { triesRemaining } = meta;
   const used = 3 - triesRemaining;
   const isLast = triesRemaining === 1;

@@ -1,7 +1,12 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { Loader2, LayoutDashboard } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
+import api from "@/lib/api";
+import { Button } from "./ui/button";
 
 // import GoogleTranslate from "./GoogleTranslate";
 import { NavDropdown } from "./nav-dropdown";
@@ -19,6 +24,19 @@ import { SidebarTrigger } from "./ui/sidebar";
 const AppNavbar = () => {
   const { user } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
+  const [switchingToSimple, setSwitchingToSimple] = useState(false);
+
+  const handleSwitchToSimple = async () => {
+    setSwitchingToSimple(true);
+    try {
+      await api.patch('/api/users/me/preferences', { dashboardMode: 'simple' });
+      router.push('/try');
+    } catch {
+      toast.error('Failed to switch view. Please try again.');
+      setSwitchingToSimple(false);
+    }
+  };
 
   // Enhanced route name mapping
   const routeNameMap: Record<string, string> = {
@@ -128,6 +146,18 @@ const AppNavbar = () => {
 
         <div className="inline-flex items-center justify-end gap-2 relative flex-[0_0_auto]">
           {/* <GoogleTranslate /> */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSwitchToSimple}
+            disabled={switchingToSimple}
+            className="gap-1.5 text-slate-600"
+          >
+            {switchingToSimple
+              ? <Loader2 className="h-4 w-4 animate-spin" />
+              : <LayoutDashboard className="h-4 w-4" />}
+            Simple view
+          </Button>
           <NavDropdown name={user?.firstName} />
         </div>
       </div>

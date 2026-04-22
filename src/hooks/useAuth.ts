@@ -133,13 +133,15 @@ export const useRegister = () => {
       firstName,
       lastName,
       userType,
+      anonymousId,
     }: {
       email: string;
       password: string;
       firstName: string;
       lastName: string;
       userType?: string;
-    }) => register(email, password, firstName, lastName, userType),
+      anonymousId?: string;
+    }) => register(email, password, firstName, lastName, userType, anonymousId),
     onSuccess: (data, variables) => {
       queryClient.setQueryData(["user"], data);
       toast.success(

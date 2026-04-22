@@ -265,7 +265,10 @@ export default function DeepfakePage() {
   const [result, setResult] = useState<DeepfakeResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const canAnalyze = meta.triesRemaining > 0;
+  const canAnalyze =
+    meta.mode === "authenticated"
+      ? meta.analysesRemaining > 0 && !meta.requiresUpgrade
+      : meta.triesRemaining > 0;
 
   async function handleAnalyze() {
     if (!file) return;
@@ -425,7 +428,7 @@ export default function DeepfakePage() {
           {result && (
             <ResultCard
               result={result}
-              triesRemaining={meta.triesRemaining}
+              triesRemaining={meta.mode === "anonymous" ? meta.triesRemaining : 0}
               onSignup={() => setShowSignupModal(true)}
             />
           )}

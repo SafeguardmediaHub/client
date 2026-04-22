@@ -220,7 +220,10 @@ export default function FactCheckPage() {
   const [result, setResult] = useState<FactCheckResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const canAnalyze = meta.triesRemaining > 0;
+  const canAnalyze =
+    meta.mode === "authenticated"
+      ? meta.analysesRemaining > 0 && !meta.requiresUpgrade
+      : meta.triesRemaining > 0;
   const claimLen = claim.trim().length;
   const isValid = claimLen >= 50 && claimLen <= 500;
 
@@ -373,7 +376,7 @@ export default function FactCheckPage() {
           {result && (
             <ResultCard
               result={result}
-              triesRemaining={meta.triesRemaining}
+              triesRemaining={meta.mode === "anonymous" ? meta.triesRemaining : 0}
               onSignup={() => setShowSignupModal(true)}
             />
           )}

@@ -1,6 +1,7 @@
 import { AnonymousSessionProvider } from '@/components/try/AnonymousSessionContext';
 import { SignupModal } from '@/components/try/SignupModal';
 import { TryHeader } from '@/components/try/TryHeader';
+import { UpgradeModal } from '@/components/try/UpgradeModal';
 
 export const metadata = {
   title: 'Try Safeguardmedia. 3 free analyses, no account needed',
@@ -15,6 +16,7 @@ export default function TryLayout({ children }: { children: React.ReactNode }) {
         <TryHeader />
         <main>{children}</main>
         <SignupModal />
+        <UpgradeModal />
       </div>
     </AnonymousSessionProvider>
   );
