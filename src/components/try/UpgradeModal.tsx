@@ -1,6 +1,7 @@
 "use client";
 
-import { ArrowRight, Shield, Zap } from "lucide-react";
+import { ArrowRight, Zap } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,8 +26,15 @@ export function UpgradeModal() {
 
           <div className="relative">
             <div className="text-center">
-              <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 shadow-lg shadow-blue-500/25">
-                <Shield className="h-7 w-7 text-white" />
+              <div className="mx-auto mb-5 flex h-16 w-12 items-center justify-center">
+                <Image
+                  src="/SGM.svg"
+                  alt=""
+                  width={231}
+                  height={315}
+                  unoptimized
+                  className="h-full w-auto object-contain"
+                />
               </div>
               <DialogTitle className="text-xl font-semibold text-slate-900">
                 You&apos;ve used all your analyses this month

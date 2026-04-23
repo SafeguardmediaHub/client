@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import "cal-sans/index.css";
 import "./globals.css";
-import ConsentAwareAdsense from "@/components/privacy/ConsentAwareAdsense";
 import { Toaster } from "sonner";
+import ConsentAwareAdsense from "@/components/privacy/ConsentAwareAdsense";
 import ConsentAwareAnalytics from "@/components/privacy/ConsentAwareAnalytics";
 import CookieConsentManager from "@/components/privacy/CookieConsentManager";
 import QueryProvider from "@/components/providers/QueryProvider";
@@ -52,14 +52,16 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "/",
     siteName: "Safeguardmedia Technologies",
-    title: "Safeguardmedia Technologies - Media Authenticity & Verification Platform",
+    title:
+      "Safeguardmedia Technologies - Media Authenticity & Verification Platform",
     description:
       "Safeguardmedia is a media authenticity and verification platform designed to help teams assess content credibility and reduce the risk of manipulation before they publish, escalate, or act.",
     images: [
       {
-        url: "/og-image.png",
+        url: "/og-image.svg",
         width: 1200,
         height: 630,
+        type: "image/svg+xml",
         alt: "Safeguardmedia Technologies - Media Authenticity & Verification Platform",
       },
     ],
@@ -68,10 +70,11 @@ export const metadata: Metadata = {
   // Twitter Card metadata
   twitter: {
     card: "summary_large_image",
-    title: "Safeguardmedia Technologies - Media Authenticity & Verification Platform",
+    title:
+      "Safeguardmedia Technologies - Media Authenticity & Verification Platform",
     description:
       "Safeguardmedia is a media authenticity and verification platform designed to help teams assess content credibility and reduce the risk of manipulation.",
-    images: ["/og-image.png"],
+    images: ["/og-image.svg"],
     creator: "@safeguardmedia",
   },
 
@@ -91,13 +94,10 @@ export const metadata: Metadata = {
   // Icons
   icons: {
     icon: [
-      { url: "/favicon.ico" },
-      { url: "/icon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/icon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/SGM.svg", type: "image/svg+xml" },
     ],
-    apple: [
-      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
-    ],
+    shortcut: [{ url: "/favicon.svg", type: "image/svg+xml" }],
   },
 
   // Verification (add your verification codes when available)

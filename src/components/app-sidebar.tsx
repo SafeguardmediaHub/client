@@ -14,6 +14,7 @@ import {
   ShieldIcon,
   Users,
 } from "lucide-react";
+import Image from "next/image";
 import type * as React from "react";
 import { Suspense } from "react";
 import {
@@ -330,8 +331,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <a href="/">
-                <div className="relative flex aspect-square size-8 items-center justify-center rounded-lg bg-blue-600 text-white shadow-lg shadow-blue-500/20">
-                  <Shield className="size-4" />
+                <div className="relative flex h-10 w-8 items-center justify-center">
+                  <Image
+                    src="/SGM.svg"
+                    alt=""
+                    width={231}
+                    height={315}
+                    priority
+                    unoptimized
+                    className="h-full w-auto object-contain"
+                  />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate text-lg font-medium">

@@ -1,6 +1,7 @@
 "use client";
 
-import { Loader2, Shield } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -30,11 +31,21 @@ export function TryHeader() {
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-3 sm:gap-4 sm:px-6">
         {/* Logo */}
-        <Link href="/" className="group flex shrink-0 items-center gap-2 sm:gap-2.5">
+        <Link
+          href="/"
+          className="group flex shrink-0 items-center gap-2 sm:gap-2.5"
+        >
           <div className="relative">
-            <div className="absolute -inset-1 rounded-xl bg-blue-600/40 blur-md transition duration-300 group-hover:bg-blue-500/50" />
-            <div className="relative flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600">
-              <Shield className="h-4 w-4 text-white" />
+            <div className="relative flex h-9 w-7 items-center justify-center transition-transform duration-300 group-hover:scale-105">
+              <Image
+                src="/SGM.svg"
+                alt=""
+                width={231}
+                height={315}
+                priority
+                unoptimized
+                className="h-full w-auto object-contain"
+              />
             </div>
           </div>
           <span className="hidden text-sm font-semibold text-slate-900 sm:inline">
