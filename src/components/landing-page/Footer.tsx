@@ -9,10 +9,11 @@ import {
   Youtube,
 } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
+import Image from "next/image";
 import Link from "next/link";
 import SmoothScrollLink from "@/components/landing-page/SmoothScrollLink";
-import { createLandingMotion, landingViewport } from "@/lib/landing-motion";
 import { OPEN_COOKIE_SETTINGS_EVENT } from "@/lib/cookie-consent";
+import { createLandingMotion, landingViewport } from "@/lib/landing-motion";
 
 const footerSections = [
   {
@@ -138,9 +139,15 @@ export default function Footer() {
                   className="inline-flex items-center gap-3 justify-center lg:justify-start"
                 >
                   <div className="relative">
-                    <div className="absolute -inset-1 rounded-xl bg-blue-600/50 blur-md" />
-                    <div className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 shadow-lg shadow-blue-500/20">
-                      <Shield className="h-6 w-6 text-white" />
+                    <div className="relative flex h-14 w-11 items-center justify-center">
+                      <Image
+                        src="/SGM.svg"
+                        alt=""
+                        width={231}
+                        height={315}
+                        unoptimized
+                        className="h-full w-auto object-contain"
+                      />
                     </div>
                   </div>
                   <div>

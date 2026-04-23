@@ -1,15 +1,22 @@
 "use client";
 
-import { Shield } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function AuthBrand() {
   return (
     <Link href="/" className="group inline-flex items-center gap-3 font-medium">
       <div className="relative">
-        <div className="absolute -inset-1 rounded-xl bg-blue-600/50 blur-md transition duration-300 group-hover:bg-blue-500/60" />
-        <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 shadow-lg shadow-blue-500/20 transition-transform duration-300 group-hover:scale-105">
-          <Shield className="h-5 w-5 text-white" />
+        <div className="relative flex h-12 w-10 items-center justify-center transition-transform duration-300 group-hover:scale-105">
+          <Image
+            src="/SGM.svg"
+            alt=""
+            width={231}
+            height={315}
+            priority
+            unoptimized
+            className="h-full w-auto object-contain"
+          />
         </div>
       </div>
       <div className="leading-tight">
