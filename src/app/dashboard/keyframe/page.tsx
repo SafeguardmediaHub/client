@@ -1,443 +1,249 @@
 "use client";
 
-import { LinkIcon, Loader2, UploadIcon, CloudUpload, Info } from "lucide-react";
+import { Info, Loader2, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import type { FC } from "react";
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { type FC, useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { FeatureInfoDialog, FEATURE_INFO } from "@/components/FeatureInfoDialog";
-import { useUploadKeyframe } from "@/hooks/useMedia";
-import api from "@/lib/api";
+import MediaSelector from "@/components/media/MediaSelector";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
-  batchProcessingData,
-  chartCategories,
-  chartData,
-  recentActivities,
-  statisticsData,
-} from "@/lib/data";
-import { Button } from "../../../components/ui/button";
-import { Card, CardContent } from "../../../components/ui/card";
-import { Input } from "../../../components/ui/input";
-import MediaSelector from '@/components/media/MediaSelector';
-import { type Media, useGetMedia } from '@/hooks/useMedia';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import {
+  type KeyframeExtractionListItem,
+  type KeyframeExtractionStatus,
+  useDeleteKeyframeExtraction,
+  useExtractKeyframes,
+  useListKeyframeExtractions,
+} from "@/hooks/useKeyframes";
+import { type Media, useGetMedia } from "@/hooks/useMedia";
 
-type DashboardProps = {
-  userName?: string;
-  onAnalyzeLink?: (url: string) => void;
-  onUploadSuccess?: (key: string) => void;
+const INFO_DIALOG_SEEN_KEY = "keyframe-info-seen";
+const PAGE_LIMIT = 10;
+
+const formatTimestamp = (seconds: number | undefined): string => {
+  if (typeof seconds !== "number" || !Number.isFinite(seconds)) return "—";
+  const total = Math.max(0, Math.floor(seconds));
+  const mm = String(Math.floor(total / 60)).padStart(2, "0");
+  const ss = String(total % 60).padStart(2, "0");
+  return `${mm}:${ss}`;
 };
 
-const MAX_BYTES = 1_000_000_000; // 1GB
-const ALLOWED_MIME_PREFIXES = ["video/"];
-const ALLOWED_EXTENSIONS = [
-  "mp4",
-  "mov",
-  "avi",
-  "mkv",
-  "webm",
-  "flv",
-  "ogv",
-  "wmv",
-  "3gp",
-  "mpg",
-  "mpeg",
-  "f4v",
-];
+const formatDate = (iso: string | undefined): string => {
+  if (!iso) return "—";
+  try {
+    return new Date(iso).toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  } catch {
+    return iso;
+  }
+};
 
-const Keyframe: FC<DashboardProps> = ({
-  userName = "there",
-  onAnalyzeLink,
-  onUploadSuccess,
-}) => {
+const statusBadge = (
+  status: KeyframeExtractionStatus,
+): { label: string; classes: string } => {
+  switch (status) {
+    case "completed":
+      return {
+        label: "Completed",
+        classes: "bg-green-100 text-green-700 border-green-200",
+      };
+    case "partial":
+      return {
+        label: "Partial",
+        classes: "bg-amber-100 text-amber-700 border-amber-200",
+      };
+    case "failed":
+      return {
+        label: "Failed",
+        classes: "bg-red-100 text-red-700 border-red-200",
+      };
+    case "expired":
+      return {
+        label: "Expired",
+        classes: "bg-muted text-muted-foreground border-border",
+      };
+    case "processing":
+      return {
+        label: "Processing",
+        classes: "bg-blue-100 text-blue-700 border-blue-200",
+      };
+    case "pending":
+    default:
+      return {
+        label: "Queued",
+        classes: "bg-blue-100 text-blue-700 border-blue-200",
+      };
+  }
+};
+
+const Keyframe: FC = () => {
   const router = useRouter();
-  const [url, setUrl] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 9;
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [uploadingFiles, setUploadingFiles] = useState<
-    Array<{
-      name: string;
-      size: number;
-      progress: number;
-      status: "uploading" | "completed" | "extracting";
-      key?: string;
-    }>
-  >([]);
-  const [actualFile, setActualFile] = useState<File | null>(null);
-  const [extractionProgress, setExtractionProgress] = useState(0);
-  const [extractedKeyframes, setExtractedKeyframes] = useState<string[]>([]);
-  const [isExtracting, setIsExtracting] = useState(false);
-  const isBusy = useMemo(() => uploadingFiles.length > 0, [uploadingFiles]);
-  const [mockExtractions, setMockExtractions] = useState<
-    Array<{
-      id: number;
-      fileName: string;
-      videoLength: string;
-      framesExtracted: number;
-      uploadDate: string;
-    }>
-  >([]);
-  const [uploadingFrames, setUploadingFrames] = useState<Set<number>>(
-    new Set()
-  );
-  const [uploadedFrames, setUploadedFrames] = useState<Set<number>>(new Set());
-  const [isBulkUploading, setIsBulkUploading] = useState(false);
-  const [bulkUploadProgress, setBulkUploadProgress] = useState({
-    current: 0,
-    total: 0,
-  });
-  const uploadKeyframeMutation = useUploadKeyframe();
+
   const [showInfoDialog, setShowInfoDialog] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
-  const { data } = useGetMedia();
-  const media = data?.media || [];
 
-  const handleMediaSelection = (mediaFile: Media) => {
-    const selectedFile = media.find((file) => file.id === mediaFile.id);
+  const [frameCount, setFrameCount] = useState<number>(20);
+  const [limitTimeRange, setLimitTimeRange] = useState(false);
+  const [startSeconds, setStartSeconds] = useState<string>("0");
+  const [endSeconds, setEndSeconds] = useState<string>("");
 
-    if (selectedFile) {
-      const isVideo = selectedFile.mimeType.startsWith('video/');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [deleteTarget, setDeleteTarget] =
+    useState<KeyframeExtractionListItem | null>(null);
 
-      if (!isVideo) {
-        toast.error('Please select a video file. Images are not supported for keyframe extraction.');
-        return;
-      }
+  const { data: mediaData } = useGetMedia();
+  const media = mediaData?.media || [];
 
-      setSelectedMedia(selectedFile);
-    }
-  };
+  const extractMutation = useExtractKeyframes();
+  const deleteMutation = useDeleteKeyframeExtraction();
+  const listQuery = useListKeyframeExtractions({
+    page: currentPage,
+    limit: PAGE_LIMIT,
+  });
 
-  // Show dialog on first visit
+  // First-visit info dialog (gated by localStorage)
   useEffect(() => {
-    setShowInfoDialog(true);
+    if (typeof window === "undefined") return;
+    try {
+      const seen = window.localStorage.getItem(INFO_DIALOG_SEEN_KEY);
+      if (!seen) setShowInfoDialog(true);
+    } catch {
+      // ignore localStorage errors
+    }
   }, []);
 
-  const filteredExtractions = mockExtractions.filter((item) =>
-    item.fileName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const totalPages = Math.ceil(filteredExtractions.length / itemsPerPage);
-  const paginatedExtractions = filteredExtractions.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const validateFile = useCallback((file: File) => {
-    if (file.size > MAX_BYTES) {
-      return "File is too large. Max size is 1GB.";
+  const handleInfoDialogChange = useCallback((open: boolean) => {
+    setShowInfoDialog(open);
+    if (!open && typeof window !== "undefined") {
+      try {
+        window.localStorage.setItem(INFO_DIALOG_SEEN_KEY, "true");
+      } catch {
+        // ignore
+      }
     }
-    const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
-    const isAllowedExt = ALLOWED_EXTENSIONS.includes(ext);
-    const isAllowedMime = ALLOWED_MIME_PREFIXES.some((p) =>
-      file.type.startsWith(p)
-    );
-    if (!isAllowedExt && !isAllowedMime) {
-      return "Unsupported file type. Use JPEG, PNG, MP4, MOV, or common audio (MP3, WAV, M4A, AAC, OGG).";
+  }, []);
+
+  const handleMediaSelection = useCallback(
+    (mediaFile: Media) => {
+      const file = media.find((m) => m.id === mediaFile.id) ?? mediaFile;
+      if (!file.mimeType?.startsWith("video/")) {
+        toast.error(
+          "Please select a video file. Images are not supported for keyframe extraction.",
+        );
+        return;
+      }
+      setSelectedMedia(file);
+    },
+    [media],
+  );
+
+  const timeRangeError = useMemo(() => {
+    if (!limitTimeRange) return null;
+    const s = Number(startSeconds);
+    const e = Number(endSeconds);
+    if (!Number.isFinite(s) || s < 0) return "Start must be 0 or greater.";
+    if (!Number.isFinite(e) || e <= 0) return "End must be greater than 0.";
+    if (e <= s) return "End must be greater than start.";
+    return null;
+  }, [limitTimeRange, startSeconds, endSeconds]);
+
+  const frameCountError = useMemo(() => {
+    if (!Number.isFinite(frameCount) || frameCount < 1 || frameCount > 60) {
+      return "Frame count must be between 1 and 60.";
     }
     return null;
-  }, []);
+  }, [frameCount]);
 
-  const handleFiles = useCallback(
-    async (files: FileList | null) => {
-      if (!files || files.length === 0) return;
-      const file = files[0];
+  const canSubmit =
+    Boolean(selectedMedia) &&
+    !extractMutation.isPending &&
+    !frameCountError &&
+    !timeRangeError;
 
-      // Validate
-      const validationError = validateFile(file);
-      if (validationError) {
-        toast.error(validationError);
-        return;
-      }
-
-      setActualFile(file);
-
-      // Simulate upload progress
-      setUploadingFiles([
-        {
-          name: file.name,
-          size: file.size,
-          progress: 0,
-          status: "uploading",
-        },
-      ]);
-
-      // Simulate upload progress
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 10;
-        setUploadingFiles([
-          {
-            name: file.name,
-            size: file.size,
-            progress,
-            status: "uploading",
-          },
-        ]);
-
-        if (progress >= 100) {
-          clearInterval(interval);
-          setUploadingFiles([
-            {
-              name: file.name,
-              size: file.size,
-              progress: 100,
-              status: "completed",
-              key: file.name,
-            },
-          ]);
-          toast.success("File ready for extraction!");
-        }
-      }, 200);
-    },
-    [validateFile]
-  );
-
-  const handleExtractKeyframes = useCallback(async () => {
+  const handleExtract = useCallback(async () => {
     if (!selectedMedia) {
-      toast.error("No video selected");
+      toast.error("Please select a video first.");
+      return;
+    }
+    if (frameCountError || timeRangeError) {
+      toast.error(frameCountError ?? timeRangeError ?? "Invalid options.");
       return;
     }
 
-    setIsExtracting(true);
-    setExtractionProgress(0);
+    const body: Parameters<typeof extractMutation.mutateAsync>[0] = {
+      mediaId: selectedMedia.id,
+      frameCount,
+    };
+    if (limitTimeRange) {
+      body.timeRange = {
+        startSeconds: Number(startSeconds),
+        endSeconds: Number(endSeconds),
+      };
+    }
 
     try {
-      // Fetch the video file from the media URL
-      const videoResponse = await fetch(selectedMedia.publicUrl);
-      if (!videoResponse.ok) throw new Error("Failed to fetch video");
-
-      const videoBlob = await videoResponse.blob();
-      const videoFile = new File([videoBlob], selectedMedia.filename, { type: selectedMedia.mimeType });
-
-      const formData = new FormData();
-      formData.append("video", videoFile);
-
-      const progressInterval = setInterval(() => {
-        setExtractionProgress((prev) => Math.min(prev + 5, 90));
-      }, 500);
-
-      const response = await fetch(
-        "https://safeguardmedia-keyframeextractor.hf.space/extract",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      clearInterval(progressInterval);
-
-      if (!response.ok) throw new Error("Extraction failed");
-
-      const blob = await response.blob();
-      setExtractionProgress(95);
-
-      const JSZip = (await import("jszip")).default;
-      const zip = await JSZip.loadAsync(blob);
-
-      const imagePromises: Promise<string>[] = [];
-      zip.forEach((relativePath, file) => {
-        if (!file.dir && /\.(jpg|jpeg|png)$/i.test(relativePath)) {
-          imagePromises.push(
-            file.async("blob").then((blob) => URL.createObjectURL(blob))
-          );
-        }
-      });
-
-      const images = await Promise.all(imagePromises);
-      setExtractedKeyframes(images);
-      setExtractionProgress(100);
-      setIsExtracting(false);
-
-      // Add to mockExtractions
-      const newExtraction = {
-        id: mockExtractions.length + 1,
-        fileName: selectedMedia.filename,
-        videoLength: "00:00",
-        framesExtracted: images.length,
-        uploadDate: new Date().toLocaleString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true,
-        }),
-      };
-      setMockExtractions([newExtraction, ...mockExtractions]);
-
-      toast.success(`Extracted ${images.length} keyframes!`);
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to extract keyframes");
-      setIsExtracting(false);
-    }
-  }, [selectedMedia, mockExtractions]);
-
-  const onDrop = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (isBusy) return;
-      const dt = e.dataTransfer;
-      handleFiles(dt.files);
-    },
-    [handleFiles, isBusy]
-  );
-
-  const onBrowseClick = useCallback(() => {
-    if (isBusy) return;
-    fileInputRef.current?.click();
-  }, [isBusy]);
-
-  const analyzeSubmit = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
-      onAnalyzeLink?.(url);
-    },
-    [onAnalyzeLink, url]
-  );
-
-  // Convert blob URL to File object
-  const blobToFile = useCallback(
-    async (blobUrl: string, fileName: string): Promise<File> => {
-      const response = await fetch(blobUrl);
-      const blob = await response.blob();
-      return new File([blob], fileName, { type: "image/jpeg" });
-    },
-    []
-  );
-
-  // Upload individual keyframe
-  const handleUploadKeyframe = useCallback(
-    async (index: number) => {
-      if (uploadingFrames.has(index) || uploadedFrames.has(index)) return;
-
-      const blobUrl = extractedKeyframes[index];
-      // const sourceFileName = actualFile?.name || uploadingFiles[0]?.name || "video";
-      const sourceFileName = selectedMedia?.filename || "video";
-      const fileName = `${sourceFileName.replace(/\.[^/.]+$/, "")}_keyframe_${String(index + 1).padStart(3, "0")}.jpg`;
-      const timestamp = `00:${String(Math.floor((index * 17) / 60)).padStart(2, "0")}:${String((index * 17) % 60).padStart(2, "0")}`;
-
-      try {
-        setUploadingFrames((prev) => new Set(prev).add(index));
-        toast.info(`Uploading keyframe ${index + 1}...`);
-
-        const file = await blobToFile(blobUrl, fileName);
-        await uploadKeyframeMutation.mutateAsync({
-          file,
-          metadata: {
-            isKeyframe: true,
-            sourceVideo: sourceFileName,
-            frameIndex: index,
-            timestamp,
-          },
-        });
-
-        setUploadedFrames((prev) => new Set(prev).add(index));
-        toast.success(`Keyframe ${index + 1} uploaded successfully!`);
-      } catch (error) {
-        console.error("Error uploading keyframe:", error);
-        toast.error(`Failed to upload keyframe ${index + 1}`);
-      } finally {
-        setUploadingFrames((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(index);
-          return newSet;
-        });
+      const result = await extractMutation.mutateAsync(body);
+      const extractionId = result?.extraction?.id;
+      if (!extractionId) {
+        toast.error("Extraction started but no ID was returned.");
+        return;
       }
-    },
-    [
-      extractedKeyframes,
-      actualFile,
-      uploadingFiles,
-      uploadingFrames,
-      uploadedFrames,
-      blobToFile,
-      uploadKeyframeMutation,
-    ]
-  );
-
-  // Bulk upload all keyframes
-  const handleBulkUpload = useCallback(async () => {
-    if (isBulkUploading || extractedKeyframes.length === 0) return;
-
-    const framesToUpload = extractedKeyframes
-      .map((_, index) => index)
-      .filter((index) => !uploadedFrames.has(index));
-
-    if (framesToUpload.length === 0) {
-      toast.info("All keyframes are already uploaded!");
-      return;
-    }
-
-    setIsBulkUploading(true);
-    setBulkUploadProgress({ current: 0, total: framesToUpload.length });
-
-    toast.info(`Uploading ${framesToUpload.length} keyframes...`);
-
-    let successCount = 0;
-    let failCount = 0;
-
-    for (let i = 0; i < framesToUpload.length; i++) {
-      const index = framesToUpload[i];
-      const blobUrl = extractedKeyframes[index];
-      const sourceFileName = selectedMedia?.filename || "video";
-      // const sourceFileName = actualFile?.name || uploadingFiles[0]?.name || "video";
-      const fileName = `${sourceFileName.replace(/\.[^/.]+$/, "")}_keyframe_${String(index + 1).padStart(3, "0")}.jpg`;
-      const timestamp = `00:${String(Math.floor((index * 17) / 60)).padStart(2, "0")}:${String((index * 17) % 60).padStart(2, "0")}`;
-
-      try {
-        setUploadingFrames((prev) => new Set(prev).add(index));
-
-        const file = await blobToFile(blobUrl, fileName);
-        await uploadKeyframeMutation.mutateAsync({
-          file,
-          metadata: {
-            isKeyframe: true,
-            sourceVideo: sourceFileName,
-            frameIndex: index,
-            timestamp,
-          },
-        });
-
-        setUploadedFrames((prev) => new Set(prev).add(index));
-        successCount++;
-      } catch (error) {
-        console.error(`Error uploading keyframe ${index}:`, error);
-        failCount++;
-      } finally {
-        setUploadingFrames((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(index);
-          return newSet;
-        });
-        setBulkUploadProgress({ current: i + 1, total: framesToUpload.length });
-      }
-    }
-
-    setIsBulkUploading(false);
-
-    if (failCount === 0) {
-      toast.success(`Successfully uploaded all ${successCount} keyframes!`);
-    } else if (successCount > 0) {
-      toast.warning(
-        `Uploaded ${successCount} keyframes, ${failCount} failed.`
-      );
-    } else {
-      toast.error("Failed to upload keyframes. Please try again.");
+      router.push(`/dashboard/keyframe/${extractionId}`);
+    } catch {
+      // Toasted by the hook's onError.
     }
   }, [
-    extractedKeyframes,
-    actualFile,
-    uploadingFiles,
-    uploadedFrames,
-    isBulkUploading,
-    blobToFile,
-    uploadKeyframeMutation,
+    extractMutation,
+    frameCount,
+    frameCountError,
+    limitTimeRange,
+    router,
+    selectedMedia,
+    startSeconds,
+    endSeconds,
+    timeRangeError,
   ]);
 
-  const inputId = useId();
+  const extractions = listQuery.data?.extractions ?? [];
+  const pagination = listQuery.data?.pagination;
+  const filteredExtractions = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return extractions;
+    return extractions.filter((item) => {
+      const name = item.sourceMedia?.filename ?? "";
+      return name.toLowerCase().includes(q);
+    });
+  }, [extractions, searchQuery]);
+
+  const totalPages = pagination?.totalPages ?? 1;
+
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!deleteTarget) return;
+    try {
+      await deleteMutation.mutateAsync(deleteTarget.id);
+      setDeleteTarget(null);
+    } catch {
+      // Toasted by the hook's onError.
+    }
+  }, [deleteMutation, deleteTarget]);
 
   return (
     <section className="flex flex-1 flex-col gap-4 py-4 px-8">
@@ -466,410 +272,377 @@ const Keyframe: FC<DashboardProps> = ({
 
       <FeatureInfoDialog
         open={showInfoDialog}
-        onOpenChange={setShowInfoDialog}
+        onOpenChange={handleInfoDialogChange}
         featureInfo={FEATURE_INFO.keyframe}
       />
 
-      {extractedKeyframes.length === 0 ? (
-        <>
-          <Card className="flex flex-col items-start gap-6 p-6 relative self-stretch w-full">
-            <CardContent className="p-0 w-full">
-              {!selectedMedia ? (
-                <div className="space-y-6">
-                  {/* Media Selector */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Select a video from your library
-                    </label>
-                    <MediaSelector
-                      onSelect={handleMediaSelection}
-                      filterType="video"
-                    />
-                  </div>
-
-                  {/* Info Card */}
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-blue-800">
-                      <span className="font-medium">Supported formats:</span> MP4, AVI, MOV, MKV, WebM, FLV, OGV, WMV, 3GP, MPG, MPEG, F4V (up to 500MB)
-                    </p>
-                  </div>
-                </div>
-              ) : isExtracting ? (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 py-2">
-                    <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center">
-                      <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    <span className="text-sm font-medium">{selectedMedia.filename}</span>
-                  </div>
-                  <div className="text-center py-12 space-y-4">
-                    <Loader2 className="w-16 h-16 mx-auto animate-spin text-primary" />
-                    <div>
-                      <p className="text-lg font-semibold">Extracting Keyframes...</p>
-                      <p className="text-sm text-muted-foreground">Analyzing video for significant visual changes</p>
-                    </div>
-                  </div>
-                  <div className="space-y-2 bg-muted/50 rounded-lg p-4">
-                    <div className="flex justify-between text-sm">
-                      <span className="font-medium">Processing Video Frames</span>
-                      <span className="text-muted-foreground">{extractionProgress}%</span>
-                    </div>
-                    <div className="h-2 w-full rounded-full bg-background">
-                      <div className="h-2 rounded-full bg-primary transition-all" style={{ width: `${extractionProgress}%` }} />
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full mt-2"
-                      onClick={() => {
-                        setIsExtracting(false);
-                        setSelectedMedia(null);
-                        toast.info("Extraction cancelled");
-                      }}
-                    >
-                      Cancel Extraction
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {/* Selected video preview */}
-                  <div className="flex items-center justify-between py-2">
-                    <h3 className="text-sm font-medium">Selected Video</h3>
-                    <span className="text-xs text-green-600 font-medium">Ready</span>
-                  </div>
-
-                  <div className="border rounded-lg p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-16 h-16 rounded bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{selectedMedia.filename}</p>
-                        <p className="text-xs text-muted-foreground">{selectedMedia.mimeType}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <Button onClick={handleExtractKeyframes} className="flex-1">
-                      Extract Keyframes
-                    </Button>
-                    <Button variant="outline" className="flex-1" onClick={() => setSelectedMedia(null)}>
-                      Select Different Video
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="p-6 w-full">
-            <CardContent className="p-0 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">
-                  Recent Keyframe Extractions
-                </h3>
-              </div>
-
-              <div className="relative">
-                <Input
-                  placeholder="Search here..."
-                  className="pl-8"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setCurrentPage(1);
-                  }}
+      <Card className="flex flex-col items-start gap-6 p-6 relative self-stretch w-full">
+        <CardContent className="p-0 w-full">
+          {!selectedMedia ? (
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select a video from your library
+                </label>
+                <MediaSelector
+                  onSelect={handleMediaSelection}
+                  filterType="video"
                 />
-                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  🔍
+              </div>
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <span className="font-medium">Supported formats:</span> MP4,
+                  AVI, MOV, MKV, WebM, FLV, OGV, WMV, 3GP, MPG, MPEG, F4V
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between py-2">
+                <h3 className="text-sm font-medium">Selected Video</h3>
+                <span className="text-xs text-green-600 font-medium">
+                  Ready
                 </span>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="border-b">
-                    <tr className="text-sm text-muted-foreground">
-                      <th className="text-left font-medium max-md:text-[12px] py-3 px-4">
-                        Media
-                      </th>
-                      <th className="text-left font-medium py-3 max-md:text-[12px] px-4">
-                        File name
-                      </th>
-                      <th className="text-left font-medium py-3 max-md:text-[12px] px-4">
-                        Video Length
-                      </th>
-                      <th className="text-left font-medium py-3 max-md:text-[12px] px-4">
-                        Frames Extracted
-                      </th>
-                      <th className="text-left font-medium py-3 max-md:text-[12px] px-4">
-                        Upload date/time
-                      </th>
-                      <th className="w-10"></th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y">
-                    {paginatedExtractions.length > 0 ? (
-                      paginatedExtractions.map((item) => (
-                        <tr key={item.id} className="hover:bg-muted/50">
-                          <td className="py-3 px-4">
-                            <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center">
-                              <svg
-                                className="w-5 h-5 text-primary"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                                />
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
-                              </svg>
-                            </div>
-                          </td>
-                          <td className="py-3 px-4 text-sm">{item.fileName}</td>
-                          <td className="py-3 px-4 text-sm">
-                            {item.videoLength}
-                          </td>
-                          <td className="py-3 px-4 text-sm">
-                            {item.framesExtracted}
-                          </td>
-                          <td className="py-3 px-4 text-sm text-muted-foreground">
-                            {item.uploadDate}
-                          </td>
-                          <td className="py-3 px-4">
-                            <button className="text-muted-foreground hover:text-foreground">
-                              ⋮
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td
-                          colSpan={6}
-                          className="py-8 text-center text-sm text-muted-foreground"
-                        >
-                          No results found
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between pt-4">
-                  <p className="text-sm text-muted-foreground">
-                    Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-                    {Math.min(
-                      currentPage * itemsPerPage,
-                      filteredExtractions.length
-                    )}{" "}
-                    of {filteredExtractions.length} entries
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                      disabled={currentPage === 1}
+              <div className="border rounded-lg p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-16 h-16 rounded bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <svg
+                      className="w-8 h-8 text-primary"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      Previous
-                    </Button>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                      (page) => (
-                        <Button
-                          key={page}
-                          variant={currentPage === page ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setCurrentPage(page)}
-                          className="w-9"
-                        >
-                          {page}
-                        </Button>
-                      )
-                    )}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        setCurrentPage((p) => Math.min(totalPages, p + 1))
-                      }
-                      disabled={currentPage === totalPages}
-                    >
-                      Next
-                    </Button>
+                      <title>Video file</title>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">
+                      {selectedMedia.filename}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {selectedMedia.mimeType}
+                    </p>
                   </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </>
-      ) : (
-        <Card className="p-4 md:p-6 w-full">
-          <CardContent className="p-0 space-y-4">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h3 className="text-lg max-md:text-[12px] max-lg:text-[14px] font-semibold">
-                  Extracted Keyframes
-                </h3>
-                <p className="text-sm max-md:text-[10px] max-lg:text-[12px] text-muted-foreground">
-                  Frames selected based on motion, lighting, and composition
-                  changes
-                </p>
-                {isBulkUploading && (
-                  <p className="text-xs text-primary mt-1">
-                    Uploading {bulkUploadProgress.current} of{" "}
-                    {bulkUploadProgress.total} keyframes...
-                  </p>
-                )}
               </div>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+
+              {/* Frame count + time range config */}
+              <div className="border rounded-lg p-4 space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="frame-count">Number of frames</Label>
+                  <Input
+                    id="frame-count"
+                    type="number"
+                    min={1}
+                    max={60}
+                    value={Number.isFinite(frameCount) ? frameCount : ""}
+                    onChange={(e) =>
+                      setFrameCount(parseInt(e.target.value, 10))
+                    }
+                    className="max-w-[160px]"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    1–60 frames (default 20)
+                  </p>
+                  {frameCountError && (
+                    <p className="text-xs text-destructive">{frameCountError}</p>
+                  )}
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="limit-range-switch">
+                      Limit to time range
+                    </Label>
+                    <Switch
+                      id="limit-range-switch"
+                      checked={limitTimeRange}
+                      onCheckedChange={setLimitTimeRange}
+                    />
+                  </div>
+                  {limitTimeRange && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label htmlFor="start-seconds">Start (seconds)</Label>
+                        <Input
+                          id="start-seconds"
+                          type="number"
+                          min={0}
+                          step="0.1"
+                          value={startSeconds}
+                          onChange={(e) => setStartSeconds(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="end-seconds">End (seconds)</Label>
+                        <Input
+                          id="end-seconds"
+                          type="number"
+                          min={0}
+                          step="0.1"
+                          value={endSeconds}
+                          onChange={(e) => setEndSeconds(e.target.value)}
+                        />
+                      </div>
+                      {timeRangeError && (
+                        <p className="col-span-2 text-xs text-destructive">
+                          {timeRangeError}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
                 <Button
-                  variant="default"
-                  size="sm"
-                  onClick={handleBulkUpload}
-                  disabled={
-                    isBulkUploading ||
-                    extractedKeyframes.length === 0 ||
-                    uploadedFrames.size === extractedKeyframes.length
-                  }
-                  className="w-full sm:w-auto"
+                  onClick={handleExtract}
+                  disabled={!canSubmit}
+                  className="flex-1"
                 >
-                  <CloudUpload className="w-4 h-4 mr-2" />
-                  {isBulkUploading
-                    ? "Uploading..."
-                    : uploadedFrames.size === extractedKeyframes.length
-                      ? "All Uploaded"
-                      : `Upload All (${extractedKeyframes.length - uploadedFrames.size})`}
+                  {extractMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Submitting…
+                    </>
+                  ) : (
+                    "Extract Keyframes"
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setSelectedMedia(null)}
+                  disabled={extractMutation.isPending}
+                >
+                  Select Different Video
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="p-6 w-full">
+        <CardContent className="p-0 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">
+              Recent Keyframe Extractions
+            </h3>
+          </div>
+
+          <div className="relative">
+            <Input
+              placeholder="Search by filename…"
+              className="pl-8"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground">
+              🔍
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="border-b">
+                <tr className="text-sm text-muted-foreground">
+                  <th className="text-left font-medium max-md:text-[12px] py-3 px-4">
+                    Media
+                  </th>
+                  <th className="text-left font-medium py-3 max-md:text-[12px] px-4">
+                    File name
+                  </th>
+                  <th className="text-left font-medium py-3 max-md:text-[12px] px-4">
+                    Video Length
+                  </th>
+                  <th className="text-left font-medium py-3 max-md:text-[12px] px-4">
+                    Frames Extracted
+                  </th>
+                  <th className="text-left font-medium py-3 max-md:text-[12px] px-4">
+                    Status
+                  </th>
+                  <th className="text-left font-medium py-3 max-md:text-[12px] px-4">
+                    Date
+                  </th>
+                  <th className="w-10"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {listQuery.isLoading ? (
+                  <tr>
+                    <td colSpan={7} className="py-12 text-center">
+                      <Loader2 className="w-6 h-6 animate-spin inline" />
+                    </td>
+                  </tr>
+                ) : filteredExtractions.length > 0 ? (
+                  filteredExtractions.map((item) => {
+                    const status =
+                      item.effectiveStatus ?? item.status ?? "pending";
+                    const badge = statusBadge(status);
+                    const filename =
+                      item.sourceMedia?.filename ?? "Unknown video";
+                    return (
+                      <tr
+                        key={item.id}
+                        className="hover:bg-muted/50 cursor-pointer"
+                        onClick={() =>
+                          router.push(`/dashboard/keyframe/${item.id}`)
+                        }
+                      >
+                        <td className="py-3 px-4">
+                          <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center">
+                            <svg
+                              className="w-5 h-5 text-primary"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <title>Video</title>
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
+                            </svg>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 text-sm truncate max-w-[240px]">
+                          {filename}
+                        </td>
+                        <td className="py-3 px-4 text-sm">
+                          {formatTimestamp(
+                            item.videoMetadata?.durationSeconds,
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-sm">
+                          {item.actualFrameCount}
+                        </td>
+                        <td className="py-3 px-4 text-sm">
+                          <span
+                            className={`text-xs font-medium px-2 py-0.5 rounded-full border ${badge.classes}`}
+                          >
+                            {badge.label}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-sm text-muted-foreground">
+                          {formatDate(item.createdAt)}
+                        </td>
+                        <td className="py-3 px-4">
+                          <button
+                            type="button"
+                            className="text-muted-foreground hover:text-destructive p-1"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteTarget(item);
+                            }}
+                            aria-label="Delete extraction"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={7}
+                      className="py-8 text-center text-sm text-muted-foreground"
+                    >
+                      No extractions yet. Pick a video above to get started.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-4">
+              <p className="text-sm text-muted-foreground">
+                Page {pagination?.page ?? currentPage} of {totalPages}
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={!pagination?.hasPrevPage}
+                >
+                  Previous
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    setExtractedKeyframes([]);
-                    setSelectedMedia(null);
-                    setUploadedFrames(new Set());
-                    setUploadingFrames(new Set());
-                  }}
-                  className="w-full sm:w-auto"
-                  disabled={isBulkUploading}
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
+                  disabled={!pagination?.hasNextPage}
                 >
-                  Extract New Video
+                  Next
                 </Button>
               </div>
             </div>
+          )}
+        </CardContent>
+      </Card>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {extractedKeyframes.map((frame, index) => {
-                const sourceFileName =
-                  // actualFile?.name || uploadingFiles[0]?.name || "video";
-                  selectedMedia?.filename || "video";
-                const keyframeFileName = `${sourceFileName.replace(/\.[^/.]+$/, "")}_keyframe_${String(index + 1).padStart(3, "0")}.jpg`;
-
-                return (
-                  <div key={index} className="space-y-2">
-                    <div className="relative rounded-lg overflow-hidden border bg-muted aspect-video">
-                      <img
-                        src={frame}
-                        alt={`Keyframe ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                        {`00:${String(Math.floor((index * 17) / 60)).padStart(
-                          2,
-                          "0"
-                        )}:${String((index * 17) % 60).padStart(2, "0")}`}
-                      </div>
-                      <div className="absolute bottom-2 left-2 bg-blue-500/90 text-white text-xs px-2 py-1 rounded font-medium">
-                        JPG
-                      </div>
-                      {uploadedFrames.has(index) && (
-                        <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
-                          <span>✓</span>
-                          <span>Uploaded</span>
-                        </div>
-                      )}
-                      {uploadingFrames.has(index) && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <Loader2 className="w-8 h-8 text-white animate-spin" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="px-1">
-                      <p
-                        className="text-xs text-muted-foreground truncate"
-                        title={keyframeFileName}
-                      >
-                        {keyframeFileName}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant={
-                          uploadedFrames.has(index) ? "secondary" : "default"
-                        }
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => handleUploadKeyframe(index)}
-                        disabled={
-                          uploadingFrames.has(index) ||
-                          uploadedFrames.has(index) ||
-                          isBulkUploading
-                        }
-                      >
-                        {uploadingFrames.has(index) ? (
-                          <>
-                            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                            Uploading...
-                          </>
-                        ) : uploadedFrames.has(index) ? (
-                          <>
-                            <span className="mr-1">✓</span>
-                            Uploaded
-                          </>
-                        ) : (
-                          <>
-                            <CloudUpload className="w-3 h-3 mr-1" />
-                            Upload
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => {
-                          const link = document.createElement("a");
-                          link.href = frame;
-                          link.download = keyframeFileName;
-                          link.click();
-                        }}
-                      >
-                        Download
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <Dialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete this extraction?</DialogTitle>
+            <DialogDescription>
+              This will permanently remove the extraction and all of its
+              frames. Any frame you&apos;ve already sent to another feature
+              (reverse lookup, geolocation, etc.) will become unavailable.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-row justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteTarget(null)}
+              disabled={deleteMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteConfirm}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deleting…
+                </>
+              ) : (
+                "Delete"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };
