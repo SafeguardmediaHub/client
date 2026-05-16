@@ -162,13 +162,6 @@ const fetchKeyframeStatus = async (
   return data.data;
 };
 
-const fetchKeyframeExtraction = async (
-  id: string,
-): Promise<GetKeyframeExtractionResponse> => {
-  const { data } = await api.get(`/api/keyframes/${id}`);
-  return data.data;
-};
-
 const listKeyframeExtractions = async (params?: {
   page?: number;
   limit?: number;
@@ -185,7 +178,10 @@ const deleteKeyframeExtractionRequest = async (id: string) => {
 };
 
 const STATUS_POLL_INTERVAL_MS = 2000;
-const COMPLETED_REFRESH_INTERVAL_MS = 45 * 60 * 1000;
+// Once the extraction is terminal we stop polling for status, but keep
+// refetching at a long interval so signed URLs (1h TTL) stay fresh for
+// users who leave the page open.
+const TERMINAL_REFRESH_INTERVAL_MS = 45 * 60 * 1000;
 
 export function useExtractKeyframes() {
   const queryClient = useQueryClient();
@@ -248,20 +244,11 @@ export function useKeyframeStatus(extractionId: string | undefined) {
         | undefined;
       const status =
         data?.extraction?.effectiveStatus ?? data?.extraction?.status;
-      return isTerminalKeyframeStatus(status) ? false : STATUS_POLL_INTERVAL_MS;
+      return isTerminalKeyframeStatus(status)
+        ? TERMINAL_REFRESH_INTERVAL_MS
+        : STATUS_POLL_INTERVAL_MS;
     },
-    refetchOnWindowFocus: false,
-  });
-}
-
-export function useKeyframeExtraction(extractionId: string | undefined) {
-  return useQuery({
-    queryKey: ["keyframeExtraction", extractionId],
-    queryFn: () => fetchKeyframeExtraction(extractionId as string),
-    enabled: Boolean(extractionId),
-    refetchInterval: COMPLETED_REFRESH_INTERVAL_MS,
     refetchOnWindowFocus: true,
-    staleTime: 1000,
   });
 }
 

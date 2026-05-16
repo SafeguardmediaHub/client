@@ -14,11 +14,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  type GetKeyframeExtractionResponse,
   type KeyframeExtractionStatus,
   type KeyframeFrame,
   isTerminalKeyframeStatus,
-  useKeyframeExtraction,
   useKeyframeStatus,
 } from "@/hooks/useKeyframes";
 import { useUploadKeyframe } from "@/hooks/useMedia";
@@ -80,20 +78,13 @@ export function ExtractionView({
 
   const uploadKeyframeMutation = useUploadKeyframe();
   const statusQuery = useKeyframeStatus(extractionId);
-  const recordQuery = useKeyframeExtraction(extractionId);
 
+  const data = statusQuery.data;
   const liveStatus =
-    statusQuery.data?.extraction?.effectiveStatus ??
-    statusQuery.data?.extraction?.status;
+    data?.extraction?.effectiveStatus ?? data?.extraction?.status;
   const isTerminal = isTerminalKeyframeStatus(liveStatus);
 
-  const data: GetKeyframeExtractionResponse | undefined = isTerminal
-    ? (recordQuery.data ?? statusQuery.data)
-    : statusQuery.data;
-
-  const isLoading =
-    (statusQuery.isLoading && !statusQuery.data) ||
-    (isTerminal && recordQuery.isLoading && !recordQuery.data);
+  const isLoading = statusQuery.isLoading && !data;
 
   const extraction = data?.extraction;
   const frames: KeyframeFrame[] = useMemo(() => {
